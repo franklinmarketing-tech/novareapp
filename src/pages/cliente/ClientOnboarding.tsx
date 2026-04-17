@@ -21,6 +21,8 @@ import { StepWelcome, StepTransition } from "@/components/onboarding/steps/Trans
 import { TOTAL_MICRO_STEPS, microStepToSaveSection } from "@/components/onboarding/steps/onboardingConfig";
 import PageTransition from "@/components/PageTransition";
 import confetti from "canvas-confetti";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 // Map step ranges to save section for auto-save on any step change
 const getSaveSectionForStep = (step: number): number | null => {
