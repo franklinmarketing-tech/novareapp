@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card3D } from "@/components/ui/card-3d";
-import { Search, ChevronRight, UserPlus, Users, Sparkles } from "lucide-react";
+import { Search, ChevronRight, UserPlus, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/PageTransition";
@@ -48,71 +48,52 @@ const ClientList = () => {
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
-  const [seeding, setSeeding] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSeedMaria = async () => {
-    setSeeding(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("seed-maria-endividada", { body: {} });
-      if (error) throw new Error(error.message);
-      if (data?.error) throw new Error(data.error);
-      toast({
-        title: "Maria Endividada criada!",
-        description: "Email: maria.endividada@novare.com · Senha: Maria@2026",
-      });
-      // Recarrega lista
-      const { data: clientsData } = await supabase
-        .from("clients")
-        .select("id, user_id, status, city, profession, assigned_consultant, slug")
-        .order("created_at", { ascending: false });
-      if (clientsData) {
-        const userIds = clientsData.map((c) => c.user_id);
-        const { data: profilesData } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, email")
-          .in("user_id", userIds);
-        const profileMap = new Map((profilesData ?? []).map((p) => [p.user_id, p]));
-        setClients(clientsData.map((c) => ({ ...c, profiles: profileMap.get(c.user_id) ?? null })) as any);
-      }
-    } catch (err: any) {
-      toast({
-        title: "Erro ao criar cliente de teste",
-        description: err.message || "Tente novamente",
-        variant: "destructive",
-      });
-    } finally {
-      setSeeding(false);
-    }
+  const loadClients = async () => {
+    const { data: clientsData } = await supabase
+      .from("clients")
+      .select("id, user_id, status, city, profession, assigned_consultant, slug")
+      .order("created_at", { ascending: false });
+    if (!clientsData) return [] as any[];
+
+    const userIds = clientsData.map((c) => c.user_id);
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, email")
+      .in("user_id", userIds);
+
+    const profileMap = new Map((profilesData ?? []).map((p) => [p.user_id, p]));
+    const merged = clientsData.map((c) => ({ ...c, profiles: profileMap.get(c.user_id) ?? null })) as any[];
+    setClients(merged);
+    return merged;
   };
 
   useEffect(() => {
-    const fetchClients = async () => {
-      const { data: clientsData } = await supabase
-        .from("clients")
-        .select("id, user_id, status, city, profession, assigned_consultant, slug")
-        .order("created_at", { ascending: false });
-      if (!clientsData) return;
-
-      const userIds = clientsData.map((c) => c.user_id);
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, email")
-        .in("user_id", userIds);
-
-      const profileMap = new Map(
-        (profilesData ?? []).map((p) => [p.user_id, p])
-      );
-
-      setClients(
-        clientsData.map((c) => ({
-          ...c,
-          profiles: profileMap.get(c.user_id) ?? null,
-        })) as any
-      );
+    const init = async () => {
+      const list = await loadClients();
+      // Auto-seed Maria Endividada na primeira vez (se ainda não existir)
+      const hasMaria = list.some((c: any) => c.profiles?.email === "maria.endividada@novare.com");
+      const alreadyTried = sessionStorage.getItem("seed_maria_attempted");
+      if (!hasMaria && !alreadyTried) {
+        sessionStorage.setItem("seed_maria_attempted", "1");
+        try {
+          const { data, error } = await supabase.functions.invoke("seed-maria-endividada", { body: {} });
+          if (!error && !data?.error) {
+            toast({
+              title: "Cliente de demonstração criada",
+              description: "Maria Endividada · maria.endividada@novare.com / Maria@2026",
+            });
+            await loadClients();
+          }
+        } catch {
+          // silencioso — apenas tentativa de seed
+        }
+      }
     };
-    fetchClients();
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const matchesFilter = (status: string, filter: FilterKey) => {
@@ -141,22 +122,10 @@ const ClientList = () => {
         description="Gerencie seus clientes cadastrados"
         icon={Users}
         action={
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSeedMaria}
-              disabled={seeding}
-              variant="outline"
-              className="rounded-2xl gap-2 border-accent/30 text-accent hover:bg-accent/10"
-              title="Cria a Maria Endividada (cliente de teste com dados completos)"
-            >
-              <Sparkles className="h-4 w-4" />
-              {seeding ? "Criando..." : "Maria (teste)"}
-            </Button>
-            <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" className="rounded-2xl gap-2">
-              <UserPlus className="h-6 w-6" />
-              Novo Cliente
-            </Button>
-          </div>
+          <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" className="rounded-2xl gap-2">
+            <UserPlus className="h-6 w-6" />
+            Novo Cliente
+          </Button>
         }
       />
 
