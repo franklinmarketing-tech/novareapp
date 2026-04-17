@@ -73,26 +73,29 @@ const ClientList = () => {
   useEffect(() => {
     const init = async () => {
       const list = await loadClients();
-      // Auto-seed Maria Endividada:
-      // - Se ainda não existir
-      // - OU se existir mas estiver com onboarding pendente (seed anterior incompleto)
+
+      // Auto-seed dos clientes de demonstração (Maria + Lucas) em PARALELO,
+      // em background — sem travar a UI. Roda apenas 1x por sessão.
       const maria = list.find((c: any) => c.profiles?.email === "maria.endividada@novare.com");
-      const needsSeed = !maria || maria.status === "onboarding_pendente";
-      const alreadyTried = sessionStorage.getItem("seed_maria_attempted");
+      const lucas = list.find((c: any) => c.profiles?.email === "lucas.teste@novare.com");
+      const mariaIncomplete = !maria || maria.status === "onboarding_pendente";
+      const lucasIncomplete = !lucas || lucas.status === "onboarding_pendente";
+      const needsSeed = mariaIncomplete || lucasIncomplete;
+      const alreadyTried = sessionStorage.getItem("seed_demo_attempted");
+
       if (needsSeed && !alreadyTried) {
-        sessionStorage.setItem("seed_maria_attempted", "1");
-        try {
-          const { data, error } = await supabase.functions.invoke("seed-maria-endividada", { body: {} });
-          if (!error && !data?.error) {
-            toast({
-              title: maria ? "Maria atualizada" : "Cliente de demonstração criada",
-              description: "Maria Endividada · maria.endividada@novare.com / Maria@2026",
-            });
-            await loadClients();
+        sessionStorage.setItem("seed_demo_attempted", "1");
+        // Background — não usa await na UI principal
+        (async () => {
+          try {
+            const { error } = await supabase.functions.invoke("seed-all-demo-clients", { body: {} });
+            if (!error) {
+              await loadClients();
+            }
+          } catch {
+            // silencioso
           }
-        } catch {
-          // silencioso — apenas tentativa de seed
-        }
+        })();
       }
     };
     init();
