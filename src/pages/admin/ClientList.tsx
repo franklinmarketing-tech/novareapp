@@ -73,16 +73,19 @@ const ClientList = () => {
   useEffect(() => {
     const init = async () => {
       const list = await loadClients();
-      // Auto-seed Maria Endividada na primeira vez (se ainda não existir)
-      const hasMaria = list.some((c: any) => c.profiles?.email === "maria.endividada@novare.com");
+      // Auto-seed Maria Endividada:
+      // - Se ainda não existir
+      // - OU se existir mas estiver com onboarding pendente (seed anterior incompleto)
+      const maria = list.find((c: any) => c.profiles?.email === "maria.endividada@novare.com");
+      const needsSeed = !maria || maria.status === "onboarding_pendente";
       const alreadyTried = sessionStorage.getItem("seed_maria_attempted");
-      if (!hasMaria && !alreadyTried) {
+      if (needsSeed && !alreadyTried) {
         sessionStorage.setItem("seed_maria_attempted", "1");
         try {
           const { data, error } = await supabase.functions.invoke("seed-maria-endividada", { body: {} });
           if (!error && !data?.error) {
             toast({
-              title: "Cliente de demonstração criada",
+              title: maria ? "Maria atualizada" : "Cliente de demonstração criada",
               description: "Maria Endividada · maria.endividada@novare.com / Maria@2026",
             });
             await loadClients();
