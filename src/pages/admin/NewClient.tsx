@@ -29,7 +29,12 @@ const NewClient = () => {
       if (data?.error) throw new Error(data.error);
 
       const clientId = data?.clientId;
-      toast({ title: "Cliente cadastrado!", description: `Um email de convite foi enviado para ${email} com instruções de acesso.` });
+      toast({
+        title: data?.alreadyExisted ? "Cliente já existia" : "Cliente cadastrado!",
+        description: data?.alreadyExisted
+          ? `Continuando o onboarding de ${email}.`
+          : `Credenciais de acesso enviadas para ${email}.`,
+      });
       if (clientId) {
         const { data: client } = await supabase.from("clients").select("slug").eq("id", clientId).maybeSingle();
         navigate(client?.slug ? `/admin/cliente/${client.slug}/onboarding` : "/admin/clientes");
@@ -68,7 +73,7 @@ const NewClient = () => {
             Novo cliente
           </h1>
           <p className="text-[0.875rem] text-muted-foreground font-light">
-            O cliente receberá um convite por email para acessar a plataforma.
+            O cliente receberá email com login e senha temporária para acessar a plataforma.
           </p>
         </div>
 
