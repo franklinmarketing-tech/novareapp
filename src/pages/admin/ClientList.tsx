@@ -4,12 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card3D } from "@/components/ui/card-3d";
-import { Search, ChevronRight, UserPlus, Users } from "lucide-react";
+import { Search, ChevronRight, UserPlus, Users, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/PageTransition";
 import PageBanner from "@/components/PageBanner";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -47,7 +48,44 @@ const ClientList = () => {
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [seeding, setSeeding] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSeedMaria = async () => {
+    setSeeding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("seed-maria-endividada", { body: {} });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      toast({
+        title: "Maria Endividada criada!",
+        description: "Email: maria.endividada@novare.com · Senha: Maria@2026",
+      });
+      // Recarrega lista
+      const { data: clientsData } = await supabase
+        .from("clients")
+        .select("id, user_id, status, city, profession, assigned_consultant, slug")
+        .order("created_at", { ascending: false });
+      if (clientsData) {
+        const userIds = clientsData.map((c) => c.user_id);
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, email")
+          .in("user_id", userIds);
+        const profileMap = new Map((profilesData ?? []).map((p) => [p.user_id, p]));
+        setClients(clientsData.map((c) => ({ ...c, profiles: profileMap.get(c.user_id) ?? null })) as any);
+      }
+    } catch (err: any) {
+      toast({
+        title: "Erro ao criar cliente de teste",
+        description: err.message || "Tente novamente",
+        variant: "destructive",
+      });
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   useEffect(() => {
     const fetchClients = async () => {
