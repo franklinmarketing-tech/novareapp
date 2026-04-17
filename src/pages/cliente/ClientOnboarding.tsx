@@ -274,8 +274,20 @@ const ClientOnboardingPage = () => {
 
   return (
     <PageTransition className="h-screen bg-background flex flex-col overflow-hidden">
-      <div className="flex justify-center pt-5 pb-2">
+      <div className="relative flex justify-center pt-5 pb-2">
         <img src={logoPreta} alt="Novare" className="h-10" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={async () => {
+            await supabase.auth.signOut();
+            navigate("/login");
+          }}
+          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground gap-1.5"
+        >
+          <LogOut className="h-4 w-4" />
+          <span className="hidden sm:inline text-xs">Sair</span>
+        </Button>
       </div>
       <OnboardingProgress currentStep={step} totalSteps={TOTAL_MICRO_STEPS} />
       <div className={`flex-1 overflow-y-auto px-4 ${isListStep ? "pt-3" : "pt-0"} pb-24`}>
