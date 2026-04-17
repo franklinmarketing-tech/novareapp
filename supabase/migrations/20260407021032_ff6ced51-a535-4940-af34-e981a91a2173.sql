@@ -1,0 +1,1 @@
+ALTER TABLE public.action_items ADD COLUMN parent_id uuid REFERENCES public.action_items(id) ON DELETE CASCADE;

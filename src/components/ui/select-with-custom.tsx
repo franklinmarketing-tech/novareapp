@@ -1,0 +1,97 @@
+import { useState, useEffect } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+
+interface SelectWithCustomProps {
+  value: string;
+  onValueChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+  className?: string;
+  triggerClassName?: string;
+  inputPlaceholder?: string;
+}
+
+/**
+ * A Select dropdown that includes a "Personalizado" option.
+ * When selected, it shows an inline text input for custom values.
+ * The custom value is stored with a "custom:" prefix internally.
+ */
+export const SelectWithCustom = ({
+  value,
+  onValueChange,
+  options,
+  placeholder = "Selecione",
+  triggerClassName = "",
+  inputPlaceholder = "Digite aqui...",
+}: SelectWithCustomProps) => {
+  const isCustom = value?.startsWith("custom:") || (value && !options.some((o) => o.value === value) && value !== "");
+  const [showCustomInput, setShowCustomInput] = useState(isCustom);
+  const customText = isCustom ? (value.startsWith("custom:") ? value.slice(7) : value) : "";
+
+  useEffect(() => {
+    const isCurrentCustom = value?.startsWith("custom:") || (value && !options.some((o) => o.value === value) && value !== "");
+    setShowCustomInput(!!isCurrentCustom);
+  }, [value, options]);
+
+  const handleSelectChange = (v: string) => {
+    if (v === "__custom__") {
+      setShowCustomInput(true);
+      onValueChange("custom:");
+    } else {
+      setShowCustomInput(false);
+      onValueChange(v);
+    }
+  };
+
+  const handleCustomInput = (text: string) => {
+    onValueChange(`custom:${text}`);
+  };
+
+  if (showCustomInput) {
+    return (
+      <div
+        className="relative rounded-xl px-3 py-2.5 flex items-center gap-2"
+        style={{
+          border: "2px dashed hsl(var(--primary) / 0.35)",
+          background: "hsl(var(--primary) / 0.03)",
+        }}
+      >
+        <span className="text-primary text-sm shrink-0">✏️</span>
+        <Input
+          value={customText}
+          onChange={(e) => handleCustomInput(e.target.value)}
+          placeholder={inputPlaceholder}
+          className={`flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 px-0 h-auto text-[0.9375rem] placeholder:text-muted-foreground/50 ${triggerClassName}`}
+          autoFocus
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setShowCustomInput(false);
+            onValueChange("");
+          }}
+          className="text-xs text-muted-foreground hover:text-destructive px-1.5 py-1 rounded-md hover:bg-destructive/10 shrink-0 transition-all"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <Select value={value} onValueChange={handleSelectChange}>
+      <SelectTrigger className={`border-border bg-background ${triggerClassName}`}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+        ))}
+        <SelectItem value="__custom__" className="text-primary font-medium border-t mt-1 pt-1">
+          ✏️ Personalizado
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  );
+};

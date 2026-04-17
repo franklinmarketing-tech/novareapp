@@ -1,0 +1,19 @@
+project_id = "bhncbqsdnehitavmcwhp"
+
+[functions.create-client]
+verify_jwt = false
+
+[functions.fetch-market-data]
+verify_jwt = false
+
+[functions.seed-test-client]
+verify_jwt = false
+
+[functions.analyze-notes]
+verify_jwt = false
+
+[functions.send-client-email]
+verify_jwt = false
+
+[functions.process-email-queue]
+verify_jwt = true
