@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.seed-maria-endividada]
 verify_jwt = false
 
+[functions.seed-all-demo-clients]
+verify_jwt = false
+
 [functions.analyze-notes]
 verify_jwt = false
 
