@@ -141,10 +141,22 @@ const ClientList = () => {
         description="Gerencie seus clientes cadastrados"
         icon={Users}
         action={
-          <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" className="rounded-2xl gap-2">
-            <UserPlus className="h-6 w-6" />
-            Novo Cliente
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleSeedMaria}
+              disabled={seeding}
+              variant="outline"
+              className="rounded-2xl gap-2 border-accent/30 text-accent hover:bg-accent/10"
+              title="Cria a Maria Endividada (cliente de teste com dados completos)"
+            >
+              <Sparkles className="h-4 w-4" />
+              {seeding ? "Criando..." : "Maria (teste)"}
+            </Button>
+            <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" className="rounded-2xl gap-2">
+              <UserPlus className="h-6 w-6" />
+              Novo Cliente
+            </Button>
+          </div>
         }
       />
 
