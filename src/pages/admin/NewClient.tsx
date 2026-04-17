@@ -33,7 +33,7 @@ const NewClient = () => {
         title: data?.alreadyExisted ? "Cliente já existia" : "Cliente cadastrado!",
         description: data?.alreadyExisted
           ? `Continuando o onboarding de ${email}.`
-          : `Credenciais de acesso enviadas para ${email}.`,
+          : `Iniciando onboarding de ${name}.`,
       });
       if (clientId) {
         const { data: client } = await supabase.from("clients").select("slug").eq("id", clientId).maybeSingle();
@@ -73,7 +73,7 @@ const NewClient = () => {
             Novo cliente
           </h1>
           <p className="text-[0.875rem] text-muted-foreground font-light">
-            O cliente receberá email com login e senha temporária para acessar a plataforma.
+            Cadastre o cliente para iniciar o onboarding. Ele poderá criar a própria senha pela tela de login.
           </p>
         </div>
 
