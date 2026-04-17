@@ -1,0 +1,339 @@
+import { useAuth } from "@/contexts/AuthContext";
+import logoBranca from "@/assets/logo-branca.png";
+import { NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard,
+  Users,
+  UserPlus,
+  Wallet,
+  LogOut,
+  Menu,
+  X,
+  Settings,
+  ChevronRight,
+  FolderKanban,
+  Gem,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { FoundersShowcase } from "@/components/FoundersShowcase";
+
+/* ── nav config ─────────────────────────────────────────── */
+
+const sections = [
+  {
+    label: "Principal",
+    items: [
+      { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
+    ],
+  },
+  {
+    label: "Gestão",
+    items: [
+      { to: "/admin/clientes", icon: Users, label: "Clientes" },
+      { to: "/admin/novo-cliente", icon: UserPlus, label: "Novo Cliente" },
+      { to: "/admin/financeiro", icon: Wallet, label: "Financeiro" },
+    ],
+  },
+];
+
+
+/* ── breadcrumb helpers ─────────────────────────────────── */
+
+const staticSegments: Record<string, string> = {
+  admin: "Dashboard",
+  clientes: "Clientes",
+  "novo-cliente": "Novo Cliente",
+  financeiro: "Financeiro",
+  configuracoes: "Configurações",
+  cliente: "Cliente",
+  onboarding: "Onboarding",
+  diagnostico: "Diagnóstico",
+  parecer: "Parecer",
+  "plano-acao": "Plano de Ação",
+  investimentos: "Investimentos",
+  implementacao: "Implementação",
+  acompanhamento: "Acompanhamento",
+  relatorio: "Relatório",
+  workspace: "Workspace",
+};
+
+interface Props {
+  children: React.ReactNode;
+}
+
+export const AdminLayout = ({ children }: Props) => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [profile, setProfile] = useState<{ full_name: string; email: string } | null>(null);
+  const [clientNames, setClientNames] = useState<Record<string, string>>({});
+
+  /* fetch admin profile */
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setProfile(data);
+      });
+  }, [user]);
+
+  /* fetch client name when on a client route (slug-based) */
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  const clientIdx = pathParts.indexOf("cliente");
+  const clientSlug = clientIdx >= 0 ? pathParts[clientIdx + 1] : null;
+
+  useEffect(() => {
+    if (!clientSlug || clientNames[clientSlug] || staticSegments[clientSlug]) return;
+    supabase
+      .from("clients")
+      .select("user_id")
+      .eq("slug", clientSlug)
+      .maybeSingle()
+      .then(async ({ data }) => {
+        if (!data) return;
+        const { data: p } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", data.user_id)
+          .maybeSingle();
+        if (p) setClientNames((prev) => ({ ...prev, [clientSlug]: p.full_name }));
+      });
+  }, [clientSlug]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
+  const initials = profile?.full_name
+    ? profile.full_name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "A";
+
+  /* ── breadcrumbs ──────────────────────────────────────── */
+
+  const buildBreadcrumbs = () => {
+    const segments = pathParts;
+    const crumbs: { label: string; path: string }[] = [];
+    let accumulated = "";
+
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      accumulated += "/" + seg;
+
+      // Skip "admin" as first crumb — it's implicit
+      if (i === 0 && seg === "admin") continue;
+
+      // Slug segment after "cliente" → show client name
+      if (clientSlug && seg === clientSlug) {
+        crumbs.push({ label: clientNames[clientSlug] || clientSlug, path: accumulated });
+        continue;
+      }
+
+      crumbs.push({
+        label: staticSegments[seg] || seg,
+        path: accumulated,
+      });
+    }
+
+    return crumbs;
+  };
+
+  const breadcrumbs = buildBreadcrumbs();
+
+  /* ── sidebar content ──────────────────────────────────── */
+
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="px-6 py-7">
+        <div className="flex items-center gap-3">
+          <img src={logoBranca} alt="Novare" className="h-8 w-auto" />
+        </div>
+      </div>
+
+      {/* Sections */}
+      <nav className="flex-1 px-3 space-y-6 overflow-y-auto">
+        {sections.map((section) => (
+          <div key={section.label}>
+            <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-sidebar-foreground/40">
+              {section.label}
+            </p>
+            <div className="space-y-0.5">
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/80"
+                    )
+                  }
+                >
+                  <item.icon className="h-[18px] w-[18px]" />
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      {/* Founders */}
+      <div className="border-t border-sidebar-border/30 mt-2">
+        <FoundersShowcase variant="sidebar" />
+      </div>
+
+
+        {/* Workspace */}
+        <div className="px-3 mt-4 mb-2">
+          <NavLink
+            to="/admin/workspace"
+            onClick={() => setMobileOpen(false)}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/40"
+              )
+            }
+          >
+            <Gem className="h-[18px] w-[18px]" />
+            <span className="flex-1">Projetos</span>
+            <ChevronRight className="h-6 w-6 opacity-50" />
+          </NavLink>
+        </div>
+
+      <div className="mt-auto border-t border-sidebar-border/30">
+        {/* Settings placeholder */}
+        <div className="px-3 pt-3">
+          <NavLink
+            to="/admin/configuracoes"
+            onClick={() => setMobileOpen(false)}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full",
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/70"
+              )
+            }
+          >
+            <Settings className="h-[18px] w-[18px]" />
+            Configurações
+          </NavLink>
+        </div>
+
+        {/* Admin profile */}
+        <div className="px-4 py-4">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-9 h-9 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0">
+              <span className="text-xs font-semibold text-sidebar-foreground">{initials}</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[0.8125rem] font-medium text-sidebar-foreground truncate">
+                {profile?.full_name || "Administrador"}
+              </p>
+              <p className="text-[0.6875rem] text-sidebar-foreground/40 truncate">
+                {profile?.email || ""}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Sign out */}
+        <div className="px-3 pb-4">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/70 transition-all duration-200 w-full"
+          >
+            <LogOut className="h-[18px] w-[18px]" />
+            Sair
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-[260px] bg-sidebar flex-col fixed inset-y-0 z-30 border-r border-sidebar-border/20">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile header */}
+      <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-sidebar z-30 flex items-center px-4 border-b border-sidebar-border/20">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="text-sidebar-foreground hover:bg-sidebar-accent/40"
+        >
+          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </Button>
+        <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-3" />
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-40">
+          <div className="absolute inset-0 bg-foreground/10 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-[260px] bg-sidebar h-full shadow-elevated">{sidebarContent}</aside>
+        </div>
+      )}
+
+      {/* Main content */}
+      <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 min-h-screen">
+        {/* Breadcrumb header */}
+        <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border/60">
+          <div className="flex items-center h-11 px-4 lg:px-8">
+            <nav className="flex items-center gap-1 text-[0.8125rem]">
+              <NavLink
+                to="/admin"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Dashboard
+              </NavLink>
+              {breadcrumbs.map((crumb, i) => (
+                <span key={crumb.path} className="flex items-center gap-1">
+                  <ChevronRight className="h-6 w-6 text-muted-foreground/40" />
+                  {i === breadcrumbs.length - 1 ? (
+                    <span className="font-medium text-foreground">{crumb.label}</span>
+                  ) : (
+                    <NavLink
+                      to={crumb.path}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {crumb.label}
+                    </NavLink>
+                  )}
+                </span>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        <div className="p-4 lg:p-6 xl:p-8">{children}</div>
+      </main>
+    </div>
+  );
+};

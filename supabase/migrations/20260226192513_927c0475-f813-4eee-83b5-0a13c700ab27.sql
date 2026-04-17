@@ -1,0 +1,1 @@
+ALTER TABLE public.investment_recommendations ADD COLUMN invested_amount numeric DEFAULT 0;

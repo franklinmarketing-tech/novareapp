@@ -13,6 +13,23 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        display: ["Playfair Display", "Georgia", "serif"],
+        body: ["Fustat", "Inter", "system-ui", "sans-serif"],
+      },
+      fontSize: {
+        "2xs": ["0.75rem", { lineHeight: "1.125rem" }],
+        xs: ["0.8125rem", { lineHeight: "1.25rem" }],
+        sm: ["0.875rem", { lineHeight: "1.375rem" }],
+        base: ["0.9375rem", { lineHeight: "1.5625rem" }],
+        lg: ["1.0625rem", { lineHeight: "1.625rem" }],
+        xl: ["1.1875rem", { lineHeight: "1.75rem" }],
+        "2xl": ["1.375rem", { lineHeight: "1.875rem" }],
+        "3xl": ["1.625rem", { lineHeight: "2.125rem" }],
+        "4xl": ["2.125rem", { lineHeight: "2.625rem" }],
+        "5xl": ["2.75rem", { lineHeight: "3.25rem" }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -39,6 +56,14 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -57,28 +82,38 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        novare: {
+          terracotta: "hsl(var(--novare-terracotta))",
+          "terracotta-light": "hsl(var(--novare-terracotta-light))",
+          blue: "hsl(var(--novare-blue))",
+          "blue-light": "hsl(var(--novare-blue-light))",
+        },
+      },
+      spacing: {
+        "4.5": "1.125rem",
+        "18": "4.5rem",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        "subtle": "0 1px 2px 0 hsl(0 0% 0% / 0.04)",
+        "soft": "0 1px 4px 0 hsl(0 0% 0% / 0.06), 0 1px 2px -1px hsl(0 0% 0% / 0.04)",
+        "elevated": "0 8px 24px -4px hsl(0 0% 0% / 0.08), 0 2px 8px -2px hsl(0 0% 0% / 0.05)",
+        "card": "0 2px 8px -2px hsl(0 0% 0% / 0.06), 0 0 0 1px hsl(0 0% 0% / 0.03)",
+        "card-hover": "0 4px 16px -4px hsl(0 0% 0% / 0.1), 0 0 0 1px hsl(0 0% 0% / 0.04)",
+        "apple": "0 2px 8px 0 hsl(0 0% 0% / 0.05), 0 0 1px 0 hsl(0 0% 0% / 0.08)",
+      },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
