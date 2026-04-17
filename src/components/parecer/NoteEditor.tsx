@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import DOMPurify from "dompurify";
 
 interface Note {
   id: string;
@@ -251,8 +252,14 @@ export const NoteEditor = ({ clientId }: Props) => {
         /!\[([^\]]*)\]\(([^)]+)\)/g,
         '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0;display:block;" />'
       );
-      if (editorRef.current.innerHTML !== htmlContent) {
-        editorRef.current.innerHTML = htmlContent;
+      // Sanitize before injecting to prevent stored XSS via notes
+      const safeHtml = DOMPurify.sanitize(htmlContent, {
+        ALLOWED_TAGS: ["img", "br", "p", "div", "b", "i", "u", "strong", "em", "ul", "ol", "li", "a", "span"],
+        ALLOWED_ATTR: ["src", "alt", "style", "href", "target", "rel"],
+        ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      });
+      if (editorRef.current.innerHTML !== safeHtml) {
+        editorRef.current.innerHTML = safeHtml;
       }
     }
   }, [activeNote]);
