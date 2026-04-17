@@ -198,44 +198,39 @@ const AdminReport = () => {
   const handlePrint = () => window.print();
 
   const handleDownloadPDF = async () => {
-    if (!reportRef.current) return;
     setGenerating(true);
     try {
-      const html2canvas = (await import("html2canvas")).default;
-      const { jsPDF } = await import("jspdf");
-
-      const element = reportRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        windowWidth: 900,
+      const { generateReportPdf } = await import("@/lib/generateReportPdf");
+      await generateReportPdf({
+        clientName,
+        clientEmail,
+        profession: clientData?.profession,
+        risk,
+        riskLabel: riskInfo.label,
+        riskDescription: riskInfo.description,
+        savingsRate,
+        debtRatio,
+        expenseRatio,
+        totalIncome,
+        totalExpenses,
+        totalDebts,
+        monthlyDebtPayments,
+        totalAssets,
+        netWorth,
+        netCashFlow,
+        incomes,
+        expensesByCategory,
+        debts,
+        assets,
+        insurance,
+        goals: goalProgress,
+        actionItems: parentItems,
+        totalImpact,
+        completedActions,
+        totalActions,
+        planPct,
       });
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      const pdfWidth = 210; // A4
-      const pdfHeight = 297;
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      const pdf = new jsPDF("p", "mm", "a4");
-      let position = 0;
-      let heightLeft = imgHeight;
-
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
-
-      const fileName = `Relatorio_${clientName.replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`;
-      pdf.save(fileName);
-      toast({ title: "PDF gerado com sucesso!", description: fileName });
+      toast({ title: "PDF gerado com sucesso!" });
     } catch (err) {
       console.error("PDF generation error:", err);
       toast({ title: "Erro ao gerar PDF", description: "Tente novamente", variant: "destructive" });
