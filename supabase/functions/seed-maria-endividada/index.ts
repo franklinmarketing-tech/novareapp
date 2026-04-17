@@ -250,6 +250,14 @@ Deno.serve(async (req) => {
       { client_id: clientId, snapshot_date: "2026-03-31", total_income: 4400, total_expenses: 7530, total_assets: 26320, total_debts: 53300, savings_rate: -71.1, emergency_reserve_months: 0.04, plan_completion_pct: 35 },
     ]);
 
+    // === FORÇA STATUS FINAL: onboarding concluído ===
+    // Idempotente — garante que a Maria não vai cair no fluxo de onboarding
+    const { error: statusErr } = await admin
+      .from("clients")
+      .update({ status: "em_acompanhamento" })
+      .eq("id", clientId);
+    if (statusErr) console.error("Erro ao definir status final:", statusErr);
+
     return new Response(
       JSON.stringify({
         success: true,
