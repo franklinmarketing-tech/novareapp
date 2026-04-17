@@ -96,28 +96,6 @@ const ClientList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-      if (!clientsData) return;
-
-      const userIds = clientsData.map((c) => c.user_id);
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, email")
-        .in("user_id", userIds);
-
-      const profileMap = new Map(
-        (profilesData ?? []).map((p) => [p.user_id, p])
-      );
-
-      setClients(
-        clientsData.map((c) => ({
-          ...c,
-          profiles: profileMap.get(c.user_id) ?? null,
-        })) as any
-      );
-    };
-    fetchClients();
-  }, []);
-
   const matchesFilter = (status: string, filter: FilterKey) => {
     if (filter === "all") return true;
     if (filter === "pendente") return status === "onboarding_pendente";
@@ -144,22 +122,10 @@ const ClientList = () => {
         description="Gerencie seus clientes cadastrados"
         icon={Users}
         action={
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSeedMaria}
-              disabled={seeding}
-              variant="outline"
-              className="rounded-2xl gap-2 border-accent/30 text-accent hover:bg-accent/10"
-              title="Cria a Maria Endividada (cliente de teste com dados completos)"
-            >
-              <Sparkles className="h-4 w-4" />
-              {seeding ? "Criando..." : "Maria (teste)"}
-            </Button>
-            <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" className="rounded-2xl gap-2">
-              <UserPlus className="h-6 w-6" />
-              Novo Cliente
-            </Button>
-          </div>
+          <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" className="rounded-2xl gap-2">
+            <UserPlus className="h-6 w-6" />
+            Novo Cliente
+          </Button>
         }
       />
 
