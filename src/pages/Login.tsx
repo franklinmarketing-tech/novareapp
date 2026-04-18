@@ -274,57 +274,115 @@ const Login = () => {
               >
                 <div className="text-center mb-8">
                   <h1 className="text-2xl font-display font-semibold tracking-tight text-foreground">
-                    {mode === "login" ? "Entrar na sua conta" : "Criar conta"}
+                    {mode === "login"
+                      ? "Planejamento Financeiro"
+                      : mode === "signup"
+                      ? "Criar conta"
+                      : "Recuperar senha"}
                   </h1>
                   <p className="text-muted-foreground mt-2 text-sm font-body">
                     {mode === "login"
                       ? "Insira seus dados para acessar a plataforma"
-                      : "Insira os dados e crie sua conta"}
+                      : mode === "signup"
+                      ? "Insira os dados e crie sua conta"
+                      : forgotSent
+                      ? "Pronto! Verifique seu email para continuar."
+                      : "Informe seu email e enviaremos um link para redefinir sua senha"}
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {mode === "signup" && (
-                    <div className="space-y-1.5">
-                      <Label htmlFor="fullName">Nome</Label>
-                      <Input id="fullName" placeholder="Digite seu nome" value={fullName} onChange={(e) => setFullName(e.target.value)} required className="h-12 rounded-xl" />
+                {mode === "forgot" && forgotSent ? (
+                  <div className="space-y-6">
+                    <div className="rounded-2xl bg-accent/10 border border-accent/20 p-5 text-center">
+                      <p className="text-sm text-foreground/80 font-body">
+                        Enviamos um link de recuperação para <strong className="text-foreground">{email}</strong>.
+                        Clique no link no email para definir uma nova senha.
+                      </p>
                     </div>
-                  )}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="Digite o email" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-12 rounded-xl" />
+                    <button
+                      type="button"
+                      onClick={() => { setMode("login"); setForgotSent(false); }}
+                      className="w-full text-sm text-accent font-medium hover:underline"
+                    >
+                      Voltar ao login
+                    </button>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="password">Senha</Label>
-                    <div className="relative">
-                      <Input id="password" type={showPassword ? "text" : "password"} placeholder="Digite a senha" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="h-12 rounded-xl pr-11" />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground transition-colors">
-                        {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="group relative w-full inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-medium text-sm shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none mt-2"
-                  >
-                    {isLoading ? (mode === "login" ? "Entrando..." : "Criando conta...") : (mode === "login" ? "Entrar" : "Criar conta")}
-                    {!isLoading && (
-                      <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-accent-foreground/20 group-hover:bg-accent-foreground/30 transition-colors">
-                        <ArrowRight className="h-6 w-6" />
-                      </span>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {mode === "signup" && (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="fullName">Nome</Label>
+                        <Input id="fullName" placeholder="Digite seu nome" value={fullName} onChange={(e) => setFullName(e.target.value)} required className="h-12 rounded-xl" />
+                      </div>
                     )}
-                  </button>
-                </form>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" type="email" placeholder="Digite o email" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-12 rounded-xl" />
+                    </div>
+
+                    {mode !== "forgot" && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="password">Senha</Label>
+                          {mode === "login" && (
+                            <button
+                              type="button"
+                              onClick={() => setMode("forgot")}
+                              className="text-xs text-accent font-medium hover:underline transition-colors"
+                            >
+                              Esqueceu a senha?
+                            </button>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input id="password" type={showPassword ? "text" : "password"} placeholder="Digite a senha" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="h-12 rounded-xl pr-11" />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+                            {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="group relative w-full inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-medium text-sm shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none mt-2"
+                    >
+                      {isLoading
+                        ? mode === "login"
+                          ? "Entrando..."
+                          : mode === "signup"
+                          ? "Criando conta..."
+                          : "Enviando..."
+                        : mode === "login"
+                        ? "Entrar"
+                        : mode === "signup"
+                        ? "Criar conta"
+                        : "Enviar link de recuperação"}
+                      {!isLoading && (
+                        <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-accent-foreground/20 group-hover:bg-accent-foreground/30 transition-colors">
+                          <ArrowRight className="h-6 w-6" />
+                        </span>
+                      )}
+                    </button>
+                  </form>
+                )}
 
                 <div className="mt-6 text-center text-sm">
-                  <span className="text-muted-foreground">
-                    {mode === "login" ? "Não tem uma conta? " : "Já tem uma conta? "}
-                  </span>
-                  <button type="button" onClick={() => setMode(mode === "login" ? "signup" : "login")} className="text-accent font-medium hover:underline transition-colors">
-                    {mode === "login" ? "Criar conta" : "Fazer login"}
-                  </button>
+                  {mode === "forgot" ? (
+                    <button type="button" onClick={() => { setMode("login"); setForgotSent(false); }} className="text-accent font-medium hover:underline transition-colors">
+                      Voltar ao login
+                    </button>
+                  ) : (
+                    <>
+                      <span className="text-muted-foreground">
+                        {mode === "login" ? "Não tem uma conta? " : "Já tem uma conta? "}
+                      </span>
+                      <button type="button" onClick={() => setMode(mode === "login" ? "signup" : "login")} className="text-accent font-medium hover:underline transition-colors">
+                        {mode === "login" ? "Criar conta" : "Fazer login"}
+                      </button>
+                    </>
+                  )}
                 </div>
               </motion.div>
             </AnimatePresence>
