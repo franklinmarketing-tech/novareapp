@@ -483,22 +483,22 @@ const Login = () => {
               delay={0.6}
             />
 
-            {/* Poupança — desaturated, thin, dimmed */}
+            {/* Poupança / Banco B — amber/orange, mid weight */}
             <AnimatedLine
               d="M 0 395 C 100 392, 180 385, 260 375 C 340 365, 420 352, 500 340 C 560 330, 630 318, 700 305"
-              color="hsl(220 15% 65%)"
+              color="hsl(35 85% 60%)"
               delay={0.9}
-              thickness={1}
-              dimmed
+              thickness={2.2}
+              glow
             />
 
-            {/* CDI / Banco A — desaturated mid */}
+            {/* CDI / Banco A — blue, mid weight */}
             <AnimatedLine
               d="M 0 390 C 80 380, 140 360, 210 340 C 280 320, 340 290, 400 265 C 460 240, 520 215, 580 195 C 620 180, 660 165, 700 145"
-              color="hsl(220 30% 60%)"
+              color="hsl(220 80% 65%)"
               delay={0.6}
-              thickness={1.2}
-              dimmed
+              thickness={2.4}
+              glow
             />
 
             {/* MAIN — NOVARE */}
