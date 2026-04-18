@@ -195,10 +195,9 @@ const Login = () => {
 
   // Refs / values for chart animations
   const novarePathRef = useRef<SVGPathElement>(null);
-  const novareVal = useCountUp(24.8, 2400, 600, 1);
+  const novareVal = useCountUp(16, 2400, 600, 1);
   const cdiVal = useCountUp(11.2, 2400, 900, 1);
   const poupVal = useCountUp(6.4, 2400, 1200, 1);
-  const acumuladoVal = useCountUp(8420, 2600, 1500, 0);
 
   if (role === "admin") {
     navigate("/admin", { replace: true });
