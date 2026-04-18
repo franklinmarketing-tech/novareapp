@@ -1,5 +1,25 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import logoBranca from "@/assets/logo-branca.png";
+import logoPreta from "@/assets/logo-preta.png";
+
+// Carrega imagem como dataURL
+const loadImageAsDataUrl = (src: string): Promise<{ dataUrl: string; w: number; h: number }> =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject(new Error("canvas ctx"));
+      ctx.drawImage(img, 0, 0);
+      resolve({ dataUrl: canvas.toDataURL("image/png"), w: img.naturalWidth, h: img.naturalHeight });
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
 
 // ──────────────────────────────────────────────────────────
 // Tipos
@@ -32,6 +52,7 @@ export interface ReportData {
   completedActions: number;
   totalActions: number;
   planPct: number;
+  snapshots?: Array<{ snapshot_date: string; total_assets?: number; total_debts?: number; savings_rate?: number }>;
 }
 
 // ──────────────────────────────────────────────────────────
