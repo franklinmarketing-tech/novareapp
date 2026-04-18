@@ -195,10 +195,9 @@ const Login = () => {
 
   // Refs / values for chart animations
   const novarePathRef = useRef<SVGPathElement>(null);
-  const novareVal = useCountUp(24.8, 2400, 600, 1);
+  const novareVal = useCountUp(16, 2400, 600, 1);
   const cdiVal = useCountUp(11.2, 2400, 900, 1);
   const poupVal = useCountUp(6.4, 2400, 1200, 1);
-  const acumuladoVal = useCountUp(8420, 2600, 1500, 0);
 
   if (role === "admin") {
     navigate("/admin", { replace: true });
@@ -484,22 +483,22 @@ const Login = () => {
               delay={0.6}
             />
 
-            {/* Poupança — desaturated, thin, dimmed */}
+            {/* Poupança / Banco B — amber/orange, mid weight */}
             <AnimatedLine
               d="M 0 395 C 100 392, 180 385, 260 375 C 340 365, 420 352, 500 340 C 560 330, 630 318, 700 305"
-              color="hsl(220 15% 65%)"
+              color="hsl(35 85% 60%)"
               delay={0.9}
-              thickness={1}
-              dimmed
+              thickness={2.2}
+              glow
             />
 
-            {/* CDI / Banco A — desaturated mid */}
+            {/* CDI / Banco A — blue, mid weight */}
             <AnimatedLine
               d="M 0 390 C 80 380, 140 360, 210 340 C 280 320, 340 290, 400 265 C 460 240, 520 215, 580 195 C 620 180, 660 165, 700 145"
-              color="hsl(220 30% 60%)"
+              color="hsl(220 80% 65%)"
               delay={0.6}
-              thickness={1.2}
-              dimmed
+              thickness={2.4}
+              glow
             />
 
             {/* MAIN — NOVARE */}
@@ -620,33 +619,16 @@ const Login = () => {
                 +{novareVal.toFixed(1)}%
               </text>
 
-              <circle cx={36} cy={86} r={3} fill="hsl(220 30% 60%)" opacity={0.7} />
-              <text x={48} y={90} fill="white" fillOpacity={0.55} fontSize={10} fontWeight={500} fontFamily="system-ui">CDI</text>
-              <text x={210} y={90} textAnchor="end" fill="white" fillOpacity={0.55} fontSize={11} fontWeight={600} fontFamily="system-ui">
+              <circle cx={36} cy={86} r={3.5} fill="hsl(220 80% 65%)" />
+              <text x={48} y={90} fill="white" fillOpacity={0.7} fontSize={10} fontWeight={500} fontFamily="system-ui">CDI</text>
+              <text x={210} y={90} textAnchor="end" fill="hsl(220 80% 75%)" fontSize={11} fontWeight={600} fontFamily="system-ui">
                 +{cdiVal.toFixed(1)}%
               </text>
 
-              <circle cx={36} cy={108} r={3} fill="hsl(220 15% 65%)" opacity={0.6} />
-              <text x={48} y={112} fill="white" fillOpacity={0.45} fontSize={10} fontWeight={500} fontFamily="system-ui">Poupança</text>
-              <text x={210} y={112} textAnchor="end" fill="white" fillOpacity={0.45} fontSize={11} fontWeight={600} fontFamily="system-ui">
+              <circle cx={36} cy={108} r={3.5} fill="hsl(35 85% 60%)" />
+              <text x={48} y={112} fill="white" fillOpacity={0.7} fontSize={10} fontWeight={500} fontFamily="system-ui">Poupança</text>
+              <text x={210} y={112} textAnchor="end" fill="hsl(35 85% 70%)" fontSize={11} fontWeight={600} fontFamily="system-ui">
                 +{poupVal.toFixed(1)}%
-              </text>
-            </motion.g>
-
-            {/* Acumulado KPI — bottom right */}
-            <motion.g
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.4, duration: 0.7, ease: PREMIUM_EASE }}
-            >
-              <rect x={475} y={335} width={210} height={56} rx={12}
-                fill="hsl(220 40% 11%)" fillOpacity={0.85}
-                stroke="white" strokeOpacity={0.06} strokeWidth={0.5} />
-              <text x={490} y={355} fill="white" fillOpacity={0.4} fontSize={8} fontWeight={600} fontFamily="system-ui" letterSpacing={1}>
-                ACUMULADO COM NOVARE
-              </text>
-              <text x={490} y={378} fill="hsl(160 70% 60%)" fontSize={20} fontWeight={800} fontFamily="system-ui">
-                +R$ {acumuladoVal.toLocaleString("pt-BR")}
               </text>
             </motion.g>
           </svg>
