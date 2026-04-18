@@ -101,6 +101,18 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   let pageNumber = 1;
   let sectionNum = 0;
 
+  // Carrega logos (silenciosamente em caso de erro)
+  let logoWhite: { dataUrl: string; w: number; h: number } | null = null;
+  let logoBlack: { dataUrl: string; w: number; h: number } | null = null;
+  try {
+    [logoWhite, logoBlack] = await Promise.all([
+      loadImageAsDataUrl(logoBranca),
+      loadImageAsDataUrl(logoPreta),
+    ]);
+  } catch (e) {
+    console.warn("Falha ao carregar logo do PDF:", e);
+  }
+
   // ─── Helpers internos ────────────────────────────────
   const addHeader = () => {
     pdf.setFillColor(...C.primary);
