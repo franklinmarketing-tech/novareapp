@@ -213,8 +213,8 @@ const Login = () => {
       if (mode === "login") {
         await signIn(email, password);
         toast({ title: "Login realizado com sucesso!" });
-      } else {
-        const { data, error } = await supabase.auth.signUp({
+      } else if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -223,13 +223,26 @@ const Login = () => {
           },
         });
         if (error) throw error;
-        // If session exists, user is auto-logged in → redirect handled by RootRedirect
         toast({ title: "Conta criada! 🎉", description: "Vamos iniciar seu planejamento financeiro." });
-        // Auth state change will handle redirect automatically
+      } else if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        setForgotSent(true);
+        toast({
+          title: "Email enviado!",
+          description: "Verifique sua caixa de entrada para redefinir a senha.",
+        });
       }
     } catch (error: any) {
       toast({
-        title: mode === "login" ? "Erro ao fazer login" : "Erro ao criar conta",
+        title:
+          mode === "login"
+            ? "Erro ao fazer login"
+            : mode === "signup"
+            ? "Erro ao criar conta"
+            : "Erro ao enviar email",
         description:
           error.message === "Invalid login credentials"
             ? "Email ou senha incorretos."
