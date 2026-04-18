@@ -229,6 +229,7 @@ const AdminReport = () => {
         completedActions,
         totalActions,
         planPct,
+        snapshots,
       });
       toast({ title: "PDF gerado com sucesso!" });
     } catch (err) {
