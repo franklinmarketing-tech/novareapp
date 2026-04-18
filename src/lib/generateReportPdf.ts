@@ -208,11 +208,18 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   pdf.circle(20, PAGE_H - 60, 80, "F");
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
-  pdf.setTextColor(...C.white);
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(9);
-  // letter-spacing manual
-  pdf.text("M É T O D O   N O V A R E", MARGIN, 50);
+  // Logo grande no topo da capa
+  if (logoWhite) {
+    const ratio = logoWhite.w / logoWhite.h;
+    const h = 14;
+    const w = h * ratio;
+    try { pdf.addImage(logoWhite.dataUrl, "PNG", MARGIN, 28, w, h); } catch {}
+  } else {
+    pdf.setTextColor(...C.white);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+    pdf.text("M É T O D O   N O V A R E", MARGIN, 50);
+  }
 
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(34);
