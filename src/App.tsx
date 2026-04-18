@@ -55,6 +55,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/ferramentas/calculadora-de-investimentos" element={<YieldGuide />} />
 
             {/* Admin routes */}
