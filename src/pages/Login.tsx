@@ -213,19 +213,21 @@ const Login = () => {
         await signIn(email, password);
         toast({ title: "Login realizado com sucesso!" });
       } else if (mode === "signup") {
+        const productionUrl = "https://novareapp.com.br";
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: { full_name: fullName },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: productionUrl,
           },
         });
         if (error) throw error;
         toast({ title: "Conta criada! 🎉", description: "Vamos iniciar seu planejamento financeiro." });
       } else if (mode === "forgot") {
+        const productionUrl = "https://novareapp.com.br";
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: `${productionUrl}/reset-password`,
         });
         if (error) throw error;
         setForgotSent(true);
