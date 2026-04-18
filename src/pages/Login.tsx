@@ -186,8 +186,9 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [showPassword, setShowPassword] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
   const { signIn, role } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
