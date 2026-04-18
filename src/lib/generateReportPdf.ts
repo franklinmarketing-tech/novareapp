@@ -659,6 +659,199 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     y += 18;
   }
 
+  // ── 9. Evolução Patrimonial (gráfico)
+  if (data.snapshots && data.snapshots.length >= 2) {
+    newPage();
+    sectionHeader(
+      "Evolução Patrimonial",
+      `Linha temporal com ${data.snapshots.length} snapshot${data.snapshots.length !== 1 ? "s" : ""} de monitoramento`
+    );
+
+    const snaps = data.snapshots
+      .slice()
+      .sort((a, b) => new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime());
+
+    const series = snaps.map((s) => ({
+      date: new Date(s.snapshot_date),
+      ativos: s.total_assets || 0,
+      dividas: s.total_debts || 0,
+      patrimonio: (s.total_assets || 0) - (s.total_debts || 0),
+    }));
+
+    // ─── Área do gráfico
+    const chartH = 90;
+    const chartW = CONTENT_W;
+    const chartX = MARGIN;
+    const chartY = y;
+    const padL = 22;
+    const padR = 6;
+    const padT = 8;
+    const padB = 14;
+    const innerX = chartX + padL;
+    const innerY = chartY + padT;
+    const innerW = chartW - padL - padR;
+    const innerH = chartH - padT - padB;
+
+    // Fundo
+    pdf.setFillColor(...C.bgSoft);
+    pdf.roundedRect(chartX, chartY, chartW, chartH, 2, 2, "F");
+
+    // Escala Y
+    const allVals = series.flatMap((s) => [s.ativos, s.dividas, s.patrimonio]);
+    const rawMax = Math.max(...allVals, 1);
+    const rawMin = Math.min(...allVals, 0);
+    const niceMax = Math.ceil(rawMax / 1000) * 1000 || 1000;
+    const niceMin = rawMin < 0 ? Math.floor(rawMin / 1000) * 1000 : 0;
+    const range = niceMax - niceMin || 1;
+
+    const yToPx = (v: number) => innerY + innerH - ((v - niceMin) / range) * innerH;
+    const xToPx = (i: number) =>
+      series.length === 1 ? innerX + innerW / 2 : innerX + (i / (series.length - 1)) * innerW;
+
+    // Grid horizontal + labels Y
+    pdf.setDrawColor(...C.border);
+    pdf.setLineWidth(0.15);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(6.5);
+    pdf.setTextColor(...C.muted);
+    const ySteps = 4;
+    for (let i = 0; i <= ySteps; i++) {
+      const v = niceMin + (range * i) / ySteps;
+      const py = yToPx(v);
+      pdf.line(innerX, py, innerX + innerW, py);
+      const label = v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v.toFixed(0)}`;
+      pdf.text(`R$ ${label}`, innerX - 2, py + 1.5, { align: "right" });
+    }
+
+    // Linha zero (se aplicável)
+    if (niceMin < 0) {
+      pdf.setDrawColor(...C.muted);
+      pdf.setLineWidth(0.3);
+      const y0 = yToPx(0);
+      pdf.line(innerX, y0, innerX + innerW, y0);
+    }
+
+    // Datas eixo X (até 6 labels)
+    const stepX = Math.max(1, Math.ceil(series.length / 6));
+    series.forEach((s, i) => {
+      if (i % stepX !== 0 && i !== series.length - 1) return;
+      const px = xToPx(i);
+      const lbl = s.date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+      pdf.setTextColor(...C.muted);
+      pdf.setFontSize(6);
+      pdf.text(lbl, px, chartY + chartH - 4, { align: "center" });
+    });
+
+    // Função para desenhar série como linha
+    const drawSeries = (
+      vals: number[],
+      color: [number, number, number],
+      filled = false
+    ) => {
+      // Área (opcional)
+      if (filled) {
+        pdf.setFillColor(...color);
+        pdf.setGState(pdf.GState({ opacity: 0.12 }));
+        const baseY = yToPx(Math.max(niceMin, 0));
+        // Polígono
+        const pts: Array<[number, number]> = vals.map((v, i) => [xToPx(i), yToPx(v)]);
+        // Desenha como série de triângulos via path simulado (linhas)
+        for (let i = 0; i < pts.length - 1; i++) {
+          pdf.triangle(
+            pts[i][0], pts[i][1],
+            pts[i + 1][0], pts[i + 1][1],
+            pts[i + 1][0], baseY,
+            "F"
+          );
+          pdf.triangle(
+            pts[i][0], pts[i][1],
+            pts[i + 1][0], baseY,
+            pts[i][0], baseY,
+            "F"
+          );
+        }
+        pdf.setGState(pdf.GState({ opacity: 1 }));
+      }
+      // Linha
+      pdf.setDrawColor(...color);
+      pdf.setLineWidth(0.6);
+      for (let i = 0; i < vals.length - 1; i++) {
+        pdf.line(xToPx(i), yToPx(vals[i]), xToPx(i + 1), yToPx(vals[i + 1]));
+      }
+      // Pontos
+      pdf.setFillColor(...color);
+      vals.forEach((v, i) => {
+        pdf.circle(xToPx(i), yToPx(v), 0.9, "F");
+      });
+    };
+
+    drawSeries(series.map((s) => s.ativos), [37, 99, 235], false);
+    drawSeries(series.map((s) => s.dividas), C.danger, false);
+    drawSeries(series.map((s) => s.patrimonio), C.success, true);
+
+    y = chartY + chartH + 4;
+
+    // Legenda
+    const legend: Array<{ label: string; color: [number, number, number] }> = [
+      { label: "Patrimônio Líquido", color: C.success },
+      { label: "Ativos", color: [37, 99, 235] },
+      { label: "Dívidas", color: C.danger },
+    ];
+    let lx = MARGIN;
+    legend.forEach((lg) => {
+      pdf.setFillColor(...lg.color);
+      pdf.circle(lx + 1.5, y + 1.5, 1.2, "F");
+      pdf.setTextColor(...C.text);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8);
+      pdf.text(lg.label, lx + 4, y + 2.2);
+      lx += pdf.getTextWidth(lg.label) + 12;
+    });
+    y += 8;
+
+    // Tabela resumo
+    const first = series[0];
+    const last = series[series.length - 1];
+    const deltaPat = last.patrimonio - first.patrimonio;
+    const deltaPct = first.patrimonio !== 0 ? (deltaPat / Math.abs(first.patrimonio)) * 100 : 0;
+
+    autoTable(pdf, {
+      startY: y,
+      head: [["Período", "Ativos", "Dívidas", "Patrimônio Líquido"]],
+      body: [
+        [
+          first.date.toLocaleDateString("pt-BR"),
+          fmt(first.ativos),
+          fmt(first.dividas),
+          fmt(first.patrimonio),
+        ],
+        [
+          last.date.toLocaleDateString("pt-BR"),
+          fmt(last.ativos),
+          fmt(last.dividas),
+          fmt(last.patrimonio),
+        ],
+        [
+          { content: "Variação", styles: { fontStyle: "bold" } },
+          { content: fmt(last.ativos - first.ativos), styles: { fontStyle: "bold" } },
+          { content: fmt(last.dividas - first.dividas), styles: { fontStyle: "bold" } },
+          {
+            content: `${deltaPat >= 0 ? "+" : ""}${fmt(deltaPat)}  (${deltaPct >= 0 ? "+" : ""}${deltaPct.toFixed(1)}%)`,
+            styles: { fontStyle: "bold", textColor: deltaPat >= 0 ? C.success : C.danger },
+          },
+        ],
+      ],
+      theme: "striped",
+      styles: { fontSize: 8.5, cellPadding: 2.5 },
+      headStyles: { fillColor: C.primary, textColor: C.white, fontSize: 8 },
+      alternateRowStyles: { fillColor: C.bgSoft },
+      columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" } },
+      margin: { left: MARGIN, right: MARGIN },
+      didDrawPage: () => { addHeader(); },
+    });
+    y = (pdf as any).lastAutoTable.finalY + 6;
+  }
+
   // ── Fechamento
   ensureSpace(30);
   y += 4;
