@@ -117,10 +117,17 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   const addHeader = () => {
     pdf.setFillColor(...C.primary);
     pdf.rect(0, 0, PAGE_W, 10, "F");
+    // Logo branca pequena no header
+    if (logoWhite) {
+      const ratio = logoWhite.w / logoWhite.h;
+      const h = 5;
+      const w = h * ratio;
+      try { pdf.addImage(logoWhite.dataUrl, "PNG", MARGIN, 2.5, w, h); } catch {}
+    }
     pdf.setTextColor(...C.white);
     pdf.setFontSize(8);
     pdf.setFont("helvetica", "normal");
-    pdf.text("MÉTODO NOVARE  •  Relatório de Consultoria", MARGIN, 6.5);
+    pdf.text("Relatório de Consultoria", PAGE_W / 2, 6.5, { align: "center" });
     pdf.text(data.clientName, PAGE_W - MARGIN, 6.5, { align: "right" });
   };
 
