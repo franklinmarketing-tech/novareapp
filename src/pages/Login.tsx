@@ -619,33 +619,16 @@ const Login = () => {
                 +{novareVal.toFixed(1)}%
               </text>
 
-              <circle cx={36} cy={86} r={3} fill="hsl(220 30% 60%)" opacity={0.7} />
-              <text x={48} y={90} fill="white" fillOpacity={0.55} fontSize={10} fontWeight={500} fontFamily="system-ui">CDI</text>
-              <text x={210} y={90} textAnchor="end" fill="white" fillOpacity={0.55} fontSize={11} fontWeight={600} fontFamily="system-ui">
+              <circle cx={36} cy={86} r={3.5} fill="hsl(220 80% 65%)" />
+              <text x={48} y={90} fill="white" fillOpacity={0.7} fontSize={10} fontWeight={500} fontFamily="system-ui">CDI</text>
+              <text x={210} y={90} textAnchor="end" fill="hsl(220 80% 75%)" fontSize={11} fontWeight={600} fontFamily="system-ui">
                 +{cdiVal.toFixed(1)}%
               </text>
 
-              <circle cx={36} cy={108} r={3} fill="hsl(220 15% 65%)" opacity={0.6} />
-              <text x={48} y={112} fill="white" fillOpacity={0.45} fontSize={10} fontWeight={500} fontFamily="system-ui">Poupança</text>
-              <text x={210} y={112} textAnchor="end" fill="white" fillOpacity={0.45} fontSize={11} fontWeight={600} fontFamily="system-ui">
+              <circle cx={36} cy={108} r={3.5} fill="hsl(35 85% 60%)" />
+              <text x={48} y={112} fill="white" fillOpacity={0.7} fontSize={10} fontWeight={500} fontFamily="system-ui">Poupança</text>
+              <text x={210} y={112} textAnchor="end" fill="hsl(35 85% 70%)" fontSize={11} fontWeight={600} fontFamily="system-ui">
                 +{poupVal.toFixed(1)}%
-              </text>
-            </motion.g>
-
-            {/* Acumulado KPI — bottom right */}
-            <motion.g
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.4, duration: 0.7, ease: PREMIUM_EASE }}
-            >
-              <rect x={475} y={335} width={210} height={56} rx={12}
-                fill="hsl(220 40% 11%)" fillOpacity={0.85}
-                stroke="white" strokeOpacity={0.06} strokeWidth={0.5} />
-              <text x={490} y={355} fill="white" fillOpacity={0.4} fontSize={8} fontWeight={600} fontFamily="system-ui" letterSpacing={1}>
-                ACUMULADO COM NOVARE
-              </text>
-              <text x={490} y={378} fill="hsl(160 70% 60%)" fontSize={20} fontWeight={800} fontFamily="system-ui">
-                +R$ {acumuladoVal.toLocaleString("pt-BR")}
               </text>
             </motion.g>
           </svg>
