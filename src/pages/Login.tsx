@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -9,26 +9,52 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import logoPreta from "@/assets/logo-preta.png";
 
-/* ── Smooth animated chart line ─────────────── */
-const AnimatedLine = ({ 
-  d, color, delay = 0, thickness = 2, glow = false
-}: { 
-  d: string; color: string; delay?: number; thickness?: number; glow?: boolean;
+/* ── Premium easing for smooth growth feel ─── */
+const PREMIUM_EASE = [0.22, 1, 0.36, 1] as const;
+
+/* ── Count-up hook (rAF based) ──────────────── */
+const useCountUp = (target: number, duration = 2200, delay = 0, decimals = 1) => {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    let startTs = 0;
+    const start = performance.now() + delay;
+    const tick = (ts: number) => {
+      if (ts < start) { raf = requestAnimationFrame(tick); return; }
+      if (!startTs) startTs = ts;
+      const t = Math.min(1, (ts - startTs) / duration);
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(parseFloat((target * eased).toFixed(decimals)));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, delay, decimals]);
+  return value;
+};
+
+/* ── Premium animated line (with optional shimmer loop) ── */
+const AnimatedLine = ({
+  d, color, delay = 0, thickness = 2, glow = false, shimmer = false, dimmed = false,
+}: {
+  d: string; color: string; delay?: number; thickness?: number;
+  glow?: boolean; shimmer?: boolean; dimmed?: boolean;
 }) => (
-  <g>
+  <g opacity={dimmed ? 0.55 : 1}>
     {glow && (
       <motion.path
         d={d}
         fill="none"
         stroke={color}
-        strokeWidth={thickness + 6}
+        strokeWidth={thickness + 8}
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity={0.15}
+        opacity={0.22}
         filter="url(#softGlow)"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
-        transition={{ duration: 3, delay, ease: "easeOut" }}
+        transition={{ duration: 2.6, delay, ease: PREMIUM_EASE }}
       />
     )}
     <motion.path
@@ -40,8 +66,35 @@ const AnimatedLine = ({
       strokeLinejoin="round"
       initial={{ pathLength: 0 }}
       animate={{ pathLength: 1 }}
-      transition={{ duration: 3, delay, ease: "easeOut" }}
+      transition={{ duration: 2.6, delay, ease: PREMIUM_EASE }}
     />
+    {shimmer && (
+      <motion.path
+        d={d}
+        fill="none"
+        stroke="white"
+        strokeWidth={thickness}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray="40 360"
+        initial={{ strokeDashoffset: 400, opacity: 0 }}
+        animate={{ strokeDashoffset: -400, opacity: [0, 0.7, 0] }}
+        transition={{
+          duration: 3.2, repeat: Infinity, repeatDelay: 1.4,
+          delay: delay + 2.8, ease: "easeInOut",
+        }}
+      />
+    )}
+    {dimmed && (
+      <motion.path
+        d={d}
+        fill="none"
+        stroke={color}
+        strokeWidth={thickness}
+        animate={{ opacity: [0.45, 0.65, 0.45] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+    )}
   </g>
 );
 
