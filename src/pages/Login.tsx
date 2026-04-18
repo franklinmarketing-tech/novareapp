@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -9,26 +9,52 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import logoPreta from "@/assets/logo-preta.png";
 
-/* ── Smooth animated chart line ─────────────── */
-const AnimatedLine = ({ 
-  d, color, delay = 0, thickness = 2, glow = false
-}: { 
-  d: string; color: string; delay?: number; thickness?: number; glow?: boolean;
+/* ── Premium easing for smooth growth feel ─── */
+const PREMIUM_EASE = [0.22, 1, 0.36, 1] as const;
+
+/* ── Count-up hook (rAF based) ──────────────── */
+const useCountUp = (target: number, duration = 2200, delay = 0, decimals = 1) => {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    let startTs = 0;
+    const start = performance.now() + delay;
+    const tick = (ts: number) => {
+      if (ts < start) { raf = requestAnimationFrame(tick); return; }
+      if (!startTs) startTs = ts;
+      const t = Math.min(1, (ts - startTs) / duration);
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(parseFloat((target * eased).toFixed(decimals)));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, delay, decimals]);
+  return value;
+};
+
+/* ── Premium animated line (with optional shimmer loop) ── */
+const AnimatedLine = ({
+  d, color, delay = 0, thickness = 2, glow = false, shimmer = false, dimmed = false,
+}: {
+  d: string; color: string; delay?: number; thickness?: number;
+  glow?: boolean; shimmer?: boolean; dimmed?: boolean;
 }) => (
-  <g>
+  <g opacity={dimmed ? 0.55 : 1}>
     {glow && (
       <motion.path
         d={d}
         fill="none"
         stroke={color}
-        strokeWidth={thickness + 6}
+        strokeWidth={thickness + 8}
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity={0.15}
+        opacity={0.22}
         filter="url(#softGlow)"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
-        transition={{ duration: 3, delay, ease: "easeOut" }}
+        transition={{ duration: 2.6, delay, ease: PREMIUM_EASE }}
       />
     )}
     <motion.path
@@ -40,8 +66,35 @@ const AnimatedLine = ({
       strokeLinejoin="round"
       initial={{ pathLength: 0 }}
       animate={{ pathLength: 1 }}
-      transition={{ duration: 3, delay, ease: "easeOut" }}
+      transition={{ duration: 2.6, delay, ease: PREMIUM_EASE }}
     />
+    {shimmer && (
+      <motion.path
+        d={d}
+        fill="none"
+        stroke="white"
+        strokeWidth={thickness}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray="40 360"
+        initial={{ strokeDashoffset: 400, opacity: 0 }}
+        animate={{ strokeDashoffset: -400, opacity: [0, 0.7, 0] }}
+        transition={{
+          duration: 3.2, repeat: Infinity, repeatDelay: 1.4,
+          delay: delay + 2.8, ease: "easeInOut",
+        }}
+      />
+    )}
+    {dimmed && (
+      <motion.path
+        d={d}
+        fill="none"
+        stroke={color}
+        strokeWidth={thickness}
+        animate={{ opacity: [0.45, 0.65, 0.45] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+    )}
   </g>
 );
 
@@ -88,65 +141,42 @@ const DataPoint = ({ cx, cy, delay, color }: { cx: number; cy: number; delay: nu
   </g>
 );
 
-/* ── Mini stat badge ───────────────────────── */
-const StatBadge = ({
-  x, y, value, label, color, delay
-}: {
-  x: number; y: number; value: string; label: string; color: string; delay: number;
-}) => (
-  <motion.g
-    initial={{ opacity: 0, y: 12 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay, duration: 0.8, ease: "easeOut" }}
-  >
-    <rect x={x} y={y} width={120} height={48} rx={10}
-      fill="hsl(220 40% 13%)" fillOpacity={0.85}
-      stroke="white" strokeOpacity={0.08} strokeWidth={0.5} />
-    <text x={x + 14} y={y + 20} fill={color} fontSize={16} fontWeight={700} fontFamily="system-ui">{value}</text>
-    <text x={x + 14} y={y + 36} fill="white" fillOpacity={0.35} fontSize={9} fontWeight={500} fontFamily="system-ui">{label}</text>
-  </motion.g>
-);
+/* ── Traveling pulse along the Novare path ── */
+const TravelingPulse = ({ pathRef, color }: { pathRef: React.RefObject<SVGPathElement>; color: string }) => {
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const [visible, setVisible] = useState(false);
 
-/* ── Donut / ring chart ────────────────────── */
-const RingChart = ({ cx, cy, r, delay = 1.5 }: { cx: number; cy: number; r: number; delay?: number }) => {
-  const segments = [
-    { pct: 0.35, color: "hsl(var(--accent))" },
-    { pct: 0.25, color: "hsl(220 60% 55%)" },
-    { pct: 0.22, color: "hsl(160 50% 50%)" },
-    { pct: 0.18, color: "hsl(280 45% 55%)" },
-  ];
-  const circ = 2 * Math.PI * r;
-  let offset = 0;
+  useEffect(() => {
+    let raf = 0;
+    let startTs = 0;
+    const LOOP = 5500; // ms per pass
+    const PAUSE = 1200;
+
+    const tick = (ts: number) => {
+      if (!pathRef.current) { raf = requestAnimationFrame(tick); return; }
+      if (!startTs) startTs = ts;
+      const elapsed = (ts - startTs) % (LOOP + PAUSE);
+      if (elapsed > LOOP) {
+        setVisible(false);
+      } else {
+        const t = elapsed / LOOP;
+        const length = pathRef.current.getTotalLength();
+        const pt = pathRef.current.getPointAtLength(t * length);
+        setPos({ x: pt.x, y: pt.y });
+        setVisible(true);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [pathRef]);
+
+  if (!pos || !visible) return null;
   return (
-    <g>
-      {/* Track */}
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="white" strokeWidth={4} opacity={0.04} />
-      {segments.map((seg, i) => {
-        const len = seg.pct * circ;
-        const cur = offset;
-        offset += len;
-        return (
-          <motion.circle
-            key={i} cx={cx} cy={cy} r={r} fill="none"
-            stroke={seg.color} strokeWidth={4}
-            strokeDasharray={`${len} ${circ - len}`}
-            strokeDashoffset={-cur}
-            strokeLinecap="round"
-            initial={{ opacity: 0, pathLength: 0 }}
-            animate={{ opacity: 0.85, pathLength: 1 }}
-            transition={{ delay: delay + i * 0.15, duration: 0.8, ease: "easeOut" }}
-            style={{ transform: "rotate(-90deg)", transformOrigin: `${cx}px ${cy}px` }}
-          />
-        );
-      })}
-      <motion.text
-        x={cx} y={cy + 4} textAnchor="middle"
-        fill="white" fontSize={10} fontWeight={700} fontFamily="system-ui"
-        initial={{ opacity: 0 }} animate={{ opacity: 0.8 }}
-        transition={{ delay: delay + 0.8 }}
-      >
-        35%
-      </motion.text>
+    <g style={{ pointerEvents: "none" }}>
+      <circle cx={pos.x} cy={pos.y} r={10} fill={color} opacity={0.18} />
+      <circle cx={pos.x} cy={pos.y} r={5} fill={color} opacity={0.55} />
+      <circle cx={pos.x} cy={pos.y} r={2.2} fill="white" />
     </g>
   );
 };
@@ -161,6 +191,13 @@ const Login = () => {
   const { signIn, role } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Refs / values for chart animations
+  const novarePathRef = useRef<SVGPathElement>(null);
+  const novareVal = useCountUp(24.8, 2400, 600, 1);
+  const cdiVal = useCountUp(11.2, 2400, 900, 1);
+  const poupVal = useCountUp(6.4, 2400, 1200, 1);
+  const acumuladoVal = useCountUp(8420, 2600, 1500, 0);
 
   if (role === "admin") {
     navigate("/admin", { replace: true });
@@ -301,9 +338,30 @@ const Login = () => {
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 4 }}
         />
 
+        {/* Narrative header */}
+        <motion.div
+          className="relative z-10 px-10 pt-10"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: PREMIUM_EASE }}
+        >
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/40 font-medium">
+            <motion.span
+              className="inline-block w-1.5 h-1.5 rounded-full bg-[hsl(160_60%_50%)]"
+              animate={{ opacity: [1, 0.3, 1], scale: [1, 1.3, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            Performance comparada · últimos 12 meses
+          </div>
+          <h2 className="mt-2 text-white/90 font-display text-[1.75rem] leading-tight font-medium">
+            Sua jornada com a{" "}
+            <span className="text-[hsl(160_55%_55%)] font-semibold">Novare</span>
+          </h2>
+        </motion.div>
+
         {/* Animated charts SVG */}
-        <div className="flex-1 flex items-center justify-center relative z-10 p-8">
-          <svg viewBox="0 0 700 500" className="w-full max-w-[620px] h-auto" fill="none">
+        <div className="flex-1 flex items-center justify-center relative z-10 px-8">
+          <svg viewBox="0 0 700 460" className="w-full max-w-[640px] h-auto" fill="none">
             <defs>
               <filter id="softGlow">
                 <feGaussianBlur stdDeviation="6" result="blur" />
@@ -312,122 +370,212 @@ const Login = () => {
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              {/* Gradient fills for area under curves */}
               <linearGradient id="gradAccent" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(160 55% 50%)" stopOpacity={0.2} />
+                <stop offset="0%" stopColor="hsl(160 55% 50%)" stopOpacity={0.32} />
                 <stop offset="100%" stopColor="hsl(160 55% 50%)" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gradBlue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(220 70% 60%)" stopOpacity={0.12} />
+                <stop offset="0%" stopColor="hsl(220 70% 60%)" stopOpacity={0.05} />
                 <stop offset="100%" stopColor="hsl(220 70% 60%)" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="gradGreen" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.08} />
-                <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+              <linearGradient id="novareStroke" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="hsl(160 60% 45%)" />
+                <stop offset="100%" stopColor="hsl(160 70% 60%)" />
               </linearGradient>
             </defs>
 
-            {/* Subtle grid — dots style */}
+            {/* Subtle grid — dots */}
             <g opacity={0.04}>
               {[...Array(12)].map((_, i) => (
-                [...Array(10)].map((_, j) => (
-                  <circle key={`${i}-${j}`} cx={i * 62 + 15} cy={j * 52 + 15} r={0.8} fill="white" />
+                [...Array(8)].map((_, j) => (
+                  <circle key={`${i}-${j}`} cx={i * 62 + 15} cy={j * 48 + 60} r={0.8} fill="white" />
                 ))
               ))}
             </g>
 
-            {/* Area fills — smooth gradients */}
+            {/* X-axis month labels */}
+            <g opacity={0.3} fontFamily="system-ui" fontSize={8} fill="white">
+              {["Jan", "Abr", "Jul", "Out", "Hoje"].map((m, i) => (
+                <text key={m} x={20 + i * 165} y={420} textAnchor="middle" fontWeight={500}>{m}</text>
+              ))}
+            </g>
+
+            {/* Area fill — NOVARE only (heavy) */}
             <AnimatedAreaFill
-              d="M 0 420 C 70 410, 120 390, 180 360 C 240 330, 280 300, 340 260 C 400 220, 450 190, 520 150 C 570 125, 630 90, 700 55 L 700 500 L 0 500 Z"
+              d="M 0 380 C 70 370, 120 350, 180 320 C 240 290, 280 260, 340 220 C 400 180, 450 150, 520 110 C 570 85, 630 50, 700 25 L 700 400 L 0 400 Z"
               gradientId="gradAccent"
               delay={0.3}
             />
             <AnimatedAreaFill
-              d="M 0 430 C 80 420, 140 400, 210 380 C 280 360, 340 330, 400 305 C 460 280, 520 250, 580 220 C 620 200, 660 180, 700 155 L 700 500 L 0 500 Z"
+              d="M 0 390 C 80 380, 140 360, 210 340 C 280 320, 340 290, 400 265 C 460 240, 520 215, 580 195 C 620 180, 660 165, 700 145 L 700 400 L 0 400 Z"
               gradientId="gradBlue"
               delay={0.6}
             />
 
-            {/* Main line — NOVARE (green, strongest growth) */}
+            {/* Poupança — desaturated, thin, dimmed */}
             <AnimatedLine
-              d="M 0 420 C 70 410, 120 390, 180 360 C 240 330, 280 300, 340 260 C 400 220, 450 190, 520 150 C 570 125, 630 90, 700 55"
-              color="hsl(160 55% 50%)"
-              delay={0.3}
-              thickness={2.5}
-              glow
-            />
-
-            {/* Secondary line — BANCO A (blue) */}
-            <AnimatedLine
-              d="M 0 430 C 80 420, 140 400, 210 380 C 280 360, 340 330, 400 305 C 460 280, 520 250, 580 220 C 620 200, 660 180, 700 155"
-              color="hsl(220 70% 60%)"
-              delay={0.6}
-              thickness={1.8}
-              glow
-            />
-
-            {/* Third line — BANCO B (accent/orange, conservative) */}
-            <AnimatedLine
-              d="M 0 435 C 100 430, 180 420, 260 405 C 340 390, 420 370, 500 348 C 560 332, 630 315, 700 295"
-              color="hsl(var(--accent))"
+              d="M 0 395 C 100 392, 180 385, 260 375 C 340 365, 420 352, 500 340 C 560 330, 630 318, 700 305"
+              color="hsl(220 15% 65%)"
               delay={0.9}
-              thickness={1.5}
+              thickness={1}
+              dimmed
             />
 
-            {/* Data points with pulse effect — NOVARE line */}
-            <DataPoint cx={180} cy={360} delay={1.2} color="hsl(160 55% 50%)" />
-            <DataPoint cx={340} cy={260} delay={1.5} color="hsl(160 55% 50%)" />
-            <DataPoint cx={520} cy={150} delay={1.8} color="hsl(160 55% 50%)" />
-            <DataPoint cx={690} cy={58} delay={2.1} color="hsl(160 55% 50%)" />
-
-            {/* Ring chart */}
-            <RingChart cx={630} cy={55} r={20} delay={1.8} />
-
-            {/* Stat badges */}
-            <StatBadge x={25} y={25} value="+14,75%" label="Taxa Selic a.a." color="hsl(160 55% 55%)" delay={2} />
-            <StatBadge x={165} y={42} value="~1%" label="Rendimento/mês" color="hsl(160 55% 55%)" delay={2.2} />
-
-            {/* Live indicator */}
-            <motion.circle
-              cx={140} cy={32} r={3.5}
-              fill="hsl(160 60% 50%)"
-              animate={{ opacity: [1, 0.3, 1], scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <motion.circle
-              cx={140} cy={32} r={7}
-              fill="none" stroke="hsl(160 60% 50%)" strokeWidth={0.8}
-              animate={{ opacity: [0.4, 0, 0.4], scale: [1, 2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
+            {/* CDI / Banco A — desaturated mid */}
+            <AnimatedLine
+              d="M 0 390 C 80 380, 140 360, 210 340 C 280 320, 340 290, 400 265 C 460 240, 520 215, 580 195 C 620 180, 660 165, 700 145"
+              color="hsl(220 30% 60%)"
+              delay={0.6}
+              thickness={1.2}
+              dimmed
             />
 
-            {/* Animated value label at end of main line */}
+            {/* MAIN — NOVARE */}
+            <g>
+              <motion.path
+                d="M 0 380 C 70 370, 120 350, 180 320 C 240 290, 280 260, 340 220 C 400 180, 450 150, 520 110 C 570 85, 630 50, 700 25"
+                fill="none"
+                stroke="hsl(160 60% 50%)"
+                strokeWidth={11}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={0.18}
+                filter="url(#softGlow)"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 2.6, delay: 0.3, ease: PREMIUM_EASE }}
+              />
+              <motion.path
+                ref={novarePathRef}
+                d="M 0 380 C 70 370, 120 350, 180 320 C 240 290, 280 260, 340 220 C 400 180, 450 150, 520 110 C 570 85, 630 50, 700 25"
+                fill="none"
+                stroke="url(#novareStroke)"
+                strokeWidth={3.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 2.6, delay: 0.3, ease: PREMIUM_EASE }}
+              />
+              <motion.path
+                d="M 0 380 C 70 370, 120 350, 180 320 C 240 290, 280 260, 340 220 C 400 180, 450 150, 520 110 C 570 85, 630 50, 700 25"
+                fill="none"
+                stroke="white"
+                strokeWidth={3.5}
+                strokeLinecap="round"
+                strokeDasharray="60 700"
+                initial={{ strokeDashoffset: 760, opacity: 0 }}
+                animate={{ strokeDashoffset: -100, opacity: [0, 0.65, 0] }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 1.6, delay: 3, ease: "easeInOut" }}
+              />
+              <TravelingPulse pathRef={novarePathRef} color="hsl(160 70% 60%)" />
+            </g>
+
+            {/* Sparse data points on NOVARE */}
+            <DataPoint cx={340} cy={220} delay={1.5} color="hsl(160 60% 55%)" />
+            <DataPoint cx={520} cy={110} delay={1.8} color="hsl(160 60% 55%)" />
+
+            {/* Pulsing endpoint */}
+            <g>
+              <motion.circle
+                cx={697} cy={25} r={14}
+                fill="hsl(160 60% 50%)" opacity={0.25}
+                animate={{ scale: [1, 1.8, 1], opacity: [0.25, 0, 0.25] }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
+                style={{ transformOrigin: "697px 25px" }}
+              />
+              <motion.circle
+                cx={697} cy={25} r={5.5}
+                fill="hsl(160 70% 55%)"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 2.8, duration: 0.6, ease: PREMIUM_EASE }}
+              />
+              <motion.circle
+                cx={697} cy={25} r={2.2}
+                fill="white"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 3, duration: 0.4 }}
+              />
+            </g>
+
+            {/* End tooltip — "+24,8% Hoje" */}
+            <motion.g
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 3.1, duration: 0.7, ease: PREMIUM_EASE }}
+            >
+              <rect x={595} y={42} width={92} height={28} rx={8}
+                fill="hsl(160 55% 18%)" fillOpacity={0.95}
+                stroke="hsl(160 55% 50%)" strokeOpacity={0.5} strokeWidth={0.8} />
+              <text x={641} y={56} textAnchor="middle" fill="hsl(160 70% 65%)" fontSize={11} fontWeight={700} fontFamily="system-ui">
+                +{novareVal.toFixed(1)}%
+              </text>
+              <text x={641} y={66} textAnchor="middle" fill="white" fillOpacity={0.5} fontSize={7} fontWeight={500} fontFamily="system-ui" letterSpacing={0.4}>
+                HOJE
+              </text>
+              <path d="M 687 56 L 695 30 L 685 50 Z" fill="hsl(160 55% 18%)" fillOpacity={0.95} />
+            </motion.g>
+
+            {/* Novare "N" signature near endpoint */}
+            <motion.g
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 3.3, duration: 0.5, ease: PREMIUM_EASE }}
+              style={{ transformOrigin: "670px 12px" }}
+            >
+              <circle cx={670} cy={12} r={9} fill="hsl(160 55% 50%)" fillOpacity={0.18} stroke="hsl(160 55% 55%)" strokeOpacity={0.4} strokeWidth={0.6} />
+              <text x={670} y={15} textAnchor="middle" fill="hsl(160 70% 65%)" fontSize={9} fontWeight={800} fontFamily="system-ui">N</text>
+            </motion.g>
+
+            {/* Comparison panel — anchored top-left */}
             <motion.g
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 2.5, duration: 0.6 }}
+              transition={{ delay: 0.6, duration: 0.8, ease: PREMIUM_EASE }}
             >
-              <rect x={655} y={62} width={42} height={20} rx={6}
-                fill="hsl(160 55% 50%)" fillOpacity={0.15}
-                stroke="hsl(160 55% 50%)" strokeOpacity={0.3} strokeWidth={0.5} />
-              <text x={676} y={76} textAnchor="middle" fill="hsl(160 55% 50%)" fontSize={9} fontWeight={700} fontFamily="system-ui">+42%</text>
+              <rect x={20} y={20} width={205} height={108} rx={14}
+                fill="hsl(220 40% 11%)" fillOpacity={0.92}
+                stroke="white" strokeOpacity={0.07} strokeWidth={0.6} />
+              <text x={36} y={40} fill="white" fillOpacity={0.45} fontSize={8} fontWeight={600} fontFamily="system-ui" letterSpacing={1.2}>
+                12 MESES · COMPARATIVO
+              </text>
+
+              <circle cx={36} cy={62} r={4} fill="hsl(160 60% 55%)" />
+              <text x={48} y={66} fill="white" fontSize={11} fontWeight={700} fontFamily="system-ui" letterSpacing={0.5}>NOVARE</text>
+              <text x={210} y={66} textAnchor="end" fill="hsl(160 70% 60%)" fontSize={13} fontWeight={800} fontFamily="system-ui">
+                +{novareVal.toFixed(1)}%
+              </text>
+
+              <circle cx={36} cy={86} r={3} fill="hsl(220 30% 60%)" opacity={0.7} />
+              <text x={48} y={90} fill="white" fillOpacity={0.55} fontSize={10} fontWeight={500} fontFamily="system-ui">CDI</text>
+              <text x={210} y={90} textAnchor="end" fill="white" fillOpacity={0.55} fontSize={11} fontWeight={600} fontFamily="system-ui">
+                +{cdiVal.toFixed(1)}%
+              </text>
+
+              <circle cx={36} cy={108} r={3} fill="hsl(220 15% 65%)" opacity={0.6} />
+              <text x={48} y={112} fill="white" fillOpacity={0.45} fontSize={10} fontWeight={500} fontFamily="system-ui">Poupança</text>
+              <text x={210} y={112} textAnchor="end" fill="white" fillOpacity={0.45} fontSize={11} fontWeight={600} fontFamily="system-ui">
+                +{poupVal.toFixed(1)}%
+              </text>
             </motion.g>
 
-            {/* Legend labels */}
+            {/* Acumulado KPI — bottom right */}
             <motion.g
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 2.8, duration: 0.6 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.4, duration: 0.7, ease: PREMIUM_EASE }}
             >
-              {/* NOVARE */}
-              <rect x={25} y={460} width={8} height={3} rx={1.5} fill="hsl(160 55% 50%)" />
-              <text x={38} y={464} fill="white" fontSize={9} fontWeight={700} fontFamily="system-ui" opacity={0.8}>NOVARE</text>
-              {/* BANCO A */}
-              <rect x={110} y={460} width={8} height={3} rx={1.5} fill="hsl(220 70% 60%)" />
-              <text x={123} y={464} fill="white" fontSize={9} fontWeight={600} fontFamily="system-ui" opacity={0.5}>BANCO A</text>
-              {/* BANCO B */}
-              <rect x={195} y={460} width={8} height={3} rx={1.5} fill="hsl(var(--accent))" />
-              <text x={208} y={464} fill="white" fontSize={9} fontWeight={600} fontFamily="system-ui" opacity={0.5}>BANCO B</text>
+              <rect x={475} y={335} width={210} height={56} rx={12}
+                fill="hsl(220 40% 11%)" fillOpacity={0.85}
+                stroke="white" strokeOpacity={0.06} strokeWidth={0.5} />
+              <text x={490} y={355} fill="white" fillOpacity={0.4} fontSize={8} fontWeight={600} fontFamily="system-ui" letterSpacing={1}>
+                ACUMULADO COM NOVARE
+              </text>
+              <text x={490} y={378} fill="hsl(160 70% 60%)" fontSize={20} fontWeight={800} fontFamily="system-ui">
+                +R$ {acumuladoVal.toLocaleString("pt-BR")}
+              </text>
             </motion.g>
           </svg>
         </div>
