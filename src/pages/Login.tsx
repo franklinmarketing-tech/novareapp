@@ -141,65 +141,42 @@ const DataPoint = ({ cx, cy, delay, color }: { cx: number; cy: number; delay: nu
   </g>
 );
 
-/* ── Mini stat badge ───────────────────────── */
-const StatBadge = ({
-  x, y, value, label, color, delay
-}: {
-  x: number; y: number; value: string; label: string; color: string; delay: number;
-}) => (
-  <motion.g
-    initial={{ opacity: 0, y: 12 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay, duration: 0.8, ease: "easeOut" }}
-  >
-    <rect x={x} y={y} width={120} height={48} rx={10}
-      fill="hsl(220 40% 13%)" fillOpacity={0.85}
-      stroke="white" strokeOpacity={0.08} strokeWidth={0.5} />
-    <text x={x + 14} y={y + 20} fill={color} fontSize={16} fontWeight={700} fontFamily="system-ui">{value}</text>
-    <text x={x + 14} y={y + 36} fill="white" fillOpacity={0.35} fontSize={9} fontWeight={500} fontFamily="system-ui">{label}</text>
-  </motion.g>
-);
+/* ── Traveling pulse along the Novare path ── */
+const TravelingPulse = ({ pathRef, color }: { pathRef: React.RefObject<SVGPathElement>; color: string }) => {
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const [visible, setVisible] = useState(false);
 
-/* ── Donut / ring chart ────────────────────── */
-const RingChart = ({ cx, cy, r, delay = 1.5 }: { cx: number; cy: number; r: number; delay?: number }) => {
-  const segments = [
-    { pct: 0.35, color: "hsl(var(--accent))" },
-    { pct: 0.25, color: "hsl(220 60% 55%)" },
-    { pct: 0.22, color: "hsl(160 50% 50%)" },
-    { pct: 0.18, color: "hsl(280 45% 55%)" },
-  ];
-  const circ = 2 * Math.PI * r;
-  let offset = 0;
+  useEffect(() => {
+    let raf = 0;
+    let startTs = 0;
+    const LOOP = 5500; // ms per pass
+    const PAUSE = 1200;
+
+    const tick = (ts: number) => {
+      if (!pathRef.current) { raf = requestAnimationFrame(tick); return; }
+      if (!startTs) startTs = ts;
+      const elapsed = (ts - startTs) % (LOOP + PAUSE);
+      if (elapsed > LOOP) {
+        setVisible(false);
+      } else {
+        const t = elapsed / LOOP;
+        const length = pathRef.current.getTotalLength();
+        const pt = pathRef.current.getPointAtLength(t * length);
+        setPos({ x: pt.x, y: pt.y });
+        setVisible(true);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [pathRef]);
+
+  if (!pos || !visible) return null;
   return (
-    <g>
-      {/* Track */}
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="white" strokeWidth={4} opacity={0.04} />
-      {segments.map((seg, i) => {
-        const len = seg.pct * circ;
-        const cur = offset;
-        offset += len;
-        return (
-          <motion.circle
-            key={i} cx={cx} cy={cy} r={r} fill="none"
-            stroke={seg.color} strokeWidth={4}
-            strokeDasharray={`${len} ${circ - len}`}
-            strokeDashoffset={-cur}
-            strokeLinecap="round"
-            initial={{ opacity: 0, pathLength: 0 }}
-            animate={{ opacity: 0.85, pathLength: 1 }}
-            transition={{ delay: delay + i * 0.15, duration: 0.8, ease: "easeOut" }}
-            style={{ transform: "rotate(-90deg)", transformOrigin: `${cx}px ${cy}px` }}
-          />
-        );
-      })}
-      <motion.text
-        x={cx} y={cy + 4} textAnchor="middle"
-        fill="white" fontSize={10} fontWeight={700} fontFamily="system-ui"
-        initial={{ opacity: 0 }} animate={{ opacity: 0.8 }}
-        transition={{ delay: delay + 0.8 }}
-      >
-        35%
-      </motion.text>
+    <g style={{ pointerEvents: "none" }}>
+      <circle cx={pos.x} cy={pos.y} r={10} fill={color} opacity={0.18} />
+      <circle cx={pos.x} cy={pos.y} r={5} fill={color} opacity={0.55} />
+      <circle cx={pos.x} cy={pos.y} r={2.2} fill="white" />
     </g>
   );
 };
@@ -214,6 +191,13 @@ const Login = () => {
   const { signIn, role } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Refs / values for chart animations
+  const novarePathRef = useRef<SVGPathElement>(null);
+  const novareVal = useCountUp(24.8, 2400, 600, 1);
+  const cdiVal = useCountUp(11.2, 2400, 900, 1);
+  const poupVal = useCountUp(6.4, 2400, 1200, 1);
+  const acumuladoVal = useCountUp(8420, 2600, 1500, 0);
 
   if (role === "admin") {
     navigate("/admin", { replace: true });
