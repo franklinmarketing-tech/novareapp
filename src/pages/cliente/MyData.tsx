@@ -510,11 +510,12 @@ const MyData = () => {
               </div>
             </div>
             <Button
-              variant="ghost"
+              variant="default"
               size="sm"
               onClick={() => { setMonthlyConfirmed(null); handleAtualizar(); }}
-              className="text-xs text-muted-foreground hover:text-foreground rounded-full"
+              className="rounded-full bg-success text-success-foreground hover:bg-success/90 shadow-sm hover:shadow-md transition-all gap-2 font-semibold"
             >
+              <RefreshCw className="h-4 w-4" />
               Atualizar dados novamente
             </Button>
           </div>
