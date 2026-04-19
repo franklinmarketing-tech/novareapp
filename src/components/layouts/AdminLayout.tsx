@@ -310,8 +310,8 @@ export const AdminLayout = ({ children }: Props) => {
       <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 min-h-screen">
         {/* Breadcrumb header */}
         <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border/60">
-          <div className="flex items-center h-11 px-4 lg:px-8">
-            <nav className="flex items-center gap-1 text-[0.8125rem]">
+          <div className="flex items-center h-11 px-4 lg:px-8 gap-4">
+            <nav className="flex items-center gap-1 text-[0.8125rem] flex-1 min-w-0">
               <NavLink
                 to="/admin"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -334,6 +334,9 @@ export const AdminLayout = ({ children }: Props) => {
                 </span>
               ))}
             </nav>
+            <div className="hidden lg:flex items-center shrink-0">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
 
