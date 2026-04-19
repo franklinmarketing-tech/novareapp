@@ -1,10 +1,6 @@
 import { motion } from "framer-motion";
 import { SECTION_NARRATIVES } from "./onboardingConfig";
 import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
-import iconIdentificacao from "@/assets/icon-identificacao.png";
-import iconFinancas from "@/assets/icon-financas.png";
-import iconPerfil from "@/assets/icon-perfil.png";
-import iconWave from "@/assets/icon-wave.png";
 
 interface WelcomeProps {
   userName?: string;
@@ -16,19 +12,15 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
 
   return (
     <div className="flex flex-col items-center justify-center text-center space-y-8 px-4">
-      {/* Animated hero icon */}
-      <motion.img
-        src={iconWave}
-        alt=""
-        width={128}
-        height={128}
-        loading="eager"
-        decoding="sync"
+      {/* Animated emoji */}
+      <motion.div
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
-        className="w-28 h-28 md:w-32 md:h-32 object-contain drop-shadow-xl"
-      />
+        className="text-7xl md:text-8xl"
+      >
+        👋
+      </motion.div>
 
       {/* Title with name */}
       <motion.div
@@ -65,18 +57,15 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
       >
         <div className="flex items-center gap-5 md:gap-7 text-[1rem] md:text-[1.0625rem] font-body font-medium text-foreground/80">
           <span className="flex items-center gap-2">
-            <img src={iconIdentificacao} alt="" width={36} height={36} loading="lazy" className="w-9 h-9 object-contain" />
-            Identificação
+            <span className="text-2xl">🧑</span> Identificação
           </span>
           <span className="text-muted-foreground/40 text-xl">→</span>
           <span className="flex items-center gap-2">
-            <img src={iconFinancas} alt="" width={36} height={36} loading="lazy" className="w-9 h-9 object-contain" />
-            Finanças
+            <span className="text-2xl">💰</span> Finanças
           </span>
           <span className="text-muted-foreground/40 text-xl">→</span>
           <span className="flex items-center gap-2">
-            <img src={iconPerfil} alt="" width={36} height={36} loading="lazy" className="w-9 h-9 object-contain" />
-            Perfil
+            <span className="text-2xl">🧠</span> Perfil
           </span>
         </div>
         <p className="font-body text-muted-foreground text-[0.9375rem] italic max-w-md">
@@ -119,33 +108,14 @@ export const StepTransition = ({ type }: TransitionProps) => {
         </motion.div>
       )}
 
-      {type === "transition_financas" ? (
-        <motion.img
-          src={iconFinancas}
-          alt="Finanças"
-          width={128}
-          height={128}
-          loading="eager"
-          decoding="sync"
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
-          className="w-28 h-28 md:w-32 md:h-32 object-contain drop-shadow-xl"
-        />
-      ) : (
-        <motion.img
-          src={iconPerfil}
-          alt="Perfil comportamental"
-          width={128}
-          height={128}
-          loading="eager"
-          decoding="sync"
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
-          className="w-28 h-28 md:w-32 md:h-32 object-contain drop-shadow-xl"
-        />
-      )}
+      <motion.div
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
+        className="text-6xl md:text-7xl"
+      >
+        {type === "transition_financas" ? "💰" : "🧠"}
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 16 }}

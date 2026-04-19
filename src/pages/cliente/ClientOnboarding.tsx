@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import logoPreta from "@/assets/logo-preta.png";
-import iconPerfil from "@/assets/icon-perfil.png";
-import iconFinancas from "@/assets/icon-financas.png";
+import iconBehavioral from "@/assets/icon-behavioral.png";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
