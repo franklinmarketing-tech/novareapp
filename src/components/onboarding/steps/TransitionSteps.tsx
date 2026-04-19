@@ -65,7 +65,7 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
           </span>
           <span className="text-muted-foreground/40">→</span>
           <span className="flex items-center gap-1.5">
-            <span className="text-lg">🧠</span> Perfil
+            <span className="text-lg">💡</span> Perfil
           </span>
         </div>
         <p className="font-body text-muted-foreground text-[0.8125rem] italic max-w-md">
@@ -114,7 +114,7 @@ export const StepTransition = ({ type }: TransitionProps) => {
         transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
         className="text-6xl md:text-7xl"
       >
-        {type === "transition_financas" ? "💰" : "🧠"}
+        {type === "transition_financas" ? "💰" : "💡"}
       </motion.div>
 
       <motion.div
