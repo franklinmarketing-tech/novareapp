@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import logoPreta from "@/assets/logo-preta.png";
-import iconBehavioral from "@/assets/icon-behavioral.png";
+import iconPerfil from "@/assets/icon-perfil.png";
+import iconFinancas from "@/assets/icon-financas.png";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,8 +43,10 @@ const ClientOnboardingPage = () => {
 
   // Preload behavioral icon so it's instant when user reaches that step
   useEffect(() => {
-    const img = new Image();
-    img.src = iconBehavioral;
+    [iconPerfil, iconFinancas].forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
   }, []);
   const navigate = useNavigate();
   const [clientId, setClientId] = useState<string | null>(null);

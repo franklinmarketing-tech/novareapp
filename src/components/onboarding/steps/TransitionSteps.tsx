@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import { SECTION_NARRATIVES } from "./onboardingConfig";
 import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
-import iconBehavioral from "@/assets/icon-behavioral.png";
 import iconIdentificacao from "@/assets/icon-identificacao.png";
 import iconFinancas from "@/assets/icon-financas.png";
 import iconPerfil from "@/assets/icon-perfil.png";
+import iconWave from "@/assets/icon-wave.png";
 
 interface WelcomeProps {
   userName?: string;
@@ -17,14 +17,18 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
   return (
     <div className="flex flex-col items-center justify-center text-center space-y-8 px-4">
       {/* Animated hero icon */}
-      <motion.div
+      <motion.img
+        src={iconWave}
+        alt=""
+        width={128}
+        height={128}
+        loading="eager"
+        decoding="sync"
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
-        className="text-7xl md:text-8xl"
-      >
-        👋
-      </motion.div>
+        className="w-28 h-28 md:w-32 md:h-32 object-contain drop-shadow-xl"
+      />
 
       {/* Title with name */}
       <motion.div
@@ -116,27 +120,30 @@ export const StepTransition = ({ type }: TransitionProps) => {
       )}
 
       {type === "transition_financas" ? (
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
-          className="text-5xl md:text-6xl"
-        >
-          💰
-        </motion.div>
-      ) : (
         <motion.img
-          src={iconBehavioral}
-          alt="Perfil comportamental"
-          width={96}
-          height={96}
-          // @ts-ignore
-          fetchpriority="high"
+          src={iconFinancas}
+          alt="Finanças"
+          width={128}
+          height={128}
+          loading="eager"
           decoding="sync"
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
-          className="w-20 h-20 md:w-24 md:h-24 object-contain"
+          className="w-28 h-28 md:w-32 md:h-32 object-contain drop-shadow-xl"
+        />
+      ) : (
+        <motion.img
+          src={iconPerfil}
+          alt="Perfil comportamental"
+          width={128}
+          height={128}
+          loading="eager"
+          decoding="sync"
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
+          className="w-28 h-28 md:w-32 md:h-32 object-contain drop-shadow-xl"
         />
       )}
 
