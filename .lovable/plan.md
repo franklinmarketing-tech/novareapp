@@ -1,79 +1,52 @@
+## Plano: Padronizar Empty States e Loaders nas telas restantes (Cliente + Admin)
 
+Continuação da padronização iniciada. Vou aplicar `EmptyState` e `LoadingState` nas telas que ainda usam loaders/vazios ad-hoc, garantindo consistência visual completa entre as áreas Admin e Cliente.
 
-## Plano: Refinamento Visual Global (Design System Polish)
+### Telas a padronizar
 
-Vou aplicar uma camada de polimento visual em todo o sistema, **sem mexer em copy, estrutura, rotas ou lógica**. O foco é elevar a percepção de qualidade através de tokens de design mais consistentes e refinamento dos componentes base.
+**Admin (4 telas)**
 
-### Estratégia
+&nbsp;
 
-A melhor forma de melhorar 100+ telas sem refatorar cada uma é atuar nos **3 pontos de alavancagem máxima**:
+1. `AdminActionPlan.tsx` — lista de ações do plano
+2. `AdminImplementation.tsx` — checklist de implementação
+3. `AdminInvestments.tsx` — carteira/recomendações
+4. `AdminParecer.tsx` — notas e recomendações
 
-1. **Tokens globais** (`src/index.css`) — afetam todo o sistema instantaneamente
-2. **Componentes base do design system** (`ui/*`) — propagam para todos os usos
-3. **Layouts compartilhados** (`AdminLayout`, `ClientLayout`, `PageBanner`) — afetam toda a navegação
+**Cliente (4 telas)**
 
-### O que será alterado
+6. `Monitoring.tsx` — acompanhamento mensal
+7. `ClientDashboard.tsx` — empty states de seções vazias (objetivos, ações)
+8. `MyData.tsx` — loader inicial dos dados
 
-**1. `src/index.css` — Tokens & tipografia global**
-- Refinar escala tipográfica (h1-h4) com tracking mais apertado e line-height mais elegante
-- Adicionar variáveis de **shadow** suaves e consistentes (`--shadow-sm`, `--shadow-card`, `--shadow-elevated`)
-- Adicionar variável de **transição** padrão (`--transition-base`)
-- Melhorar contraste de `--muted-foreground` (atualmente 46% → 42% para melhor legibilidade)
-- Refinar `--border` para um tom levemente mais suave
-- Adicionar utility `.focus-ring` padronizado
-- Manter exatamente as mesmas cores brand (terracota + azul Novare)
+### Padrão aplicado
 
-**2. `src/components/ui/button.tsx`**
-- Adicionar micro-interação consistente (shadow no hover em todas variantes)
-- Padronizar altura do `size="sm"` para alinhar com inputs sm
-- Refinar variant `outline` (border mais sutil + hover mais elegante)
+**Loading** → substituir spinners/pulses customizados por:
 
-**3. `src/components/ui/card.tsx`**
-- Sombra mais suave e moderna (camada dupla sutil)
-- Hover state mais discreto (atual está OK, só refinar)
-- Padding do `CardHeader` ligeiramente mais generoso
+- `<LoadingState variant="page" />` para carregamento inicial da tela
+- `<LoadingState variant="list" rows={N} />` para listas
+- `<LoadingState variant="cards" />` para grids de KPIs
+- `<LoadingState variant="form" />` para formulários
 
-**4. `src/components/ui/input.tsx` & `textarea.tsx`**
-- Estado de foco mais elegante (ring com a cor accent suave)
-- Estado de erro mais visível (`aria-invalid`)
-- Placeholder com peso visual menor
+**Empty** → substituir mensagens soltas / cards vazios por:
 
-**5. `src/components/ui/label.tsx`**
-- Aumentar levemente contraste (de `foreground/70` → `foreground/80`) para melhor legibilidade
+- `<EmptyState icon={LucideIcon} title="..." description="..." action={<Button/>} />`
+- Tom `accent` para CTAs principais (criar primeiro item)
+- Tom `neutral` para filtros sem resultado
+- Tom `success` quando é "tudo concluído"
 
-**6. `src/components/ui/badge.tsx` (se existir)**
-- Padronizar padding e font-weight
+### Critérios de mudança
 
-**7. `src/components/layouts/AdminLayout.tsx` & `ClientLayout.tsx`**
-- Refinar espaçamento do conteúdo principal (padding consistente)
-- Garantir max-width consistente do container
+- ✅ **Apenas substituir** loaders e empty states existentes
+- ✅ **Manter exatamente** copy, ícones contextuais, e CTAs já presentes
+- ✅ **Reutilizar** ícones lucide já importados onde possível
+- ❌ **Não alterar** lógica de fetch, estrutura de dados, rotas
+- ❌ **Não tocar** em onboarding, login, ou telas já refinadas
 
-**8. `src/components/PageBanner.tsx`**
-- Refinar hierarquia (título + descrição) com spacing mais respirado
+### Resultado
 
-### O que NÃO será alterado
+Todas as 100% das telas que carregam dados do Supabase passam a usar o mesmo skeleton e o mesmo padrão de empty state — alinhado com o design system já estabelecido (ClientList, AdminFinanceiro, AdminDashboard, AdminMonitoring, AdminObjetivos).
 
-- ❌ Nenhuma copy/texto
-- ❌ Nenhuma estrutura de página ou componente
-- ❌ Nenhuma rota, fluxo ou lógica
-- ❌ Cores brand (terracota #D17B3F e azul Novare permanecem)
-- ❌ Onboarding (acabou de ser ajustado)
-- ❌ Dashboard cliente (acabou de ser reorganizado)
+### Arquivos editados
 
-### Resultado visual esperado
-
-```text
-ANTES                          DEPOIS
-─────                          ──────
-Sombras genéricas      →       Sombras em camadas suaves
-Foco com ring duro     →       Foco com glow elegante
-Tipografia padrão      →       Tracking refinado, hierarquia clara
-Hovers abruptos        →       Transições suaves 200ms
-Labels apagados        →       Contraste otimizado para leitura
-Inputs achatados       →       Inputs com profundidade sutil
-```
-
-### Arquivos editados (estimativa)
-
-8 arquivos no total, todos do design system base. Zero alteração de páginas individuais — o efeito se propaga automaticamente.
-
+8 arquivos no total. Zero novos componentes (os primitivos `EmptyState` e `LoadingState` já existem).
