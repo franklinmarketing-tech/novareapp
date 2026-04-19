@@ -251,29 +251,37 @@ const ClientOnboardingPage = () => {
   };
 
   const handleNext = async () => {
-    // Save current step's section data
+    // Salva seção atual; bloqueia avanço se falhar (BUG #4-6)
     const currentSaveSection = getSaveSectionForStep(step);
     if (currentSaveSection !== null) {
       setSubmitting(true);
-      await saveSection(currentSaveSection);
+      const ok = await saveSection(currentSaveSection);
       setSubmitting(false);
+      if (!ok) return; // não avança em caso de erro
     }
 
-    // Fire confetti on section completions
+    // Confetti em conclusões de seção
     if (step === 6 || step === 13) {
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 }, colors: ["#c05621", "#1e3a5f", "#2f9e6a"] });
     }
 
     if (step === TOTAL_MICRO_STEPS - 1) {
-      // Final save: mark onboarding as complete
       setSubmitting(true);
-      await supabase.from("clients").update({ status: "em_diagnostico" as any }).eq("id", clientId);
+      const { error: statusErr } = await supabase.from("clients")
+        .update({ status: "em_diagnostico" as any }).eq("id", clientId);
       setSubmitting(false);
-      
+      if (statusErr) {
+        toast({
+          title: "Erro ao finalizar",
+          description: statusErr.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ["#c05621", "#1e3a5f", "#2f9e6a", "#f59e0b"] });
       toast({ title: "🎉 Onboarding finalizado!", description: "Seus dados foram salvos. Seu consultor já pode começar a trabalhar no seu plano." });
-      
-      // Refresh client status in auth context so routing updates
+
       await refreshClientStatus();
       navigate("/cliente");
       return;
