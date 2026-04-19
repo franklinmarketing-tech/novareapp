@@ -182,9 +182,16 @@ const AdminFinanceiro = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-3">
-        <img src={iconVault} alt="" className="w-16 h-16 animate-pulse" />
-        <p className="text-sm text-muted-foreground">Carregando panorama financeiro...</p>
+      <div className="space-y-8">
+        <div className="h-24 rounded-2xl bg-muted/40 animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="p-6 rounded-2xl border border-border/60 bg-card space-y-3">
+              <div className="h-4 w-1/2 bg-muted animate-pulse rounded" />
+              <div className="h-7 w-3/4 bg-muted animate-pulse rounded" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -194,16 +201,18 @@ const AdminFinanceiro = () => {
       <div className="space-y-8">
         <PageBanner title="Financeiro" description="Visão financeira da sua consultoria" icon={Landmark} />
         <Card className="rounded-3xl border-border/40">
-          <CardContent className="py-20 text-center">
-            <img src={iconVault} alt="" className="w-20 h-20 mx-auto mb-5" />
-            <p className="text-foreground font-bold text-lg mb-1">Seu panorama financeiro começa aqui</p>
-            <p className="text-muted-foreground text-sm max-w-md mx-auto mb-6">
-              Conforme você cadastra clientes e preenche dados financeiros, este painel mostrará patrimônio sob gestão,
-              pipeline de conversão e insights acionáveis.
-            </p>
-            <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" size="lg" className="rounded-2xl gap-2">
-              <UserPlus className="h-6 w-6" /> Cadastrar primeiro cliente
-            </Button>
+          <CardContent className="py-16">
+            <EmptyState
+              icon={Landmark}
+              tone="accent"
+              title="Seu panorama financeiro começa aqui"
+              description="Conforme você cadastra clientes e preenche dados financeiros, este painel mostrará patrimônio sob gestão, pipeline de conversão e insights acionáveis."
+              action={
+                <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" size="lg" className="rounded-2xl gap-2">
+                  <UserPlus className="h-6 w-6" /> Cadastrar primeiro cliente
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       </div>

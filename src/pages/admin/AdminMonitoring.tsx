@@ -239,11 +239,7 @@ const AdminMonitoring = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <span className="animate-pulse text-muted-foreground">Carregando...</span>
-      </div>
-    );
+    return <LoadingState variant="page" rows={3} />;
   }
 
   return (
