@@ -55,10 +55,10 @@ const PageBanner = ({ title, description, icon: Icon, action }: PageBannerProps)
             </div>
           )}
           <div>
-            <h1 className="text-xl font-semibold text-white tracking-tight leading-tight">
+            <h1 className="text-xl font-semibold text-white tracking-[-0.02em] leading-tight">
               {title}
             </h1>
-            <p className="text-sm text-white/40 mt-0.5 font-normal">
+            <p className="text-sm text-white/45 mt-1.5 font-normal leading-relaxed">
               {description}
             </p>
           </div>
