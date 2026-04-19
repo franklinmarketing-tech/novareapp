@@ -23,7 +23,7 @@ import {
   Pencil, Save, X, User,
   Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain,
   type LucideIcon,
-  CheckCircle2, AlertTriangle, Heart, Flame, Sparkles,
+  CheckCircle2, AlertTriangle, Heart, Flame, Sparkles, RefreshCw,
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
