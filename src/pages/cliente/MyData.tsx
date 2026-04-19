@@ -23,7 +23,7 @@ import {
   Pencil, Save, X, User,
   Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain,
   type LucideIcon,
-  CheckCircle2, AlertTriangle, Heart, Flame, Sparkles,
+  CheckCircle2, AlertTriangle, Heart, Flame, Sparkles, RefreshCw,
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
@@ -510,11 +510,12 @@ const MyData = () => {
               </div>
             </div>
             <Button
-              variant="ghost"
+              variant="default"
               size="sm"
               onClick={() => { setMonthlyConfirmed(null); handleAtualizar(); }}
-              className="text-xs text-muted-foreground hover:text-foreground rounded-full"
+              className="rounded-full bg-success text-success-foreground hover:bg-success/90 shadow-sm hover:shadow-md transition-all gap-2 font-semibold"
             >
+              <RefreshCw className="h-4 w-4" />
               Atualizar dados novamente
             </Button>
           </div>
