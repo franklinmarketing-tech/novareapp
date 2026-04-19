@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, Minus, RefreshCw, DollarSign, Percent, ShieldCheck, BarChart3, AlertTriangle } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { Button } from "@/components/ui/button";
+import { LoadingState } from "@/components/ui/loading-state";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Indicator {
   name: string;
@@ -163,13 +165,8 @@ const AdminInvestments = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-2xl" />
-          ))}
-        </div>
-        <Skeleton className="h-64 rounded-2xl" />
-        <Skeleton className="h-96 rounded-2xl" />
+        <LoadingState variant="cards" rows={5} />
+        <LoadingState variant="page" rows={3} />
       </div>
     );
   }
@@ -177,12 +174,18 @@ const AdminInvestments = () => {
   if (!data) {
     return (
       <Card>
-        <CardContent className="p-8 text-center text-muted-foreground">
-          <AlertTriangle className="h-8 w-8 mx-auto mb-3 text-warning" />
-          <p className="font-medium">Não foi possível carregar os dados de mercado.</p>
-          <Button variant="outline" size="sm" className="mt-4" onClick={fetchData}>
-            <RefreshCw className="h-6 w-6 mr-2" /> Tentar novamente
-          </Button>
+        <CardContent className="p-0">
+          <EmptyState
+            icon={AlertTriangle}
+            tone="warning"
+            title="Não foi possível carregar os dados de mercado"
+            description="Verifique sua conexão e tente novamente em instantes."
+            action={
+              <Button variant="outline" size="sm" onClick={fetchData}>
+                <RefreshCw className="h-6 w-6 mr-2" /> Tentar novamente
+              </Button>
+            }
+          />
         </CardContent>
       </Card>
     );

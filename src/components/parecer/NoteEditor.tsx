@@ -18,6 +18,8 @@ import {
   Target, TrendingUp, CheckCircle2, Loader2, ChevronRight,
   ChevronDown, History, Zap,
 } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
+import { EmptyState } from "@/components/ui/empty-state";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import DOMPurify from "dompurify";
@@ -379,12 +381,19 @@ export const NoteEditor = ({ clientId }: Props) => {
         <CollapsibleContent>
           <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto">
             {loading && (
-              <div className="flex justify-center py-4">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="px-1">
+                <LoadingState variant="inline" />
+                <LoadingState variant="inline" />
               </div>
             )}
             {!loading && notes.length === 0 && (
-              <p className="text-xs text-muted-foreground py-2">Nenhum parecer salvo</p>
+              <EmptyState
+                icon={FileText}
+                variant="compact"
+                tone="neutral"
+                title="Nenhum parecer salvo"
+                description="Crie sua primeira nota para começar."
+              />
             )}
             {notes.map((note) => (
               <button

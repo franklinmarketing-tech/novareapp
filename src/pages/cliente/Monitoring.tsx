@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import PageBanner from "@/components/PageBanner";
+import { LoadingState } from "@/components/ui/loading-state";
+import { EmptyState } from "@/components/ui/empty-state";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
@@ -202,12 +204,9 @@ const Monitoring = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-muted-foreground">Carregando acompanhamento...</span>
-        </div>
-      </div>
+      <PageTransition className="space-y-6">
+        <LoadingState variant="page" rows={4} />
+      </PageTransition>
     );
   }
 
@@ -221,24 +220,12 @@ const Monitoring = () => {
 
       {/* ── Empty state ── */}
       {snapshots.length === 0 && goals.length === 0 && (
-        <div
-          className="relative rounded-2xl overflow-hidden text-center py-16 px-6 bg-card"
-          style={{
-            border: "1px solid hsl(var(--border))",
-            boxShadow: "0 8px 32px -8px hsl(var(--foreground) / 0.06)",
-          }}
-        >
-          <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full pointer-events-none bg-primary/[0.04]" />
-          <div className="relative z-10">
-            <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-primary/10 border border-primary/15">
-              <BarChart3 className="h-10 w-10 text-primary/50" />
-            </div>
-            <p className="text-foreground font-bold text-lg mb-1">Seu progresso aparecerá aqui</p>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Conforme seu consultor registra snapshots, você verá a evolução do seu patrimônio, poupança e objetivos.
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          icon={BarChart3}
+          tone="accent"
+          title="Seu progresso aparecerá aqui"
+          description="Conforme seu consultor registra snapshots, você verá a evolução do seu patrimônio, poupança e objetivos."
+        />
       )}
 
       {/* ── KPI Cards ── */}

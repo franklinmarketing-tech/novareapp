@@ -17,6 +17,8 @@ import { toast } from "@/hooks/use-toast";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import { ArrowLeft, Plus, Pencil, Trash2, ClipboardList, CheckCircle2, ChevronDown, ChevronRight, ArchiveRestore, History, Target, Flame, TrendingUp, Shield, PiggyBank, Banknote, GraduationCap, Home, Heart, Plane, Car } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LoadingState } from "@/components/ui/loading-state";
+import { EmptyState } from "@/components/ui/empty-state";
 
 // 3D Goal Icons
 import goalDividasIcon from "@/assets/icons/goal-dividas.png";
@@ -490,7 +492,7 @@ const AdminActionPlan = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center py-20"><span className="animate-pulse text-muted-foreground">Carregando plano de ação...</span></div>;
+    return <LoadingState variant="page" rows={4} />;
   }
 
   return (
@@ -594,10 +596,16 @@ const AdminActionPlan = () => {
       </div>
 
       {goals.length === 0 && parentTasks.length === 0 ? (
-        <Card><CardContent className="py-16 text-center">
-          <ClipboardList className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">Nenhum objetivo cadastrado. Cadastre objetivos na aba Objetivos primeiro.</p>
-        </CardContent></Card>
+        <Card>
+          <CardContent className="p-0">
+            <EmptyState
+              icon={ClipboardList}
+              title="Nenhum objetivo cadastrado"
+              description="Cadastre objetivos na aba Objetivos primeiro para começar a planejar ações."
+              tone="accent"
+            />
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
           {/* ── Goal Accordion Cards — 2 per row ── */}
