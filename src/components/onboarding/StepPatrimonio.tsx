@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
@@ -75,8 +76,8 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
                 <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder="Ex: Apartamento 3 quartos" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor estimado (R$)</Label>
-                <Input type="number" value={item.estimated_value} onChange={(e) => update(i, "estimated_value", e.target.value)} placeholder="0,00" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor estimado</Label>
+                <CurrencyInput value={item.estimated_value} onChange={(v) => update(i, "estimated_value", v)} className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
               </div>
             </div>
           </div>

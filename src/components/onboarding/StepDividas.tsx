@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
@@ -69,12 +70,12 @@ export const StepDividas = ({ data, onChange }: Props) => {
                 <Input value={item.creditor} onChange={(e) => update(i, "creditor", e.target.value)} placeholder="Ex: Banco do Brasil" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor total (R$)</Label>
-                <Input type="number" value={item.total_amount} onChange={(e) => update(i, "total_amount", e.target.value)} placeholder="0,00" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor total</Label>
+                <CurrencyInput value={item.total_amount} onChange={(v) => update(i, "total_amount", v)} className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-body text-muted-foreground text-[0.8125rem]">Parcela mensal (R$)</Label>
-                <Input type="number" value={item.monthly_payment} onChange={(e) => update(i, "monthly_payment", e.target.value)} placeholder="0,00" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <Label className="font-body text-muted-foreground text-[0.8125rem]">Parcela mensal</Label>
+                <CurrencyInput value={item.monthly_payment} onChange={(v) => update(i, "monthly_payment", v)} className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
               </div>
               <div className="space-y-1.5">
                 <Label className="font-body text-muted-foreground text-[0.8125rem]">Prazo restante (meses)</Label>

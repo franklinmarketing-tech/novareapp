@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -62,8 +63,8 @@ export const StepObjetivos = ({ data, onChange }: Props) => {
                 <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder="Ex: Reserva de emergência" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor alvo (R$)</Label>
-                <Input type="number" value={item.target_amount} onChange={(e) => update(i, "target_amount", e.target.value)} placeholder="0,00" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor alvo</Label>
+                <CurrencyInput value={item.target_amount} onChange={(v) => update(i, "target_amount", v)} className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
               </div>
               <div className="space-y-1.5">
                 <Label className="font-body text-muted-foreground text-[0.8125rem]">Prazo</Label>
