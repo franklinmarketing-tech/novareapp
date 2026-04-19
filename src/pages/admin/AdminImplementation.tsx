@@ -13,6 +13,8 @@ import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Pencil, Trash2, Wrench, CheckCircle2, Clock, Loader2, TrendingUp, DollarSign } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Session {
   id: string;
@@ -178,11 +180,7 @@ const AdminImplementation = () => {
   const progressPct = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : 0;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <span className="animate-pulse text-muted-foreground">Carregando implementação...</span>
-      </div>
-    );
+    return <LoadingState variant="page" rows={5} />;
   }
 
   return (
@@ -256,18 +254,18 @@ const AdminImplementation = () => {
       {/* Categories */}
       {sessions.length === 0 ? (
         <Card>
-          <CardContent className="py-16 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-              <Wrench className="h-8 w-8 text-accent/40" />
-            </div>
-            <p className="text-foreground font-semibold mb-1">Implementação ainda não iniciada</p>
-            <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-5">
-              Crie sessões para cada etapa — ajuste de orçamento, renegociação de dívidas, investimentos. 
-              Cada sessão concluída aproxima seu cliente dos objetivos.
-            </p>
-            <Button onClick={openCreate} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 rounded-xl">
-              <Plus className="h-6 w-6" /> Criar primeira sessão
-            </Button>
+          <CardContent className="p-0">
+            <EmptyState
+              icon={Wrench}
+              tone="accent"
+              title="Implementação ainda não iniciada"
+              description="Crie sessões para cada etapa — ajuste de orçamento, renegociação de dívidas, investimentos. Cada sessão concluída aproxima seu cliente dos objetivos."
+              action={
+                <Button onClick={openCreate} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 rounded-xl">
+                  <Plus className="h-6 w-6" /> Criar primeira sessão
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       ) : (
