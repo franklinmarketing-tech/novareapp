@@ -9,6 +9,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 import { ArrowUpRight, UserPlus, Sparkles, AlertTriangle, Landmark, TrendingUp, TrendingDown, Flame } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
+import { EmptyState } from "@/components/ui/empty-state";
 import { motion } from "framer-motion";
 
 import iconVault from "@/assets/icon-vault-3d.png";

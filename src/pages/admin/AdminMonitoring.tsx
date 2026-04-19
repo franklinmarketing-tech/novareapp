@@ -15,6 +15,7 @@ import {
   Banknote, CreditCard, BarChart3, ArrowUpRight, ArrowDownRight,
   CheckCircle2,
 } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
