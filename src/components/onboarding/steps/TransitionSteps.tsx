@@ -2,6 +2,9 @@ import { motion } from "framer-motion";
 import { SECTION_NARRATIVES } from "./onboardingConfig";
 import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 import iconBehavioral from "@/assets/icon-behavioral.png";
+import iconIdentificacao from "@/assets/icon-identificacao.png";
+import iconFinancas from "@/assets/icon-financas.png";
+import iconPerfil from "@/assets/icon-perfil.png";
 
 interface WelcomeProps {
   userName?: string;
@@ -13,12 +16,12 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
 
   return (
     <div className="flex flex-col items-center justify-center text-center space-y-8 px-4">
-      {/* Animated emoji */}
+      {/* Animated hero icon */}
       <motion.div
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
-        className="text-6xl md:text-7xl"
+        className="text-7xl md:text-8xl"
       >
         👋
       </motion.div>
@@ -28,14 +31,14 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.6 }}
-        className="space-y-3"
+        className="space-y-4"
       >
         {firstName && (
-          <p className="font-body text-accent text-[0.875rem] font-semibold tracking-wide uppercase">
+          <p className="font-body text-accent text-[1rem] font-semibold tracking-wide uppercase">
             Olá, {firstName}!
           </p>
         )}
-        <h1 className="font-display text-[2rem] md:text-[2.75rem] font-bold text-foreground leading-[1.1] tracking-[-0.04em] whitespace-pre-line max-w-md">
+        <h1 className="font-display text-[2.5rem] md:text-[3.5rem] font-bold text-foreground leading-[1.05] tracking-[-0.04em] whitespace-pre-line max-w-2xl">
           {narrative.title}
         </h1>
       </motion.div>
@@ -44,7 +47,7 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
-        className="font-body text-muted-foreground text-[1rem] md:text-[1.0625rem] max-w-sm leading-relaxed tracking-[-0.01em]"
+        className="font-body text-muted-foreground text-[1.125rem] md:text-[1.25rem] max-w-xl leading-relaxed tracking-[-0.01em]"
       >
         {narrative.subtitle}
       </motion.p>
@@ -54,16 +57,25 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.5 }}
-        className="flex flex-col items-center gap-3 pt-2"
+        className="flex flex-col items-center gap-5 pt-4"
       >
-        <div className="flex items-center gap-6 text-[0.8125rem] font-body text-muted-foreground">
-          <span className="flex items-center gap-1.5">🧑 Identificação</span>
-          <span className="text-muted-foreground/40">→</span>
-          <span className="flex items-center gap-1.5">💰 Finanças</span>
-          <span className="text-muted-foreground/40">→</span>
-          <span className="flex items-center gap-1.5">🧠 Perfil</span>
+        <div className="flex items-center gap-5 md:gap-7 text-[1rem] md:text-[1.0625rem] font-body font-medium text-foreground/80">
+          <span className="flex items-center gap-2">
+            <img src={iconIdentificacao} alt="" width={36} height={36} loading="lazy" className="w-9 h-9 object-contain" />
+            Identificação
+          </span>
+          <span className="text-muted-foreground/40 text-xl">→</span>
+          <span className="flex items-center gap-2">
+            <img src={iconFinancas} alt="" width={36} height={36} loading="lazy" className="w-9 h-9 object-contain" />
+            Finanças
+          </span>
+          <span className="text-muted-foreground/40 text-xl">→</span>
+          <span className="flex items-center gap-2">
+            <img src={iconPerfil} alt="" width={36} height={36} loading="lazy" className="w-9 h-9 object-contain" />
+            Perfil
+          </span>
         </div>
-        <p className="font-body text-muted-foreground text-xs italic max-w-xs">
+        <p className="font-body text-muted-foreground text-[0.9375rem] italic max-w-md">
           {narrative.cta}
         </p>
       </motion.div>
