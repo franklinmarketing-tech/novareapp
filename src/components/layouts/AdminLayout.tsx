@@ -16,6 +16,7 @@ import {
   Gem,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { FoundersShowcase } from "@/components/FoundersShowcase";
@@ -223,8 +224,8 @@ export const AdminLayout = ({ children }: Props) => {
         </div>
 
       <div className="mt-auto border-t border-sidebar-border/30">
-        {/* Settings placeholder */}
-        <div className="px-3 pt-3">
+        {/* Settings + Theme toggle */}
+        <div className="px-3 pt-3 space-y-0.5">
           <NavLink
             to="/admin/configuracoes"
             onClick={() => setMobileOpen(false)}
@@ -240,6 +241,7 @@ export const AdminLayout = ({ children }: Props) => {
             <Settings className="h-[18px] w-[18px]" />
             Configurações
           </NavLink>
+          <ThemeToggle variant="sidebar" />
         </div>
 
         {/* Admin profile */}
@@ -291,6 +293,9 @@ export const AdminLayout = ({ children }: Props) => {
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
         <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-3" />
+        <div className="ml-auto">
+          <ThemeToggle className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
+        </div>
       </div>
 
       {/* Mobile sidebar overlay */}
@@ -305,8 +310,8 @@ export const AdminLayout = ({ children }: Props) => {
       <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 min-h-screen">
         {/* Breadcrumb header */}
         <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border/60">
-          <div className="flex items-center h-11 px-4 lg:px-8">
-            <nav className="flex items-center gap-1 text-[0.8125rem]">
+          <div className="flex items-center h-11 px-4 lg:px-8 gap-4">
+            <nav className="flex items-center gap-1 text-[0.8125rem] flex-1 min-w-0">
               <NavLink
                 to="/admin"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -329,6 +334,9 @@ export const AdminLayout = ({ children }: Props) => {
                 </span>
               ))}
             </nav>
+            <div className="hidden lg:flex items-center shrink-0">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
 
