@@ -113,12 +113,41 @@ const ClientOnboardingPage = () => {
     load();
   }, [user]);
 
-  const saveSection = async (section: number) => {
-    if (!clientId) return;
+  // BUG FIX #4-6: substituído delete-then-insert por sync incremental:
+  // 1. Identifica IDs removidos -> só deleta esses
+  // 2. Usa upsert no restante -> preserva IDs e evita race conditions
+  // 3. Trata erros e retorna boolean indicando sucesso
+  const syncCollection = async (
+    table: "income" | "expenses" | "debts" | "assets" | "insurance" | "goals",
+    existingItems: Array<{ id?: string }>,
+    payloadFn: () => Array<Record<string, any>>,
+  ) => {
+    const { data: current, error: fetchErr } = await supabase
+      .from(table).select("id").eq("client_id", clientId!);
+    if (fetchErr) throw fetchErr;
+
+    const currentIds = new Set((current ?? []).map((r: any) => r.id as string));
+    const keptIds = new Set(existingItems.map((i) => i.id).filter((id): id is string => !!id));
+    const toDelete = [...currentIds].filter((id) => !keptIds.has(id));
+
+    if (toDelete.length > 0) {
+      const { error: delErr } = await supabase.from(table).delete().in("id", toDelete);
+      if (delErr) throw delErr;
+    }
+
+    const payload = payloadFn();
+    if (payload.length > 0) {
+      const { error: upErr } = await supabase.from(table).upsert(payload as any, { onConflict: "id" });
+      if (upErr) throw upErr;
+    }
+  };
+
+  const saveSection = async (section: number): Promise<boolean> => {
+    if (!clientId) return false;
     try {
       switch (section) {
         case 0: {
-          await supabase.from("clients").update({
+          const { error: cErr } = await supabase.from("clients").update({
             cpf: identificacao.cpf || null, date_of_birth: identificacao.date_of_birth || null,
             marital_status: (identificacao.marital_status as any) || null,
             property_regime: (identificacao.property_regime as any) || null,
@@ -128,77 +157,131 @@ const ClientOnboardingPage = () => {
             dependents_ages: identificacao.dependents_ages || null,
             city: identificacao.city || null, state: identificacao.state || null,
           }).eq("id", clientId);
-          await supabase.from("profiles").update({ full_name: identificacao.full_name }).eq("user_id", user!.id);
+          if (cErr) throw cErr;
+          const { error: pErr } = await supabase.from("profiles")
+            .update({ full_name: identificacao.full_name }).eq("user_id", user!.id);
+          if (pErr) throw pErr;
           break;
         }
         case 1: {
-          await supabase.from("income").delete().eq("client_id", clientId);
-          const valid = rendas.filter((r) => r.description && r.amount);
-          if (valid.length > 0) await supabase.from("income").insert(valid.map((r) => ({ client_id: clientId, description: r.description, amount: parseFloat(r.amount) || 0, frequency: r.frequency as any, is_primary: r.is_primary, stability: r.stability as any })));
+          await syncCollection("income", rendas, () =>
+            rendas.filter((r) => r.description && r.amount).map((r) => ({
+              ...(r.id ? { id: r.id } : {}),
+              client_id: clientId, description: r.description,
+              amount: parseFloat(r.amount) || 0, frequency: r.frequency as any,
+              is_primary: r.is_primary, stability: r.stability as any,
+            }))
+          );
           break;
         }
         case 2: {
-          await supabase.from("expenses").delete().eq("client_id", clientId);
-          const valid = despesas.filter((e) => e.amount && parseFloat(e.amount) > 0);
-          if (valid.length > 0) await supabase.from("expenses").insert(valid.map((e) => ({ client_id: clientId, category: e.category, amount: parseFloat(e.amount) || 0, description: e.description || null, is_fixed: true })));
+          await syncCollection("expenses", despesas, () =>
+            despesas.filter((e) => e.amount && parseFloat(e.amount) > 0).map((e) => ({
+              ...(e.id ? { id: e.id } : {}),
+              client_id: clientId, category: e.category,
+              amount: parseFloat(e.amount) || 0,
+              description: e.description || null, is_fixed: true,
+            }))
+          );
           break;
         }
         case 3: {
-          await supabase.from("debts").delete().eq("client_id", clientId);
-          const valid = dividas.filter((d) => d.type && d.total_amount);
-          if (valid.length > 0) await supabase.from("debts").insert(valid.map((d) => ({ client_id: clientId, type: d.type, creditor: d.creditor || null, total_amount: parseFloat(d.total_amount) || 0, monthly_payment: parseFloat(d.monthly_payment) || 0, interest_rate: parseFloat(d.interest_rate) || 0, remaining_months: parseInt(d.remaining_months) || 0 })));
+          await syncCollection("debts", dividas, () =>
+            dividas.filter((d) => d.type && d.total_amount).map((d) => ({
+              ...(d.id ? { id: d.id } : {}),
+              client_id: clientId, type: d.type, creditor: d.creditor || null,
+              total_amount: parseFloat(d.total_amount) || 0,
+              monthly_payment: parseFloat(d.monthly_payment) || 0,
+              interest_rate: parseFloat(d.interest_rate) || 0,
+              remaining_months: parseInt(d.remaining_months) || 0,
+            }))
+          );
           break;
         }
         case 4: {
-          await supabase.from("assets").delete().eq("client_id", clientId);
-          const valid = patrimonio.filter((a) => a.type && a.estimated_value);
-          if (valid.length > 0) await supabase.from("assets").insert(valid.map((a) => ({ client_id: clientId, type: a.type, description: a.description || null, estimated_value: parseFloat(a.estimated_value) || 0 })));
+          await syncCollection("assets", patrimonio, () =>
+            patrimonio.filter((a) => a.type && a.estimated_value).map((a) => ({
+              ...(a.id ? { id: a.id } : {}),
+              client_id: clientId, type: a.type,
+              description: a.description || null,
+              estimated_value: parseFloat(a.estimated_value) || 0,
+            }))
+          );
           break;
         }
         case 5: {
-          await supabase.from("insurance").delete().eq("client_id", clientId);
-          const valid = seguros.filter((s) => s.type);
-          if (valid.length > 0) await supabase.from("insurance").insert(valid.map((s) => ({ client_id: clientId, type: s.type, provider: s.provider || null, monthly_premium: parseFloat(s.monthly_premium) || 0, coverage_amount: parseFloat(s.coverage_amount) || 0 })));
+          await syncCollection("insurance", seguros, () =>
+            seguros.filter((s) => s.type).map((s) => ({
+              ...(s.id ? { id: s.id } : {}),
+              client_id: clientId, type: s.type, provider: s.provider || null,
+              monthly_premium: parseFloat(s.monthly_premium) || 0,
+              coverage_amount: parseFloat(s.coverage_amount) || 0,
+            }))
+          );
           break;
         }
         case 6: {
-          await supabase.from("goals").delete().eq("client_id", clientId);
-          const valid = objetivos.filter((g) => g.description);
-          if (valid.length > 0) await supabase.from("goals").insert(valid.map((g) => ({ client_id: clientId, description: g.description, target_amount: parseFloat(g.target_amount) || null, deadline: g.deadline || null, priority: g.priority || "media" })));
+          await syncCollection("goals", objetivos, () =>
+            objetivos.filter((g) => g.description).map((g) => ({
+              ...(g.id ? { id: g.id } : {}),
+              client_id: clientId, description: g.description,
+              target_amount: parseFloat(g.target_amount) || null,
+              deadline: g.deadline || null, priority: g.priority || "media",
+            }))
+          );
           break;
         }
         case 7: {
-          await supabase.from("clients").update({ behavioral_profile: comportamental as any }).eq("id", clientId);
+          const { error } = await supabase.from("clients")
+            .update({ behavioral_profile: comportamental as any }).eq("id", clientId);
+          if (error) throw error;
           break;
         }
       }
-    } catch (err) { console.error("Save error:", err); }
+      return true;
+    } catch (err: any) {
+      console.error(`Save error (section ${section}):`, err);
+      toast({
+        title: "Erro ao salvar",
+        description: err?.message ?? "Não foi possível salvar. Tente novamente.",
+        variant: "destructive",
+      });
+      return false;
+    }
   };
 
   const handleNext = async () => {
-    // Save current step's section data
+    // Salva seção atual; bloqueia avanço se falhar (BUG #4-6)
     const currentSaveSection = getSaveSectionForStep(step);
     if (currentSaveSection !== null) {
       setSubmitting(true);
-      await saveSection(currentSaveSection);
+      const ok = await saveSection(currentSaveSection);
       setSubmitting(false);
+      if (!ok) return; // não avança em caso de erro
     }
 
-    // Fire confetti on section completions
+    // Confetti em conclusões de seção
     if (step === 6 || step === 13) {
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 }, colors: ["#c05621", "#1e3a5f", "#2f9e6a"] });
     }
 
     if (step === TOTAL_MICRO_STEPS - 1) {
-      // Final save: mark onboarding as complete
       setSubmitting(true);
-      await supabase.from("clients").update({ status: "em_diagnostico" as any }).eq("id", clientId);
+      const { error: statusErr } = await supabase.from("clients")
+        .update({ status: "em_diagnostico" as any }).eq("id", clientId);
       setSubmitting(false);
-      
+      if (statusErr) {
+        toast({
+          title: "Erro ao finalizar",
+          description: statusErr.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ["#c05621", "#1e3a5f", "#2f9e6a", "#f59e0b"] });
       toast({ title: "🎉 Onboarding finalizado!", description: "Seus dados foram salvos. Seu consultor já pode começar a trabalhar no seu plano." });
-      
-      // Refresh client status in auth context so routing updates
+
       await refreshClientStatus();
       navigate("/cliente");
       return;

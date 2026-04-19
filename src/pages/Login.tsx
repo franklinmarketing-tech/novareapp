@@ -199,11 +199,14 @@ const Login = () => {
   const cdiVal = useCountUp(11.2, 2400, 900, 1);
   const poupVal = useCountUp(6.4, 2400, 1200, 1);
 
-  if (role === "admin") {
-    navigate("/admin", { replace: true });
-  } else if (role === "client") {
-    navigate("/cliente", { replace: true });
-  }
+  // BUG FIX #2: navigate em useEffect pra evitar setState durante render
+  useEffect(() => {
+    if (role === "admin") {
+      navigate("/admin", { replace: true });
+    } else if (role === "client") {
+      navigate("/cliente", { replace: true });
+    }
+  }, [role, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

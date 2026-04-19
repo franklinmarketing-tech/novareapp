@@ -51,32 +51,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // BUG FIX #7: só seta loading=false APÓS role/status carregarem,
+    // evitando que ProtectedRoute redirecione pra /login durante o gap.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
+          // setTimeout(0) evita deadlock no callback do auth state
           setTimeout(async () => {
-            const r = await fetchRole(session.user.id);
-            if (r === "client") await fetchClientStatus(session.user.id);
+            try {
+              const r = await fetchRole(session.user.id);
+              if (r === "client") await fetchClientStatus(session.user.id);
+            } finally {
+              setLoading(false);
+            }
           }, 0);
         } else {
           setRole(null);
           setClientStatus(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchRole(session.user.id).then((r) => {
-          if (r === "client") fetchClientStatus(session.user.id);
-        });
+        try {
+          const r = await fetchRole(session.user.id);
+          if (r === "client") await fetchClientStatus(session.user.id);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

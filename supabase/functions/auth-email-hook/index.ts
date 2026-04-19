@@ -10,6 +10,7 @@ const corsHeaders = {
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const HOOK_SECRET = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
 const PUBLIC_APP_URL = Deno.env.get("PUBLIC_APP_URL") ?? "https://novareapp.com.br";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://hjikeevfzfswqydduars.supabase.co";
 const FROM = "Novare Planejamento <planejamento@novare.com.br>";
 
 const subjects: Record<string, string> = {
@@ -150,9 +151,15 @@ Deno.serve(async (req) => {
     const { user, email_data } = data;
     const actionType = email_data.email_action_type; // signup | recovery | magiclink | invite | email_change | reauthentication
 
-    // Constrói URL de ação apontando pro domínio de produção
-    const baseRedirect = email_data.redirect_to || `${PUBLIC_APP_URL}/`;
-    const actionUrl = `${PUBLIC_APP_URL}/auth/v1/verify?token=${email_data.token_hash}&type=${actionType}&redirect_to=${encodeURIComponent(baseRedirect)}`;
+    // BUG FIX #1: A URL precisa apontar pro endpoint /auth/v1/verify do SUPABASE,
+    // não pro domínio do SPA. O Supabase valida o token_hash e só DEPOIS
+    // redireciona pro redirect_to (que pode ser o domínio do app).
+    // Para recovery, garante que o redirect_to aponte pro /reset-password.
+    let baseRedirect = email_data.redirect_to || `${PUBLIC_APP_URL}/`;
+    if (actionType === "recovery" && !baseRedirect.includes("/reset-password")) {
+      baseRedirect = `${PUBLIC_APP_URL}/reset-password`;
+    }
+    const actionUrl = `${SUPABASE_URL}/auth/v1/verify?token=${email_data.token_hash}&type=${actionType}&redirect_to=${encodeURIComponent(baseRedirect)}`;
 
     const html = buildEmailHtml({
       actionType,
