@@ -252,6 +252,165 @@ const ClientDashboard = () => {
         </motion.div>
       )}
 
+      {/* ── Goals Progress — 3D Cards ── */}
+      {goals.length > 0 && (
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="space-y-3">
+          {/* Congratulations banner for completed goals */}
+          {goals.some(g => g.tasksTotal > 0 && g.tasksDone === g.tasksTotal) && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="relative rounded-2xl overflow-hidden px-5 py-4"
+              style={{
+                background: "linear-gradient(145deg, #0a1f1a 0%, #064e3b 50%, #0a1f1a 100%)",
+                border: "1px solid rgba(52,211,153,0.15)",
+                boxShadow: "0 1px 0 rgba(52,211,153,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 8px 24px -6px rgba(0,0,0,0.4)",
+              }}
+            >
+              <motion.div
+                className="absolute -top-4 -right-4 w-24 h-24 rounded-full pointer-events-none"
+                style={{ background: "radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%)" }}
+                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
+              <div className="relative z-10 flex items-center gap-3">
+                <motion.div
+                  animate={{ y: [0, -3, 0], rotate: [0, 5, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <Trophy className="h-6 w-6" style={{ color: "#34d399" }} />
+                </motion.div>
+                <div>
+                  <p className="text-sm font-bold text-white">Parabéns! 🎉</p>
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    Você concluiu {goals.filter(g => g.tasksTotal > 0 && g.tasksDone === g.tasksTotal).length} objetivo{goals.filter(g => g.tasksTotal > 0 && g.tasksDone === g.tasksTotal).length > 1 ? "s" : ""}! Continue assim.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          <div className="flex items-center gap-2 px-1">
+            <Target className="h-6 w-6 text-accent" />
+            <h2 className="text-sm font-semibold text-foreground">Meus Objetivos</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {goals.map((goal, i) => {
+              const taskPct = goal.tasksTotal > 0 ? Math.round((goal.tasksDone / goal.tasksTotal) * 100) : 0;
+              const isCompleted = taskPct === 100 && goal.tasksTotal > 0;
+              const config = getGoalStyle(goal.description);
+              const deadlineStr = goal.deadline
+                ? new Date(goal.deadline + "T00:00:00").toLocaleDateString("pt-BR", { month: "short", year: "numeric" })
+                : null;
+
+              return (
+                <motion.div key={goal.id} variants={fadeUp} custom={i}>
+                  <div className="relative">
+                    <div
+                      className="group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+                      style={{
+                        background: config.bg,
+                        border: `1px solid ${config.accent}18`,
+                        borderTop: `1px solid ${config.accent}25`,
+                        borderBottom: "1px solid rgba(0,0,0,0.3)",
+                        boxShadow: `0 1px 0 ${config.accent}08 inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 8px 24px -6px rgba(0,0,0,0.4)`,
+                      }}
+                      onClick={() => navigate("/cliente/plano-acao")}
+                    >
+                      {/* Floating icon */}
+                      <motion.div
+                        className="absolute -top-3 -right-3 w-28 h-28 pointer-events-none"
+                        animate={{ y: [0, -3, 0], rotate: [0, 2, 0] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <img src={config.icon3d} alt="" className="w-full h-full object-contain opacity-[0.12] group-hover:opacity-[0.2] transition-opacity duration-700" loading="lazy" />
+                      </motion.div>
+
+                      <div className="relative z-10 p-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-[11px] font-medium tracking-wide uppercase" style={{ color: `${config.accent}99` }}>
+                            {config.badge}
+                          </span>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                            style={{
+                              background: `${config.accent}15`,
+                              color: config.accent,
+                              border: `1px solid ${config.accent}25`,
+                            }}>
+                            {goal.priority === "alta" ? "Alta" : goal.priority === "baixa" ? "Baixa" : "Média"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3 mb-3">
+                          <motion.div className="w-10 h-10 shrink-0 drop-shadow-lg" whileHover={{ scale: 1.1, rotate: -4 }} transition={{ type: "spring", stiffness: 300 }}>
+                            <img src={config.icon3d} alt="" className="w-full h-full object-contain" loading="lazy" />
+                          </motion.div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-white text-[15px] leading-snug truncate">{goal.description}</h3>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {goal.target_amount && (
+                                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                                  Meta: {fmtShort(goal.target_amount)}
+                                </span>
+                              )}
+                              {deadlineStr && (
+                                <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                  até {deadlineStr}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <span className="text-3xl font-black text-white tracking-tight">{taskPct}%</span>
+                            <span className="ml-1.5 text-xs font-medium" style={{ color: config.accent }}>
+                              {goal.tasksDone}/{goal.tasksTotal}
+                              {taskPct > 0 && <TrendingUp className="inline-block h-6 w-6 ml-1 -mt-0.5" />}
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-medium text-white/30 bg-white/[0.06] px-2.5 py-1 rounded-md">
+                            {goal.tasksTotal} {goal.tasksTotal === 1 ? "ação" : "ações"}
+                          </span>
+                        </div>
+
+                        <div className="mt-3 h-1.5 rounded-full overflow-hidden bg-white/[0.08]">
+                          <motion.div className="h-full rounded-full" style={{ backgroundColor: config.accent }}
+                            initial={{ width: 0 }} animate={{ width: `${taskPct}%` }} transition={{ duration: 1, delay: i * 0.08 }} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Completed overlay */}
+                    {isCompleted && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center z-20"
+                        style={{
+                          background: "rgba(0,0,0,0.5)",
+                          backdropFilter: "blur(3px)",
+                          border: `1px solid ${config.accent}40`,
+                          boxShadow: `0 0 20px ${config.accent}15 inset`,
+                        }}
+                      >
+                        <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+                          <img src={goalCheckDoneIcon} alt="" className="w-12 h-12 object-contain drop-shadow-lg mb-2" />
+                        </motion.div>
+                        <p className="text-sm font-bold text-white" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>Objetivo Concluído! 🎉</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{goal.tasksDone} ações finalizadas</p>
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {/* ── Financial Overview ── */}
       {hasData && (
         <motion.div initial="hidden" animate="visible" className="space-y-4">
@@ -444,164 +603,6 @@ const ClientDashboard = () => {
         );
       })()}
 
-      {/* ── Goals Progress — 3D Cards ── */}
-      {goals.length > 0 && (
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="space-y-3">
-          {/* Congratulations banner for completed goals */}
-          {goals.some(g => g.tasksTotal > 0 && g.tasksDone === g.tasksTotal) && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="relative rounded-2xl overflow-hidden px-5 py-4"
-              style={{
-                background: "linear-gradient(145deg, #0a1f1a 0%, #064e3b 50%, #0a1f1a 100%)",
-                border: "1px solid rgba(52,211,153,0.15)",
-                boxShadow: "0 1px 0 rgba(52,211,153,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 8px 24px -6px rgba(0,0,0,0.4)",
-              }}
-            >
-              <motion.div
-                className="absolute -top-4 -right-4 w-24 h-24 rounded-full pointer-events-none"
-                style={{ background: "radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%)" }}
-                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
-              <div className="relative z-10 flex items-center gap-3">
-                <motion.div
-                  animate={{ y: [0, -3, 0], rotate: [0, 5, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <Trophy className="h-6 w-6" style={{ color: "#34d399" }} />
-                </motion.div>
-                <div>
-                  <p className="text-sm font-bold text-white">Parabéns! 🎉</p>
-                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    Você concluiu {goals.filter(g => g.tasksTotal > 0 && g.tasksDone === g.tasksTotal).length} objetivo{goals.filter(g => g.tasksTotal > 0 && g.tasksDone === g.tasksTotal).length > 1 ? "s" : ""}! Continue assim.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          <div className="flex items-center gap-2 px-1">
-            <Target className="h-6 w-6 text-accent" />
-            <h2 className="text-sm font-semibold text-foreground">Meus Objetivos</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {goals.map((goal, i) => {
-              const taskPct = goal.tasksTotal > 0 ? Math.round((goal.tasksDone / goal.tasksTotal) * 100) : 0;
-              const isCompleted = taskPct === 100 && goal.tasksTotal > 0;
-              const config = getGoalStyle(goal.description);
-              const deadlineStr = goal.deadline
-                ? new Date(goal.deadline + "T00:00:00").toLocaleDateString("pt-BR", { month: "short", year: "numeric" })
-                : null;
-
-              return (
-                <motion.div key={goal.id} variants={fadeUp} custom={i}>
-                  <div className="relative">
-                    <div
-                      className="group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
-                      style={{
-                        background: config.bg,
-                        border: `1px solid ${config.accent}18`,
-                        borderTop: `1px solid ${config.accent}25`,
-                        borderBottom: "1px solid rgba(0,0,0,0.3)",
-                        boxShadow: `0 1px 0 ${config.accent}08 inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 8px 24px -6px rgba(0,0,0,0.4)`,
-                      }}
-                      onClick={() => navigate("/cliente/plano-acao")}
-                    >
-                      {/* Floating icon */}
-                      <motion.div
-                        className="absolute -top-3 -right-3 w-28 h-28 pointer-events-none"
-                        animate={{ y: [0, -3, 0], rotate: [0, 2, 0] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <img src={config.icon3d} alt="" className="w-full h-full object-contain opacity-[0.12] group-hover:opacity-[0.2] transition-opacity duration-700" loading="lazy" />
-                      </motion.div>
-
-                      <div className="relative z-10 p-5">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-[11px] font-medium tracking-wide uppercase" style={{ color: `${config.accent}99` }}>
-                            {config.badge}
-                          </span>
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                            style={{
-                              background: `${config.accent}15`,
-                              color: config.accent,
-                              border: `1px solid ${config.accent}25`,
-                            }}>
-                            {goal.priority === "alta" ? "Alta" : goal.priority === "baixa" ? "Baixa" : "Média"}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3 mb-3">
-                          <motion.div className="w-10 h-10 shrink-0 drop-shadow-lg" whileHover={{ scale: 1.1, rotate: -4 }} transition={{ type: "spring", stiffness: 300 }}>
-                            <img src={config.icon3d} alt="" className="w-full h-full object-contain" loading="lazy" />
-                          </motion.div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-white text-[15px] leading-snug truncate">{goal.description}</h3>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              {goal.target_amount && (
-                                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
-                                  Meta: {fmtShort(goal.target_amount)}
-                                </span>
-                              )}
-                              {deadlineStr && (
-                                <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                                  até {deadlineStr}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-end justify-between">
-                          <div>
-                            <span className="text-3xl font-black text-white tracking-tight">{taskPct}%</span>
-                            <span className="ml-1.5 text-xs font-medium" style={{ color: config.accent }}>
-                              {goal.tasksDone}/{goal.tasksTotal}
-                              {taskPct > 0 && <TrendingUp className="inline-block h-6 w-6 ml-1 -mt-0.5" />}
-                            </span>
-                          </div>
-                          <span className="text-[10px] font-medium text-white/30 bg-white/[0.06] px-2.5 py-1 rounded-md">
-                            {goal.tasksTotal} {goal.tasksTotal === 1 ? "ação" : "ações"}
-                          </span>
-                        </div>
-
-                        <div className="mt-3 h-1.5 rounded-full overflow-hidden bg-white/[0.08]">
-                          <motion.div className="h-full rounded-full" style={{ backgroundColor: config.accent }}
-                            initial={{ width: 0 }} animate={{ width: `${taskPct}%` }} transition={{ duration: 1, delay: i * 0.08 }} />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Completed overlay */}
-                    {isCompleted && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center z-20"
-                        style={{
-                          background: "rgba(0,0,0,0.5)",
-                          backdropFilter: "blur(3px)",
-                          border: `1px solid ${config.accent}40`,
-                          boxShadow: `0 0 20px ${config.accent}15 inset`,
-                        }}
-                      >
-                        <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-                          <img src={goalCheckDoneIcon} alt="" className="w-12 h-12 object-contain drop-shadow-lg mb-2" />
-                        </motion.div>
-                        <p className="text-sm font-bold text-white" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>Objetivo Concluído! 🎉</p>
-                        <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{goal.tasksDone} ações finalizadas</p>
-                      </motion.div>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
 
       {/* ── Quick Actions ── */}
       <motion.div
