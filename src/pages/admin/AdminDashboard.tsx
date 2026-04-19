@@ -15,6 +15,7 @@ import PageTransition from "@/components/PageTransition";
 import PageBanner from "@/components/PageBanner";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -345,12 +346,18 @@ const AdminDashboard = () => {
                 </Button>
               </div>
               {recentClients.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground mb-3">Nenhum cliente cadastrado</p>
-                  <Button variant="premium" size="sm" onClick={() => navigate("/admin/novo-cliente")} className="rounded-xl gap-2">
-                    <Sparkles className="h-6 w-6" /> Cadastrar primeiro cliente
-                  </Button>
-                </div>
+                <EmptyState
+                  icon={Sparkles}
+                  variant="compact"
+                  tone="accent"
+                  title="Nenhum cliente cadastrado"
+                  description="Comece cadastrando seu primeiro cliente."
+                  action={
+                    <Button variant="premium" size="sm" onClick={() => navigate("/admin/novo-cliente")} className="rounded-xl gap-2">
+                      <Sparkles className="h-4 w-4" /> Cadastrar primeiro cliente
+                    </Button>
+                  }
+                />
               ) : (
                 <div className="space-y-0.5">
                   {recentClients.map((c) => (
@@ -394,11 +401,13 @@ const AdminDashboard = () => {
                 </div>
               </div>
               {pendingActions.length === 0 ? (
-                <div className="text-center py-8">
-                  <CheckCircle className="h-8 w-8 text-success/40 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Nenhuma ação pendente</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">Seus clientes estão em dia 🎉</p>
-                </div>
+                <EmptyState
+                  icon={CheckCircle}
+                  variant="compact"
+                  tone="success"
+                  title="Nenhuma ação pendente"
+                  description="Seus clientes estão em dia 🎉"
+                />
               ) : (
                 <div className="space-y-0.5">
                   {pendingActions.map((item) => (
