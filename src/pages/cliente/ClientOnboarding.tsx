@@ -42,10 +42,8 @@ const ClientOnboardingPage = () => {
 
   // Preload behavioral icon so it's instant when user reaches that step
   useEffect(() => {
-    [iconPerfil, iconFinancas].forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
+    const img = new Image();
+    img.src = iconBehavioral;
   }, []);
   const navigate = useNavigate();
   const [clientId, setClientId] = useState<string | null>(null);
