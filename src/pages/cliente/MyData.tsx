@@ -26,6 +26,7 @@ import {
   CheckCircle2, AlertTriangle, Heart, Flame, Sparkles, RefreshCw,
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
+import { LoadingState } from "@/components/ui/loading-state";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -280,12 +281,7 @@ const MyData = () => {
   if (loading) {
     return (
       <PageTransition>
-        <div className="flex flex-col items-center justify-center py-24 gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-accent/10 flex items-center justify-center">
-            <Heart className="h-6 w-6 text-accent animate-pulse" />
-          </div>
-          <p className="text-sm text-muted-foreground">Carregando sua história financeira...</p>
-        </div>
+        <LoadingState variant="page" rows={6} />
       </PageTransition>
     );
   }
