@@ -13,6 +13,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { FoundersShowcase } from "@/components/FoundersShowcase";
@@ -101,8 +102,8 @@ export const ClientLayout = ({ children }: Props) => {
 
       {/* Bottom */}
       <div className="mt-auto border-t border-sidebar-border/30">
-        {/* Settings */}
-        <div className="px-3 pt-3">
+        {/* Settings + Theme toggle */}
+        <div className="px-3 pt-3 space-y-0.5">
           <NavLink
             to="/cliente/configuracoes"
             onClick={() => setMobileOpen(false)}
@@ -118,6 +119,7 @@ export const ClientLayout = ({ children }: Props) => {
             <Settings className="h-[18px] w-[18px]" />
             Configurações
           </NavLink>
+          <ThemeToggle variant="sidebar" />
         </div>
 
         {/* Profile */}
@@ -169,6 +171,9 @@ export const ClientLayout = ({ children }: Props) => {
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
         <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-3" />
+        <div className="ml-auto">
+          <ThemeToggle className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
+        </div>
       </div>
 
       {/* Mobile sidebar overlay */}
