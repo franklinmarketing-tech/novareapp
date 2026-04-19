@@ -77,10 +77,6 @@ export const StepDividas = ({ data, onChange }: Props) => {
                 <Input type="number" value={item.monthly_payment} onChange={(e) => update(i, "monthly_payment", e.target.value)} placeholder="0,00" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-body text-muted-foreground text-[0.8125rem]">Taxa de juros (% a.a.)</Label>
-                <Input type="number" value={item.interest_rate} onChange={(e) => update(i, "interest_rate", e.target.value)} placeholder="0" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
-              </div>
-              <div className="space-y-1.5">
                 <Label className="font-body text-muted-foreground text-[0.8125rem]">Prazo restante (meses)</Label>
                 <Input type="number" value={item.remaining_months} onChange={(e) => update(i, "remaining_months", e.target.value)} placeholder="0" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
               </div>
