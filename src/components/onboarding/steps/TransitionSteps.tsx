@@ -11,13 +11,13 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
   const firstName = userName?.split(" ")[0];
 
   return (
-    <div className="flex flex-col items-center justify-center text-center space-y-8 px-4">
+    <div className="flex flex-col items-center justify-center text-center space-y-4 md:space-y-5 px-4 py-2">
       {/* Animated emoji */}
       <motion.div
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
-        className="text-7xl md:text-8xl"
+        className="text-5xl md:text-6xl"
       >
         👋
       </motion.div>
@@ -27,14 +27,14 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.6 }}
-        className="space-y-4"
+        className="space-y-2"
       >
         {firstName && (
-          <p className="font-body text-accent text-[1rem] font-semibold tracking-wide uppercase">
+          <p className="font-body text-accent text-[0.8125rem] md:text-[0.875rem] font-semibold tracking-wide uppercase">
             Olá, {firstName}!
           </p>
         )}
-        <h1 className="font-display text-[2.5rem] md:text-[3.5rem] font-bold text-foreground leading-[1.05] tracking-[-0.04em] whitespace-pre-line max-w-2xl">
+        <h1 className="font-display text-[1.75rem] md:text-[2.25rem] font-bold text-foreground leading-[1.1] tracking-[-0.04em] whitespace-pre-line max-w-2xl">
           {narrative.title}
         </h1>
       </motion.div>
@@ -43,7 +43,7 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
-        className="font-body text-muted-foreground text-[1.125rem] md:text-[1.25rem] max-w-xl leading-relaxed tracking-[-0.01em]"
+        className="font-body text-muted-foreground text-[0.9375rem] md:text-[1rem] max-w-xl leading-relaxed tracking-[-0.01em]"
       >
         {narrative.subtitle}
       </motion.p>
@@ -53,22 +53,22 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.5 }}
-        className="flex flex-col items-center gap-5 pt-4"
+        className="flex flex-col items-center gap-2 pt-1"
       >
-        <div className="flex items-center gap-5 md:gap-7 text-[1rem] md:text-[1.0625rem] font-body font-medium text-foreground/80">
-          <span className="flex items-center gap-2">
-            <span className="text-2xl">🧑</span> Identificação
+        <div className="flex items-center gap-3 md:gap-5 text-[0.875rem] md:text-[0.9375rem] font-body font-medium text-foreground/80">
+          <span className="flex items-center gap-1.5">
+            <span className="text-lg">🧑</span> Identificação
           </span>
-          <span className="text-muted-foreground/40 text-xl">→</span>
-          <span className="flex items-center gap-2">
-            <span className="text-2xl">💰</span> Finanças
+          <span className="text-muted-foreground/40">→</span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-lg">💰</span> Finanças
           </span>
-          <span className="text-muted-foreground/40 text-xl">→</span>
-          <span className="flex items-center gap-2">
-            <span className="text-2xl">🧠</span> Perfil
+          <span className="text-muted-foreground/40">→</span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-lg">🧠</span> Perfil
           </span>
         </div>
-        <p className="font-body text-muted-foreground text-[0.9375rem] italic max-w-md">
+        <p className="font-body text-muted-foreground text-[0.8125rem] italic max-w-md">
           {narrative.cta}
         </p>
       </motion.div>
