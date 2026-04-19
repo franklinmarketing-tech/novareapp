@@ -4,7 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card3D } from "@/components/ui/card-3d";
-import { Search, ChevronRight, UserPlus, Users } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingState } from "@/components/ui/loading-state";
+import { Search, ChevronRight, UserPlus, Users, SearchX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/PageTransition";
@@ -46,6 +48,7 @@ const filterTabs: { key: FilterKey; label: string }[] = [
 
 const ClientList = () => {
   const [clients, setClients] = useState<ClientRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const navigate = useNavigate();
@@ -73,6 +76,7 @@ const ClientList = () => {
   useEffect(() => {
     const init = async () => {
       const list = await loadClients();
+      setLoading(false);
 
       // Auto-seed dos clientes de demonstração (Maria + Lucas) em PARALELO,
       // em background — sem travar a UI. Roda apenas 1x por sessão.
@@ -177,71 +181,76 @@ const ClientList = () => {
       </div>
 
       {/* Client cards */}
-      <motion.div initial="hidden" animate="visible" className="space-y-2">
-        {filtered.map((client, i) => {
-          const profile = client.profiles as any;
-          const st = statusMap[client.status] ?? statusMap.onboarding_pendente;
-          return (
-            <motion.div key={client.id} variants={fadeUp} custom={i}>
-              <Card3D
-                clickable
-                interactive
-                className="group"
-                onClick={() => navigate(`/admin/cliente/${client.slug}/onboarding`)}
-              >
-                <div className="flex items-center justify-between p-5">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                      style={{
-                        background: "linear-gradient(145deg, hsl(var(--accent) / 0.2), hsl(var(--accent) / 0.05))",
-                        border: "1px solid hsl(var(--accent) / 0.15)",
-                      }}
-                    >
-                      <span className="text-sm font-semibold text-accent">
-                        {(profile?.full_name || "?").charAt(0)}
+      {loading ? (
+        <LoadingState variant="list" rows={5} />
+      ) : (
+        <motion.div initial="hidden" animate="visible" className="space-y-2">
+          {filtered.map((client, i) => {
+            const profile = client.profiles as any;
+            const st = statusMap[client.status] ?? statusMap.onboarding_pendente;
+            return (
+              <motion.div key={client.id} variants={fadeUp} custom={i}>
+                <Card3D
+                  clickable
+                  interactive
+                  className="group"
+                  onClick={() => navigate(`/admin/cliente/${client.slug}/onboarding`)}
+                >
+                  <div className="flex items-center justify-between p-5">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                        style={{
+                          background: "linear-gradient(145deg, hsl(var(--accent) / 0.2), hsl(var(--accent) / 0.05))",
+                          border: "1px solid hsl(var(--accent) / 0.15)",
+                        }}
+                      >
+                        <span className="text-sm font-semibold text-accent">
+                          {(profile?.full_name || "?").charAt(0)}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground truncate text-[0.9375rem]">
+                          {profile?.full_name || "Sem nome"}
+                        </p>
+                        <p className="text-[0.8125rem] text-muted-foreground truncate">{profile?.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4">
+                      <span className="text-xs text-muted-foreground font-medium">
+                        {(client as any).assigned_consultant || "Sem consultor"}
                       </span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-foreground truncate text-[0.9375rem]">
-                        {profile?.full_name || "Sem nome"}
-                      </p>
-                      <p className="text-[0.8125rem] text-muted-foreground truncate">{profile?.email}</p>
+                      <Badge variant={st.variant as any}>{st.label}</Badge>
+                      <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 ml-4">
-                    <span className="text-xs text-muted-foreground font-medium">
-                      {(client as any).assigned_consultant || "Sem consultor"}
-                    </span>
-                    <Badge variant={st.variant as any}>{st.label}</Badge>
-                    <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                </div>
-              </Card3D>
-            </motion.div>
-          );
-        })}
-        {filtered.length === 0 && clients.length === 0 && (
-          <div className="text-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-              <UserPlus className="h-8 w-8 text-accent/40" />
-            </div>
-            <p className="text-foreground font-semibold mb-1">Sua jornada começa aqui</p>
-            <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-5">
-              Cadastre seu primeiro cliente e veja como a plataforma organiza diagnósticos, planos e acompanhamento automaticamente.
-            </p>
-            <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" className="rounded-2xl gap-2">
-              <UserPlus className="h-6 w-6" /> Cadastrar primeiro cliente
-            </Button>
-          </div>
-        )}
-        {filtered.length === 0 && clients.length > 0 && (
-          <div className="text-center py-16">
-            <Search className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm">Nenhum resultado para essa busca.</p>
-          </div>
-        )}
-      </motion.div>
+                </Card3D>
+              </motion.div>
+            );
+          })}
+          {filtered.length === 0 && clients.length === 0 && (
+            <EmptyState
+              icon={UserPlus}
+              tone="accent"
+              title="Sua jornada começa aqui"
+              description="Cadastre seu primeiro cliente e veja como a plataforma organiza diagnósticos, planos e acompanhamento automaticamente."
+              action={
+                <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" className="rounded-2xl gap-2">
+                  <UserPlus className="h-6 w-6" /> Cadastrar primeiro cliente
+                </Button>
+              }
+            />
+          )}
+          {filtered.length === 0 && clients.length > 0 && (
+            <EmptyState
+              icon={SearchX}
+              variant="compact"
+              title="Nenhum resultado"
+              description="Tente ajustar a busca ou os filtros."
+            />
+          )}
+        </motion.div>
+      )}
     </PageTransition>
   );
 };

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -118,10 +119,12 @@ const AdminObjetivos = () => {
       {/* Goals list */}
       {goals.length === 0 ? (
         <Card>
-          <CardContent className="py-16 text-center">
-            <Target className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm">Nenhum objetivo cadastrado ainda.</p>
-            <p className="text-muted-foreground/60 text-xs mt-1">Os objetivos do onboarding aparecerão aqui automaticamente.</p>
+          <CardContent className="py-8">
+            <EmptyState
+              icon={Target}
+              title="Nenhum objetivo cadastrado ainda"
+              description="Os objetivos do onboarding aparecerão aqui automaticamente."
+            />
           </CardContent>
         </Card>
       ) : (

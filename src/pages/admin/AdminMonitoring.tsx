@@ -15,6 +15,7 @@ import {
   Banknote, CreditCard, BarChart3, ArrowUpRight, ArrowDownRight,
   CheckCircle2,
 } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
@@ -239,11 +240,7 @@ const AdminMonitoring = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <span className="animate-pulse text-muted-foreground">Carregando...</span>
-      </div>
-    );
+    return <LoadingState variant="page" rows={3} />;
   }
 
   return (
