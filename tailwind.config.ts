@@ -99,12 +99,13 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        "subtle": "0 1px 2px 0 hsl(0 0% 0% / 0.04)",
-        "soft": "0 1px 4px 0 hsl(0 0% 0% / 0.06), 0 1px 2px -1px hsl(0 0% 0% / 0.04)",
-        "elevated": "0 8px 24px -4px hsl(0 0% 0% / 0.08), 0 2px 8px -2px hsl(0 0% 0% / 0.05)",
-        "card": "0 2px 8px -2px hsl(0 0% 0% / 0.06), 0 0 0 1px hsl(0 0% 0% / 0.03)",
-        "card-hover": "0 4px 16px -4px hsl(0 0% 0% / 0.1), 0 0 0 1px hsl(0 0% 0% / 0.04)",
-        "apple": "0 2px 8px 0 hsl(0 0% 0% / 0.05), 0 0 1px 0 hsl(0 0% 0% / 0.08)",
+        "subtle": "0 1px 2px 0 hsl(220 20% 12% / 0.04)",
+        "soft": "0 1px 3px 0 hsl(220 20% 12% / 0.05), 0 1px 2px -1px hsl(220 20% 12% / 0.04)",
+        "elevated": "0 10px 30px -8px hsl(220 20% 12% / 0.10), 0 4px 12px -4px hsl(220 20% 12% / 0.06)",
+        "card": "0 1px 2px 0 hsl(220 20% 12% / 0.04), 0 1px 3px 0 hsl(220 20% 12% / 0.05)",
+        "card-hover": "0 4px 16px -4px hsl(220 20% 12% / 0.10), 0 2px 6px -2px hsl(220 20% 12% / 0.06)",
+        "apple": "0 2px 8px 0 hsl(220 20% 12% / 0.05), 0 0 1px 0 hsl(220 20% 12% / 0.08)",
+        "focus": "0 0 0 4px hsl(var(--ring) / 0.12)",
       },
       keyframes: {
         "accordion-down": {

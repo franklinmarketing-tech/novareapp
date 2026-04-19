@@ -332,7 +332,7 @@ export const AdminLayout = ({ children }: Props) => {
           </div>
         </div>
 
-        <div className="p-4 lg:p-6 xl:p-8">{children}</div>
+        <div className="p-4 lg:p-6 xl:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
       </main>
     </div>
   );
