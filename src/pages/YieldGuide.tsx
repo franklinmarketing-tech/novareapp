@@ -156,6 +156,15 @@ const navLinks = [
 ];
 
 /* ── simulator ─────────────────────────────────── */
+interface YearPoint {
+  year: number;        // ano relativo (1, 2, 3...)
+  age: number;         // idade no fim do ano
+  invested: number;    // total aportado acumulado (numérico)
+  gross: number;       // patrimônio bruto acumulado
+  net: number;         // patrimônio líquido após IR
+  gain: number;        // ganho líquido (net - invested)
+}
+
 interface SimResult {
   patrimonio: string;
   patrimonioLiquido: string;
@@ -166,6 +175,15 @@ interface SimResult {
   atingeMeta: boolean;
   anosAcumulo: number;
   aliquotaIR: number;
+  // Numerical for charts
+  patrimonioNum: number;
+  patrimonioLiquidoNum: number;
+  totalInvestidoNum: number;
+  ganhoLiquidoNum: number;
+  rendaMensalLiquidaNum: number;
+  rendaDesejadaNum: number;
+  /** Ano-a-ano para gráficos / tabela */
+  timeline: YearPoint[];
 }
 
 function getAliquotaIR(anos: number): number {
@@ -177,13 +195,43 @@ function getAliquotaIR(anos: number): number {
 }
 
 function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: number, aporte: number, rendaDesejada: number, rentAnual: number): SimResult {
-  const anos = idadeAposent - idadeAtual;
+  const anos = Math.max(0, idadeAposent - idadeAtual);
   const meses = anos * 12;
   const taxaMensal = Math.pow(1 + rentAnual / 100, 1 / 12) - 1;
 
   // Rentabilidade NOMINAL (bruta) — sem descontar inflação
   let patrimonioBruto = patrimonioAtual;
-  for (let i = 0; i < meses; i++) patrimonioBruto = patrimonioBruto * (1 + taxaMensal) + aporte;
+  const timeline: YearPoint[] = [];
+  // Ponto inicial (ano 0)
+  timeline.push({
+    year: 0,
+    age: idadeAtual,
+    invested: patrimonioAtual,
+    gross: patrimonioAtual,
+    net: patrimonioAtual,
+    gain: 0,
+  });
+
+  for (let m = 1; m <= meses; m++) {
+    patrimonioBruto = patrimonioBruto * (1 + taxaMensal) + aporte;
+    if (m % 12 === 0) {
+      const yearIdx = m / 12;
+      const investedSoFar = patrimonioAtual + aporte * m;
+      const ganhoBrutoY = patrimonioBruto - investedSoFar;
+      // IR no ponto: usa a alíquota do horizonte total (estimativa visual)
+      const aliqPonto = getAliquotaIR(yearIdx);
+      const irY = Math.max(0, ganhoBrutoY) * (aliqPonto / 100);
+      const netY = patrimonioBruto - irY;
+      timeline.push({
+        year: yearIdx,
+        age: idadeAtual + yearIdx,
+        invested: investedSoFar,
+        gross: patrimonioBruto,
+        net: netY,
+        gain: netY - investedSoFar,
+      });
+    }
+  }
 
   const totalInvestido = patrimonioAtual + aporte * meses;
   const ganhoBruto = patrimonioBruto - totalInvestido;
@@ -194,7 +242,7 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
   const patrimonioLiquido = patrimonioBruto - irDevido;
   const ganhoLiquido = patrimonioLiquido - totalInvestido;
 
-  // Renda mensal bruta e líquida (4% a.a. rule adaptada à taxa)
+  // Renda mensal bruta e líquida (sem consumir o principal)
   const rendaMensalBruta = patrimonioBruto * taxaMensal;
   const rendaMensalLiquida = rendaMensalBruta * (1 - aliquotaIR / 100);
 
@@ -210,6 +258,13 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
     atingeMeta: rendaMensalLiquida >= rendaDesejada,
     anosAcumulo: anos,
     aliquotaIR,
+    patrimonioNum: patrimonioBruto,
+    patrimonioLiquidoNum: patrimonioLiquido,
+    totalInvestidoNum: totalInvestido,
+    ganhoLiquidoNum: ganhoLiquido,
+    rendaMensalLiquidaNum: rendaMensalLiquida,
+    rendaDesejadaNum: rendaDesejada,
+    timeline,
   };
 }
 
