@@ -202,7 +202,9 @@ const Login = () => {
 
   // Redirect after auth via effect to avoid setState during render warning
   useEffect(() => {
-    if (role === "admin") {
+    if (role === "super_admin") {
+      navigate("/super-admin", { replace: true });
+    } else if (role === "admin") {
       navigate("/admin", { replace: true });
     } else if (role === "client") {
       navigate("/cliente", { replace: true });
