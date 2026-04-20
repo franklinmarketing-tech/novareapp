@@ -87,6 +87,25 @@ export const AdminLayout = ({ children }: Props) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profile, setProfile] = useState<{ full_name: string; email: string } | null>(null);
   const [clientNames, setClientNames] = useState<Record<string, string>>({});
+  const settingsCompletion = useSettingsCompletion();
+  const isOnSettings = location.pathname.startsWith("/admin/configuracoes");
+  const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
+  useEffect(() => {
+    if (isOnSettings) setSettingsOpen(true);
+  }, [isOnSettings]);
+  const currentTab = (new URLSearchParams(location.search).get("tab") as SettingsTabId) || "perfil";
+
+  const settingsSubItems: { id: SettingsTabId; label: string; icon: typeof UserIcon }[] = useMemo(
+    () => [
+      { id: "perfil", label: "Perfil", icon: UserIcon },
+      { id: "equipe", label: "Equipe", icon: Users },
+      { id: "marca", label: "Marca", icon: ImageIcon },
+      { id: "notificacoes", label: "Notificações", icon: Bell },
+      { id: "cobranca", label: "Cobrança", icon: CreditCard },
+      { id: "seguranca", label: "Segurança", icon: Lock },
+    ],
+    []
+  );
 
   /* fetch admin profile */
   useEffect(() => {
