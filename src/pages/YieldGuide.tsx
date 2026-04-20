@@ -15,6 +15,7 @@ import logoBranca from "@/assets/logo-branca.png";
 import jeffersonImg from "@/assets/jefferson.png";
 import leonardoImg from "@/assets/leonardo.png";
 import newsletterHero from "@/assets/newsletter-hero.jpg";
+import { SEO } from "@/components/SEO";
 
 /* ── founder data ──────────────────────────────── */
 const founders = [
@@ -245,6 +246,11 @@ const YieldGuide = () => {
 
   return (
     <div className="min-h-screen bg-background font-body">
+      <SEO
+        title="Calculadora de Investimentos: simule sua aposentadoria"
+        description="Simule sua aposentadoria e entenda os rendimentos em Renda Fixa com a calculadora gratuita da Novare."
+        canonicalPath="/ferramentas/calculadora-de-investimentos"
+      />
       {/* ── NAV ─────────────────────────────────── */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-20">

@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { ArrowRight, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import logoPreta from "@/assets/logo-preta.png";
+import { SEO } from "@/components/SEO";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -63,6 +64,7 @@ const ResetPassword = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-6 bg-background">
+      <SEO title="Redefinir senha" description="Defina uma nova senha de acesso à sua conta Novare." canonicalPath="/reset-password" index={false} />
       <div className="w-full max-w-[420px]">
         <div className="flex justify-center mb-10">
           <img src={logoPreta} alt="Novare" className="h-8 w-auto" />
