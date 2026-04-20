@@ -24,6 +24,8 @@ interface Props {
 
 export const StepObjetivos = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyGoal()];
+  const [focusId, setFocusId] = useState<string | null>(null);
+  useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof GoalItem, value: string) => {
     const next = [...items];
@@ -31,7 +33,11 @@ export const StepObjetivos = ({ data, onChange }: Props) => {
     onChange(next);
   };
 
-  const add = () => onChange([emptyGoal(), ...items]);
+  const add = () => {
+    const novo = emptyGoal();
+    onChange([novo, ...items]);
+    setFocusId(novo.id!);
+  };
   const remove = (i: number) => {
     if (items.length <= 1) return;
     onChange(items.filter((_, idx) => idx !== i));
