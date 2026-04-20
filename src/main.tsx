@@ -2,12 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Apply saved theme before render to avoid flash
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme === "dark") {
-  document.documentElement.classList.add("dark");
-} else {
-  document.documentElement.classList.remove("dark");
-}
+// Theme is applied by an inline anti-FOUC script in index.html and managed by
+// ThemeProvider at runtime — no setup needed here.
 
 createRoot(document.getElementById("root")!).render(<App />);
