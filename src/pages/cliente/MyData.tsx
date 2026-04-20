@@ -306,10 +306,10 @@ const MyData = () => {
   ];
   const sectionSubtitles = [
     "Quem você é",
-    `${rendas.length} fonte${rendas.length !== 1 ? "s" : ""} · ${fmtShort(totalRenda)}/mês`,
-    `${despesas.filter(e => parseFloat(e.amount) > 0).length} categorias · ${fmtShort(totalDespesas)}/mês`,
-    `${dividas.length} dívida${dividas.length !== 1 ? "s" : ""} · ${fmtShort(totalDividas)} total`,
-    `${patrimonio.length} ativo${patrimonio.length !== 1 ? "s" : ""} · ${fmtShort(totalPatrimonio)}`,
+    `${rendas.length} fonte${rendas.length !== 1 ? "s" : ""} · ${fmt(totalRenda)}/mês`,
+    `${despesas.filter(e => parseFloat(e.amount) > 0).length} categorias · ${fmt(totalDespesas)}/mês`,
+    `${dividas.length} dívida${dividas.length !== 1 ? "s" : ""} · ${fmt(totalDividas)} total`,
+    `${patrimonio.length} ativo${patrimonio.length !== 1 ? "s" : ""} · ${fmt(totalPatrimonio)}`,
     `${seguros.length} proteç${seguros.length !== 1 ? "ões" : "ão"}`,
     `${objetivos.length} objetivo${objetivos.length !== 1 ? "s" : ""}`,
     `Perfil: ${behavProfile}`,
