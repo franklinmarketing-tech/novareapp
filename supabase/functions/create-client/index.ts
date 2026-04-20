@@ -144,6 +144,20 @@ Deno.serve(async (req) => {
       .eq("user_id", userId)
       .single();
 
+    // Dispara e-mail de boas-vindas (não bloqueia a resposta em caso de erro)
+    try {
+      await adminClient.functions.invoke("send-client-email", {
+        body: {
+          to: email.trim(),
+          templateName: "welcome",
+          templateData: { clientName: name.trim() },
+        },
+        headers: { Authorization: authHeader },
+      });
+    } catch (emailErr) {
+      console.error("Falha ao enviar e-mail de boas-vindas:", emailErr);
+    }
+
     return new Response(
       JSON.stringify({ clientId: clientRecord?.id, userId }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
