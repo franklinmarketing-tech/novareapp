@@ -16,6 +16,14 @@ import {
   Gem,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -165,21 +173,44 @@ export const AdminLayout = ({ children }: Props) => {
         </div>
       </div>
 
-      {/* Admin profile — TOP */}
+      {/* Admin profile — TOP (with dropdown) */}
       <div className="px-3 pb-4 shrink-0">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-sidebar-accent/40 border border-sidebar-border/30">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sidebar-primary/30 to-sidebar-accent flex items-center justify-center shrink-0 ring-1 ring-sidebar-border/40">
-            <span className="text-[0.8125rem] font-semibold text-sidebar-foreground">{initials}</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[0.8125rem] font-semibold text-sidebar-foreground truncate leading-tight">
-              {profile?.full_name || "Administrador"}
-            </p>
-            <p className="text-[0.6875rem] text-sidebar-foreground/50 truncate leading-tight mt-0.5">
-              {profile?.email || ""}
-            </p>
-          </div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-sidebar-accent/40 border border-sidebar-border/30 w-full hover:bg-sidebar-accent/60 transition-colors text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sidebar-primary/30 to-sidebar-accent flex items-center justify-center shrink-0 ring-1 ring-sidebar-border/40">
+                <span className="text-[0.8125rem] font-semibold text-sidebar-foreground">{initials}</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[0.8125rem] font-semibold text-sidebar-foreground truncate leading-tight">
+                  {profile?.full_name || "Administrador"}
+                </p>
+                <p className="text-[0.6875rem] text-sidebar-foreground/50 truncate leading-tight mt-0.5">
+                  {profile?.email || ""}
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-sidebar-foreground/40 shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="right" className="w-56">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium truncate">{profile?.full_name || "Administrador"}</p>
+                <p className="text-xs text-muted-foreground truncate">{profile?.email}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { setMobileOpen(false); navigate("/admin/configuracoes"); }}>
+              <Settings className="h-4 w-4 mr-2" />
+              Configurações
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Sections */}
