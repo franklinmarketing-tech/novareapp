@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/PageTransition";
 import PageBanner from "@/components/PageBanner";
+import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
@@ -127,6 +128,7 @@ const ClientList = () => {
 
   return (
     <PageTransition>
+      <SEO title="Clientes" description="Lista completa de clientes da consultoria Novare." index={false} />
       <PageBanner
         title="Clientes"
         description="Gerencie seus clientes cadastrados"

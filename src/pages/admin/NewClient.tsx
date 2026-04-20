@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { UserPlus, ArrowRight } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
+import { SEO } from "@/components/SEO";
 
 const NewClient = () => {
   const [name, setName] = useState("");
@@ -54,6 +55,7 @@ const NewClient = () => {
 
   return (
     <PageTransition className="flex items-center justify-center min-h-[80vh]">
+      <SEO title="Novo cliente" description="Cadastre um novo cliente para iniciar o onboarding na Novare." index={false} />
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}

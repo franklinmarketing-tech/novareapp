@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import PageBanner from "@/components/PageBanner";
+import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -233,6 +234,7 @@ const AdminDashboard = () => {
 
   return (
     <PageTransition className="space-y-6">
+      <SEO title="Dashboard" description="Visão geral da sua consultoria Novare: clientes, métricas e progresso." index={false} />
       <PageBanner title="Dashboard" description="Visão geral da sua consultoria" icon={LayoutDashboard} />
 
       {/* ── Month Selector ── */}
