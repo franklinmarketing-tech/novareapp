@@ -83,7 +83,7 @@ const PulseBar = ({ value, max, color, label }: { value: number; max: number; co
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span className="text-[0.6875rem] font-medium text-muted-foreground">{label}</span>
-        <span className="text-[0.6875rem] font-bold text-foreground tabular-nums">{fmtShort(value)}</span>
+        <span className="text-[0.6875rem] font-bold text-foreground tabular-nums">{fmt(value)}</span>
       </div>
       <div className="h-1.5 rounded-full bg-muted/60 overflow-hidden">
         <motion.div
@@ -306,10 +306,10 @@ const MyData = () => {
   ];
   const sectionSubtitles = [
     "Quem você é",
-    `${rendas.length} fonte${rendas.length !== 1 ? "s" : ""} · ${fmtShort(totalRenda)}/mês`,
-    `${despesas.filter(e => parseFloat(e.amount) > 0).length} categorias · ${fmtShort(totalDespesas)}/mês`,
-    `${dividas.length} dívida${dividas.length !== 1 ? "s" : ""} · ${fmtShort(totalDividas)} total`,
-    `${patrimonio.length} ativo${patrimonio.length !== 1 ? "s" : ""} · ${fmtShort(totalPatrimonio)}`,
+    `${rendas.length} fonte${rendas.length !== 1 ? "s" : ""} · ${fmt(totalRenda)}/mês`,
+    `${despesas.filter(e => parseFloat(e.amount) > 0).length} categorias · ${fmt(totalDespesas)}/mês`,
+    `${dividas.length} dívida${dividas.length !== 1 ? "s" : ""} · ${fmt(totalDividas)} total`,
+    `${patrimonio.length} ativo${patrimonio.length !== 1 ? "s" : ""} · ${fmt(totalPatrimonio)}`,
     `${seguros.length} proteç${seguros.length !== 1 ? "ões" : "ão"}`,
     `${objetivos.length} objetivo${objetivos.length !== 1 ? "s" : ""}`,
     `Perfil: ${behavProfile}`,
@@ -476,14 +476,14 @@ const MyData = () => {
             </div>
             <div>
               <p className="text-[0.6875rem] font-semibold text-muted-foreground uppercase tracking-wider">Patrimônio Líquido</p>
-              <p className={`text-2xl font-bold tabular-nums ${netWorth >= 0 ? "text-foreground" : "text-destructive"}`}>{fmtShort(netWorth)}</p>
+              <p className={`text-2xl font-bold tabular-nums ${netWorth >= 0 ? "text-foreground" : "text-destructive"}`}>{fmt(netWorth)}</p>
             </div>
           </CardContent>
         </Card>
         <Card className="rounded-2xl border-border/40 shadow-subtle">
           <CardContent className="p-5">
             <p className="text-[0.6875rem] font-semibold text-muted-foreground uppercase tracking-wider">Fluxo Mensal</p>
-            <p className={`text-xl font-bold tabular-nums mt-1 ${savings >= 0 ? "text-success" : "text-destructive"}`}>{savings >= 0 ? "+" : ""}{fmtShort(savings)}</p>
+            <p className={`text-xl font-bold tabular-nums mt-1 ${savings >= 0 ? "text-success" : "text-destructive"}`}>{savings >= 0 ? "+" : ""}{fmt(savings)}</p>
           </CardContent>
         </Card>
         <Card className="rounded-2xl border-border/40 shadow-subtle">
