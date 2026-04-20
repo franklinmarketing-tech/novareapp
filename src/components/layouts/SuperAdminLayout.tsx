@@ -78,13 +78,6 @@ export const SuperAdminLayout = ({ children }: Props) => {
       </nav>
 
       <div className="border-t border-sidebar-border/30 p-3 space-y-1">
-        <button
-          onClick={() => navigate("/admin")}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/80 transition-all w-full"
-        >
-          <ArrowLeftRight className="h-[18px] w-[18px]" />
-          Painel Admin
-        </button>
         <ThemeToggle variant="sidebar" />
         <button
           onClick={handleSignOut}
