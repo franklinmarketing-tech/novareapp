@@ -87,7 +87,6 @@ const AdminSettings = () => {
   const [editingFounder, setEditingFounder] = useState<Founder | null>(null);
 
   const reloadFounders = () =>
-  const reloadFounders = () =>
     fetchFounders(true).then(setFounders).catch(() => setFounders([]));
 
   useEffect(() => {
