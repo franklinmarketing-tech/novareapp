@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import { forwardRef } from "react";
 
 interface PageBannerProps {
   title: string;
@@ -8,9 +9,10 @@ interface PageBannerProps {
   action?: React.ReactNode;
 }
 
-const PageBanner = ({ title, description, icon: Icon, action }: PageBannerProps) => {
+const PageBanner = forwardRef<HTMLDivElement, PageBannerProps>(({ title, description, icon: Icon, action }, ref) => {
   return (
     <motion.div
+      ref={ref as any}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -67,6 +69,7 @@ const PageBanner = ({ title, description, icon: Icon, action }: PageBannerProps)
       </div>
     </motion.div>
   );
-};
+});
+PageBanner.displayName = "PageBanner";
 
 export default PageBanner;
