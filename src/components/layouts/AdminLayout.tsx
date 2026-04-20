@@ -20,6 +20,7 @@ import {
   Bell,
   CreditCard,
   Lock,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,7 +82,7 @@ interface Props {
 }
 
 export const AdminLayout = ({ children }: Props) => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
