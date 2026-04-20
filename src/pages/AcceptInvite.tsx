@@ -178,7 +178,7 @@ const AcceptInvite = () => {
 
           {state.kind === "success" && (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
-              <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+              <CheckCircle2 className="h-10 w-10 text-primary" />
               <p className="font-medium">Conta criada com sucesso!</p>
               <p className="text-sm text-muted-foreground">Redirecionando…</p>
             </div>
