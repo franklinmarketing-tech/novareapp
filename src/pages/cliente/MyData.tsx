@@ -476,7 +476,7 @@ const MyData = () => {
             </div>
             <div>
               <p className="text-[0.6875rem] font-semibold text-muted-foreground uppercase tracking-wider">Patrimônio Líquido</p>
-              <p className={`text-2xl font-bold tabular-nums ${netWorth >= 0 ? "text-foreground" : "text-destructive"}`}>{fmtShort(netWorth)}</p>
+              <p className={`text-2xl font-bold tabular-nums ${netWorth >= 0 ? "text-foreground" : "text-destructive"}`}>{fmt(netWorth)}</p>
             </div>
           </CardContent>
         </Card>
