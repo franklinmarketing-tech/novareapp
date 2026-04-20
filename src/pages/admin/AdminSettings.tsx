@@ -1,8 +1,9 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,13 +14,15 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import {
   User, Lock, Palette, Settings, Moon, Sun,
-  Users, Image as ImageIcon, Bell, CreditCard, ExternalLink, Sparkles,
+  Users, Image as ImageIcon, Bell, CreditCard, Loader2, Upload, Plus, Pencil,
 } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SEO } from "@/components/SEO";
 import { useSettingsCompletion, type SettingsTabId } from "@/hooks/useSettingsCompletion";
 import { fetchFounders, type Founder } from "@/lib/founders";
+import { FounderEditor } from "@/components/FounderEditor";
+import { BrandSettings } from "@/components/admin/BrandSettings";
 
 const TABS: { id: SettingsTabId; label: string; icon: typeof User }[] = [
   { id: "perfil", label: "Perfil", icon: User },
