@@ -198,32 +198,31 @@ export const AdminLayout = ({ children }: Props) => {
       </nav>
 
       {/* Founders */}
-      <div className="border-t border-sidebar-border/30 mt-2">
+      <div className="border-t border-sidebar-border/30 mt-4 shrink-0">
         <FoundersShowcase variant="sidebar" />
       </div>
 
+      {/* Workspace */}
+      <div className="px-3 mt-2 shrink-0">
+        <NavLink
+          to="/admin/workspace"
+          onClick={() => setMobileOpen(false)}
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+              isActive
+                ? "bg-sidebar-accent text-sidebar-foreground"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/40"
+            )
+          }
+        >
+          <Gem className="h-[18px] w-[18px]" />
+          <span className="flex-1">Projetos</span>
+          <ChevronRight className="h-4 w-4 opacity-50" />
+        </NavLink>
+      </div>
 
-        {/* Workspace */}
-        <div className="px-3 mt-4 mb-2">
-          <NavLink
-            to="/admin/workspace"
-            onClick={() => setMobileOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/40"
-              )
-            }
-          >
-            <Gem className="h-[18px] w-[18px]" />
-            <span className="flex-1">Projetos</span>
-            <ChevronRight className="h-6 w-6 opacity-50" />
-          </NavLink>
-        </div>
-
-      <div className="mt-auto border-t border-sidebar-border/30">
+      <div className="mt-auto border-t border-sidebar-border/30 shrink-0">
         {/* Settings + Theme toggle */}
         <div className="px-3 pt-3 space-y-0.5">
           <NavLink
@@ -245,7 +244,7 @@ export const AdminLayout = ({ children }: Props) => {
         </div>
 
         {/* Admin profile */}
-        <div className="px-4 py-4">
+        <div className="px-4 py-3">
           <div className="flex items-center gap-3 px-2">
             <div className="w-9 h-9 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0">
               <span className="text-xs font-semibold text-sidebar-foreground">{initials}</span>
@@ -260,6 +259,18 @@ export const AdminLayout = ({ children }: Props) => {
             </div>
           </div>
         </div>
+
+        {/* Sign out */}
+        <div className="px-3 pb-4">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/70 transition-all duration-200 w-full"
+          >
+            <LogOut className="h-[18px] w-[18px]" />
+            Sair
+          </button>
+        </div>
+      </div>
 
         {/* Sign out */}
         <div className="px-3 pb-4">
