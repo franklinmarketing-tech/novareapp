@@ -10,6 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
+  ResponsiveContainer, Legend, ReferenceLine,
+} from "recharts";
 import logoPreta from "@/assets/logo-preta.png";
 import logoBranca from "@/assets/logo-branca.png";
 import jeffersonImg from "@/assets/jefferson.png";
@@ -156,6 +161,15 @@ const navLinks = [
 ];
 
 /* ── simulator ─────────────────────────────────── */
+interface YearPoint {
+  year: number;        // ano relativo (1, 2, 3...)
+  age: number;         // idade no fim do ano
+  invested: number;    // total aportado acumulado (numérico)
+  gross: number;       // patrimônio bruto acumulado
+  net: number;         // patrimônio líquido após IR
+  gain: number;        // ganho líquido (net - invested)
+}
+
 interface SimResult {
   patrimonio: string;
   patrimonioLiquido: string;
@@ -166,6 +180,15 @@ interface SimResult {
   atingeMeta: boolean;
   anosAcumulo: number;
   aliquotaIR: number;
+  // Numerical for charts
+  patrimonioNum: number;
+  patrimonioLiquidoNum: number;
+  totalInvestidoNum: number;
+  ganhoLiquidoNum: number;
+  rendaMensalLiquidaNum: number;
+  rendaDesejadaNum: number;
+  /** Ano-a-ano para gráficos / tabela */
+  timeline: YearPoint[];
 }
 
 function getAliquotaIR(anos: number): number {
@@ -177,13 +200,43 @@ function getAliquotaIR(anos: number): number {
 }
 
 function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: number, aporte: number, rendaDesejada: number, rentAnual: number): SimResult {
-  const anos = idadeAposent - idadeAtual;
+  const anos = Math.max(0, idadeAposent - idadeAtual);
   const meses = anos * 12;
   const taxaMensal = Math.pow(1 + rentAnual / 100, 1 / 12) - 1;
 
   // Rentabilidade NOMINAL (bruta) — sem descontar inflação
   let patrimonioBruto = patrimonioAtual;
-  for (let i = 0; i < meses; i++) patrimonioBruto = patrimonioBruto * (1 + taxaMensal) + aporte;
+  const timeline: YearPoint[] = [];
+  // Ponto inicial (ano 0)
+  timeline.push({
+    year: 0,
+    age: idadeAtual,
+    invested: patrimonioAtual,
+    gross: patrimonioAtual,
+    net: patrimonioAtual,
+    gain: 0,
+  });
+
+  for (let m = 1; m <= meses; m++) {
+    patrimonioBruto = patrimonioBruto * (1 + taxaMensal) + aporte;
+    if (m % 12 === 0) {
+      const yearIdx = m / 12;
+      const investedSoFar = patrimonioAtual + aporte * m;
+      const ganhoBrutoY = patrimonioBruto - investedSoFar;
+      // IR no ponto: usa a alíquota do horizonte total (estimativa visual)
+      const aliqPonto = getAliquotaIR(yearIdx);
+      const irY = Math.max(0, ganhoBrutoY) * (aliqPonto / 100);
+      const netY = patrimonioBruto - irY;
+      timeline.push({
+        year: yearIdx,
+        age: idadeAtual + yearIdx,
+        invested: investedSoFar,
+        gross: patrimonioBruto,
+        net: netY,
+        gain: netY - investedSoFar,
+      });
+    }
+  }
 
   const totalInvestido = patrimonioAtual + aporte * meses;
   const ganhoBruto = patrimonioBruto - totalInvestido;
@@ -194,7 +247,7 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
   const patrimonioLiquido = patrimonioBruto - irDevido;
   const ganhoLiquido = patrimonioLiquido - totalInvestido;
 
-  // Renda mensal bruta e líquida (4% a.a. rule adaptada à taxa)
+  // Renda mensal bruta e líquida (sem consumir o principal)
   const rendaMensalBruta = patrimonioBruto * taxaMensal;
   const rendaMensalLiquida = rendaMensalBruta * (1 - aliquotaIR / 100);
 
@@ -210,6 +263,13 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
     atingeMeta: rendaMensalLiquida >= rendaDesejada,
     anosAcumulo: anos,
     aliquotaIR,
+    patrimonioNum: patrimonioBruto,
+    patrimonioLiquidoNum: patrimonioLiquido,
+    totalInvestidoNum: totalInvestido,
+    ganhoLiquidoNum: ganhoLiquido,
+    rendaMensalLiquidaNum: rendaMensalLiquida,
+    rendaDesejadaNum: rendaDesejada,
+    timeline,
   };
 }
 
@@ -819,6 +879,147 @@ const YieldGuide = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* ── EVOLUÇÃO: Gráfico + Tabela ───────── */}
+            {result && result.timeline.length > 1 && (
+              <motion.div
+                variants={fadeUp}
+                custom={2}
+                className="grid lg:grid-cols-5 gap-6"
+              >
+                {/* Gráfico */}
+                <div
+                  className="lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
+                  style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))", border: "1px solid rgba(255,255,255,0.06)" }}
+                >
+                  <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1">Evolução do patrimônio</p>
+                      <h3 className="text-xl font-bold text-white tracking-tight">Como seu dinheiro cresce</h3>
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px]">
+                      <span className="flex items-center gap-1.5 text-white/60">
+                        <span className="w-2.5 h-2.5 rounded-full bg-white/30" /> Investido
+                      </span>
+                      <span className="flex items-center gap-1.5 text-white/60">
+                        <span className="w-2.5 h-2.5 rounded-full bg-accent" /> Patrimônio líquido
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-[280px] md:h-[320px] -ml-3">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={result.timeline} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="gradNet" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.45} />
+                            <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.02} />
+                          </linearGradient>
+                          <linearGradient id="gradInv" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="rgba(255,255,255,0.35)" stopOpacity={0.35} />
+                            <stop offset="100%" stopColor="rgba(255,255,255,0.05)" stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 6" stroke="rgba(255,255,255,0.06)" />
+                        <XAxis
+                          dataKey="age"
+                          tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }}
+                          tickLine={false}
+                          axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+                          tickFormatter={(v) => `${v} anos`}
+                          interval="preserveStartEnd"
+                          minTickGap={24}
+                        />
+                        <YAxis
+                          tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }}
+                          tickLine={false}
+                          axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+                          tickFormatter={(v: number) => {
+                            if (v >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(1)}M`;
+                            if (v >= 1_000) return `R$ ${Math.round(v / 1_000)}k`;
+                            return `R$ ${v}`;
+                          }}
+                          width={70}
+                        />
+                        <RTooltip
+                          contentStyle={{
+                            background: "hsl(220 40% 10%)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            borderRadius: 12,
+                            color: "white",
+                            fontSize: 12,
+                          }}
+                          labelFormatter={(label, payload) => {
+                            const p = payload?.[0]?.payload as YearPoint | undefined;
+                            return p ? `Ano ${p.year} · ${p.age} anos` : `${label} anos`;
+                          }}
+                          formatter={(value: number, name: string) => [
+                            value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }),
+                            name === "net" ? "Patrimônio líquido" : name === "invested" ? "Total investido" : "Bruto",
+                          ]}
+                        />
+                        <Area type="monotone" dataKey="invested" stroke="rgba(255,255,255,0.55)" strokeWidth={2} fill="url(#gradInv)" />
+                        <Area type="monotone" dataKey="net" stroke="hsl(var(--accent))" strokeWidth={2.5} fill="url(#gradNet)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-[11px] text-white/35 mt-3 leading-relaxed">
+                    A área dourada representa o efeito dos juros compostos: tudo acima da linha branca é ganho gerado pelos seus investimentos.
+                  </p>
+                </div>
+
+                {/* Tabela */}
+                <div
+                  className="lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
+                  style={{ background: "linear-gradient(160deg, hsl(220 40% 14%), hsl(220 45% 9%))", border: "1px solid rgba(255,255,255,0.06)" }}
+                >
+                  <div className="mb-5">
+                    <p className="text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1">Tabela ano a ano</p>
+                    <h3 className="text-xl font-bold text-white tracking-tight">Acompanhe o crescimento</h3>
+                  </div>
+                  <div className="max-h-[340px] overflow-y-auto pr-1 -mr-1 sidebar-scroll">
+                    <Table>
+                      <TableHeader className="sticky top-0 z-10" style={{ background: "hsl(220 45% 11%)" }}>
+                        <TableRow className="border-white/[0.06] hover:bg-transparent">
+                          <TableHead className="text-[10px] uppercase tracking-wider text-white/40 font-semibold h-9">Idade</TableHead>
+                          <TableHead className="text-[10px] uppercase tracking-wider text-white/40 font-semibold text-right h-9">Investido</TableHead>
+                          <TableHead className="text-[10px] uppercase tracking-wider text-white/40 font-semibold text-right h-9">Patrimônio</TableHead>
+                          <TableHead className="text-[10px] uppercase tracking-wider text-accent font-semibold text-right h-9">Ganho</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {result.timeline.map((row, idx) => {
+                          const isLast = idx === result.timeline.length - 1;
+                          return (
+                            <TableRow
+                              key={row.year}
+                              className={`border-white/[0.04] hover:bg-white/[0.03] ${isLast ? "bg-accent/[0.06]" : ""}`}
+                            >
+                              <TableCell className="text-xs text-white/70 font-medium py-2.5">
+                                {row.age}
+                                <span className="text-white/30 ml-1 text-[10px]">(ano {row.year})</span>
+                              </TableCell>
+                              <TableCell className="text-xs text-white/55 text-right tabular-nums py-2.5">
+                                {row.invested.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={`text-xs font-semibold text-right tabular-nums py-2.5 ${isLast ? "text-white" : "text-white/85"}`}>
+                                {row.net.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className="text-xs text-accent font-semibold text-right tabular-nums py-2.5">
+                                {row.gain >= 0 ? "+" : ""}
+                                {row.gain.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <p className="text-[11px] text-white/35 mt-4 leading-relaxed">
+                    Patrimônio líquido estimado após IR (tabela regressiva). Ano 0 = hoje.
+                  </p>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>
