@@ -1,24 +1,26 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { User, Lock, Moon, Sun } from "lucide-react";
+import { Lock, Moon, Sun } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const ClientSettings = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   useEffect(() => {
     if (!user) return;
@@ -44,12 +46,6 @@ const ClientSettings = () => {
     setChangingPassword(false);
     if (error) { toast({ title: "Erro", description: error.message, variant: "destructive" }); }
     else { toast({ title: "Senha alterada" }); setNewPassword(""); setConfirmPassword(""); }
-  };
-
-  const toggleTheme = (checked: boolean) => {
-    setIsDark(checked);
-    document.documentElement.classList.toggle("dark", checked);
-    localStorage.setItem("theme", checked ? "dark" : "light");
   };
 
   return (
@@ -124,11 +120,11 @@ const ClientSettings = () => {
                 {isDark ? <Moon className="h-6 w-6 text-accent" /> : <Sun className="h-6 w-6 text-accent" />}
               </div>
               <div>
-                <p className="font-semibold text-foreground">Tema escuro</p>
+                <p className="font-semibold text-foreground">Tema</p>
                 <p className="text-xs text-muted-foreground">Alterne entre claro e escuro</p>
               </div>
             </div>
-            <Switch checked={isDark} onCheckedChange={toggleTheme} />
+            <ThemeToggle />
           </div>
         </CardContent>
       </Card>
