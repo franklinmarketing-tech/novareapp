@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
+import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
 
 export interface GoalItem {
   id?: string;
