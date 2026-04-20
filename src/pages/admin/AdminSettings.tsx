@@ -67,6 +67,9 @@ const AdminSettings = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarFileRef = useRef<HTMLInputElement>(null);
 
   // ── Security state ───────────────────────────────
   const [newPassword, setNewPassword] = useState("");
@@ -80,6 +83,11 @@ const AdminSettings = () => {
 
   // ── Team (founders) ──────────────────────────────
   const [founders, setFounders] = useState<Founder[]>([]);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingFounder, setEditingFounder] = useState<Founder | null>(null);
+
+  const reloadFounders = () =>
+    fetchFounders(true).then(setFounders).catch(() => setFounders([]));
 
   useEffect(() => {
     if (!user) return;
