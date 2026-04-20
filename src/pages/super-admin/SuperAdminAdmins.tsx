@@ -153,15 +153,26 @@ const SuperAdminAdmins = () => {
 
   const sendInvite = async () => {
     if (!inviteEmail) return;
+    setSending(true);
     const { data, error } = await supabase.functions.invoke("super-admin-invite", {
       body: { email: inviteEmail, role: inviteRole },
     });
+    setSending(false);
     if (error || (data as any)?.error) {
       toast({ title: "Erro", description: error?.message ?? (data as any)?.error, variant: "destructive" });
       return;
     }
-    toast({ title: "Convite enviado", description: `Token criado para ${inviteEmail}` });
-    setInviteEmail(""); setOpen(false);
+    const sent = (data as any)?.email_sent;
+    toast({
+      title: sent ? "Convite enviado por email" : "Convite criado",
+      description: sent
+        ? `Email enviado para ${inviteEmail} com o link de aceite.`
+        : `Email não enviado: ${(data as any)?.email_error ?? "desconhecido"}. Use o botão de copiar link.`,
+      variant: sent ? "default" : "destructive",
+    });
+    setInviteEmail("");
+    setOpen(false);
+    fetchAdmins();
   };
 
   return (
