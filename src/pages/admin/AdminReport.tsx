@@ -79,6 +79,75 @@ const StatCard = ({ label, value, icon: Icon, color = "bg-muted/60 text-muted-fo
   </Card>
 );
 
+// ── Domain types ─────────────────────────────────────
+type ReportClient = {
+  id: string;
+  user_id: string;
+  profession?: string | null;
+  [k: string]: unknown;
+};
+type ReportDiagnosis = { risk_classification?: string | null; [k: string]: unknown };
+type ReportIncome = {
+  id: string;
+  description: string;
+  amount: number | null;
+  frequency: string;
+  is_primary?: boolean | null;
+};
+type ReportExpense = {
+  id: string;
+  category: string;
+  amount: number | null;
+  description?: string | null;
+};
+type ReportDebt = {
+  id: string;
+  type: string;
+  creditor?: string | null;
+  total_amount: number | null;
+  monthly_payment: number | null;
+  interest_rate?: number | null;
+  remaining_months?: number | null;
+};
+type ReportAsset = {
+  id: string;
+  type: string;
+  description?: string | null;
+  estimated_value: number | null;
+};
+type ReportInsurance = {
+  id: string;
+  type: string;
+  provider?: string | null;
+  monthly_premium?: number | null;
+  coverage_amount?: number | null;
+};
+type ReportGoal = {
+  id: string;
+  description: string;
+  target_amount?: number | null;
+  deadline?: string | null;
+  priority?: string | null;
+};
+type ReportActionItem = {
+  id: string;
+  description: string;
+  area: string;
+  status: string;
+  parent_id?: string | null;
+  goal_id?: string | null;
+  responsible?: string | null;
+  deadline?: string | null;
+  financial_impact?: number | null;
+};
+type ReportSnapshot = {
+  snapshot_date: string;
+  total_assets?: number | null;
+  total_debts?: number | null;
+  savings_rate?: number | null;
+};
+type GoalProgress = ReportGoal & { tasksDone: number; tasksTotal: number; pct: number };
+
 // ── Main ─────────────────────────────────────────────
 const AdminReport = () => {
   const { clientId } = useClientId();
@@ -87,16 +156,16 @@ const AdminReport = () => {
   const reportRef = useRef<HTMLDivElement>(null);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
-  const [clientData, setClientData] = useState<any>(null);
-  const [diagnosis, setDiagnosis] = useState<any>(null);
-  const [incomes, setIncomes] = useState<any[]>([]);
-  const [expenses, setExpenses] = useState<any[]>([]);
-  const [debts, setDebts] = useState<any[]>([]);
-  const [assets, setAssets] = useState<any[]>([]);
-  const [insurance, setInsurance] = useState<any[]>([]);
-  const [goals, setGoals] = useState<any[]>([]);
-  const [actionItems, setActionItems] = useState<any[]>([]);
-  const [snapshots, setSnapshots] = useState<any[]>([]);
+  const [clientData, setClientData] = useState<ReportClient | null>(null);
+  const [diagnosis, setDiagnosis] = useState<ReportDiagnosis | null>(null);
+  const [incomes, setIncomes] = useState<ReportIncome[]>([]);
+  const [expenses, setExpenses] = useState<ReportExpense[]>([]);
+  const [debts, setDebts] = useState<ReportDebt[]>([]);
+  const [assets, setAssets] = useState<ReportAsset[]>([]);
+  const [insurance, setInsurance] = useState<ReportInsurance[]>([]);
+  const [goals, setGoals] = useState<ReportGoal[]>([]);
+  const [actionItems, setActionItems] = useState<ReportActionItem[]>([]);
+  const [snapshots, setSnapshots] = useState<ReportSnapshot[]>([]);
 
   useEffect(() => {
     if (!clientId) return;
@@ -116,25 +185,25 @@ const AdminReport = () => {
       ]);
 
       if (clientRes.data) {
-        setClientData(clientRes.data);
+        setClientData(clientRes.data as ReportClient);
         const { data: profile } = await supabase.from("profiles").select("full_name, email").eq("user_id", clientRes.data.user_id).maybeSingle();
         if (profile) {
           setClientName(profile.full_name);
           setClientEmail(profile.email);
         }
       }
-      setDiagnosis(diagRes.data);
-      setIncomes(incRes.data || []);
-      setExpenses(expRes.data || []);
-      setDebts(debRes.data || []);
-      setAssets(assRes.data || []);
-      setInsurance(insRes.data || []);
-      setGoals(goalRes.data || []);
-      setSnapshots(snapRes.data || []);
+      setDiagnosis((diagRes.data ?? null) as ReportDiagnosis | null);
+      setIncomes((incRes.data ?? []) as ReportIncome[]);
+      setExpenses((expRes.data ?? []) as ReportExpense[]);
+      setDebts((debRes.data ?? []) as ReportDebt[]);
+      setAssets((assRes.data ?? []) as ReportAsset[]);
+      setInsurance((insRes.data ?? []) as ReportInsurance[]);
+      setGoals((goalRes.data ?? []) as ReportGoal[]);
+      setSnapshots((snapRes.data ?? []) as ReportSnapshot[]);
 
       if (planRes.data) {
         const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id).order("created_at");
-        setActionItems(items || []);
+        setActionItems((items ?? []) as ReportActionItem[]);
       }
       setLoading(false);
     };
