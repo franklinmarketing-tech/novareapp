@@ -139,7 +139,9 @@ Deno.serve(async (req) => {
     const headers = Object.fromEntries(req.headers);
 
     // Verifica assinatura do webhook (formato standardwebhooks: v1,whsec_...)
-    const wh = new Webhook(HOOK_SECRET.replace("v1,whsec_", ""));
+    // Aceita formatos: "v1,whsec_BASE64", "whsec_BASE64" ou só "BASE64"
+    const rawSecret = HOOK_SECRET.replace(/^v1,/, "").replace(/^whsec_/, "");
+    const wh = new Webhook(rawSecret);
     const data = wh.verify(payload, headers) as {
       user: { email: string };
       email_data: {
