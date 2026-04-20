@@ -1,24 +1,26 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { User, Lock, Palette, Settings, Moon, Sun } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const AdminSettings = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   useEffect(() => {
     if (!user) return;
@@ -72,17 +74,6 @@ const AdminSettings = () => {
       toast({ title: "Senha alterada", description: "Sua senha foi atualizada com sucesso." });
       setNewPassword("");
       setConfirmPassword("");
-    }
-  };
-
-  const toggleTheme = (checked: boolean) => {
-    setIsDark(checked);
-    if (checked) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
     }
   };
 
@@ -174,11 +165,11 @@ const AdminSettings = () => {
               <div className="flex items-center gap-3">
                 {isDark ? <Moon className="h-6 w-6 text-accent" /> : <Sun className="h-6 w-6 text-accent" />}
                 <div>
-                  <p className="text-sm font-medium text-foreground">Tema escuro</p>
+                  <p className="text-sm font-medium text-foreground">Tema</p>
                   <p className="text-xs text-muted-foreground">Alterne entre o tema claro e escuro</p>
                 </div>
               </div>
-              <Switch checked={isDark} onCheckedChange={toggleTheme} />
+              <ThemeToggle />
             </div>
           </CardContent>
         </Card>

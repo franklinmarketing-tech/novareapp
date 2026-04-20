@@ -266,7 +266,7 @@ const MyData = () => {
           break;
         }
       }
-    } catch (err) { console.error("Save error:", err); }
+    } catch (err) { if (import.meta.env.DEV) console.error("Save error:", err); }
   };
 
   const handleSaveDialog = async (section: number) => {

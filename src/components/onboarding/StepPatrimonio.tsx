@@ -12,7 +12,7 @@ export interface AssetItem {
   estimated_value: string;
 }
 
-const emptyAsset = (): AssetItem => ({ type: "", description: "", estimated_value: "" });
+const emptyAsset = (): AssetItem => ({ id: crypto.randomUUID(), type: "", description: "", estimated_value: "" });
 
 interface Props {
   data: AssetItem[];
@@ -47,7 +47,7 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
 
       <div className="space-y-3">
         {items.map((item, i) => (
-          <div key={i} className="p-5 rounded-2xl border border-border bg-card space-y-4 hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] hover:border-border/80 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)]">
+          <div key={item.id ?? i} className="p-5 rounded-2xl border border-border bg-card space-y-4 hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] hover:border-border/80 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)]">
             <div className="flex items-center justify-between">
               <span className="font-body text-xs font-semibold text-muted-foreground uppercase tracking-[0.1em]">Ativo {i + 1}</span>
               {items.length > 1 && (

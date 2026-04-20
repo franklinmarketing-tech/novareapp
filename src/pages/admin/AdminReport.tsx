@@ -79,6 +79,75 @@ const StatCard = ({ label, value, icon: Icon, color = "bg-muted/60 text-muted-fo
   </Card>
 );
 
+// ── Domain types ─────────────────────────────────────
+type ReportClient = {
+  id: string;
+  user_id: string;
+  profession?: string | null;
+  [k: string]: unknown;
+};
+type ReportDiagnosis = { risk_classification?: string | null; [k: string]: unknown };
+type ReportIncome = {
+  id: string;
+  description: string;
+  amount: number | null;
+  frequency: string;
+  is_primary?: boolean | null;
+};
+type ReportExpense = {
+  id: string;
+  category: string;
+  amount: number | null;
+  description?: string | null;
+};
+type ReportDebt = {
+  id: string;
+  type: string;
+  creditor?: string | null;
+  total_amount: number | null;
+  monthly_payment: number | null;
+  interest_rate?: number | null;
+  remaining_months?: number | null;
+};
+type ReportAsset = {
+  id: string;
+  type: string;
+  description?: string | null;
+  estimated_value: number | null;
+};
+type ReportInsurance = {
+  id: string;
+  type: string;
+  provider?: string | null;
+  monthly_premium?: number | null;
+  coverage_amount?: number | null;
+};
+type ReportGoal = {
+  id: string;
+  description: string;
+  target_amount?: number | null;
+  deadline?: string | null;
+  priority?: string | null;
+};
+type ReportActionItem = {
+  id: string;
+  description: string;
+  area: string;
+  status: string;
+  parent_id?: string | null;
+  goal_id?: string | null;
+  responsible?: string | null;
+  deadline?: string | null;
+  financial_impact?: number | null;
+};
+type ReportSnapshot = {
+  snapshot_date: string;
+  total_assets?: number | null;
+  total_debts?: number | null;
+  savings_rate?: number | null;
+};
+type GoalProgress = ReportGoal & { tasksDone: number; tasksTotal: number; pct: number };
+
 // ── Main ─────────────────────────────────────────────
 const AdminReport = () => {
   const { clientId } = useClientId();
@@ -87,16 +156,16 @@ const AdminReport = () => {
   const reportRef = useRef<HTMLDivElement>(null);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
-  const [clientData, setClientData] = useState<any>(null);
-  const [diagnosis, setDiagnosis] = useState<any>(null);
-  const [incomes, setIncomes] = useState<any[]>([]);
-  const [expenses, setExpenses] = useState<any[]>([]);
-  const [debts, setDebts] = useState<any[]>([]);
-  const [assets, setAssets] = useState<any[]>([]);
-  const [insurance, setInsurance] = useState<any[]>([]);
-  const [goals, setGoals] = useState<any[]>([]);
-  const [actionItems, setActionItems] = useState<any[]>([]);
-  const [snapshots, setSnapshots] = useState<any[]>([]);
+  const [clientData, setClientData] = useState<ReportClient | null>(null);
+  const [diagnosis, setDiagnosis] = useState<ReportDiagnosis | null>(null);
+  const [incomes, setIncomes] = useState<ReportIncome[]>([]);
+  const [expenses, setExpenses] = useState<ReportExpense[]>([]);
+  const [debts, setDebts] = useState<ReportDebt[]>([]);
+  const [assets, setAssets] = useState<ReportAsset[]>([]);
+  const [insurance, setInsurance] = useState<ReportInsurance[]>([]);
+  const [goals, setGoals] = useState<ReportGoal[]>([]);
+  const [actionItems, setActionItems] = useState<ReportActionItem[]>([]);
+  const [snapshots, setSnapshots] = useState<ReportSnapshot[]>([]);
 
   useEffect(() => {
     if (!clientId) return;
@@ -116,25 +185,25 @@ const AdminReport = () => {
       ]);
 
       if (clientRes.data) {
-        setClientData(clientRes.data);
+        setClientData(clientRes.data as ReportClient);
         const { data: profile } = await supabase.from("profiles").select("full_name, email").eq("user_id", clientRes.data.user_id).maybeSingle();
         if (profile) {
           setClientName(profile.full_name);
           setClientEmail(profile.email);
         }
       }
-      setDiagnosis(diagRes.data);
-      setIncomes(incRes.data || []);
-      setExpenses(expRes.data || []);
-      setDebts(debRes.data || []);
-      setAssets(assRes.data || []);
-      setInsurance(insRes.data || []);
-      setGoals(goalRes.data || []);
-      setSnapshots(snapRes.data || []);
+      setDiagnosis((diagRes.data ?? null) as ReportDiagnosis | null);
+      setIncomes((incRes.data ?? []) as ReportIncome[]);
+      setExpenses((expRes.data ?? []) as ReportExpense[]);
+      setDebts((debRes.data ?? []) as ReportDebt[]);
+      setAssets((assRes.data ?? []) as ReportAsset[]);
+      setInsurance((insRes.data ?? []) as ReportInsurance[]);
+      setGoals((goalRes.data ?? []) as ReportGoal[]);
+      setSnapshots((snapRes.data ?? []) as ReportSnapshot[]);
 
       if (planRes.data) {
         const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id).order("created_at");
-        setActionItems(items || []);
+        setActionItems((items ?? []) as ReportActionItem[]);
       }
       setLoading(false);
     };
@@ -144,11 +213,11 @@ const AdminReport = () => {
   if (loading) return <div className="flex items-center justify-center py-20"><span className="animate-pulse text-muted-foreground">Gerando relatório...</span></div>;
 
   // ── Calculations ───────────────────────────────
-  const totalIncome = incomes.reduce((s: number, i: any) => s + (i.frequency === "anual" ? (i.amount || 0) / 12 : (i.amount || 0)), 0);
-  const totalExpenses = expenses.reduce((s: number, e: any) => s + (e.amount || 0), 0);
-  const totalDebts = debts.reduce((s: number, d: any) => s + (d.total_amount || 0), 0);
-  const monthlyDebtPayments = debts.reduce((s: number, d: any) => s + (d.monthly_payment || 0), 0);
-  const totalAssets = assets.reduce((s: number, a: any) => s + (a.estimated_value || 0), 0);
+  const totalIncome = incomes.reduce((s: number, i) => s + (i.frequency === "anual" ? (i.amount || 0) / 12 : (i.amount || 0)), 0);
+  const totalExpenses = expenses.reduce((s: number, e) => s + (e.amount || 0), 0);
+  const totalDebts = debts.reduce((s: number, d) => s + (d.total_amount || 0), 0);
+  const monthlyDebtPayments = debts.reduce((s: number, d) => s + (d.monthly_payment || 0), 0);
+  const totalAssets = assets.reduce((s: number, a) => s + (a.estimated_value || 0), 0);
   const netWorth = totalAssets - totalDebts;
   const netCashFlow = totalIncome - totalExpenses - monthlyDebtPayments;
   const savingsRate = totalIncome > 0 ? (netCashFlow / totalIncome) * 100 : 0;
@@ -158,23 +227,23 @@ const AdminReport = () => {
   const riskInfo = classificationConfig[risk] || classificationConfig.C;
 
   const catMap: Record<string, number> = {};
-  expenses.forEach((e: any) => { catMap[e.category] = (catMap[e.category] || 0) + (e.amount || 0); });
+  expenses.forEach((e) => { catMap[e.category] = (catMap[e.category] || 0) + (e.amount || 0); });
   const expensesByCategory = Object.entries(catMap).map(([category, amount]) => ({
     category: category.charAt(0).toUpperCase() + category.slice(1),
     amount, percentage: totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0,
   })).sort((a, b) => b.amount - a.amount);
 
   // Parent tasks only for progress
-  const parentItems = actionItems.filter((a: any) => !a.parent_id);
-  const completedActions = parentItems.filter((a: any) => a.status === "concluido").length;
+  const parentItems = actionItems.filter((a) => !a.parent_id);
+  const completedActions = parentItems.filter((a) => a.status === "concluido").length;
   const totalActions = parentItems.length;
   const planPct = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0;
-  const totalImpact = actionItems.reduce((s: number, a: any) => s + (a.financial_impact || 0), 0);
+  const totalImpact = actionItems.reduce((s: number, a) => s + (a.financial_impact || 0), 0);
 
   // Per-goal progress
-  const goalProgress = goals.map((g: any) => {
-    const goalTasks = parentItems.filter((a: any) => a.goal_id === g.id);
-    const done = goalTasks.filter((a: any) => a.status === "concluido").length;
+  const goalProgress = goals.map((g) => {
+    const goalTasks = parentItems.filter((a) => a.goal_id === g.id);
+    const done = goalTasks.filter((a) => a.status === "concluido").length;
     const total = goalTasks.length;
     const pct = total > 0 ? Math.round((done / total) * 100) : 0;
     return { ...g, tasksDone: done, tasksTotal: total, pct };
@@ -187,7 +256,7 @@ const AdminReport = () => {
     baixa: "bg-blue-500/10 text-blue-600 border-blue-500/20",
   };
 
-  const chartData = snapshots.map((s: any) => ({
+  const chartData = snapshots.map((s) => ({
     date: new Date(s.snapshot_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
     patrimonio: (s.total_assets || 0) - (s.total_debts || 0),
     ativos: s.total_assets || 0,
@@ -224,7 +293,12 @@ const AdminReport = () => {
         assets,
         insurance,
         goals: goalProgress,
-        actionItems: parentItems,
+        actionItems: parentItems.map((a) => ({
+          title: a.description,
+          status: a.status,
+          financial_impact: a.financial_impact ?? undefined,
+          deadline: a.deadline ?? undefined,
+        })),
         totalImpact,
         completedActions,
         totalActions,
@@ -233,7 +307,7 @@ const AdminReport = () => {
       });
       toast({ title: "PDF gerado com sucesso!" });
     } catch (err) {
-      console.error("PDF generation error:", err);
+      if (import.meta.env.DEV) console.error("PDF generation error:", err);
       toast({ title: "Erro ao gerar PDF", description: "Tente novamente", variant: "destructive" });
     } finally {
       setGenerating(false);
@@ -380,7 +454,7 @@ const AdminReport = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
-                  {assets.map((a: any) => (
+                  {assets.map((a) => (
                     <div key={a.id} className="flex items-center justify-between py-2 px-2 rounded-lg  text-sm">
                       <div className="min-w-0 flex-1">
                         <span className="text-foreground capitalize">{a.type}</span>
@@ -409,7 +483,7 @@ const AdminReport = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
-                  {incomes.map((i: any) => (
+                  {incomes.map((i) => (
                     <div key={i.id} className="flex items-center justify-between py-1.5 text-sm">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-foreground truncate">{i.description}</span>
@@ -531,7 +605,7 @@ const AdminReport = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {debts.map((d: any) => (
+                      {debts.map((d) => (
                         <tr key={d.id} className="border-b border-border/30 ">
                           <td className="py-2.5 text-foreground capitalize">{d.type}</td>
                           <td className="py-2.5 text-muted-foreground">{d.creditor || "—"}</td>
@@ -564,7 +638,7 @@ const AdminReport = () => {
           <section>
             <SectionHeader number={sectionNumber()} title="Proteção e Seguros" subtitle="Cobertura de riscos e seguros ativos" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {insurance.map((ins: any) => (
+              {insurance.map((ins) => (
                 <Card key={ins.id}>
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
@@ -609,10 +683,10 @@ const AdminReport = () => {
 
             {/* Per-goal cards */}
             <div className="space-y-3">
-              {goalProgress.map((g: any) => {
+              {goalProgress.map((g) => {
                 const prio = priorityLabels[g.priority] || g.priority || "Média";
                 const prioColor = priorityColors[g.priority] || priorityColors.media;
-                const goalItems = parentItems.filter((a: any) => a.goal_id === g.id);
+                const goalItems = parentItems.filter((a) => a.goal_id === g.id);
                 return (
                   <Card key={g.id}>
                     <CardContent className="p-5">
@@ -656,7 +730,7 @@ const AdminReport = () => {
                       {/* Task list for this goal */}
                       {goalItems.length > 0 && (
                         <div className="border-t border-border/50 pt-3 space-y-1.5">
-                          {goalItems.map((a: any) => {
+                          {goalItems.map((a) => {
                             const st = STATUS_MAP[a.status] || STATUS_MAP.pendente;
                             return (
                               <div key={a.id} className="flex items-center gap-2 text-xs">
@@ -726,7 +800,7 @@ const AdminReport = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {actionItems.map((a: any) => {
+                      {actionItems.map((a) => {
                         const st = STATUS_MAP[a.status] || STATUS_MAP.pendente;
                         return (
                           <tr key={a.id} className="border-b border-border/30 ">

@@ -135,7 +135,7 @@ const AdminInvestments = () => {
       if (error) throw error;
       setData(result);
     } catch (e) {
-      console.error("Erro ao buscar dados de mercado:", e);
+      if (import.meta.env.DEV) console.error("Erro ao buscar dados de mercado:", e);
     } finally {
       setLoading(false);
     }

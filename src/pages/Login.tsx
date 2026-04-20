@@ -199,7 +199,7 @@ const Login = () => {
   const cdiVal = useCountUp(11.2, 2400, 900, 1);
   const poupVal = useCountUp(6.4, 2400, 1200, 1);
 
-  // BUG FIX #2: navigate em useEffect pra evitar setState durante render
+  // Redirect after auth via effect to avoid setState during render warning
   useEffect(() => {
     if (role === "admin") {
       navigate("/admin", { replace: true });

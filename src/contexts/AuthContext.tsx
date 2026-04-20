@@ -51,8 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // BUG FIX #7: só seta loading=false APÓS role/status carregarem,
-    // evitando que ProtectedRoute redirecione pra /login durante o gap.
+    // Defer loading=false until role/status are fetched, so ProtectedRoute
+    // doesn't bounce the user to /login during the auth-resolution gap.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
