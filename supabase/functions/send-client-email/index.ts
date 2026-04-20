@@ -206,17 +206,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── AUTH: Only admins can send emails ──
+    // ── AUTH: Admins can send any template; regular users can only send "welcome" to themselves ──
     const { data: isAdmin } = await callerClient.rpc("has_role", {
       _user_id: claimsData.claims.sub,
       _role: "admin",
     });
-    if (!isAdmin) {
-      return new Response(JSON.stringify({ error: "Acesso negado" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -246,6 +240,17 @@ Deno.serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Não-admins só podem disparar "welcome" para o próprio e-mail
+    if (!isAdmin) {
+      const callerEmail = (claimsData.claims.email as string | undefined)?.toLowerCase();
+      if (templateName !== "welcome" || !callerEmail || callerEmail !== to.trim().toLowerCase()) {
+        return new Response(JSON.stringify({ error: "Acesso negado" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const templateFn = TEMPLATES[templateName];
