@@ -113,10 +113,8 @@ const ClientOnboardingPage = () => {
     load();
   }, [user]);
 
-  // BUG FIX #4-6: substituído delete-then-insert por sync incremental:
-  // 1. Identifica IDs removidos -> só deleta esses
-  // 2. Usa upsert no restante -> preserva IDs e evita race conditions
-  // 3. Trata erros e retorna boolean indicando sucesso
+  // Incremental sync: only deletes removed rows and upserts the rest, which
+  // preserves IDs, avoids race conditions, and surfaces errors via boolean.
   const syncCollection = async (
     table: "income" | "expenses" | "debts" | "assets" | "insurance" | "goals",
     existingItems: Array<{ id?: string }>,
