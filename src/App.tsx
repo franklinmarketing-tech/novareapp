@@ -7,9 +7,11 @@ import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SuperAdminRoute } from "@/components/SuperAdminRoute";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { ClientLayout } from "@/components/layouts/ClientLayout";
 import AdminClientLayout from "@/components/layouts/AdminClientLayout";
+import { SuperAdminLayout } from "@/components/layouts/SuperAdminLayout";
 
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
@@ -37,6 +39,14 @@ import ActionPlan from "@/pages/cliente/ActionPlan";
 import Monitoring from "@/pages/cliente/Monitoring";
 import ClientSettings from "@/pages/cliente/ClientSettings";
 import YieldGuide from "@/pages/YieldGuide";
+
+import SuperAdminDashboard from "@/pages/super-admin/SuperAdminDashboard";
+import SuperAdminAdmins from "@/pages/super-admin/SuperAdminAdmins";
+import SuperAdminClients from "@/pages/super-admin/SuperAdminClients";
+import SuperAdminAudit from "@/pages/super-admin/SuperAdminAudit";
+import SuperAdminFeatureFlags from "@/pages/super-admin/SuperAdminFeatureFlags";
+import SuperAdminConfig from "@/pages/super-admin/SuperAdminConfig";
+import SuperAdminBackups from "@/pages/super-admin/SuperAdminBackups";
 const queryClient = new QueryClient();
 
 const RootRedirect = () => {
@@ -62,6 +72,15 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/ferramentas/calculadora-de-investimentos" element={<YieldGuide />} />
+
+                {/* Super Admin routes */}
+                <Route path="/super-admin" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminDashboard /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/admins" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminAdmins /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/clientes" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminClients /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/auditoria" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminAudit /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/feature-flags" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminFeatureFlags /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/configuracao" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminConfig /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/backups" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminBackups /></SuperAdminLayout></SuperAdminRoute>} />
 
                 {/* Admin routes */}
                 <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminDashboard /></AdminLayout></ProtectedRoute>} />
