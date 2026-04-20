@@ -13,15 +13,23 @@ import {
   LogOut,
   Menu,
   X,
+  Activity,
+  ShieldCheck,
+  Power,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { GlobalBanners } from "@/components/GlobalBanners";
 import { useState } from "react";
 
 const navItems = [
   { to: "/super-admin", label: "Visão Geral", icon: LayoutDashboard, end: true },
+  { to: "/super-admin/saude", label: "Saúde", icon: Activity },
+  { to: "/super-admin/usuarios", label: "Usuários", icon: Users },
   { to: "/super-admin/admins", label: "Admins", icon: UserCog },
   { to: "/super-admin/clientes", label: "Clientes", icon: Users },
+  { to: "/super-admin/seguranca", label: "Segurança", icon: ShieldCheck },
+  { to: "/super-admin/operacoes", label: "Operações", icon: Power },
   { to: "/super-admin/auditoria", label: "Auditoria", icon: ScrollText },
   { to: "/super-admin/feature-flags", label: "Feature Flags", icon: Flag },
   { to: "/super-admin/configuracao", label: "Config Global", icon: Settings2 },
@@ -115,6 +123,7 @@ export const SuperAdminLayout = ({ children }: Props) => {
       )}
 
       <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 min-h-screen">
+        <GlobalBanners />
         <div className="p-4 lg:p-6 xl:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
       </main>
     </div>

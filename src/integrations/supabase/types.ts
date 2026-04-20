@@ -155,34 +155,52 @@ export type Database = {
       app_global_config: {
         Row: {
           allowed_email_domains: string[] | null
+          failed_login_threshold: number
+          failed_login_window_minutes: number
           id: number
           integrations: Json
+          ip_allowlist_enforced: boolean
           maintenance_message: string | null
           maintenance_mode: boolean
           max_clients_per_admin: number
           max_storage_mb_per_client: number
+          readonly_message: string | null
+          readonly_mode: boolean
+          require_password_for_destructive: boolean
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           allowed_email_domains?: string[] | null
+          failed_login_threshold?: number
+          failed_login_window_minutes?: number
           id?: number
           integrations?: Json
+          ip_allowlist_enforced?: boolean
           maintenance_message?: string | null
           maintenance_mode?: boolean
           max_clients_per_admin?: number
           max_storage_mb_per_client?: number
+          readonly_message?: string | null
+          readonly_mode?: boolean
+          require_password_for_destructive?: boolean
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           allowed_email_domains?: string[] | null
+          failed_login_threshold?: number
+          failed_login_window_minutes?: number
           id?: number
           integrations?: Json
+          ip_allowlist_enforced?: boolean
           maintenance_message?: string | null
           maintenance_mode?: boolean
           max_clients_per_admin?: number
           max_storage_mb_per_client?: number
+          readonly_message?: string | null
+          readonly_mode?: boolean
+          require_password_for_destructive?: boolean
           updated_at?: string
           updated_by?: string | null
         }
@@ -295,6 +313,75 @@ export type Database = {
           resource_id?: string | null
           resource_type?: string
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      banned_users: {
+        Row: {
+          banned_by: string
+          banned_until: string | null
+          created_at: string
+          email: string
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          banned_by: string
+          banned_until?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          banned_by?: string
+          banned_until?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      broadcast_messages: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          link_label: string | null
+          link_url: string | null
+          message: string
+          severity: string
+          target_roles: string[] | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          link_label?: string | null
+          link_url?: string | null
+          message: string
+          severity?: string
+          target_roles?: string[] | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          link_label?: string | null
+          link_url?: string | null
+          message?: string
+          severity?: string
+          target_roles?: string[] | null
         }
         Relationships: []
       }
@@ -994,6 +1081,33 @@ export type Database = {
           },
         ]
       }
+      ip_allowlist: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          ip_address: string
+          label: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          ip_address: string
+          label?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          ip_address?: string
+          label?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       monitoring_snapshots: {
         Row: {
           client_id: string
@@ -1074,6 +1188,102 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      security_alerts: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          title: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          title: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      super_admin_actions: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_user_id: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          reason: string | null
+          target_email: string | null
+          target_id: string | null
+          target_type: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_user_id: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          reason?: string | null
+          target_email?: string | null
+          target_id?: string | null
+          target_type?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_user_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          reason?: string | null
+          target_email?: string | null
+          target_id?: string | null
+          target_type?: string | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -1174,6 +1384,27 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_active_broadcasts: {
+        Args: { _role: string }
+        Returns: {
+          active: boolean
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          link_label: string | null
+          link_url: string | null
+          message: string
+          severity: string
+          target_roles: string[] | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "broadcast_messages"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1181,7 +1412,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_ip_allowed: {
+        Args: { _ip: string; _user_id: string }
+        Returns: boolean
+      }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_user_banned: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
