@@ -1,48 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowUpRight, X, Briefcase, TrendingUp, GraduationCap,
-  Shield, Users, Award, Linkedin,
-} from "lucide-react";
-import jeffersonImg from "@/assets/jefferson.png";
-import leonardoImg from "@/assets/leonardo.png";
-
-const founders = [
-  {
-    id: "jefferson",
-    name: "Jefferson Freitas",
-    shortName: "Jefferson",
-    certs: "CEA · CNEP-I · CFDe",
-    role: "Sócio-fundador",
-    shortBio: "Consultor Wealth de Investimentos",
-    img: jeffersonImg,
-    linkedin: "https://www.linkedin.com/in/jeffersonfreitas",
-    highlights: [
-      { icon: Briefcase, text: "Ex-Santander (Especialista Van Gogh / Select) e XP Inc." },
-      { icon: TrendingUp, text: "+R$ 40 milhões em captação líquida em um único ano" },
-      { icon: GraduationCap, text: "MBA PAAP CNEP-I · Aprovado CNPI (Conteúdo Brasileiro)" },
-      { icon: Shield, text: "13 anos de voluntariado em Tesouraria na CCB" },
-    ],
-    bio: "Com experiência nas maiores plataformas do mercado, Jefferson se especializou em planejamento patrimonial e estratégias de longo prazo para famílias e empresários de alta renda.",
-  },
-  {
-    id: "leonardo",
-    name: "Leonardo Freitas de Oliveira",
-    shortName: "Leonardo",
-    certs: "CEA",
-    role: "Sócio-fundador",
-    shortBio: "Consultor Wealth de Investimentos",
-    img: leonardoImg,
-    linkedin: "https://www.linkedin.com/in/leonardofreitasdeoliveira",
-    highlights: [
-      { icon: Briefcase, text: "Ex-líder Triple AAA no Santander · Wave Capital (BTG)" },
-      { icon: Users, text: "Liderou +20 profissionais na região de Limeira" },
-      { icon: Award, text: "Quadrante A1+ recorrente — referência em assessoria" },
-      { icon: GraduationCap, text: "Bacharel em Administração · ANCORD" },
-    ],
-    bio: "Leonardo construiu sua carreira liderando equipes de alta performance e atendendo clientes de alta renda. Especialista em alocação estratégica de ativos.",
-  },
-];
+import { ArrowUpRight, X, Linkedin, Pencil, Plus, EyeOff, Star } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { fetchFounders, type Founder } from "@/lib/founders";
+import { FounderEditor, ICON_OPTIONS, type IconName } from "@/components/FounderEditor";
 
 interface Props {
   /** compact mode for sidebars */
@@ -50,7 +11,36 @@ interface Props {
 }
 
 export const FoundersShowcase = ({ variant = "full" }: Props) => {
+  const { role } = useAuth();
+  const isAdmin = role === "admin";
+
+  const [founders, setFounders] = useState<Founder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Founder | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  const reload = async () => {
+    setLoading(true);
+    try {
+      // Admin enxerga inativos para poder gerenciá-los
+      const data = await fetchFounders(isAdmin);
+      setFounders(data);
+    } catch (e) {
+      console.error("Failed to load founders", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
+
+  if (loading && founders.length === 0) {
+    return <div className={variant === "sidebar" ? "h-20" : "h-40"} />;
+  }
 
   return (
     <>
@@ -61,48 +51,87 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
             Seus consultores
           </p>
         )}
-        <div className={`flex ${variant === "sidebar" ? "gap-3 justify-start px-2" : "gap-12 md:gap-20 justify-center"}`}>
-          {founders.map((f, i) => (
-            <motion.button
-              key={f.id}
-              onClick={() => setSelected(f.id)}
-              className="group flex flex-col items-center gap-2 focus:outline-none"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <div className="relative">
-                <div
-                  className={`rounded-full overflow-hidden ring-2 ring-accent/30 group-hover:ring-accent/70 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_20px_-5px_hsl(var(--accent)/0.4)] ${
-                    variant === "sidebar" ? "w-16 h-16" : "w-32 h-32 md:w-40 md:h-40 ring-4"
-                  }`}
-                >
-                  <img src={f.img} alt={f.name} className="w-full h-full object-cover object-top" />
+        <div className={`flex ${variant === "sidebar" ? "gap-3 justify-start px-2 flex-wrap" : "gap-12 md:gap-20 justify-center flex-wrap"}`}>
+          {founders.map((f) => (
+            <div key={f.id} className="relative group/founder">
+              <motion.button
+                onClick={() => setSelected(f.id)}
+                className="flex flex-col items-center gap-2 focus:outline-none"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <div className="relative">
+                  <div
+                    className={`rounded-full overflow-hidden ring-2 ring-accent/30 group-hover/founder:ring-accent/70 transition-all duration-300 shadow-lg group-hover/founder:shadow-[0_0_20px_-5px_hsl(var(--accent)/0.4)] ${
+                      variant === "sidebar" ? "w-16 h-16" : "w-32 h-32 md:w-40 md:h-40 ring-4"
+                    } ${!f.active ? "opacity-50" : ""}`}
+                  >
+                    {f.image_url ? (
+                      <img src={f.image_url} alt={f.name} className="w-full h-full object-cover object-top" />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-xs">
+                        Sem foto
+                      </div>
+                    )}
+                  </div>
+                  <motion.div
+                    className={`absolute -bottom-0.5 -right-0.5 rounded-full bg-accent flex items-center justify-center shadow-md ${
+                      variant === "sidebar" ? "w-5 h-5" : "w-8 h-8"
+                    }`}
+                    animate={{ scale: [1, 1.15, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <ArrowUpRight className={variant === "sidebar" ? "w-3 h-3 text-accent-foreground" : "w-4 h-4 text-accent-foreground"} />
+                  </motion.div>
+                  {!f.active && (
+                    <div className="absolute -top-1 -left-1 rounded-full bg-muted p-1 shadow">
+                      <EyeOff className="w-3 h-3 text-muted-foreground" />
+                    </div>
+                  )}
                 </div>
-                <motion.div
-                  className={`absolute -bottom-0.5 -right-0.5 rounded-full bg-accent flex items-center justify-center shadow-md ${
-                    variant === "sidebar" ? "w-5 h-5" : "w-8 h-8"
-                  }`}
-                  animate={{ scale: [1, 1.15, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                {variant !== "sidebar" && (
+                  <div className="text-center">
+                    <p className="font-bold text-base md:text-lg text-foreground">{f.short_name}</p>
+                    <p className="text-xs text-accent font-semibold">{f.certs}</p>
+                  </div>
+                )}
+              </motion.button>
+
+              {isAdmin && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setEditing(f); }}
+                  className="absolute -top-2 -right-2 z-20 w-7 h-7 rounded-full bg-foreground text-background shadow-lg flex items-center justify-center opacity-0 group-hover/founder:opacity-100 transition-opacity hover:scale-110"
+                  aria-label={`Editar ${f.short_name}`}
+                  title="Editar"
                 >
-                  <ArrowUpRight className={variant === "sidebar" ? "w-3 h-3 text-accent-foreground" : "w-4 h-4 text-accent-foreground"} />
-                </motion.div>
-              </div>
-              {variant !== "sidebar" && (
-                <div className="text-center">
-                  <p className="font-bold text-base md:text-lg text-foreground">{f.shortName}</p>
-                  <p className="text-xs text-accent font-semibold">{f.certs}</p>
-                </div>
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
               )}
-            </motion.button>
+            </div>
           ))}
+
+          {isAdmin && (
+            <button
+              onClick={() => setCreating(true)}
+              className={`flex flex-col items-center justify-center gap-2 rounded-full border-2 border-dashed border-border hover:border-accent hover:bg-accent/5 transition-colors ${
+                variant === "sidebar" ? "w-16 h-16" : "w-32 h-32 md:w-40 md:h-40"
+              }`}
+              title="Adicionar sócio"
+            >
+              <Plus className={variant === "sidebar" ? "w-5 h-5 text-muted-foreground" : "w-8 h-8 text-muted-foreground"} />
+              {variant !== "sidebar" && (
+                <span className="text-xs text-muted-foreground font-medium">Adicionar</span>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Popup */}
+      {/* Popup detalhes */}
       <AnimatePresence>
         {selected && (() => {
-          const f = founders.find(x => x.id === selected)!;
+          const f = founders.find((x) => x.id === selected);
+          if (!f) return null;
           return (
             <motion.div
               key="founder-overlay"
@@ -134,6 +163,15 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
                   <X className="w-4 h-4 text-foreground" />
                 </button>
 
+                {isAdmin && (
+                  <button
+                    onClick={() => { setEditing(f); setSelected(null); }}
+                    className="absolute top-4 left-4 z-20 px-3 h-8 rounded-full bg-foreground/90 text-background text-xs font-semibold flex items-center gap-1.5 hover:bg-foreground transition-colors"
+                  >
+                    <Pencil className="w-3 h-3" /> Editar
+                  </button>
+                )}
+
                 <div className="relative bg-gradient-to-br from-primary via-primary/90 to-accent/30 px-8 pt-8 pb-16">
                   <motion.div
                     className="absolute top-4 left-4 w-24 h-24 rounded-full bg-accent/10"
@@ -149,12 +187,14 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
 
                 <div className="flex justify-center -mt-14 relative z-10">
                   <motion.div
-                    className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-background shadow-xl"
+                    className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-background shadow-xl bg-muted"
                     initial={{ scale: 0, rotate: -10 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ type: "spring", delay: 0.15, damping: 20 }}
                   >
-                    <img src={f.img} alt={f.name} className="w-full h-full object-cover object-top" />
+                    {f.image_url && (
+                      <img src={f.image_url} alt={f.name} className="w-full h-full object-cover object-top" />
+                    )}
                   </motion.div>
                 </div>
 
@@ -166,62 +206,84 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
                     transition={{ delay: 0.2 }}
                   >
                     <h3 className="text-xl font-bold text-foreground">{f.name}</h3>
-                    <p className="text-sm text-accent font-semibold">{f.certs}</p>
-                    <p className="text-xs text-muted-foreground">{f.role} · {f.shortBio}</p>
+                    {f.certs && <p className="text-sm text-accent font-semibold">{f.certs}</p>}
+                    <p className="text-xs text-muted-foreground">
+                      {f.role}{f.short_bio && ` · ${f.short_bio}`}
+                    </p>
                   </motion.div>
 
-                  <motion.p
-                    className="text-sm text-muted-foreground leading-relaxed text-center"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    {f.bio}
-                  </motion.p>
-
-                  <motion.div
-                    className="space-y-3"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.35 }}
-                  >
-                    {f.highlights.map((h, i) => (
-                      <motion.div
-                        key={i}
-                        className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 + i * 0.08 }}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <h.icon className="w-4 h-4 text-accent" />
-                        </div>
-                        <p className="text-sm text-foreground leading-snug">{h.text}</p>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-
-                  <motion.div
-                    className="pt-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                  >
-                    <a
-                      href={f.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                  {f.bio && (
+                    <motion.p
+                      className="text-sm text-muted-foreground leading-relaxed text-center"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
                     >
-                      <Linkedin className="w-4 h-4" />
-                      Ver perfil no LinkedIn
-                    </a>
-                  </motion.div>
+                      {f.bio}
+                    </motion.p>
+                  )}
+
+                  {f.highlights.length > 0 && (
+                    <motion.div
+                      className="space-y-3"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.35 }}
+                    >
+                      {f.highlights.map((h, i) => {
+                        const Icon = ICON_OPTIONS[h.icon as IconName] ?? Star;
+                        return (
+                          <motion.div
+                            key={i}
+                            className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4 + i * 0.08 }}
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <Icon className="w-4 h-4 text-accent" />
+                            </div>
+                            <p className="text-sm text-foreground leading-snug">{h.text}</p>
+                          </motion.div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+
+                  {f.linkedin_url && (
+                    <motion.div
+                      className="pt-2"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <a
+                        href={f.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                      >
+                        <Linkedin className="w-4 h-4" />
+                        Ver perfil no LinkedIn
+                      </a>
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             </motion.div>
           );
         })()}
+      </AnimatePresence>
+
+      {/* Editor admin */}
+      <AnimatePresence>
+        {(editing || creating) && (
+          <FounderEditor
+            founder={editing}
+            onClose={() => { setEditing(null); setCreating(false); }}
+            onSaved={reload}
+          />
+        )}
       </AnimatePresence>
     </>
   );

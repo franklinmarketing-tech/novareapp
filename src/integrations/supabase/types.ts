@@ -528,6 +528,60 @@ export type Database = {
           },
         ]
       }
+      founders: {
+        Row: {
+          active: boolean
+          bio: string
+          certs: string
+          created_at: string
+          display_order: number
+          highlights: Json
+          id: string
+          image_url: string | null
+          linkedin_url: string | null
+          name: string
+          role: string
+          short_bio: string
+          short_name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          bio?: string
+          certs?: string
+          created_at?: string
+          display_order?: number
+          highlights?: Json
+          id?: string
+          image_url?: string | null
+          linkedin_url?: string | null
+          name: string
+          role?: string
+          short_bio?: string
+          short_name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          bio?: string
+          certs?: string
+          created_at?: string
+          display_order?: number
+          highlights?: Json
+          id?: string
+          image_url?: string | null
+          linkedin_url?: string | null
+          name?: string
+          role?: string
+          short_bio?: string
+          short_name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           client_id: string
