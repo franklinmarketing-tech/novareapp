@@ -13,7 +13,6 @@ import {
   LogOut,
   Menu,
   X,
-  ArrowLeftRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
