@@ -293,7 +293,12 @@ const AdminReport = () => {
         assets,
         insurance,
         goals: goalProgress,
-        actionItems: parentItems,
+        actionItems: parentItems.map((a) => ({
+          title: a.description,
+          status: a.status,
+          financial_impact: a.financial_impact ?? undefined,
+          deadline: a.deadline ?? undefined,
+        })),
         totalImpact,
         completedActions,
         totalActions,
