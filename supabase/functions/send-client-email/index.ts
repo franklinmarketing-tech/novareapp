@@ -7,8 +7,8 @@ const corsHeaders = {
 };
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
-const LOGO_URL = "https://bhncbqsdnehitavmcwhp.supabase.co/storage/v1/object/public/parecer-images/logo-branca.png";
-const APP_URL = "https://novareappcombr.lovable.app";
+const LOGO_URL = "https://novareapp.com.br/logo-novare-email.png";
+const APP_URL = "https://novareapp.com.br";
 
 const PRIMARY = "#2b4464";
 const ACCENT = "#c9643a";
@@ -136,7 +136,35 @@ function templateDiagnosisUpdate(data: any): { subject: string; html: string } {
   };
 }
 
+function templateWelcome(data: any): { subject: string; html: string } {
+  const name = (data.clientName || "").split(" ")[0];
+  return {
+    subject: "Bem-vindo(a) à Novare 👋",
+    html: baseLayout(`
+      <h1 style="color:${PRIMARY};font-size:24px;margin:0 0 16px;">Bem-vindo(a) à Novare${name ? `, ${name}` : ""}!</h1>
+      <p style="color:${TEXT_COLOR};font-size:15px;line-height:1.6;margin:0 0 18px;">
+        É um prazer ter você com a gente. A partir de agora, você terá uma plataforma exclusiva para acompanhar seu planejamento financeiro com a Novare.
+      </p>
+      <p style="color:${TEXT_COLOR};font-size:15px;line-height:1.6;margin:0 0 18px;">
+        Para acessar pela primeira vez, basta clicar no botão abaixo e criar a sua senha em <strong>"Esqueci minha senha"</strong> usando o e-mail no qual recebeu esta mensagem.
+      </p>
+      <div style="background:#f8f9fb;border-left:4px solid ${ACCENT};padding:14px 18px;border-radius:6px;margin:0 0 22px;">
+        <strong style="color:${PRIMARY};font-size:14px;">Próximos passos</strong>
+        <ul style="margin:8px 0 0;padding-left:18px;color:${TEXT_COLOR};font-size:14px;line-height:1.6;">
+          <li>Acesse o app pelo botão abaixo</li>
+          <li>Defina sua senha pessoal</li>
+          <li>Conclua seu onboarding com seu consultor</li>
+        </ul>
+      </div>
+      <p style="color:${MUTED};font-size:13px;line-height:1.5;margin:0;">
+        Qualquer dúvida, é só responder este e-mail. Estamos aqui para te ajudar.
+      </p>
+    `),
+  };
+}
+
 const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }> = {
+  welcome: templateWelcome,
   "snapshot-update": templateSnapshotUpdate,
   "task-completed": templateTaskCompleted,
   "goal-achieved": templateGoalAchieved,
