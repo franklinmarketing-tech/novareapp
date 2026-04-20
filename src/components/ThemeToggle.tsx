@@ -1,6 +1,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { forwardRef } from "react";
 
 interface ThemeToggleProps {
   variant?: "default" | "sidebar";
@@ -12,7 +13,7 @@ interface ThemeToggleProps {
  *  - "default": fits the breadcrumb / topbar (uses foreground tokens)
  *  - "sidebar": fits the dark sidebar (uses sidebar-foreground tokens)
  */
-export const ThemeToggle = ({ variant = "default", className }: ThemeToggleProps) => {
+export const ThemeToggle = forwardRef<HTMLButtonElement, ThemeToggleProps>(({ variant = "default", className }, ref) => {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
   const label = isDark ? "Ativar tema claro" : "Ativar tema escuro";
@@ -20,6 +21,7 @@ export const ThemeToggle = ({ variant = "default", className }: ThemeToggleProps
   if (variant === "sidebar") {
     return (
       <button
+        ref={ref}
         type="button"
         onClick={toggleTheme}
         aria-label={label}
@@ -52,6 +54,7 @@ export const ThemeToggle = ({ variant = "default", className }: ThemeToggleProps
 
   return (
     <button
+      ref={ref}
       type="button"
       onClick={toggleTheme}
       aria-label={label}
@@ -79,6 +82,7 @@ export const ThemeToggle = ({ variant = "default", className }: ThemeToggleProps
       </span>
     </button>
   );
-};
+});
+ThemeToggle.displayName = "ThemeToggle";
 
 export default ThemeToggle;
