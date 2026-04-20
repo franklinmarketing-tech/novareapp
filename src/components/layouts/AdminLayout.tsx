@@ -157,16 +157,16 @@ export const AdminLayout = ({ children }: Props) => {
   /* ── sidebar content ──────────────────────────────────── */
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-y-auto sidebar-scroll">
       {/* Logo */}
-      <div className="px-6 py-7">
+      <div className="px-6 py-6 shrink-0">
         <div className="flex items-center gap-3">
           <img src={logoBranca} alt="Novare" className="h-8 w-auto" />
         </div>
       </div>
 
       {/* Sections */}
-      <nav className="flex-1 px-3 space-y-6 overflow-y-auto">
+      <nav className="px-3 space-y-5 shrink-0">
         {sections.map((section) => (
           <div key={section.label}>
             <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-sidebar-foreground/40">
@@ -198,32 +198,31 @@ export const AdminLayout = ({ children }: Props) => {
       </nav>
 
       {/* Founders */}
-      <div className="border-t border-sidebar-border/30 mt-2">
+      <div className="border-t border-sidebar-border/30 mt-4 shrink-0">
         <FoundersShowcase variant="sidebar" />
       </div>
 
+      {/* Workspace */}
+      <div className="px-3 mt-2 shrink-0">
+        <NavLink
+          to="/admin/workspace"
+          onClick={() => setMobileOpen(false)}
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+              isActive
+                ? "bg-sidebar-accent text-sidebar-foreground"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/40"
+            )
+          }
+        >
+          <Gem className="h-[18px] w-[18px]" />
+          <span className="flex-1">Projetos</span>
+          <ChevronRight className="h-4 w-4 opacity-50" />
+        </NavLink>
+      </div>
 
-        {/* Workspace */}
-        <div className="px-3 mt-4 mb-2">
-          <NavLink
-            to="/admin/workspace"
-            onClick={() => setMobileOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/40"
-              )
-            }
-          >
-            <Gem className="h-[18px] w-[18px]" />
-            <span className="flex-1">Projetos</span>
-            <ChevronRight className="h-6 w-6 opacity-50" />
-          </NavLink>
-        </div>
-
-      <div className="mt-auto border-t border-sidebar-border/30">
+      <div className="mt-auto border-t border-sidebar-border/30 shrink-0">
         {/* Settings + Theme toggle */}
         <div className="px-3 pt-3 space-y-0.5">
           <NavLink
@@ -245,7 +244,7 @@ export const AdminLayout = ({ children }: Props) => {
         </div>
 
         {/* Admin profile */}
-        <div className="px-4 py-4">
+        <div className="px-4 py-3">
           <div className="flex items-center gap-3 px-2">
             <div className="w-9 h-9 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0">
               <span className="text-xs font-semibold text-sidebar-foreground">{initials}</span>
