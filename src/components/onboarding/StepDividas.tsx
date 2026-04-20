@@ -27,6 +27,8 @@ interface Props {
 
 export const StepDividas = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyDebt()];
+  const [focusId, setFocusId] = useState<string | null>(null);
+  useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof DebtItem, value: string) => {
     const next = [...items];
@@ -34,7 +36,11 @@ export const StepDividas = ({ data, onChange }: Props) => {
     onChange(next);
   };
 
-  const add = () => onChange([emptyDebt(), ...items]);
+  const add = () => {
+    const novo = emptyDebt();
+    onChange([novo, ...items]);
+    setFocusId(novo.id!);
+  };
   const remove = (i: number) => {
     if (items.length <= 1) return;
     onChange(items.filter((_, idx) => idx !== i));
