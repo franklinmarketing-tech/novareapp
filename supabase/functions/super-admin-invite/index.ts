@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
     });
     if (error) return json({ error: error.message }, 500);
 
-    const appUrl = Deno.env.get("PUBLIC_APP_URL") ?? "https://novareapp.com.br";
+    const appUrl = (Deno.env.get("PUBLIC_APP_URL") ?? "https://novareapp.com.br").replace(/\/+$/, "");
     const inviteUrl = `${appUrl}/aceitar-convite/${token}`;
 
     // Buscar nome do convidador
