@@ -13,6 +13,8 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? Deno.env.get("RESEND_AP
 const HOOK_SECRET = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
 const RESEND_API = "https://api.resend.com";
 const PUBLIC_APP_URL = Deno.env.get("PUBLIC_APP_URL") ?? "https://novareapp.com.br";
+// URL pública do logo (com fallback pra .lovable.app que responde 200 direto, sem redirects que o Gmail bloqueia)
+const LOGO_URL = "https://novareapp.lovable.app/logo-novare-email.png";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://hjikeevfzfswqydduars.supabase.co";
 const FROM = "Novare Planejamento <planejamento@novareapp.com.br>";
 
