@@ -12,8 +12,14 @@ import {
   X,
   Settings,
   ChevronRight,
+  ChevronDown,
   FolderKanban,
   Gem,
+  User as UserIcon,
+  Image as ImageIcon,
+  Bell,
+  CreditCard,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,9 +31,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { FoundersShowcase } from "@/components/FoundersShowcase";
+import { useSettingsCompletion, type SettingsTabId } from "@/hooks/useSettingsCompletion";
 
 /* ── nav config ─────────────────────────────────────────── */
 
@@ -80,6 +87,25 @@ export const AdminLayout = ({ children }: Props) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profile, setProfile] = useState<{ full_name: string; email: string } | null>(null);
   const [clientNames, setClientNames] = useState<Record<string, string>>({});
+  const settingsCompletion = useSettingsCompletion();
+  const isOnSettings = location.pathname.startsWith("/admin/configuracoes");
+  const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
+  useEffect(() => {
+    if (isOnSettings) setSettingsOpen(true);
+  }, [isOnSettings]);
+  const currentTab = (new URLSearchParams(location.search).get("tab") as SettingsTabId) || "perfil";
+
+  const settingsSubItems: { id: SettingsTabId; label: string; icon: typeof UserIcon }[] = useMemo(
+    () => [
+      { id: "perfil", label: "Perfil", icon: UserIcon },
+      { id: "equipe", label: "Equipe", icon: Users },
+      { id: "marca", label: "Marca", icon: ImageIcon },
+      { id: "notificacoes", label: "Notificações", icon: Bell },
+      { id: "cobranca", label: "Cobrança", icon: CreditCard },
+      { id: "seguranca", label: "Segurança", icon: Lock },
+    ],
+    []
+  );
 
   /* fetch admin profile */
   useEffect(() => {
@@ -271,23 +297,69 @@ export const AdminLayout = ({ children }: Props) => {
       </div>
 
       <div className="mt-auto border-t border-sidebar-border/30 shrink-0">
-        {/* Settings + Theme toggle */}
+        {/* Settings (expandable) */}
         <div className="px-3 pt-3 space-y-0.5">
-          <NavLink
-            to="/admin/configuracoes"
-            onClick={() => setMobileOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/70"
-              )
-            }
+          <button
+            type="button"
+            onClick={() => setSettingsOpen((o) => !o)}
+            aria-expanded={settingsOpen}
+            className={cn(
+              "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full",
+              isOnSettings
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/80"
+            )}
           >
             <Settings className="h-[18px] w-[18px]" />
-            Configurações
-          </NavLink>
+            <span className="flex-1 text-left">Configurações</span>
+            {!settingsCompletion.loading && settingsCompletion.pendingCount > 0 && (
+              <span
+                className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold"
+                aria-label={`${settingsCompletion.pendingCount} itens pendentes`}
+              >
+                {settingsCompletion.pendingCount}
+              </span>
+            )}
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 opacity-50 transition-transform duration-200",
+                settingsOpen ? "rotate-0" : "-rotate-90"
+              )}
+            />
+          </button>
+
+          {settingsOpen && (
+            <div className="pl-3 mt-0.5 space-y-0.5 border-l border-sidebar-border/30 ml-5">
+              {settingsSubItems.map((sub) => {
+                const SubIcon = sub.icon;
+                const isActive = isOnSettings && currentTab === sub.id;
+                const pending = settingsCompletion[sub.id];
+                return (
+                  <NavLink
+                    key={sub.id}
+                    to={`/admin/configuracoes?tab=${sub.id}`}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-2.5 pl-3 pr-3 py-2 ml-1 rounded-lg text-[0.8125rem] transition-all duration-200",
+                      isActive
+                        ? "bg-sidebar-accent/70 text-sidebar-foreground font-medium"
+                        : "text-sidebar-foreground/55 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground/80"
+                    )}
+                  >
+                    <SubIcon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="flex-1 truncate">{sub.label}</span>
+                    {!settingsCompletion.loading && pending && (
+                      <span
+                        className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0"
+                        aria-label="Pendente"
+                      />
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          )}
+
           <ThemeToggle variant="sidebar" />
         </div>
 
