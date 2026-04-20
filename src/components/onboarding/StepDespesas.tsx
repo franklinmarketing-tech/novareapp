@@ -60,9 +60,11 @@ export const StepDespesas = ({ data, onChange }: Props) => {
   };
 
   const addCustom = () => {
-    const newItem: ExpenseItem = { category: `custom_${Date.now()}`, amount: "", description: "" };
+    const newCategory = `custom_${Date.now()}`;
+    const newItem: ExpenseItem = { category: newCategory, amount: "", description: "" };
     // Insere a nova despesa no topo da lista de customizadas (logo após as categorias padrão)
     onChange([...defaultItems, newItem, ...customItems]);
+    setFocusId(newCategory);
   };
 
   const removeCustom = (index: number) => {
