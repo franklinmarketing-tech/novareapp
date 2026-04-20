@@ -227,6 +227,18 @@ const Login = () => {
           },
         });
         if (error) throw error;
+
+        // Dispara e-mail de boas-vindas (não bloqueia o fluxo se falhar)
+        supabase.functions
+          .invoke("send-client-email", {
+            body: {
+              to: email,
+              templateName: "welcome",
+              templateData: { clientName: fullName },
+            },
+          })
+          .catch((err) => console.error("Falha ao enviar welcome:", err));
+
         toast({ title: "Conta criada! 🎉", description: "Vamos iniciar seu planejamento financeiro." });
       } else if (mode === "forgot") {
         const productionUrl = "https://novareapp.com.br";
