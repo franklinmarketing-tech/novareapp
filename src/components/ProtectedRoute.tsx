@@ -20,10 +20,9 @@ export const ProtectedRoute = ({ children, requiredRole }: Props) => {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // super_admin herda acesso de admin
+  // Papéis estritamente separados — sem herança entre admin e super_admin
   const hasAccess = (req?: string) => {
     if (!req) return true;
-    if (req === "admin") return role === "admin" || role === "super_admin";
     return role === req;
   };
 
