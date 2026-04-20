@@ -157,7 +157,7 @@ export const StepDespesas = ({ data, onChange }: Props) => {
           const globalIdx = DEFAULT_CATEGORIES.length + ci;
           const pct = getPercentage(item.amount);
           return (
-            <div key={item.category} className="p-4 rounded-2xl border border-accent/30 bg-accent/[0.02] shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] transition-all duration-200">
+            <div key={item.category} data-item-id={item.category} className="p-4 rounded-2xl border border-accent/30 bg-accent/[0.02] shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] transition-all duration-200">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-accent">Despesa personalizada</span>
                 <div className="flex items-center gap-2">
