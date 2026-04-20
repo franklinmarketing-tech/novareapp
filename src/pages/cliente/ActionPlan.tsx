@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import PageBanner from "@/components/PageBanner";
+import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
@@ -203,6 +204,7 @@ const ActionPlan = () => {
 
   return (
     <PageTransition>
+      <SEO title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor Novare." index={false} />
       <PageBanner title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor" icon={ClipboardList} />
 
       {/* ── 3D PROGRESS HERO ────────────────────── */}

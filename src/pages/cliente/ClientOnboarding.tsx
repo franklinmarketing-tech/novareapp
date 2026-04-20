@@ -21,6 +21,7 @@ import { StepWelcome, StepTransition } from "@/components/onboarding/steps/Trans
 import { TOTAL_MICRO_STEPS, microStepToSaveSection } from "@/components/onboarding/steps/onboardingConfig";
 import PageTransition from "@/components/PageTransition";
 import confetti from "canvas-confetti";
+import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
@@ -355,6 +356,7 @@ const ClientOnboardingPage = () => {
 
   return (
     <PageTransition className="h-screen bg-background flex flex-col overflow-hidden">
+      <SEO title="Onboarding" description="Complete seu cadastro inicial para começar sua jornada com a consultoria Novare." index={false} />
       <div className="relative flex justify-center pt-5 pb-2">
         <img src={logoPreta} alt="Novare" className="h-10" />
         <Button

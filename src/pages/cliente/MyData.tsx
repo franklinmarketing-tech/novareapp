@@ -26,6 +26,7 @@ import {
   CheckCircle2, AlertTriangle, Heart, Flame, Sparkles, RefreshCw,
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
+import { SEO } from "@/components/SEO";
 import { LoadingState } from "@/components/ui/loading-state";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -442,6 +443,7 @@ const MyData = () => {
 
   return (
     <PageTransition className="space-y-6 max-w-5xl mx-auto">
+      <SEO title="Meus Dados" description="Visualize e atualize suas informações financeiras na Novare." index={false} />
 
       {/* ━━━ NARRATIVE HERO ━━━ */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0}>

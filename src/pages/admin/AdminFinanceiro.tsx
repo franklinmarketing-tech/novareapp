@@ -223,6 +223,7 @@ const AdminFinanceiro = () => {
 
   return (
     <div className="space-y-6">
+      <SEO title="Financeiro" description="Painel financeiro da consultoria Novare: patrimônio, pipeline e insights." index={false} />
       <PageBanner title="Financeiro" description="Visão financeira da sua consultoria" icon={Landmark} />
 
       {/* ━━━ HERO: North Star + Narrative ━━━ */}
