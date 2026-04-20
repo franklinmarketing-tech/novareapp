@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import logoPreta from "@/assets/logo-preta.png";
+import { SEO } from "@/components/SEO";
 
 /* ── Premium easing for smooth growth feel ─── */
 const PREMIUM_EASE = [0.22, 1, 0.36, 1] as const;
@@ -260,6 +261,7 @@ const Login = () => {
 
   return (
     <div className="flex min-h-screen">
+      <SEO title="Login" description="Acesse sua conta na Novare Consultoria de Investimentos." canonicalPath="/login" />
       {/* Left — Form */}
       <div className="flex w-full lg:w-1/2 flex-col justify-between px-6 sm:px-12 lg:px-20 py-10 bg-background">
         <div>
