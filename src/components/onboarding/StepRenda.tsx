@@ -79,6 +79,7 @@ export const StepRenda = ({ data, onChange }: Props) => {
           return (
             <div
               key={item.id ?? i}
+              data-item-id={item.id}
               className={`p-5 rounded-2xl border space-y-4 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] ${isPrimary ? "border-primary/40 bg-primary/[0.04]" : "border-border bg-card hover:border-border/80"}`}
             >
               <div className="flex items-center justify-between">
