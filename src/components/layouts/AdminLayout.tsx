@@ -271,18 +271,6 @@ export const AdminLayout = ({ children }: Props) => {
           </button>
         </div>
       </div>
-
-        {/* Sign out */}
-        <div className="px-3 pb-4">
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/70 transition-all duration-200 w-full"
-          >
-            <LogOut className="h-[18px] w-[18px]" />
-            Sair
-          </button>
-        </div>
-      </div>
     </div>
   );
 
