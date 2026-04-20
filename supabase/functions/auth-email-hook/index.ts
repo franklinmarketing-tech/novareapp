@@ -81,7 +81,7 @@ function buildEmailHtml(params: {
           <!-- Header with brand -->
           <tr>
             <td style="background:linear-gradient(145deg,hsl(220,40%,13%),hsl(220,45%,8%));padding:32px 40px;text-align:left;">
-              <img src="${PUBLIC_APP_URL}/logo-novare-email.png" alt="Novare" width="120" style="display:block;height:auto;max-width:120px;margin-bottom:8px;border:0;outline:none;text-decoration:none;" />
+              <img src="${LOGO_URL}" alt="Novare" width="120" style="display:block;height:auto;max-width:120px;margin-bottom:8px;border:0;outline:none;text-decoration:none;" />
               <div style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:0.18em;margin-top:4px;">Planejamento Financeiro</div>
             </td>
           </tr>
