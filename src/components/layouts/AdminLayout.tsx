@@ -159,9 +159,26 @@ export const AdminLayout = ({ children }: Props) => {
   const sidebarContent = (
     <div className="flex flex-col h-full overflow-y-auto sidebar-scroll">
       {/* Logo */}
-      <div className="px-6 py-6 shrink-0">
+      <div className="px-6 pt-6 pb-4 shrink-0">
         <div className="flex items-center gap-3">
           <img src={logoBranca} alt="Novare" className="h-8 w-auto" />
+        </div>
+      </div>
+
+      {/* Admin profile — TOP */}
+      <div className="px-3 pb-4 shrink-0">
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-sidebar-accent/40 border border-sidebar-border/30">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sidebar-primary/30 to-sidebar-accent flex items-center justify-center shrink-0 ring-1 ring-sidebar-border/40">
+            <span className="text-[0.8125rem] font-semibold text-sidebar-foreground">{initials}</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[0.8125rem] font-semibold text-sidebar-foreground truncate leading-tight">
+              {profile?.full_name || "Administrador"}
+            </p>
+            <p className="text-[0.6875rem] text-sidebar-foreground/50 truncate leading-tight mt-0.5">
+              {profile?.email || ""}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -243,25 +260,8 @@ export const AdminLayout = ({ children }: Props) => {
           <ThemeToggle variant="sidebar" />
         </div>
 
-        {/* Admin profile */}
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-9 h-9 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0">
-              <span className="text-xs font-semibold text-sidebar-foreground">{initials}</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[0.8125rem] font-medium text-sidebar-foreground truncate">
-                {profile?.full_name || "Administrador"}
-              </p>
-              <p className="text-[0.6875rem] text-sidebar-foreground/40 truncate">
-                {profile?.email || ""}
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Sign out */}
-        <div className="px-3 pb-4">
+        <div className="px-3 pt-1 pb-4">
           <button
             onClick={handleSignOut}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/70 transition-all duration-200 w-full"
