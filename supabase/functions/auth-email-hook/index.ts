@@ -175,12 +175,11 @@ Deno.serve(async (req) => {
 
     const subject = subjects[actionType] ?? "Notificação · Novare";
 
-    const resendResponse = await fetch(`${RESEND_GATEWAY}/emails`, {
+    const resendResponse = await fetch(`${RESEND_API}/emails`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY ?? RESEND_API_KEY}`,
-        ...(LOVABLE_API_KEY && RESEND_API_KEY ? { "X-Connection-Api-Key": RESEND_API_KEY } : {}),
+        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
         from: FROM,
