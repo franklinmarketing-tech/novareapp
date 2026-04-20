@@ -20,6 +20,7 @@ import {
   Bell,
   CreditCard,
   Lock,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,7 +82,7 @@ interface Props {
 }
 
 export const AdminLayout = ({ children }: Props) => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -295,6 +296,20 @@ export const AdminLayout = ({ children }: Props) => {
           <ChevronRight className="h-4 w-4 opacity-50" />
         </NavLink>
       </div>
+
+      {role === "super_admin" && (
+        <div className="px-3 mt-2 shrink-0">
+          <NavLink
+            to="/super-admin"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-amber-500/15 to-rose-500/15 border border-amber-500/30 text-sidebar-foreground hover:from-amber-500/25 hover:to-rose-500/25 transition-all"
+          >
+            <Shield className="h-[18px] w-[18px] text-amber-500" />
+            <span className="flex-1">Super Admin</span>
+            <ChevronRight className="h-4 w-4 opacity-50" />
+          </NavLink>
+        </div>
+      )}
 
       <div className="mt-auto border-t border-sidebar-border/30 shrink-0">
         {/* Settings (expandable) */}

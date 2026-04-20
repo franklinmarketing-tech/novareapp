@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-type UserRole = "admin" | "client" | null;
+type UserRole = "super_admin" | "admin" | "client" | null;
 type ClientStatus = "onboarding_pendente" | "em_diagnostico" | "em_acompanhamento" | null;
 
 interface AuthContextType {
@@ -27,12 +27,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [clientStatus, setClientStatus] = useState<ClientStatus>(null);
   const fetchRole = async (userId: string) => {
+    // Pega TODOS os papéis e prioriza super_admin > admin > client
     const { data } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const r = (data?.role as UserRole) ?? null;
+      .eq("user_id", userId);
+    const roles = (data ?? []).map((r) => r.role as string);
+    let r: UserRole = null;
+    if (roles.includes("super_admin")) r = "super_admin";
+    else if (roles.includes("admin")) r = "admin";
+    else if (roles.includes("client")) r = "client";
     setRole(r);
     return r;
   };
@@ -63,6 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
               const r = await fetchRole(session.user.id);
               if (r === "client") await fetchClientStatus(session.user.id);
+              else setClientStatus(null);
             } finally {
               setLoading(false);
             }
