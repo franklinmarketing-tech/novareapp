@@ -1,7 +1,11 @@
-import { ArrowUpRight, Sparkles, BookOpen, LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowUpRight, Sparkles, BookOpen, LucideIcon, Users, Rocket, Tag } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
 import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
+import { supabase } from "@/integrations/supabase/client";
+
+const APP_VERSION = "1.4.0";
 
 interface Project {
   name: string;
@@ -34,7 +38,55 @@ const projects: Project[] = [
   },
 ];
 
+interface Metric {
+  label: string;
+  value: string;
+  hint: string;
+  icon: LucideIcon;
+  accent: string;
+}
+
 const AdminWorkspace = () => {
+  const [activeClients, setActiveClients] = useState<number | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { count } = await supabase
+        .from("clients")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["em_diagnostico", "em_acompanhamento"]);
+      if (mounted) setActiveClients(count ?? 0);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const metrics: Metric[] = [
+    {
+      label: "Clientes ativos",
+      value: activeClients === null ? "—" : String(activeClients),
+      hint: "Em diagnóstico ou acompanhamento",
+      icon: Users,
+      accent: "from-blue-500/20 to-sky-500/5",
+    },
+    {
+      label: "Projetos publicados",
+      value: String(projects.length),
+      hint: "Produtos no ar",
+      icon: Rocket,
+      accent: "from-emerald-500/20 to-teal-500/5",
+    },
+    {
+      label: "Versão atual",
+      value: `v${APP_VERSION}`,
+      hint: "Última release do SaaS",
+      icon: Tag,
+      accent: "from-violet-500/20 to-fuchsia-500/5",
+    },
+  ];
+
   return (
     <PageTransition>
       <SEO title="Workspace" description="Projetos e produtos desenvolvidos pela Novare." index={false} />
@@ -42,6 +94,35 @@ const AdminWorkspace = () => {
         title="Workspace"
         description="Projetos e produtos desenvolvidos pela Novare"
       />
+
+      {/* Métricas */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+        {metrics.map((m) => {
+          const Icon = m.icon;
+          return (
+            <div
+              key={m.label}
+              className={`relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br ${m.accent} bg-card p-5 transition-all hover:border-border hover:-translate-y-0.5`}
+              style={{ boxShadow: "0 1px 2px hsl(var(--foreground) / 0.04), 0 8px 24px -12px hsl(var(--foreground) / 0.08)" }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    {m.label}
+                  </p>
+                  <p className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
+                    {m.value}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{m.hint}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-background/60 backdrop-blur-sm border border-border/40">
+                  <Icon className="h-5 w-5 text-foreground/70" strokeWidth={2} />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         {projects.map((project) => {
