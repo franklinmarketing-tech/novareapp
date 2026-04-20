@@ -498,6 +498,16 @@ const AdminSettings = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <AnimatePresence>
+        {editorOpen && (
+          <FounderEditor
+            founder={editingFounder}
+            onClose={() => setEditorOpen(false)}
+            onSaved={reloadFounders}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
