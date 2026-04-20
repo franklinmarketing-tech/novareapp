@@ -71,10 +71,49 @@ const SuperAdminAdmins = () => {
       }
     }
     setAdmins(Array.from(map.values()).sort((a, b) => a.full_name.localeCompare(b.full_name)));
+
+    // Buscar convites pendentes (não expirados)
+    const { data: pendingData } = await supabase
+      .from("admin_invitations")
+      .select("id, email, role, token, created_at, expires_at, status")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    setInvites(((pendingData ?? []) as any[]).filter((i) => new Date(i.expires_at) > new Date()) as PendingInvite[]);
+
     setLoading(false);
   };
 
   useEffect(() => { fetchAdmins(); }, []);
+
+  const copyInviteLink = (token: string) => {
+    const url = `${window.location.origin}/aceitar-convite/${token}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: "Link copiado", description: url });
+  };
+
+  const revokeInvite = async (id: string, email: string) => {
+    if (!confirm(`Revogar o convite enviado para ${email}?`)) return;
+    const { error } = await supabase.from("admin_invitations").delete().eq("id", id);
+    if (error) { toast({ title: "Erro", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Convite revogado" });
+    fetchAdmins();
+  };
+
+  const resendInvite = async (invite: PendingInvite) => {
+    await supabase.from("admin_invitations").delete().eq("id", invite.id);
+    const { data, error } = await supabase.functions.invoke("super-admin-invite", {
+      body: { email: invite.email, role: invite.role },
+    });
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro", description: error?.message ?? (data as any)?.error, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "Convite reenviado",
+      description: (data as any)?.email_sent ? `Novo email enviado para ${invite.email}` : "Convite criado, mas o email não foi enviado.",
+    });
+    fetchAdmins();
+  };
 
   const promote = async (a: AdminUser) => {
     if (!confirm(`Promover ${a.full_name} a super_admin?`)) return;
