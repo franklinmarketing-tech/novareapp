@@ -1,4 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
+import jeffersonImg from "@/assets/jefferson.png";
+import leonardoImg from "@/assets/leonardo.png";
+
+// Fallback para fotos dos sócios originais (até admin enviar novas pelo Storage)
+const FALLBACK_IMAGES: Record<string, string> = {
+  jefferson: jeffersonImg,
+  leonardo: leonardoImg,
+};
 
 export type FounderHighlight = { icon: string; text: string };
 
