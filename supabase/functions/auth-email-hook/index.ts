@@ -13,6 +13,8 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? Deno.env.get("RESEND_AP
 const HOOK_SECRET = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
 const RESEND_API = "https://api.resend.com";
 const PUBLIC_APP_URL = Deno.env.get("PUBLIC_APP_URL") ?? "https://novareapp.com.br";
+// URL pública do logo (com fallback pra .lovable.app que responde 200 direto, sem redirects que o Gmail bloqueia)
+const LOGO_URL = "https://novareapp.lovable.app/logo-novare-email.png";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://hjikeevfzfswqydduars.supabase.co";
 const FROM = "Novare Planejamento <planejamento@novareapp.com.br>";
 
@@ -79,7 +81,7 @@ function buildEmailHtml(params: {
           <!-- Header with brand -->
           <tr>
             <td style="background:linear-gradient(145deg,hsl(220,40%,13%),hsl(220,45%,8%));padding:32px 40px;text-align:left;">
-              <img src="${PUBLIC_APP_URL}/logo-novare-email.png" alt="Novare" width="120" style="display:block;height:auto;max-width:120px;margin-bottom:8px;border:0;outline:none;text-decoration:none;" />
+              <img src="${LOGO_URL}" alt="Novare" width="120" style="display:block;height:auto;max-width:120px;margin-bottom:8px;border:0;outline:none;text-decoration:none;" />
               <div style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:0.18em;margin-top:4px;">Planejamento Financeiro</div>
             </td>
           </tr>
@@ -161,6 +163,10 @@ Deno.serve(async (req) => {
     // redireciona pro redirect_to (que pode ser o domínio do app).
     // Para recovery, garante que o redirect_to aponte pro /reset-password.
     let baseRedirect = email_data.redirect_to || `${PUBLIC_APP_URL}/`;
+    // Se o Supabase mandou localhost (Site URL mal configurado), substitui pelo domínio público
+    if (baseRedirect.includes("localhost") || baseRedirect.includes("127.0.0.1")) {
+      baseRedirect = baseRedirect.replace(/https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, PUBLIC_APP_URL);
+    }
     if (actionType === "recovery" && !baseRedirect.includes("/reset-password")) {
       baseRedirect = `${PUBLIC_APP_URL}/reset-password`;
     }
