@@ -163,6 +163,10 @@ Deno.serve(async (req) => {
     // redireciona pro redirect_to (que pode ser o domínio do app).
     // Para recovery, garante que o redirect_to aponte pro /reset-password.
     let baseRedirect = email_data.redirect_to || `${PUBLIC_APP_URL}/`;
+    // Se o Supabase mandou localhost (Site URL mal configurado), substitui pelo domínio público
+    if (baseRedirect.includes("localhost") || baseRedirect.includes("127.0.0.1")) {
+      baseRedirect = baseRedirect.replace(/https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, PUBLIC_APP_URL);
+    }
     if (actionType === "recovery" && !baseRedirect.includes("/reset-password")) {
       baseRedirect = `${PUBLIC_APP_URL}/reset-password`;
     }
