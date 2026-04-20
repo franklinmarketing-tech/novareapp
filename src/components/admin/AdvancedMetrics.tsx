@@ -232,7 +232,7 @@ const AdvancedMetrics = ({ selectedMonth, selectedYear }: Props) => {
           <div className="p-6 flex flex-col h-full">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Cake className="h-6 w-6 text-pink-500" />
+                <Cake className="h-6 w-6 text-accent" />
                 <span className="text-xs text-muted-foreground font-medium">
                   Aniversariantes de {MONTHS_PT[selectedMonth]}
                 </span>
@@ -261,8 +261,8 @@ const AdvancedMetrics = ({ selectedMonth, selectedYear }: Props) => {
                     onClick={() => navigate(`/admin/cliente/${b.slug}/onboarding`)}
                     className="flex items-center gap-2 py-1.5 px-2 cursor-pointer hover:bg-muted/40 rounded-lg transition-all duration-200 group"
                   >
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-500/20 to-pink-500/5 flex items-center justify-center shrink-0">
-                      <span className="text-[10px] font-semibold text-pink-500">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center shrink-0">
+                      <span className="text-[10px] font-semibold text-accent">
                         {String(b.day).padStart(2, "0")}
                       </span>
                     </div>
@@ -270,7 +270,7 @@ const AdvancedMetrics = ({ selectedMonth, selectedYear }: Props) => {
                       <p className="text-xs font-medium text-foreground truncate">
                         {b.name}
                         {b.isToday && (
-                          <span className="ml-1.5 text-[9px] font-bold text-pink-500 uppercase">
+                          <span className="ml-1.5 text-[9px] font-bold text-accent uppercase">
                             hoje
                           </span>
                         )}

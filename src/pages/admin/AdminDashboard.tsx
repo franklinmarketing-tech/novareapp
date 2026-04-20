@@ -17,6 +17,7 @@ import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { EmptyState } from "@/components/ui/empty-state";
+import AdvancedMetrics from "@/components/admin/AdvancedMetrics";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -331,6 +332,9 @@ const AdminDashboard = () => {
           </Card3D>
         </motion.div>
       </motion.div>
+
+      {/* ── Advanced Metrics: MRR, Funnel, Birthdays ── */}
+      <AdvancedMetrics selectedMonth={selectedMonth} selectedYear={selectedYear} />
 
       {/* ── Attention: Clients + Actions side by side ── */}
       <motion.div
