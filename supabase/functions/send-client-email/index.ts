@@ -242,6 +242,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Não-admins só podem disparar "welcome" para o próprio e-mail
+    if (!isAdmin) {
+      const callerEmail = (claimsData.claims.email as string | undefined)?.toLowerCase();
+      if (templateName !== "welcome" || !callerEmail || callerEmail !== to.trim().toLowerCase()) {
+        return new Response(JSON.stringify({ error: "Acesso negado" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const templateFn = TEMPLATES[templateName];
     const { subject, html } = templateFn(templateData || {});
 
