@@ -33,7 +33,12 @@ export const StepRenda = ({ data, onChange }: Props) => {
     onChange(next);
   };
 
-  const add = () => onChange([...items, emptyIncome()]);
+  // Insere a nova renda logo após a Principal (índice 0), no topo da lista de adicionais
+  const add = () => {
+    if (items.length === 0) return onChange([emptyIncome()]);
+    const [first, ...rest] = items;
+    onChange([first, emptyIncome(), ...rest]);
+  };
   const remove = (i: number) => {
     if (items.length <= 1) return;
     onChange(items.filter((_, idx) => idx !== i));
