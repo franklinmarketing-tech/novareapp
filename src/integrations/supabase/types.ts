@@ -1016,7 +1016,7 @@ export type Database = {
         | "protecao"
         | "impostos"
       action_status: "pendente" | "em_andamento" | "concluido"
-      app_role: "admin" | "client"
+      app_role: "admin" | "client" | "super_admin"
       client_status:
         | "onboarding_pendente"
         | "em_diagnostico"
@@ -1171,7 +1171,7 @@ export const Constants = {
         "impostos",
       ],
       action_status: ["pendente", "em_andamento", "concluido"],
-      app_role: ["admin", "client"],
+      app_role: ["admin", "client", "super_admin"],
       client_status: [
         "onboarding_pendente",
         "em_diagnostico",
