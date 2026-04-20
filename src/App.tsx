@@ -15,6 +15,7 @@ import { SuperAdminLayout } from "@/components/layouts/SuperAdminLayout";
 
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
+import AcceptInvite from "@/pages/AcceptInvite";
 import NotFound from "@/pages/NotFound";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import ClientList from "@/pages/admin/ClientList";
@@ -71,6 +72,7 @@ const App = () => (
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/aceitar-convite/:token" element={<AcceptInvite />} />
                 <Route path="/ferramentas/calculadora-de-investimentos" element={<YieldGuide />} />
 
                 {/* Super Admin routes */}
