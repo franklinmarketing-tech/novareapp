@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
@@ -5,6 +6,7 @@ import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2 } from "lucide-react";
+import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
 
 export interface IncomeItem {
   id?: string;
@@ -26,6 +28,8 @@ interface Props {
 
 export const StepRenda = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyIncome()];
+  const [focusId, setFocusId] = useState<string | null>(null);
+  useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof IncomeItem, value: any) => {
     const next = [...items];
@@ -35,9 +39,14 @@ export const StepRenda = ({ data, onChange }: Props) => {
 
   // Insere a nova renda logo após a Principal (índice 0), no topo da lista de adicionais
   const add = () => {
-    if (items.length === 0) return onChange([emptyIncome()]);
-    const [first, ...rest] = items;
-    onChange([first, emptyIncome(), ...rest]);
+    const novo = emptyIncome();
+    if (items.length === 0) {
+      onChange([novo]);
+    } else {
+      const [first, ...rest] = items;
+      onChange([first, novo, ...rest]);
+    }
+    setFocusId(novo.id!);
   };
   const remove = (i: number) => {
     if (items.length <= 1) return;
@@ -70,6 +79,7 @@ export const StepRenda = ({ data, onChange }: Props) => {
           return (
             <div
               key={item.id ?? i}
+              data-item-id={item.id}
               className={`p-5 rounded-2xl border space-y-4 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] ${isPrimary ? "border-primary/40 bg-primary/[0.04]" : "border-border bg-card hover:border-border/80"}`}
             >
               <div className="flex items-center justify-between">

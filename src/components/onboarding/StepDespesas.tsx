@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
+import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
 
 const DEFAULT_CATEGORIES = [
   { key: "moradia", label: "Moradia", hint: "Aluguel, condomínio, IPTU, água, luz, gás, internet" },
@@ -30,6 +32,9 @@ interface Props {
 }
 
 export const StepDespesas = ({ data, onChange }: Props) => {
+  const [focusId, setFocusId] = useState<string | null>(null);
+  useFocusOnAdd(focusId, () => setFocusId(null));
+
   // Build items: default categories + any custom ones from data
   const defaultItems: ExpenseItem[] = DEFAULT_CATEGORIES.map((cat) => {
     const existing = data.find((d) => d.category === cat.key);
@@ -55,9 +60,11 @@ export const StepDespesas = ({ data, onChange }: Props) => {
   };
 
   const addCustom = () => {
-    const newItem: ExpenseItem = { category: `custom_${Date.now()}`, amount: "", description: "" };
+    const newCategory = `custom_${Date.now()}`;
+    const newItem: ExpenseItem = { category: newCategory, amount: "", description: "" };
     // Insere a nova despesa no topo da lista de customizadas (logo após as categorias padrão)
     onChange([...defaultItems, newItem, ...customItems]);
+    setFocusId(newCategory);
   };
 
   const removeCustom = (index: number) => {
@@ -150,7 +157,7 @@ export const StepDespesas = ({ data, onChange }: Props) => {
           const globalIdx = DEFAULT_CATEGORIES.length + ci;
           const pct = getPercentage(item.amount);
           return (
-            <div key={item.category} className="p-4 rounded-2xl border border-accent/30 bg-accent/[0.02] shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] transition-all duration-200">
+            <div key={item.category} data-item-id={item.category} className="p-4 rounded-2xl border border-accent/30 bg-accent/[0.02] shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] transition-all duration-200">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-accent">Despesa personalizada</span>
                 <div className="flex items-center gap-2">

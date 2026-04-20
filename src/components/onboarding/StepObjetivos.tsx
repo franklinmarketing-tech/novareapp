@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
+import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
 
 export interface GoalItem {
   id?: string;
@@ -22,6 +24,8 @@ interface Props {
 
 export const StepObjetivos = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyGoal()];
+  const [focusId, setFocusId] = useState<string | null>(null);
+  useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof GoalItem, value: string) => {
     const next = [...items];
@@ -29,7 +33,11 @@ export const StepObjetivos = ({ data, onChange }: Props) => {
     onChange(next);
   };
 
-  const add = () => onChange([emptyGoal(), ...items]);
+  const add = () => {
+    const novo = emptyGoal();
+    onChange([novo, ...items]);
+    setFocusId(novo.id!);
+  };
   const remove = (i: number) => {
     if (items.length <= 1) return;
     onChange(items.filter((_, idx) => idx !== i));
@@ -48,7 +56,7 @@ export const StepObjetivos = ({ data, onChange }: Props) => {
 
       <div className="space-y-3">
         {items.map((item, i) => (
-          <div key={item.id ?? i} className="p-5 rounded-2xl border border-border bg-card space-y-4 hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] hover:border-border/80 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)]">
+          <div key={item.id ?? i} data-item-id={item.id} className="p-5 rounded-2xl border border-border bg-card space-y-4 hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] hover:border-border/80 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)]">
             <div className="flex items-center justify-between">
               <span className="font-body text-xs font-semibold text-muted-foreground uppercase tracking-[0.1em]">Objetivo {i + 1}</span>
               {items.length > 1 && (
