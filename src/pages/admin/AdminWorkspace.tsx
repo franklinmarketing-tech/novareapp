@@ -21,7 +21,7 @@ const projects: Project[] = [
   {
     name: "Novare Planejamento Financeiro",
     description: "Plataforma de consultoria financeira personalizada para planejadores e seus clientes.",
-    url: "https://novareappcombr.lovable.app",
+    url: "https://www.novarepp.com.br",
     icon: Sparkles,
     tags: ["Planejamento", "Investimentos", "Acompanhamento"],
     accent: "from-indigo-500 via-blue-600 to-sky-500",
