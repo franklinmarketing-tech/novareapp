@@ -483,7 +483,7 @@ const MyData = () => {
         <Card className="rounded-2xl border-border/40 shadow-subtle">
           <CardContent className="p-5">
             <p className="text-[0.6875rem] font-semibold text-muted-foreground uppercase tracking-wider">Fluxo Mensal</p>
-            <p className={`text-xl font-bold tabular-nums mt-1 ${savings >= 0 ? "text-success" : "text-destructive"}`}>{savings >= 0 ? "+" : ""}{fmtShort(savings)}</p>
+            <p className={`text-xl font-bold tabular-nums mt-1 ${savings >= 0 ? "text-success" : "text-destructive"}`}>{savings >= 0 ? "+" : ""}{fmt(savings)}</p>
           </CardContent>
         </Card>
         <Card className="rounded-2xl border-border/40 shadow-subtle">
