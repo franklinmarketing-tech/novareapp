@@ -32,7 +32,7 @@ export const StepDividas = ({ data, onChange }: Props) => {
     onChange(next);
   };
 
-  const add = () => onChange([...items, emptyDebt()]);
+  const add = () => onChange([emptyDebt(), ...items]);
   const remove = (i: number) => {
     if (items.length <= 1) return;
     onChange(items.filter((_, idx) => idx !== i));

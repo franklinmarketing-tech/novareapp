@@ -28,7 +28,7 @@ export const StepSeguros = ({ data, onChange }: Props) => {
     onChange(next);
   };
 
-  const add = () => onChange([...items, emptyInsurance()]);
+  const add = () => onChange([emptyInsurance(), ...items]);
   const remove = (i: number) => {
     if (items.length <= 1) return;
     onChange(items.filter((_, idx) => idx !== i));

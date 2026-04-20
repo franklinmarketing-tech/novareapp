@@ -28,7 +28,7 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
     onChange(next);
   };
 
-  const add = () => onChange([...items, emptyAsset()]);
+  const add = () => onChange([emptyAsset(), ...items]);
   const remove = (i: number) => {
     if (items.length <= 1) return;
     onChange(items.filter((_, idx) => idx !== i));
