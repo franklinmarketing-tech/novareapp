@@ -9,6 +9,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 import { ArrowUpRight, UserPlus, Sparkles, AlertTriangle, Landmark, TrendingUp, TrendingDown, Flame } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
+import { SEO } from "@/components/SEO";
 import { EmptyState } from "@/components/ui/empty-state";
 import { motion } from "framer-motion";
 
@@ -222,6 +223,7 @@ const AdminFinanceiro = () => {
 
   return (
     <div className="space-y-6">
+      <SEO title="Financeiro" description="Painel financeiro da consultoria Novare: patrimônio, pipeline e insights." index={false} />
       <PageBanner title="Financeiro" description="Visão financeira da sua consultoria" icon={Landmark} />
 
       {/* ━━━ HERO: North Star + Narrative ━━━ */}

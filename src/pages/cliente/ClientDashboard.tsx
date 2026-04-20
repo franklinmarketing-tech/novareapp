@@ -14,6 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
+import { SEO } from "@/components/SEO";
 
 // 3D Goal Icons
 import goalDividasIcon from "@/assets/icons/goal-dividas.png";
@@ -183,6 +184,7 @@ const ClientDashboard = () => {
 
   return (
     <PageTransition className="space-y-6">
+      <SEO title="Meu Dashboard" description="Visão geral da sua jornada financeira na Novare: metas, plano e progresso." index={false} />
       {/* ── Greeting ── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}

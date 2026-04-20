@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { Lock, Moon, Sun } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SEO } from "@/components/SEO";
 
 const ClientSettings = () => {
   const { user } = useAuth();
@@ -50,6 +51,7 @@ const ClientSettings = () => {
 
   return (
     <PageTransition className="space-y-8">
+      <SEO title="Configurações" description="Atualize seu perfil, senha e preferências de tema na Novare." index={false} />
       <div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight">Configurações</h1>
         <p className="text-sm text-muted-foreground mt-1">Gerencie seu perfil e preferências</p>

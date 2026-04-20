@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Home, ArrowLeft } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
+import { SEO } from "@/components/SEO";
 
 const NotFound = () => {
   const location = useLocation();
@@ -23,6 +24,7 @@ const NotFound = () => {
 
   return (
     <PageTransition className="flex min-h-screen items-center justify-center bg-background px-6">
+      <SEO title="Página não encontrada" description="A página que você procura não existe ou foi movida." index={false} />
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}

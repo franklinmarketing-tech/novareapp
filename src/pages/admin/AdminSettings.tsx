@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { User, Lock, Palette, Settings, Moon, Sun } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SEO } from "@/components/SEO";
 
 const AdminSettings = () => {
   const { user } = useAuth();
@@ -79,6 +80,7 @@ const AdminSettings = () => {
 
   return (
     <div>
+      <SEO title="Configurações" description="Gerencie seu perfil, segurança e preferências de tema na Novare." index={false} />
       <PageBanner title="Configurações" description="Gerencie seu perfil e preferências" icon={Settings} />
 
       <div className="space-y-6">

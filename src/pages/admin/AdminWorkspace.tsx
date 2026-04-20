@@ -1,6 +1,7 @@
 import { ExternalLink, Gem, BookOpen } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
 import PageTransition from "@/components/PageTransition";
+import { SEO } from "@/components/SEO";
 
 const projects = [
   {
@@ -22,6 +23,7 @@ const projects = [
 const AdminWorkspace = () => {
   return (
     <PageTransition>
+      <SEO title="Workspace" description="Projetos e produtos desenvolvidos pela Novare." index={false} />
       <PageBanner
         title="Workspace"
         description="Projetos e produtos desenvolvidos pela Novare"

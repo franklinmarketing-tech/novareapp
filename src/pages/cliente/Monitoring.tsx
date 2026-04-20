@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import PageBanner from "@/components/PageBanner";
+import { SEO } from "@/components/SEO";
 import { LoadingState } from "@/components/ui/loading-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { motion, AnimatePresence } from "framer-motion";
@@ -212,6 +213,7 @@ const Monitoring = () => {
 
   return (
     <PageTransition className="space-y-6">
+      <SEO title="Acompanhamento" description="Acompanhe a evolução do seu patrimônio, reservas e indicadores financeiros." index={false} />
       <PageBanner
         title="Acompanhamento"
         description="Evolução financeira baseada nos snapshots do seu consultor"
