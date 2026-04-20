@@ -28,6 +28,8 @@ interface Props {
 
 export const StepRenda = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyIncome()];
+  const [focusId, setFocusId] = useState<string | null>(null);
+  useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof IncomeItem, value: any) => {
     const next = [...items];
@@ -37,9 +39,14 @@ export const StepRenda = ({ data, onChange }: Props) => {
 
   // Insere a nova renda logo após a Principal (índice 0), no topo da lista de adicionais
   const add = () => {
-    if (items.length === 0) return onChange([emptyIncome()]);
-    const [first, ...rest] = items;
-    onChange([first, emptyIncome(), ...rest]);
+    const novo = emptyIncome();
+    if (items.length === 0) {
+      onChange([novo]);
+    } else {
+      const [first, ...rest] = items;
+      onChange([first, novo, ...rest]);
+    }
+    setFocusId(novo.id!);
   };
   const remove = (i: number) => {
     if (items.length <= 1) return;
