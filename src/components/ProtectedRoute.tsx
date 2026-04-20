@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 
 interface Props {
   children: React.ReactNode;
-  requiredRole?: "admin" | "client";
+  requiredRole?: "super_admin" | "admin" | "client";
 }
 
 export const ProtectedRoute = ({ children, requiredRole }: Props) => {
@@ -20,8 +20,17 @@ export const ProtectedRoute = ({ children, requiredRole }: Props) => {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  if (requiredRole && role !== requiredRole) {
-    return <Navigate to={role === "admin" ? "/admin" : "/cliente"} replace />;
+  // super_admin herda acesso de admin
+  const hasAccess = (req?: string) => {
+    if (!req) return true;
+    if (req === "admin") return role === "admin" || role === "super_admin";
+    return role === req;
+  };
+
+  if (requiredRole && !hasAccess(requiredRole)) {
+    const fallback =
+      role === "super_admin" ? "/super-admin" : role === "admin" ? "/admin" : "/cliente";
+    return <Navigate to={fallback} replace />;
   }
 
   // Client-specific routing logic
