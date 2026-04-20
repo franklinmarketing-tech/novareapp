@@ -157,16 +157,16 @@ export const AdminLayout = ({ children }: Props) => {
   /* ── sidebar content ──────────────────────────────────── */
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-y-auto sidebar-scroll">
       {/* Logo */}
-      <div className="px-6 py-7">
+      <div className="px-6 py-6 shrink-0">
         <div className="flex items-center gap-3">
           <img src={logoBranca} alt="Novare" className="h-8 w-auto" />
         </div>
       </div>
 
       {/* Sections */}
-      <nav className="flex-1 px-3 space-y-6 overflow-y-auto">
+      <nav className="px-3 space-y-5 shrink-0">
         {sections.map((section) => (
           <div key={section.label}>
             <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-sidebar-foreground/40">
