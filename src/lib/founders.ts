@@ -33,6 +33,7 @@ export const fetchFounders = async (includeInactive = false): Promise<Founder[]>
   if (error) throw error;
   return (data ?? []).map((d) => ({
     ...d,
+    image_url: d.image_url ?? FALLBACK_IMAGES[d.slug] ?? null,
     highlights: Array.isArray(d.highlights) ? (d.highlights as any) : [],
   })) as Founder[];
 };
