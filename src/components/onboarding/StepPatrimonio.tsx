@@ -23,6 +23,8 @@ interface Props {
 
 export const StepPatrimonio = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyAsset()];
+  const [focusId, setFocusId] = useState<string | null>(null);
+  useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof AssetItem, value: string) => {
     const next = [...items];
@@ -30,7 +32,11 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
     onChange(next);
   };
 
-  const add = () => onChange([emptyAsset(), ...items]);
+  const add = () => {
+    const novo = emptyAsset();
+    onChange([novo, ...items]);
+    setFocusId(novo.id!);
+  };
   const remove = (i: number) => {
     if (items.length <= 1) return;
     onChange(items.filter((_, idx) => idx !== i));
