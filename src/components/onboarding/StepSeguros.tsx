@@ -55,7 +55,7 @@ export const StepSeguros = ({ data, onChange }: Props) => {
 
       <div className="space-y-3">
         {items.map((item, i) => (
-          <div key={item.id ?? i} className="p-5 rounded-2xl border border-border bg-card space-y-4 hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] hover:border-border/80 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)]">
+          <div key={item.id ?? i} data-item-id={item.id} className="p-5 rounded-2xl border border-border bg-card space-y-4 hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] hover:border-border/80 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)]">
             <div className="flex items-center justify-between">
               <span className="font-body text-xs font-semibold text-muted-foreground uppercase tracking-[0.1em]">Seguro {i + 1}</span>
               {items.length > 1 && (
