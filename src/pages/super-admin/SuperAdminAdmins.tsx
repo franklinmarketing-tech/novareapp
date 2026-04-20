@@ -259,6 +259,65 @@ const SuperAdminAdmins = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Convites pendentes */}
+      {invites.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              Convites pendentes
+              <Badge variant="secondary" className="ml-1">{invites.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Papel</TableHead>
+                  <TableHead>Expira em</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {invites.map((inv) => {
+                  const daysLeft = Math.max(
+                    0,
+                    Math.ceil((new Date(inv.expires_at).getTime() - Date.now()) / 86400000)
+                  );
+                  return (
+                    <TableRow key={inv.id}>
+                      <TableCell className="font-medium">{inv.email}</TableCell>
+                      <TableCell>
+                        {inv.role === "super_admin" ? (
+                          <Badge variant="outline"><Shield className="h-3 w-3 mr-1" />Super</Badge>
+                        ) : (
+                          <Badge variant="secondary">Admin</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {daysLeft} {daysLeft === 1 ? "dia" : "dias"}
+                      </TableCell>
+                      <TableCell className="text-right space-x-1">
+                        <Button size="sm" variant="ghost" onClick={() => copyInviteLink(inv.token)}>
+                          <Copy className="h-3.5 w-3.5 mr-1" />Copiar link
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => resendInvite(inv)}>
+                          <Mail className="h-3.5 w-3.5 mr-1" />Reenviar
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => revokeInvite(inv.id, inv.email)}>
+                          <X className="h-3.5 w-3.5 mr-1" />Revogar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 };
