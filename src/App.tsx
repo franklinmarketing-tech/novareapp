@@ -48,6 +48,10 @@ import SuperAdminAudit from "@/pages/super-admin/SuperAdminAudit";
 import SuperAdminFeatureFlags from "@/pages/super-admin/SuperAdminFeatureFlags";
 import SuperAdminConfig from "@/pages/super-admin/SuperAdminConfig";
 import SuperAdminBackups from "@/pages/super-admin/SuperAdminBackups";
+import SuperAdminSeguranca from "@/pages/super-admin/SuperAdminSeguranca";
+import SuperAdminUsuarios from "@/pages/super-admin/SuperAdminUsuarios";
+import SuperAdminOperacoes from "@/pages/super-admin/SuperAdminOperacoes";
+import SuperAdminSaude from "@/pages/super-admin/SuperAdminSaude";
 const queryClient = new QueryClient();
 
 const RootRedirect = () => {
@@ -83,6 +87,10 @@ const App = () => (
                 <Route path="/super-admin/feature-flags" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminFeatureFlags /></SuperAdminLayout></SuperAdminRoute>} />
                 <Route path="/super-admin/configuracao" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminConfig /></SuperAdminLayout></SuperAdminRoute>} />
                 <Route path="/super-admin/backups" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminBackups /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/seguranca" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminSeguranca /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/usuarios" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminUsuarios /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/operacoes" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminOperacoes /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/saude" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminSaude /></SuperAdminLayout></SuperAdminRoute>} />
 
                 {/* Admin routes */}
                 <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminDashboard /></AdminLayout></ProtectedRoute>} />
