@@ -346,7 +346,7 @@ const YieldGuide = () => {
 
         {/* Scrolling pills */}
         <div className="mt-12">
-          <ScrollingPills />
+          <ScrollingPills onPillClick={scrollTo} />
         </div>
       </section>
 
