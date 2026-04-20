@@ -51,7 +51,7 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
             Seus consultores
           </p>
         )}
-        <div className={`flex ${variant === "sidebar" ? "gap-3 justify-start px-2 flex-wrap" : "gap-12 md:gap-20 justify-center flex-wrap"}`}>
+        <div className={`flex ${variant === "sidebar" ? "gap-2 items-center justify-start px-2 flex-wrap" : "gap-12 md:gap-20 justify-center flex-wrap"}`}>
           {founders.map((f) => (
             <div key={f.id} className="relative group/founder">
               <motion.button
@@ -63,7 +63,7 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
                 <div className="relative">
                   <div
                     className={`rounded-full overflow-hidden ring-2 ring-accent/30 group-hover/founder:ring-accent/70 transition-all duration-300 shadow-lg group-hover/founder:shadow-[0_0_20px_-5px_hsl(var(--accent)/0.4)] ${
-                      variant === "sidebar" ? "w-16 h-16" : "w-32 h-32 md:w-40 md:h-40 ring-4"
+                      variant === "sidebar" ? "w-12 h-12" : "w-32 h-32 md:w-40 md:h-40 ring-4"
                     } ${!f.active ? "opacity-50" : ""}`}
                   >
                     {f.image_url ? (
@@ -76,12 +76,12 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
                   </div>
                   <motion.div
                     className={`absolute -bottom-0.5 -right-0.5 rounded-full bg-accent flex items-center justify-center shadow-md ${
-                      variant === "sidebar" ? "w-5 h-5" : "w-8 h-8"
+                      variant === "sidebar" ? "w-4 h-4" : "w-8 h-8"
                     }`}
                     animate={{ scale: [1, 1.15, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    <ArrowUpRight className={variant === "sidebar" ? "w-3 h-3 text-accent-foreground" : "w-4 h-4 text-accent-foreground"} />
+                    <ArrowUpRight className={variant === "sidebar" ? "w-2.5 h-2.5 text-accent-foreground" : "w-4 h-4 text-accent-foreground"} />
                   </motion.div>
                   {!f.active && (
                     <div className="absolute -top-1 -left-1 rounded-full bg-muted p-1 shadow">
@@ -113,12 +113,12 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
           {isAdmin && (
             <button
               onClick={() => setCreating(true)}
-              className={`flex flex-col items-center justify-center gap-2 rounded-full border-2 border-dashed border-border hover:border-accent hover:bg-accent/5 transition-colors ${
-                variant === "sidebar" ? "w-16 h-16" : "w-32 h-32 md:w-40 md:h-40"
+              className={`flex flex-col items-center justify-center gap-2 rounded-full border-2 border-dashed border-sidebar-foreground/20 hover:border-accent hover:bg-accent/5 transition-colors ${
+                variant === "sidebar" ? "w-12 h-12" : "w-32 h-32 md:w-40 md:h-40"
               }`}
               title="Adicionar sócio"
             >
-              <Plus className={variant === "sidebar" ? "w-5 h-5 text-muted-foreground" : "w-8 h-8 text-muted-foreground"} />
+              <Plus className={variant === "sidebar" ? "w-4 h-4 text-sidebar-foreground/40" : "w-8 h-8 text-muted-foreground"} />
               {variant !== "sidebar" && (
                 <span className="text-xs text-muted-foreground font-medium">Adicionar</span>
               )}
