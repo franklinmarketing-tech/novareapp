@@ -63,10 +63,19 @@ const fadeUp = {
 };
 
 /* ── data ──────────────────────────────────────── */
-const featurePills = [
-  "Renda Fixa", "Simulador", "Selic", "CDI", "IPCA+",
-  "CDB", "Tesouro Direto", "FGC", "Aposentadoria",
-  "Consultoria", "Planejamento", "Rendimento",
+const featurePills: { label: string; target: string }[] = [
+  { label: "Renda Fixa", target: "#renda-fixa" },
+  { label: "Simulador", target: "#simulador" },
+  { label: "Selic", target: "#renda-fixa" },
+  { label: "CDI", target: "#renda-fixa" },
+  { label: "IPCA+", target: "#renda-fixa" },
+  { label: "CDB", target: "#renda-fixa" },
+  { label: "Tesouro Direto", target: "#renda-fixa" },
+  { label: "FGC", target: "#faq" },
+  { label: "Aposentadoria", target: "#simulador" },
+  { label: "Consultoria", target: "#contato" },
+  { label: "Planejamento", target: "#contato" },
+  { label: "Rendimento", target: "#renda-fixa" },
 ];
 
 const tableData = [
@@ -205,17 +214,25 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
 }
 
 /* ── Scrolling pills ───────────────────────────── */
-const ScrollingPills = () => (
-  <div className="overflow-hidden py-4">
+const ScrollingPills = ({ onPillClick }: { onPillClick: (target: string) => void }) => (
+  <div className="overflow-hidden py-4 group">
     <motion.div
       className="flex gap-3 shrink-0 w-max"
       animate={{ x: [0, "-50%"] }}
       transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+      style={{ animationPlayState: "running" }}
+      whileHover={{ x: undefined }}
     >
       {[...featurePills, ...featurePills].map((pill, i) => (
-        <span key={i} className="px-4 py-2 rounded-full border border-border/60 text-sm text-muted-foreground font-medium whitespace-nowrap bg-card">
-          {pill}
-        </span>
+        <button
+          key={i}
+          type="button"
+          onClick={() => onPillClick(pill.target)}
+          aria-label={`Ir para seção ${pill.label}`}
+          className="px-4 py-2 rounded-full border border-border/60 text-sm text-muted-foreground font-medium whitespace-nowrap bg-card hover:bg-accent hover:text-accent-foreground hover:border-accent/50 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          {pill.label}
+        </button>
       ))}
     </motion.div>
   </div>
@@ -329,7 +346,7 @@ const YieldGuide = () => {
 
         {/* Scrolling pills */}
         <div className="mt-12">
-          <ScrollingPills />
+          <ScrollingPills onPillClick={scrollTo} />
         </div>
       </section>
 
