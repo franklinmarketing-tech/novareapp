@@ -113,12 +113,12 @@ export const ClientLayout = ({ children }: Props) => {
       </nav>
 
       {/* Founders */}
-      <div className="border-t border-sidebar-border/30 mt-2">
+      <div className="border-t border-sidebar-border/30 mt-4 shrink-0">
         <FoundersShowcase variant="sidebar" />
       </div>
 
       {/* Bottom */}
-      <div className="mt-auto border-t border-sidebar-border/30">
+      <div className="mt-auto border-t border-sidebar-border/30 shrink-0">
         {/* Settings + Theme toggle */}
         <div className="px-3 pt-3 space-y-0.5">
           <NavLink
