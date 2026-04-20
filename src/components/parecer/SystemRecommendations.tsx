@@ -134,7 +134,7 @@ export const SystemRecommendationsPanel = ({ clientId, riskProfile }: Props) => 
       setAppliedIds(new Set());
       setEditedOverrides({});
     } catch (err: any) {
-      console.error("Error fetching AI recommendations:", err);
+      if (import.meta.env.DEV) console.error("Error fetching AI recommendations:", err);
       toast({ title: "Erro ao gerar recomendações", description: err.message, variant: "destructive" });
     }
     setLoading(false);

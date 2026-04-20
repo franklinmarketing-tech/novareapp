@@ -248,7 +248,7 @@ const ClientOnboarding = () => {
           break;
         }
       }
-    } catch (err) { console.error("Save error:", err); }
+    } catch (err) { if (import.meta.env.DEV) console.error("Save error:", err); }
   };
 
   const handleSaveAll = async () => {

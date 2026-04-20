@@ -238,7 +238,7 @@ const ClientOnboardingPage = () => {
       }
       return true;
     } catch (err: any) {
-      console.error(`Save error (section ${section}):`, err);
+      if (import.meta.env.DEV) console.error(`Save error (section ${section}):`, err);
       toast({
         title: "Erro ao salvar",
         description: err?.message ?? "Não foi possível salvar. Tente novamente.",

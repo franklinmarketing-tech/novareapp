@@ -29,6 +29,6 @@ export async function sendClientEmail(
       },
     });
   } catch (err) {
-    console.error("Error sending client email:", err);
+    if (import.meta.env.DEV) console.error("Error sending client email:", err);
   }
 }

@@ -233,7 +233,7 @@ const AdminReport = () => {
       });
       toast({ title: "PDF gerado com sucesso!" });
     } catch (err) {
-      console.error("PDF generation error:", err);
+      if (import.meta.env.DEV) console.error("PDF generation error:", err);
       toast({ title: "Erro ao gerar PDF", description: "Tente novamente", variant: "destructive" });
     } finally {
       setGenerating(false);
