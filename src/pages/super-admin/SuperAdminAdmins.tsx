@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { UserCog, Plus, Shield, ShieldOff, ArrowUp, ArrowDown } from "lucide-react";
+import { UserCog, Plus, Shield, ShieldOff, ArrowUp, ArrowDown, Mail, Copy, X, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SEO } from "@/components/SEO";
 
@@ -20,12 +20,23 @@ interface AdminUser {
   role: "admin" | "super_admin";
 }
 
+interface PendingInvite {
+  id: string;
+  email: string;
+  role: "admin" | "super_admin";
+  token: string;
+  created_at: string;
+  expires_at: string;
+}
+
 const SuperAdminAdmins = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [admins, setAdmins] = useState<AdminUser[]>([]);
+  const [invites, setInvites] = useState<PendingInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [sending, setSending] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"admin" | "super_admin">("admin");
 
