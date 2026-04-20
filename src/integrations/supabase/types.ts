@@ -116,6 +116,36 @@ export type Database = {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          brand_color: string
+          company_name: string
+          id: number
+          logo_url: string | null
+          support_email: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          brand_color?: string
+          company_name?: string
+          id?: number
+          logo_url?: string | null
+          support_email?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          brand_color?: string
+          company_name?: string
+          id?: number
+          logo_url?: string | null
+          support_email?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       assets: {
         Row: {
           client_id: string
@@ -869,6 +899,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           email: string
           full_name: string
@@ -877,6 +908,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           email?: string
           full_name?: string
@@ -885,6 +917,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           email?: string
           full_name?: string
