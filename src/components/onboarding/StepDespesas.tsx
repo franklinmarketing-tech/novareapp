@@ -32,6 +32,9 @@ interface Props {
 }
 
 export const StepDespesas = ({ data, onChange }: Props) => {
+  const [focusId, setFocusId] = useState<string | null>(null);
+  useFocusOnAdd(focusId, () => setFocusId(null));
+
   // Build items: default categories + any custom ones from data
   const defaultItems: ExpenseItem[] = DEFAULT_CATEGORIES.map((cat) => {
     const existing = data.find((d) => d.category === cat.key);
