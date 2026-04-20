@@ -228,12 +228,33 @@ const AdminSettings = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                  <span className="text-xl font-display font-semibold text-accent">{initials}</span>
+                <div className="relative w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-border">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl font-display font-semibold text-accent">{initials}</span>
+                  )}
                 </div>
-                <div>
+                <div className="space-y-2">
                   <p className="font-medium text-foreground">{fullName || "Administrador"}</p>
                   <p className="text-sm text-muted-foreground">{email}</p>
+                  <input
+                    ref={avatarFileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleAvatarUpload(e.target.files[0])}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => avatarFileRef.current?.click()}
+                    disabled={uploadingAvatar}
+                  >
+                    {uploadingAvatar ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                    {avatarUrl ? "Trocar foto" : "Enviar foto"}
+                  </Button>
                 </div>
               </div>
 
@@ -283,7 +304,7 @@ const AdminSettings = () => {
         <TabsContent value="equipe" className="mt-6 space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
                   <Users className="h-6 w-6 text-muted-foreground" />
                   <div>
@@ -293,9 +314,20 @@ const AdminSettings = () => {
                     </CardDescription>
                   </div>
                 </div>
-                <Badge variant="secondary" className="rounded-full">
-                  {founders.filter((f) => f.active).length} ativos
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="rounded-full">
+                    {founders.filter((f) => f.active).length} ativos
+                  </Badge>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setEditingFounder(null);
+                      setEditorOpen(true);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Adicionar
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -305,13 +337,18 @@ const AdminSettings = () => {
                 </p>
               ) : (
                 founders.map((f) => (
-                  <div
+                  <button
                     key={f.id}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-border/60 hover:bg-muted/30 transition-colors"
+                    type="button"
+                    onClick={() => {
+                      setEditingFounder(f);
+                      setEditorOpen(true);
+                    }}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-border/60 hover:bg-muted/30 hover:border-primary/40 transition-all text-left group"
                   >
                     <div className="w-10 h-10 rounded-full bg-muted shrink-0 overflow-hidden">
                       {f.image_url ? (
-                        <img src={f.image_url} alt={f.name} className="w-full h-full object-cover" />
+                        <img src={f.image_url} alt={f.name} className="w-full h-full object-cover object-top" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-muted-foreground">
                           {f.short_name?.charAt(0) || "?"}
@@ -329,14 +366,20 @@ const AdminSettings = () => {
                     ) : (
                       <Badge variant="secondary" className="rounded-full">Inativo</Badge>
                     )}
-                  </div>
+                    <Pencil className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
                 ))
               )}
               <p className="text-xs text-muted-foreground pt-2">
-                Para editar nome, foto e bio dos sócios, use o editor visual no rodapé do menu lateral.
+                Clique em um sócio para editar nome, foto, bio, destaques e ordem.
               </p>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ── MARCA ──────────────────────────────────── */}
+        <TabsContent value="marca" className="mt-6 space-y-6">
+          <BrandSettings />
         </TabsContent>
 
         {/* ── MARCA ──────────────────────────────────── */}
