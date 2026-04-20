@@ -14,7 +14,7 @@ const HOOK_SECRET = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
 const RESEND_API = "https://api.resend.com";
 const PUBLIC_APP_URL = Deno.env.get("PUBLIC_APP_URL") ?? "https://novareapp.com.br";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://hjikeevfzfswqydduars.supabase.co";
-const FROM = "Novare Planejamento <planejamento@novare.com.br>";
+const FROM = "Novare Planejamento <planejamento@novareapp.com.br>";
 
 const subjects: Record<string, string> = {
   signup: "Confirme seu email · Novare",
