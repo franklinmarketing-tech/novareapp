@@ -87,25 +87,27 @@ const AdminSettings = () => {
   const [editingFounder, setEditingFounder] = useState<Founder | null>(null);
 
   const reloadFounders = () =>
+  const reloadFounders = () =>
     fetchFounders(true).then(setFounders).catch(() => setFounders([]));
 
   useEffect(() => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("full_name, email")
+      .select("full_name, email, avatar_url")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
           setFullName(data.full_name || "");
           setEmail(data.email || "");
+          setAvatarUrl((data as any).avatar_url || null);
         }
       });
   }, [user]);
 
   useEffect(() => {
-    fetchFounders(true).then(setFounders).catch(() => setFounders([]));
+    reloadFounders();
   }, []);
 
   const initials = useMemo(
@@ -115,6 +117,39 @@ const AdminSettings = () => {
         : "A",
     [fullName]
   );
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!user) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Selecione uma imagem.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      toast({ title: "Imagem muito grande", description: "Máx 3MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("brand")
+        .upload(path, file, { cacheControl: "3600", upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("brand").getPublicUrl(path);
+      const { error: dbErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: data.publicUrl } as any)
+        .eq("user_id", user.id);
+      if (dbErr) throw dbErr;
+      setAvatarUrl(data.publicUrl);
+      toast({ title: "Foto atualizada" });
+    } catch (e: any) {
+      toast({ title: "Erro ao enviar", description: e.message, variant: "destructive" });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
     if (!user) return;
