@@ -43,6 +43,7 @@ const RootRedirect = () => {
   const { user, role, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
+  if (role === "super_admin") return <Navigate to="/super-admin" replace />;
   if (role === "admin") return <Navigate to="/admin" replace />;
   return <Navigate to="/cliente" replace />;
 };
