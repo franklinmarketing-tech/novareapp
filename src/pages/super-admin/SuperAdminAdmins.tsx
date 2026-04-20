@@ -208,7 +208,9 @@ const SuperAdminAdmins = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={sendInvite} className="w-full">Gerar convite</Button>
+              <Button onClick={sendInvite} className="w-full" disabled={sending || !inviteEmail}>
+                {sending ? "Enviando…" : (<><Mail className="h-4 w-4 mr-2" />Enviar convite por email</>)}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
