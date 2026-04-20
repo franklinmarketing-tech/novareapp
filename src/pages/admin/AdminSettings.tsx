@@ -382,59 +382,6 @@ const AdminSettings = () => {
           <BrandSettings />
         </TabsContent>
 
-        {/* ── MARCA ──────────────────────────────────── */}
-        <TabsContent value="marca" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Sparkles className="h-6 w-6 text-muted-foreground" />
-                <div>
-                  <CardTitle className="text-lg">Identidade visual</CardTitle>
-                  <CardDescription>
-                    Logo, cores e conteúdo público da Novare.
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-border/60 p-4">
-                  <p className="text-xs text-muted-foreground mb-1">Logo principal</p>
-                  <p className="text-sm font-medium text-foreground">logo-branca.png</p>
-                  <p className="text-[11px] text-muted-foreground mt-2">
-                    Definida no código (src/assets/logo-branca.png).
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/60 p-4">
-                  <p className="text-xs text-muted-foreground mb-1">Domínio público</p>
-                  <a
-                    href="https://novareapp.com.br"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-medium text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    novareapp.com.br <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-              </div>
-              <div className="rounded-xl border border-border/60 p-4">
-                <p className="text-sm font-medium text-foreground mb-1">Fotos dos sócios</p>
-                <p className="text-xs text-muted-foreground">
-                  {founders.filter((f) => f.image_url).length} de {founders.length} sócios com foto carregada.
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  onClick={() => handleTabChange("equipe")}
-                >
-                  Gerenciar equipe
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* ── NOTIFICAÇÕES ───────────────────────────── */}
         <TabsContent value="notificacoes" className="mt-6 space-y-6">
           <Card>
