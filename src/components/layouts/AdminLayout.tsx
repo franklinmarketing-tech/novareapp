@@ -12,8 +12,14 @@ import {
   X,
   Settings,
   ChevronRight,
+  ChevronDown,
   FolderKanban,
   Gem,
+  User as UserIcon,
+  Image as ImageIcon,
+  Bell,
+  CreditCard,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,9 +31,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { FoundersShowcase } from "@/components/FoundersShowcase";
+import { useSettingsCompletion, type SettingsTabId } from "@/hooks/useSettingsCompletion";
 
 /* ── nav config ─────────────────────────────────────────── */
 
