@@ -131,12 +131,14 @@ Deno.serve(async (req) => {
     }
 
     // Fetch all series in parallel
-    const [selicRecs, cdiRecs, ipcaRecs, poupancaRecs, bcbDolarRecs] = await Promise.all([
+    const [selicRecs, cdiRecs, ipcaRecs, ipca12Recs, poupancaRecs, bcbDolarRecs, ibov] = await Promise.all([
       fetchBCBSeries(4189, 12),
       fetchBCBSeries(4391, 12),
       fetchBCBSeries(433, 12),
+      fetchBCBSeries(13522, 12), // IPCA acumulado 12 meses
       fetchBCBSeries(25, 12),
       fetchBCBSeries(10813, 30),
+      fetchIbovespa(),
     ]);
 
     let dolarRecs = bcbDolarRecs;
@@ -147,11 +149,17 @@ Deno.serve(async (req) => {
     const selic = calcVariation(selicRecs);
     const cdi = calcVariation(cdiRecs);
     const ipca = calcVariation(ipcaRecs);
+    const ipca12 = calcVariation(ipca12Recs);
     const poupanca = calcVariation(poupancaRecs);
     const dolar = calcVariation(dolarRecs);
 
     const selicRate = selic.current;
     const cdiRate = cdi.current;
+    // Juro real = ((1 + selic) / (1 + ipca12m)) - 1
+    const realRate = ipca12.current > -100
+      ? (((1 + selicRate / 100) / (1 + ipca12.current / 100)) - 1) * 100
+      : 0;
+
 
     const products = [
       { name: "Tesouro Selic", type: "Renda Fixa", estimatedReturn: `${selicRate.toFixed(2)}% a.a.`, returnValue: selicRate, risk: "Muito Baixo", liquidity: "D+1", minInvestment: "R$ 30", profiles: ["conservador", "moderado", "arrojado"] },
