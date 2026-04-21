@@ -123,9 +123,25 @@ export const StepTransition = ({ type }: TransitionProps) => {
       ? ["📈", "🧾", "💳", "🏠", "🛡️", "🎯"]
       : ["🧠", "💭", "🎲", "✨"];
 
+  // Section milestone indicator (used together with the existing completedLabel)
+  const milestone =
+    type === "transition_financas"
+      ? { current: 1, total: 3 }
+      : { current: 2, total: 3 };
+
   return (
     <div className="relative flex flex-col items-center justify-center text-center space-y-5 md:space-y-7 px-4">
       <MeshGradientBg />
+
+      {/* Milestone badge */}
+      <motion.div
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05, duration: 0.4 }}
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/8 border border-primary/15 text-[0.6875rem] font-semibold text-primary/85 font-body tracking-[0.12em] uppercase"
+      >
+        Seção {milestone.current} de {milestone.total}
+      </motion.div>
 
       {/* Completed badge */}
       {narrative.completedLabel && (
