@@ -130,6 +130,26 @@ const ClientList = () => {
   const countByStatus = (filter: FilterKey) =>
     filter === "all" ? clients.length : clients.filter((c) => matchesFilter(c.status, filter)).length;
 
+  const handleDeleteConfirm = async ({ password }: { password: string; reason: string; confirm_text: string }) => {
+    if (!deleteTarget || !user?.email) return;
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password,
+    });
+    if (authError) {
+      toast({ title: "Senha incorreta", description: "Não foi possível confirmar sua identidade.", variant: "destructive" });
+      throw authError;
+    }
+    const { error } = await supabase.from("clients").delete().eq("id", deleteTarget.id);
+    if (error) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+      throw error;
+    }
+    toast({ title: "Cliente excluído", description: `${deleteTarget.profiles?.full_name ?? "Cliente"} foi removido.` });
+    setClients((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+    setDeleteTarget(null);
+  };
+
   return (
     <PageTransition>
       <SEO title="Clientes" description="Lista completa de clientes da consultoria Novare." index={false} />
