@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
@@ -68,7 +68,22 @@ export const StepObjetivos = ({ data, onChange }: Props) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2 space-y-1.5">
                 <Label>Descrição</Label>
-                <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder="Ex: Reserva de emergência" />
+                <SelectWithCustom
+                  value={item.description}
+                  onValueChange={(v) => update(i, "description", v)}
+                  options={[
+                    { value: "Reserva de emergência", label: "Reserva de emergência" },
+                    { value: "Aposentadoria", label: "Aposentadoria" },
+                    { value: "Comprar imóvel", label: "Comprar imóvel" },
+                    { value: "Comprar veículo", label: "Comprar veículo" },
+                    { value: "Educação dos filhos", label: "Educação dos filhos" },
+                    { value: "Viagem", label: "Viagem" },
+                    { value: "Quitar dívidas", label: "Quitar dívidas" },
+                    { value: "Investir / multiplicar patrimônio", label: "Investir / multiplicar patrimônio" },
+                    { value: "Abrir negócio próprio", label: "Abrir negócio próprio" },
+                  ]}
+                  inputPlaceholder="Ex: Casamento, Intercâmbio..."
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Valor alvo</Label>
@@ -80,14 +95,15 @@ export const StepObjetivos = ({ data, onChange }: Props) => {
               </div>
               <div className="space-y-1.5">
                 <Label>Prioridade</Label>
-                <Select value={item.priority} onValueChange={(v) => update(i, "priority", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="alta">Alta</SelectItem>
-                    <SelectItem value="media">Média</SelectItem>
-                    <SelectItem value="baixa">Baixa</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SelectWithCustom
+                  value={item.priority}
+                  onValueChange={(v) => update(i, "priority", v)}
+                  options={[
+                    { value: "alta", label: "Alta" },
+                    { value: "media", label: "Média" },
+                    { value: "baixa", label: "Baixa" },
+                  ]}
+                />
               </div>
             </div>
           </div>
