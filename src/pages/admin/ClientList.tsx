@@ -132,25 +132,24 @@ const ClientList = () => {
 
   const handleDeleteConfirm = async ({ password }: { password: string; reason: string; confirm_text: string }) => {
     if (!deleteTarget || !user?.email) return;
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password,
+
+    const { data, error } = await supabase.functions.invoke("admin-delete-client", {
+      body: {
+        client_id: deleteTarget.id,
+        password,
+      },
     });
-    if (authError) {
-      toast({ title: "Senha incorreta", description: "Não foi possível confirmar sua identidade.", variant: "destructive" });
-      throw authError;
+
+    if (error || data?.error) {
+      const message = data?.error ?? error?.message ?? "Não foi possível excluir o cliente.";
+      toast({ title: "Erro ao excluir", description: message, variant: "destructive" });
+      throw new Error(message);
     }
-    const { error } = await supabase.from("clients").delete().eq("id", deleteTarget.id);
-    if (error) {
-      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
-      throw error;
-    }
+
     toast({ title: "Cliente excluído", description: `${deleteTarget.profiles?.full_name ?? "Cliente"} foi removido.` });
-    setClients((prev) => prev.filter((c) => c.id !== deleteTarget.id));
     setDeleteTarget(null);
     setSearch("");
     setActiveFilter("all");
-    // Recarrega lista do servidor para garantir consistência
     await loadClients();
   };
 
