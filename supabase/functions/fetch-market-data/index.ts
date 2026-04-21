@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
 
     // Fetch all series in parallel
     const [selicRecs, cdiRecs, ipcaRecs, ipca12Recs, poupancaRecs, bcbDolarRecs, ibov] = await Promise.all([
-      fetchBCBSeries(4189, 12),
+      fetchBCBSeries(432, 12), // Selic Meta (Copom) — ex: 14,75% a.a.
       fetchBCBSeries(4391, 12),
       fetchBCBSeries(433, 12),
       fetchBCBSeries(13522, 12), // IPCA acumulado 12 meses
