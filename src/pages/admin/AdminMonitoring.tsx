@@ -199,7 +199,7 @@ const AdminMonitoring = () => {
     });
 
     
-    toast({ title: "Snapshot registrado!", description: "Dados capturados automaticamente a partir do perfil do cliente." });
+    toast({ title: "Registro criado!", description: "Dados capturados automaticamente a partir do perfil do cliente." });
     await loadData(true);
     setCreating(false);
   };
@@ -249,7 +249,7 @@ const AdminMonitoring = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold text-foreground tracking-tight">Acompanhamento</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Snapshots periódicos da situação financeira do cliente</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Registros periódicos da situação financeira do cliente</p>
         </div>
         <Button
           onClick={handleNewSnapshot}
@@ -308,7 +308,7 @@ const AdminMonitoring = () => {
             </div>
             <p className="text-foreground font-semibold mb-1">Comece a acompanhar a evolução</p>
             <p className="text-muted-foreground text-sm max-w-md mx-auto mb-5">
-              Cada snapshot é uma fotografia financeira do cliente. Com o tempo, você verá tendências claras 
+              Cada registro é uma fotografia financeira do cliente. Com o tempo, você verá tendências claras 
               — patrimônio crescendo, dívidas diminuindo, poupança aumentando.
             </p>
             <Button
@@ -317,7 +317,7 @@ const AdminMonitoring = () => {
               className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 rounded-xl"
             >
               {creating ? <Loader2 className="h-6 w-6 animate-spin" /> : <Camera className="h-6 w-6" />}
-              Capturar primeiro snapshot
+              Registrar posição atual
             </Button>
           </CardContent>
         </Card>
@@ -330,14 +330,14 @@ const AdminMonitoring = () => {
                   <Calendar className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <CardTitle className="text-sm">Histórico de Snapshots</CardTitle>
+                  <CardTitle className="text-sm">Histórico de Registros</CardTitle>
                   <CardDescription className="text-[11px]">
                     {snapshots.length} registro{snapshots.length !== 1 ? "s" : ""} — mais recente primeiro
                   </CardDescription>
                 </div>
               </div>
               <Badge variant="outline" className="text-[10px]">
-                {snapshots.length} snapshot{snapshots.length !== 1 ? "s" : ""}
+                {snapshots.length} registro{snapshots.length !== 1 ? "s" : ""}
               </Badge>
             </div>
           </CardHeader>

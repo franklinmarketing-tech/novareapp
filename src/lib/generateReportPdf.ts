@@ -664,7 +664,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     newPage();
     sectionHeader(
       "Evolução Patrimonial",
-      `Linha temporal com ${data.snapshots.length} snapshot${data.snapshots.length !== 1 ? "s" : ""} de monitoramento`
+      `Linha temporal com ${data.snapshots.length} registro${data.snapshots.length !== 1 ? "s" : ""} de acompanhamento`
     );
 
     const snaps = data.snapshots

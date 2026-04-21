@@ -216,7 +216,7 @@ const Monitoring = () => {
       <SEO title="Acompanhamento" description="Acompanhe a evolução do seu patrimônio, reservas e indicadores financeiros." index={false} />
       <PageBanner
         title="Acompanhamento"
-        description="Evolução financeira baseada nos snapshots do seu consultor"
+        description="Evolução financeira baseada nos registros do seu consultor"
         icon={BarChart3}
       />
 
@@ -226,7 +226,7 @@ const Monitoring = () => {
           icon={BarChart3}
           tone="accent"
           title="Seu progresso aparecerá aqui"
-          description="Conforme seu consultor registra snapshots, você verá a evolução do seu patrimônio, poupança e objetivos."
+          description="Conforme seu consultor cria registros periódicos, você verá a evolução do seu patrimônio, poupança e objetivos."
         />
       )}
 
@@ -512,12 +512,12 @@ const Monitoring = () => {
         </div>
       )}
 
-      {/* ── Snapshot History ── */}
+      {/* ── Histórico de Registros ── */}
       {snapshots.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2 px-1">
             <Calendar className="h-6 w-6 text-accent" />
-            <h2 className="text-sm font-semibold text-foreground">Histórico de Snapshots</h2>
+            <h2 className="text-sm font-semibold text-foreground">Histórico de Registros</h2>
             <Badge variant="outline" className="text-[10px] ml-auto">{snapshots.length}</Badge>
           </div>
           <div className="space-y-2">
