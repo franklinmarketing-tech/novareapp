@@ -19,6 +19,8 @@ import { motion } from "framer-motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import AdvancedMetrics from "@/components/admin/AdvancedMetrics";
 import DashboardCharts from "@/components/admin/DashboardCharts";
+import { useCountUp } from "@/hooks/useCountUp";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -56,6 +58,12 @@ const AdminDashboard = () => {
   const [recentClients, setRecentClients] = useState<{ id: string; slug: string; status: string; name: string; risk?: string }[]>([]);
   const [pendingActions, setPendingActions] = useState<{ id: string; description: string; area: string; client_name?: string; client_slug?: string }[]>([]);
   const [unconfirmedClients, setUnconfirmedClients] = useState<{ id: string; slug: string; name: string; lastConfirmed?: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Count-up animated KPIs
+  const totalCount = useCountUp(stats.total, 1200);
+  const wealthCount = useCountUp(netWealth, 1400);
+  const progressCount = useCountUp(avgPlanProgress, 1000);
 
   const isCurrentMonth = selectedMonth === now.getMonth() && selectedYear === now.getFullYear() && periodMonths === 1;
   const monthRef = useMemo(() => `${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}-01`, [selectedMonth, selectedYear]);
@@ -109,6 +117,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       // Período: termina no fim do selectedMonth, começa no início de (selectedMonth - periodMonths + 1)
       const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59);
       const startOfMonth = new Date(selectedYear, selectedMonth - (periodMonths - 1), 1);
@@ -126,6 +135,7 @@ const AdminDashboard = () => {
         setUnconfirmedClients([]);
         setNetWealth(0);
         setAvgPlanProgress(0);
+        setLoading(false);
         return;
       }
 
@@ -135,23 +145,35 @@ const AdminDashboard = () => {
       setStats({ total: clients.length, onboarding, diagnostico, acompanhamento });
 
       const userIds = clients.map((c) => c.user_id);
-      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+      const clientIds = clients.map((c) => c.id);
+
+      // ── Parallelize independent lookups ──
+      const [
+        { data: profiles },
+        { data: diagnoses },
+        { data: actionPlans },
+        { data: confirmations },
+      ] = await Promise.all([
+        supabase.from("profiles").select("user_id, full_name").in("user_id", userIds),
+        supabase.from("diagnosis").select("client_id, risk_classification").in("client_id", clientIds),
+        supabase.from("action_plans").select("id, client_id").in("client_id", clientIds),
+        supabase.from("data_confirmations").select("client_id").eq("month_ref", monthRef),
+      ]);
+
       const profileMap: Record<string, string> = {};
       profiles?.forEach((p) => { profileMap[p.user_id] = p.full_name || "Sem nome"; });
       const clientMap: Record<string, string> = {};
       clients.forEach((c) => { clientMap[c.id] = profileMap[c.user_id] || "Sem nome"; });
 
-      const clientIds = clients.map((c) => c.id);
-      const { data: diagnoses } = await supabase.from("diagnosis").select("client_id, risk_classification").in("client_id", clientIds);
       const diagMap: Record<string, string> = {};
       diagnoses?.forEach((d) => { diagMap[d.client_id] = d.risk_classification || "C"; });
-
       const classifiedIds = new Set(diagnoses?.map((d) => d.client_id) || []);
       setUnclassifiedCount(clients.filter((c) => !classifiedIds.has(c.id)).length);
 
       const slugMap: Record<string, string> = {};
       clients.forEach((c) => { slugMap[c.id] = c.slug; });
 
+      // Already capped by parent (we fetched all to compute counts) — slice for display only.
       setRecentClients(clients.slice(0, 5).map((c) => ({
         id: c.id, slug: c.slug, status: c.status, name: clientMap[c.id], risk: diagMap[c.id],
       })));
@@ -166,7 +188,6 @@ const AdminDashboard = () => {
         const debts = debtsRes.data?.reduce((s, r) => s + (r.total_amount || 0), 0) || 0;
         setNetWealth(assets - debts);
       } else {
-        // Use monitoring_snapshots closest to end of selected month
         const { data: snapshots } = await supabase
           .from("monitoring_snapshots")
           .select("total_assets, total_debts, plan_completion_pct, client_id")
@@ -174,7 +195,6 @@ const AdminDashboard = () => {
           .gte("snapshot_date", startISO.slice(0, 10))
           .lte("snapshot_date", endISO.slice(0, 10));
         if (snapshots && snapshots.length > 0) {
-          // Use the latest snapshot per client
           const latestByClient: Record<string, typeof snapshots[0]> = {};
           snapshots.forEach((s) => { latestByClient[s.client_id] = s; });
           const vals = Object.values(latestByClient);
@@ -192,7 +212,6 @@ const AdminDashboard = () => {
       }
 
       // ── Action plans & progress (current month only for live progress) ──
-      const { data: actionPlans } = await supabase.from("action_plans").select("id, client_id").in("client_id", clientIds);
       if (actionPlans && actionPlans.length > 0) {
         const planIds = actionPlans.map((p) => p.id);
         const planClientMap: Record<string, string> = {};
@@ -230,11 +249,6 @@ const AdminDashboard = () => {
         if (isCurrentMonth) setAvgPlanProgress(0);
       }
 
-      // Fetch clients who haven't confirmed data this month
-      const { data: confirmations } = await supabase
-        .from("data_confirmations")
-        .select("client_id")
-        .eq("month_ref", monthRef);
       const confirmedIds = new Set(confirmations?.map((c) => c.client_id) || []);
       const activeClients = clients.filter((c) => c.status !== "onboarding_pendente");
       const unconfirmed = activeClients
@@ -242,6 +256,7 @@ const AdminDashboard = () => {
         .slice(0, 5)
         .map((c) => ({ id: c.id, slug: c.slug, name: clientMap[c.id] }));
       setUnconfirmedClients(unconfirmed);
+      setLoading(false);
     };
     fetchData();
   }, [monthRef, isCurrentMonth, selectedMonth, selectedYear, periodMonths]);
@@ -282,9 +297,9 @@ const AdminDashboard = () => {
           <span className="text-sm text-muted-foreground font-medium">Competência</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Atalhos rápidos */}
-          <div className="flex flex-wrap items-center gap-1 bg-muted/50 rounded-xl p-1">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Atalhos rápidos — pills no desktop */}
+          <div className="hidden sm:flex flex-wrap items-center gap-1 bg-muted/50 rounded-xl p-1">
             {([
               { key: "this_month", label: "Este mês" },
               { key: "last_month", label: "Mês anterior" },
@@ -306,6 +321,21 @@ const AdminDashboard = () => {
               </button>
             ))}
           </div>
+
+          {/* Atalhos rápidos — select no mobile */}
+          <select
+            value={activePreset === "custom" ? "" : activePreset}
+            onChange={(e) => e.target.value && applyPreset(e.target.value as PeriodPreset)}
+            className="sm:hidden flex-1 min-w-0 h-9 px-3 rounded-xl bg-muted/50 text-xs font-semibold text-foreground border-0 focus:outline-none focus:ring-2 focus:ring-ring/30"
+          >
+            <option value="">Personalizado…</option>
+            <option value="this_month">Este mês</option>
+            <option value="last_month">Mês anterior</option>
+            <option value="last_3">Últimos 3 meses</option>
+            <option value="last_6">Últimos 6 meses</option>
+            <option value="this_year">Este ano</option>
+            <option value="last_year">Ano anterior</option>
+          </select>
 
           {/* Navegação mês a mês */}
           <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
@@ -347,17 +377,24 @@ const AdminDashboard = () => {
       </motion.div>
 
       {/* ── North Star + Supporting KPIs ── */}
-      <motion.div initial="hidden" animate="visible" className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <SkeletonCard lines={3} />
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={2} />
+        </div>
+      ) : (
+      <motion.div initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* North Star: Total Clients */}
-        <motion.div variants={fadeUp} custom={0}>
+        <motion.div variants={fadeUp} custom={0} className="sm:col-span-2 lg:col-span-1">
           <Card3D interactive glowColor="rgba(96,165,250,0.1)">
             <div className="p-6 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="h-6 w-6 text-primary" />
-                <span className="text-xs text-muted-foreground font-medium">Clientes ativos</span>
+                <span className="text-label-xs">Clientes ativos</span>
               </div>
-              <p className="text-5xl font-bold text-foreground tracking-tight tabular-nums">{stats.total}</p>
-              <div className="flex items-center gap-3 mt-4">
+              <p className="text-5xl font-bold text-foreground tracking-tight tabular-nums">{totalCount}</p>
+              <div className="flex items-center gap-3 mt-4 flex-wrap">
                 <PipelineDot color="bg-accent" label="Onboarding" count={stats.onboarding} />
                 <PipelineDot color="bg-destructive" label="Diagnóstico" count={stats.diagnostico} />
                 <PipelineDot color="bg-success" label="Acompanhamento" count={stats.acompanhamento} />
@@ -372,12 +409,12 @@ const AdminDashboard = () => {
             <div className="p-6 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="h-6 w-6 text-success" />
-                <span className="text-xs text-muted-foreground font-medium">Patrimônio sob gestão</span>
+                <span className="text-label-xs">Patrimônio sob gestão</span>
               </div>
               <p className={`text-3xl font-bold tracking-tight tabular-nums ${netWealth >= 0 ? "text-foreground" : "text-destructive"}`}>
-                {fmtShort(netWealth)}
+                {fmtShort(wealthCount)}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-meta-sm mt-1">
                 {stats.total > 0 ? `Média de ${fmtShort(Math.round(netWealth / stats.total))} por cliente` : "—"}
               </p>
             </div>
@@ -390,14 +427,15 @@ const AdminDashboard = () => {
             <div className="p-6 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-1">
                 <Target className="h-6 w-6 text-accent" />
-                <span className="text-xs text-muted-foreground font-medium">Progresso dos planos</span>
+                <span className="text-label-xs">Progresso dos planos</span>
               </div>
-              <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{avgPlanProgress}%</p>
+              <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{progressCount}%</p>
               <Progress value={avgPlanProgress} className="h-2 rounded-full mt-3 [&>div]:bg-accent" />
             </div>
           </Card3D>
         </motion.div>
       </motion.div>
+      )}
 
       {/* ── Advanced Metrics: MRR, Funnel, Birthdays ── */}
       <AdvancedMetrics selectedMonth={selectedMonth} selectedYear={selectedYear} />
