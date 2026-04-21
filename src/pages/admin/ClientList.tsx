@@ -54,8 +54,10 @@ const ClientList = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [deleteTarget, setDeleteTarget] = useState<ClientRow | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const loadClients = async () => {
     const { data: clientsData } = await supabase
