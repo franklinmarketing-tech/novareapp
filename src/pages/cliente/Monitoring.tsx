@@ -217,7 +217,7 @@ const Monitoring = () => {
       <PageBanner
         title="Acompanhamento"
         description="Evolução financeira baseada nos registros do seu consultor"
-        icon={BarChart3}
+        icon3D="snapshot"
       />
 
       {/* ── Empty state ── */}

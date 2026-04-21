@@ -539,7 +539,7 @@ const ClientList = () => {
       <PageBanner
         title="Clientes"
         description="Gerencie seus clientes cadastrados"
-        icon={Users}
+        icon3D="users"
         action={
           <Button onClick={() => navigate("/admin/novo-cliente")} variant="premium" className="rounded-2xl gap-2">
             <UserPlus className="h-6 w-6" />
