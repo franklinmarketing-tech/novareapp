@@ -54,8 +54,16 @@ interface Icon3DProps {
   className?: string;
   /** Floating animation (use for hero/banner). Defaults false. */
   floating?: boolean;
-  /** Lazy load. Defaults true (set false for above-the-fold). */
+  /**
+   * Lazy load. Defaults to `true`.
+   * Set to `false` (or pass `priority`) for above-the-fold icons (hero, page banner, top header).
+   */
   lazy?: boolean;
+  /**
+   * Shorthand for above-the-fold icons: sets loading="eager",
+   * fetchPriority="high" and decoding="sync". Overrides `lazy`.
+   */
+  priority?: boolean;
   /** Subtle hover scale + tilt */
   hover?: boolean;
   alt?: string;
@@ -67,11 +75,14 @@ export const Icon3D = ({
   className,
   floating = false,
   lazy = true,
+  priority = false,
   hover = false,
   alt = "",
 }: Icon3DProps) => {
   const src = icon3DMap[name];
   const sizeCls = sizeMap[size];
+
+  const isEager = priority || !lazy;
 
   const img = (
     <img
@@ -79,8 +90,10 @@ export const Icon3D = ({
       alt={alt}
       width={1024}
       height={1024}
-      loading={lazy ? "lazy" : "eager"}
-      decoding="async"
+      loading={isEager ? "eager" : "lazy"}
+      decoding={isEager ? "sync" : "async"}
+      // @ts-expect-error — fetchpriority is a valid HTML attribute, React types lag behind
+      fetchpriority={isEager ? "high" : "low"}
       className={cn(
         "object-contain select-none pointer-events-none",
         "drop-shadow-[0_6px_18px_rgba(0,0,0,0.35)]",
