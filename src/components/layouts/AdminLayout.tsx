@@ -300,16 +300,20 @@ export const AdminLayout = ({ children }: Props) => {
       <div className="mt-auto border-t border-sidebar-border/30 shrink-0">
         {/* Settings (expandable) */}
         <div className="px-3 pt-3 space-y-0.5">
-          <button
-            type="button"
-            onClick={() => setSettingsOpen((o) => !o)}
-            aria-expanded={settingsOpen}
-            className={cn(
-              "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full",
-              isOnSettings
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/80"
-            )}
+          <NavLink
+            to="/admin/configuracoes"
+            onClick={() => {
+              setSettingsOpen(true);
+              setMobileOpen(false);
+            }}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full",
+                isActive || isOnSettings
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/80"
+              )
+            }
           >
             <Settings className="h-[18px] w-[18px]" />
             <span className="flex-1 text-left">Configurações</span>
@@ -321,13 +325,25 @@ export const AdminLayout = ({ children }: Props) => {
                 {settingsCompletion.pendingCount}
               </span>
             )}
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 opacity-50 transition-transform duration-200",
-                settingsOpen ? "rotate-0" : "-rotate-90"
-              )}
-            />
-          </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSettingsOpen((o) => !o);
+              }}
+              aria-label={settingsOpen ? "Recolher submenu" : "Expandir submenu"}
+              aria-expanded={settingsOpen}
+              className="p-0.5 rounded hover:bg-sidebar-accent/60 transition-colors"
+            >
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 opacity-60 transition-transform duration-200",
+                  settingsOpen ? "rotate-0" : "-rotate-90"
+                )}
+              />
+            </button>
+          </NavLink>
 
           {settingsOpen && (
             <div className="pl-3 mt-0.5 space-y-0.5 border-l border-sidebar-border/30 ml-5">
