@@ -332,6 +332,22 @@ const ClientOnboardingPage = () => {
     setStep((s) => s - 1);
   };
 
+  const handleJumpToStep = (target: number) => {
+    if (target === step) return;
+    const currentSaveSection = getSaveSectionForStep(step);
+    if (currentSaveSection !== null) saveSection(currentSaveSection);
+    setDirection(target > step ? 1 : -1);
+    setStep(target);
+  };
+
+  // Keyboard nav: Enter advances, Shift+Enter goes back, Esc exits
+  useKeyboardNav({
+    onNext: () => { if (!submitting) handleNext(); },
+    onBack: handleBack,
+    onClose: () => navigate("/cliente"),
+    enabled: !loading,
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-5">
@@ -356,9 +372,26 @@ const ClientOnboardingPage = () => {
     exit: (dir: number) => ({ x: dir > 0 ? -24 : 24, opacity: 0 }),
   };
 
+  const totalRenda = rendas.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+  const totalDespesas = despesas.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+  const totalDividas = dividas.reduce((s, d) => s + (parseFloat(d.total_amount) || 0), 0);
+  const totalPatrimonio = patrimonio.reduce((s, a) => s + (parseFloat(a.estimated_value) || 0), 0);
+  const fmtBRL = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+  // Stats keyed by SECTION index (see SECTIONS in onboardingConfig)
+  const drawerStats: Record<number, { hint?: string }> = {
+    1: { hint: identificacao.full_name || "Sem nome" },
+    3: { hint: rendas.length ? `${rendas.length} fonte(s) · ${fmtBRL(totalRenda)}` : "Nenhuma renda" },
+    4: { hint: despesas.length ? `${despesas.length} despesa(s) · ${fmtBRL(totalDespesas)}` : "Nenhuma despesa" },
+    5: { hint: dividas.length ? `${dividas.length} dívida(s) · ${fmtBRL(totalDividas)}` : "Sem dívidas" },
+    6: { hint: patrimonio.length ? `${patrimonio.length} ativo(s) · ${fmtBRL(totalPatrimonio)}` : "Nenhum ativo" },
+    7: { hint: seguros.length ? `${seguros.length} seguro(s)` : "Nenhum seguro" },
+    8: { hint: objetivos.length ? `${objetivos.length} objetivo(s)` : "Nenhum objetivo" },
+  };
+
   const renderStep = () => {
     switch (step) {
-      case 0: return <StepWelcome userName={identificacao.full_name} />;
+      case 0: return <StepWelcome userName={identificacao.full_name} estimatedMin={remainingMin} />;
       case 1: return <StepNome data={identificacao} onChange={setIdentificacao} />;
       case 2: return <StepCpfNascimento data={identificacao} onChange={setIdentificacao} />;
       case 3: return <StepEstadoCivil data={identificacao} onChange={setIdentificacao} />;
@@ -381,12 +414,24 @@ const ClientOnboardingPage = () => {
       case 20: return <StepRisco data={comportamental} onChange={setComportamental} />;
       case 21: return <StepGatilhos data={comportamental} onChange={setComportamental} />;
       case 22: return <StepPerfilResultado data={comportamental} onChange={setComportamental} />;
+      case 23: return (
+        <SummaryReview
+          identificacao={identificacao}
+          rendas={rendas}
+          despesas={despesas}
+          dividas={dividas}
+          patrimonio={patrimonio}
+          seguros={seguros}
+          objetivos={objetivos}
+          comportamental={comportamental}
+        />
+      );
       default: return null;
     }
   };
 
   const isListStep = step >= 8 && step <= 13;
-  const isCenteredStep = step === 0 || step === 7 || step === 14 || (step >= 15 && step <= 22);
+  const isCenteredStep = step === 0 || step === 7 || step === 14 || (step >= 15 && step <= 22) || step === 23;
 
   return (
     <PageTransition className="h-screen bg-background flex flex-col overflow-hidden">
