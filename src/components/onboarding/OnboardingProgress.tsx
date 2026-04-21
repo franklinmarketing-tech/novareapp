@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { STEP_TITLES, STEP_ENCOURAGEMENT, SECTIONS, STEP_TO_SECTION, TOTAL_MICRO_STEPS } from "./steps/onboardingConfig";
 import { SaveIndicator, type SaveStatus } from "./SaveIndicator";
 import { OnboardingProgressDrawer } from "./OnboardingProgressDrawer";
+import { SecurityBadge } from "./SecurityBadge";
 
 interface SectionStat {
   count?: number;
@@ -118,6 +119,9 @@ export const OnboardingProgress = ({
             <div className="flex items-center gap-1.5 shrink-0">
               <div className="hidden sm:block">
                 <SaveIndicator status={saveStatus} lastSavedAt={lastSavedAt} onRetry={onRetrySave} />
+              </div>
+              <div className="hidden md:block">
+                <SecurityBadge />
               </div>
               {onJumpToStep && (
                 <OnboardingProgressDrawer currentStep={currentStep} stats={drawerStats} onJump={onJumpToStep} />

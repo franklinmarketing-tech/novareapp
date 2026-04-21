@@ -7,6 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileAddSheet } from "./MobileAddSheet";
+
+const RENDA_CHIPS = [
+  { value: "Salário CLT (líquido)", label: "Salário CLT", emoji: "💼" },
+  { value: "Pró-labore", label: "Pró-labore", emoji: "🧾" },
+  { value: "Autônomo", label: "Autônomo", emoji: "🛠️" },
+  { value: "Aluguel recebido", label: "Aluguel", emoji: "🏠" },
+  { value: "Comissão", label: "Comissão", emoji: "💸" },
+  { value: "Bônus / PLR", label: "Bônus", emoji: "🎁" },
+  { value: "Freelance", label: "Freelance", emoji: "💻" },
+  { value: "Aposentadoria", label: "Aposentadoria", emoji: "👴" },
+  { value: "Renda de investimentos", label: "Investimentos", emoji: "📈" },
+  { value: "Dividendos", label: "Dividendos", emoji: "💰" },
+];
 
 export interface IncomeItem {
   id?: string;
@@ -29,6 +44,8 @@ interface Props {
 export const StepRenda = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyIncome()];
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof IncomeItem, value: any) => {
@@ -39,6 +56,10 @@ export const StepRenda = ({ data, onChange }: Props) => {
 
   // Insere a nova renda logo após a Principal (índice 0), no topo da lista de adicionais
   const add = () => {
+    if (isMobile) {
+      setSheetOpen(true);
+      return;
+    }
     const novo = emptyIncome();
     if (items.length === 0) {
       onChange([novo]);
@@ -47,6 +68,17 @@ export const StepRenda = ({ data, onChange }: Props) => {
       onChange([first, novo, ...rest]);
     }
     setFocusId(novo.id!);
+  };
+
+  const handleSheetConfirm = ({ category, amount }: { category: string; amount: string }) => {
+    const desc = category.startsWith("custom:") ? category.slice(7) : category;
+    const novo: IncomeItem = { ...emptyIncome(), description: desc, amount };
+    if (items.length === 0) {
+      onChange([novo]);
+    } else {
+      const [first, ...rest] = items;
+      onChange([first, novo, ...rest]);
+    }
   };
   const remove = (i: number) => {
     if (items.length <= 1) return;
@@ -167,6 +199,18 @@ export const StepRenda = ({ data, onChange }: Props) => {
           );
         })}
       </div>
+
+      <MobileAddSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Adicionar fonte de renda"
+        categoryLabel="Tipo de renda"
+        amountLabel="Valor mensal"
+        noteLabel="Observação"
+        categories={RENDA_CHIPS}
+        customPlaceholder="Outra fonte..."
+        onConfirm={handleSheetConfirm}
+      />
     </div>
   );
 };

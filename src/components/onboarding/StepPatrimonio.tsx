@@ -7,6 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileAddSheet } from "./MobileAddSheet";
+
+const PATRIMONIO_CHIPS = [
+  { value: "Imóvel", label: "Imóvel", emoji: "🏠" },
+  { value: "Veículo", label: "Veículo", emoji: "🚗" },
+  { value: "Investimento", label: "Investimento", emoji: "📈" },
+  { value: "Conta corrente", label: "Conta", emoji: "🏦" },
+  { value: "Reserva de emergência", label: "Reserva", emoji: "🛟" },
+  { value: "Outros", label: "Outros", emoji: "✨" },
+];
 
 export interface AssetItem {
   id?: string;
@@ -25,6 +36,8 @@ interface Props {
 export const StepPatrimonio = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyAsset()];
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof AssetItem, value: string) => {
@@ -34,9 +47,19 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
   };
 
   const add = () => {
+    if (isMobile) {
+      setSheetOpen(true);
+      return;
+    }
     const novo = emptyAsset();
     onChange([novo, ...items]);
     setFocusId(novo.id!);
+  };
+
+  const handleSheetConfirm = ({ category, amount, note }: { category: string; amount: string; note: string }) => {
+    const type = category.startsWith("custom:") ? category.slice(7) : category;
+    const novo: AssetItem = { ...emptyAsset(), type, estimated_value: amount, description: note };
+    onChange([novo, ...items.filter((a) => a.type || a.estimated_value)]);
   };
   const remove = (i: number) => {
     if (items.length <= 1) return;
@@ -103,6 +126,18 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
           ))}
         </AnimatePresence>
       </div>
+
+      <MobileAddSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Adicionar ativo"
+        categoryLabel="Tipo de ativo"
+        amountLabel="Valor estimado"
+        noteLabel="Descrição"
+        categories={PATRIMONIO_CHIPS}
+        customPlaceholder="Outro tipo..."
+        onConfirm={handleSheetConfirm}
+      />
     </div>
   );
 };

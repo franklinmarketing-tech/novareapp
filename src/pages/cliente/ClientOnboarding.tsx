@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import logoPreta from "@/assets/logo-preta.png";
 import iconBehavioral from "@/assets/icon-behavioral.png";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,8 @@ import { LogOut } from "lucide-react";
 import { SummaryReview } from "@/components/onboarding/SummaryReview";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 import { useOnboardingTimer } from "@/hooks/useOnboardingTimer";
+import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { SaveStatus } from "@/components/onboarding/SaveIndicator";
 
 // Map step ranges to save section for auto-save on any step change
@@ -60,6 +62,8 @@ const ClientOnboardingPage = () => {
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [showSuccessFlash, setShowSuccessFlash] = useState(false);
   const { remainingMin } = useOnboardingTimer(step, TOTAL_MICRO_STEPS);
+  const swipeRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const [identificacao, setIdentificacao] = useState({
     full_name: "", cpf: "", date_of_birth: "", marital_status: "", property_regime: "",
@@ -334,12 +338,32 @@ const ClientOnboardingPage = () => {
     setStep(target);
   };
 
+  const handleSaveAndExit = async () => {
+    const currentSaveSection = getSaveSectionForStep(step);
+    if (currentSaveSection !== null) {
+      const ok = await saveSection(currentSaveSection);
+      if (!ok) return;
+    }
+    toast({
+      title: "✓ Tudo salvo",
+      description: "Você pode voltar e continuar de onde parou quando quiser.",
+    });
+    navigate("/cliente");
+  };
+
   // Keyboard nav: Enter advances, Shift+Enter goes back, Esc exits
   useKeyboardNav({
     onNext: () => { if (!submitting) handleNext(); },
     onBack: handleBack,
     onClose: () => navigate("/cliente"),
     enabled: !loading,
+  });
+
+  // Swipe nav (mobile only): swipe-left = next, swipe-right = back
+  useSwipeNavigation(swipeRef, {
+    enabled: isMobile && !loading,
+    onSwipeLeft: () => { if (!submitting) handleNext(); },
+    onSwipeRight: handleBack,
   });
 
   if (loading) {
@@ -455,7 +479,7 @@ const ClientOnboardingPage = () => {
         drawerStats={drawerStats}
         remainingMin={remainingMin}
       />
-      <div className={`flex-1 overflow-y-auto px-4 sm:px-5 md:px-6 ${isListStep ? "pt-3" : "pt-0"} pb-28 md:pb-24`}>
+      <div ref={swipeRef} className={`flex-1 overflow-y-auto px-4 sm:px-5 md:px-6 ${isListStep ? "pt-3" : "pt-0"} pb-28 md:pb-24`}>
         <div className={`max-w-2xl mx-auto ${isCenteredStep ? "flex items-center justify-center min-h-full" : ""}`}>
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
@@ -478,6 +502,7 @@ const ClientOnboardingPage = () => {
         totalSteps={TOTAL_MICRO_STEPS}
         onBack={handleBack}
         onNext={handleNext}
+        onSaveAndExit={handleSaveAndExit}
         isSubmitting={submitting}
         showSuccessFlash={showSuccessFlash}
       />

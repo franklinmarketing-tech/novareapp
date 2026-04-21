@@ -6,6 +6,19 @@ import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileAddSheet } from "./MobileAddSheet";
+
+const DIVIDA_CHIPS = [
+  { value: "Cartão de crédito", label: "Cartão", emoji: "💳" },
+  { value: "Empréstimo pessoal", label: "Empréstimo", emoji: "💵" },
+  { value: "Financiamento imobiliário", label: "Imóvel", emoji: "🏠" },
+  { value: "Financiamento de veículo", label: "Veículo", emoji: "🚗" },
+  { value: "Empréstimo consignado", label: "Consignado", emoji: "🏦" },
+  { value: "Cheque especial", label: "Cheque especial", emoji: "📉" },
+  { value: "Crédito estudantil", label: "Estudantil", emoji: "🎓" },
+  { value: "Parcelamento", label: "Parcelamento", emoji: "🧾" },
+];
 
 export interface DebtItem {
   id?: string;
@@ -29,6 +42,8 @@ interface Props {
 export const StepDividas = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyDebt()];
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof DebtItem, value: string) => {
@@ -38,9 +53,19 @@ export const StepDividas = ({ data, onChange }: Props) => {
   };
 
   const add = () => {
+    if (isMobile) {
+      setSheetOpen(true);
+      return;
+    }
     const novo = emptyDebt();
     onChange([novo, ...items]);
     setFocusId(novo.id!);
+  };
+
+  const handleSheetConfirm = ({ category, amount }: { category: string; amount: string }) => {
+    const type = category.startsWith("custom:") ? category.slice(7) : category;
+    const novo: DebtItem = { ...emptyDebt(), type, total_amount: amount };
+    onChange([novo, ...items.filter((d) => d.type || d.total_amount)]);
   };
   const remove = (i: number) => {
     if (items.length <= 1) return;
@@ -122,6 +147,18 @@ export const StepDividas = ({ data, onChange }: Props) => {
           </div>
         ))}
       </div>
+
+      <MobileAddSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Adicionar dívida"
+        categoryLabel="Tipo de dívida"
+        amountLabel="Valor total"
+        noteLabel="Credor (opcional)"
+        categories={DIVIDA_CHIPS}
+        customPlaceholder="Outro tipo..."
+        onConfirm={handleSheetConfirm}
+      />
     </div>
   );
 };
