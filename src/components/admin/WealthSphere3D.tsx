@@ -235,6 +235,47 @@ const WealthSphere3D = ({
   selectedYear: number;
 }) => {
   const isMobile = useIsMobile();
+  // Local override of the period (defaults to props from parent dashboard)
+  const [localMonth, setLocalMonth] = useState(selectedMonth);
+  const [localYear, setLocalYear] = useState(selectedYear);
+  const [isCustom, setIsCustom] = useState(false);
+
+  // Sync with parent only when user has not overridden locally
+  useEffect(() => {
+    if (!isCustom) {
+      setLocalMonth(selectedMonth);
+      setLocalYear(selectedYear);
+    }
+  }, [selectedMonth, selectedYear, isCustom]);
+
+  const today = new Date();
+  const isCurrentMonth = localMonth === today.getMonth() && localYear === today.getFullYear();
+
+  const goPrev = () => {
+    setIsCustom(true);
+    if (localMonth === 0) {
+      setLocalMonth(11);
+      setLocalYear((y) => y - 1);
+    } else {
+      setLocalMonth((m) => m - 1);
+    }
+  };
+  const goNext = () => {
+    if (isCurrentMonth) return;
+    setIsCustom(true);
+    if (localMonth === 11) {
+      setLocalMonth(0);
+      setLocalYear((y) => y + 1);
+    } else {
+      setLocalMonth((m) => m + 1);
+    }
+  };
+  const resetToParent = () => {
+    setIsCustom(false);
+    setLocalMonth(selectedMonth);
+    setLocalYear(selectedYear);
+  };
+
   const [series, setSeries] = useState<WealthMonth[]>([]);
   const [clients, setClients] = useState<ClientParticle[]>([]);
   const [loading, setLoading] = useState(true);
