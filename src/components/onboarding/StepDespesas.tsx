@@ -113,10 +113,10 @@ export const StepDespesas = ({ data, onChange }: Props) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1.5">
-        <h2 className="font-display font-semibold text-foreground tracking-[-0.025em] text-[clamp(1.5rem,1.25rem+1vw,2rem)] leading-[1.2]">Despesas fixas mensais</h2>
-        <p className="font-body text-muted-foreground/85 text-[0.9375rem] leading-[1.55] tracking-[-0.01em]">
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <h2 className="font-display font-semibold text-foreground tracking-[-0.025em] text-[clamp(1.375rem,1.15rem+0.9vw,1.75rem)] leading-[1.2]">Despesas fixas mensais</h2>
+        <p className="font-body text-muted-foreground/85 text-[0.875rem] leading-[1.5] tracking-[-0.01em]">
           Adicione suas despesas fixas — o percentual será exibido no diagnóstico
         </p>
       </div>
