@@ -86,7 +86,7 @@ export const NoteEditor = ({ clientId }: Props) => {
   const [analyzing, setAnalyzing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(true);
 
   const [suggestedActions, setSuggestedActions] = useState<SuggestedAction[]>([]);
   const [suggestedInvestments, setSuggestedInvestments] = useState<SuggestedInvestment[]>([]);
