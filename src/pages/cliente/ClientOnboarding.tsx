@@ -264,13 +264,7 @@ const ClientOnboardingPage = () => {
     }
   };
 
-  const lastSaveSectionRef = (() => {
-    let last: number | null = null;
-    return {
-      get: () => last,
-      set: (v: number | null) => { last = v; },
-    };
-  })();
+
 
   const retryLastSave = async () => {
     const sec = getSaveSectionForStep(step);
