@@ -5,43 +5,63 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, ArrowRight } from "lucide-react";
+import { UserPlus, ArrowRight, RefreshCw, Eye, EyeOff } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
 
+function generatePassword(): string {
+  const lower = "abcdefghijkmnpqrstuvwxyz";
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const digits = "23456789";
+  const symbols = "!@#$%&*";
+  const all = lower + upper + digits + symbols;
+  const pick = (s: string) => s[Math.floor(Math.random() * s.length)];
+  let pwd = pick(lower) + pick(upper) + pick(digits) + pick(symbols);
+  for (let i = 0; i < 8; i++) pwd += pick(all);
+  return pwd.split("").sort(() => Math.random() - 0.5).join("");
+}
+
 const NewClient = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState(() => generatePassword());
+  const [showPassword, setShowPassword] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 8) {
+      toast({ title: "Senha muito curta", description: "Use pelo menos 8 caracteres.", variant: "destructive" });
+      return;
+    }
     setIsLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke("create-client", {
-        body: { name, email },
+        body: { name, email, password },
       });
 
       if (error) throw new Error(error.message || "Erro ao criar cliente");
       if (data?.error) throw new Error(data.error);
 
+      const slug = data?.slug;
       const clientId = data?.clientId;
       toast({
         title: data?.alreadyExisted ? "Cliente já existia" : "Cliente cadastrado!",
         description: data?.alreadyExisted
           ? `Continuando o onboarding de ${email}.`
-          : `Iniciando onboarding de ${name}.`,
+          : `E-mail com credenciais enviado para ${email}.`,
       });
-      if (clientId) {
+
+      let finalSlug = slug;
+      if (!finalSlug && clientId) {
         const { data: client } = await supabase.from("clients").select("slug").eq("id", clientId).maybeSingle();
-        navigate(client?.slug ? `/admin/cliente/${client.slug}/onboarding` : "/admin/clientes");
-      } else {
-        navigate("/admin/clientes");
+        finalSlug = client?.slug;
       }
+      navigate(finalSlug ? `/admin/cliente/${finalSlug}/onboarding` : "/admin/clientes");
     } catch (error: any) {
       toast({
         title: "Erro ao cadastrar cliente",
@@ -75,7 +95,7 @@ const NewClient = () => {
             Novo cliente
           </h1>
           <p className="text-[0.875rem] text-muted-foreground font-light">
-            Cadastre o cliente para iniciar o onboarding. Ele poderá criar a própria senha pela tela de login.
+            Defina uma senha inicial. Ela será enviada por e-mail e o cliente poderá trocá-la depois nas Configurações.
           </p>
         </div>
 
@@ -102,6 +122,45 @@ const NewClient = () => {
               placeholder="email@cliente.com"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-sm font-medium">Senha inicial</Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mínimo 8 caracteres"
+                  minLength={8}
+                  required
+                  className="font-mono pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => setPassword(generatePassword())}
+                title="Gerar nova senha"
+                className="shrink-0"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              A senha será incluída no e-mail de boas-vindas. O cliente pode trocá-la depois.
+            </p>
           </div>
 
           <Button
