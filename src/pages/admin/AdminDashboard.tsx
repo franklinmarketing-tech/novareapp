@@ -244,7 +244,7 @@ const AdminDashboard = () => {
       setUnconfirmedClients(unconfirmed);
     };
     fetchData();
-  }, [monthRef, isCurrentMonth, selectedMonth, selectedYear]);
+  }, [monthRef, isCurrentMonth, selectedMonth, selectedYear, periodMonths]);
 
   const statusLabels: Record<string, string> = {
     onboarding_pendente: "Onboarding",
