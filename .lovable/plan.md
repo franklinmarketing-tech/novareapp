@@ -1,83 +1,77 @@
 
 
-# Refinamento visual completo do sistema
+# Polimento das telas de onboarding
 
-Polimento geral de design, tipografia, espaçamento e responsividade — **sem alterar estrutura, copy, fluxos ou funcionalidades**. Tudo é feito via tokens globais (`index.css`, `tailwind.config.ts`) e primitivos UI (`Card`, `Button`, `Input`, `Label`, `Badge`), garantindo que todas as 50+ páginas se beneficiem automaticamente.
+Refinamento visual completo do fluxo de onboarding (23 micro-passos), focando em **progresso mais elegante**, **espaçamento consistente entre perguntas** e **transições suaves entre steps**. Sem alterar copy, ordem dos steps, validações ou lógica de save.
 
-## O que vai mudar (resumo visual)
+## O que vai mudar
 
-- **Tipografia mais hierárquica e legível** — escala consistente entre títulos de página, seções e cards.
-- **Cards mais elegantes** — sombras mais suaves, bordas refinadas, hover sutil, padding harmonizado.
-- **Botões mais consistentes** — alturas padronizadas, hover/active mais discretos, foco mais limpo.
-- **Inputs e formulários mais arejados** — labels com peso correto, espaçamento entre campos uniforme, foco refinado.
-- **Sidebar e header mais polidos** — densidade reduzida, separação melhor entre seções, breadcrumb mais legível.
-- **Responsividade mobile/tablet** — paddings adaptativos, tamanhos de toque mínimos, quebras corrigidas.
-- **Consistência geral** — radius, sombras, cores e espaçamentos unificados via tokens.
+### 1. Progresso (`OnboardingProgress.tsx`) — mais elegante
+- **Barra de progresso refinada**: altura 2px (em vez de 3px), com gradient mais suave (`from-primary/80 via-primary to-accent`), animação spring em vez de ease, e sutil "glow" embaixo para dar profundidade.
+- **Header mais limpo**: reduzir densidade vertical, melhorar alinhamento entre emoji da seção, label e contador (`X/Y` com ponto separador estilo `· 3 de 23`).
+- **Emoji da seção**: container com sombra sutil (`shadow-soft`), tamanho refinado (`w-9 h-9`), background `bg-primary/8` com leve borda interna.
+- **Tipografia**: título do step com tamanho consistente (`text-[0.9375rem]`, peso 500), label da seção com letter-spacing refinado (`tracking-[0.14em]`).
+- **Encorajamento**: tipografia mais delicada, sem itálico forçado em telas pequenas, spacing-top melhor (`mt-1.5`).
+- **Botão fechar (X)**: ícone reduzido (`h-4 w-4`, hoje está h-6), hover state mais discreto.
 
-## Áreas de intervenção
+### 2. Navegação inferior (`OnboardingNavigation.tsx`)
+- **Section dots**: dots com largura mais harmônica (active: w-6, complete: w-2.5, pending: w-1.5), altura 1.5px, transição suave 400ms; dot ativo com leve glow `shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]`.
+- **Botões**: altura unificada para 44px (em vez de 12 inconsistente com tokens), ícones reduzidos para `h-4 w-4` (hoje `h-6 w-6` — desproporcional ao botão).
+- **CTA "Próximo"**: usar a variante `premium` já refinada nos tokens, com sombra mais suave, sem variação custom de success no último step (apenas mudar variant para `success`).
+- **Spacing**: padding-x reduzido em mobile (`px-4 sm:px-6`), gap entre dots e botões mais arejado (`space-y-3.5`).
+- **Loading state**: spinner menor (`h-4 w-4`) e melhor alinhado verticalmente.
 
-### 1. Tokens globais (`src/index.css`)
-- Refinar a escala tipográfica usando `clamp()` para fluidez entre breakpoints.
-- Adicionar utilitários: `.surface-card`, `.surface-elevated`, `.stack-sm/md/lg` para espaçamento consistente.
-- Refinar os tons `muted-foreground` e `border` no light/dark para melhor contraste (WCAG AA).
-- Adicionar transições padrão suaves (`--transition-base`).
+### 3. Steps individuais — espaçamento entre perguntas
+Padronização dos componentes `Wrapper`, `Question`, `Hint`, `FieldGroup` (atualmente duplicados em `IdentificacaoSteps.tsx` e `ComportamentalSteps.tsx`):
 
-### 2. Tailwind config (`tailwind.config.ts`)
-- Adicionar tamanhos de espaçamento intermediários (`5.5`, `7.5`, `13`).
-- Refinar `boxShadow` (sombras mais sutis, multi-camada estilo Apple/Linear).
-- Adicionar keyframes/animation: `fade-in`, `slide-up`, `scale-in` para reuso.
+- **Wrapper**: `space-y-7` (em vez de `space-y-6`) — mais respiro entre pergunta, hint e campos.
+- **Question (título da pergunta)**:
+  - Tipografia escalonada com `clamp()` para responsividade fluida.
+  - `tracking-[-0.025em]` (mais legível em mobile que `-0.03em`).
+  - `leading-[1.2]` (em vez de 1.15) — melhora respiração vertical.
+  - max-width unificado em `max-w-xl`.
+- **Hint**: cor refinada para `text-muted-foreground/85`, max-width `max-w-md`, `leading-[1.55]`.
+- **Indicador "Passo 01"**: pill mais elegante — pequeno fundo `bg-primary/8` + padding `px-2.5 py-1` + radius full em vez de só texto solto. Mantém copy.
+- **FieldGroup**: spacing entre campos `space-y-4` (em vez de `space-y-3`/`space-y-4` inconsistente entre arquivos), max-width unificado `max-w-md`.
+- **Inputs do onboarding**: altura padronizada `h-12` (em vez de mistura de h-13/h-14), focus ring usando o novo token `ring-ring/15` definido nos primitivos refinados, remover overrides inconsistentes (`focus-visible:ring-primary/30`) — herdar do componente base.
+- **Labels**: usar componente `<Label>` refinado nos tokens, sem override de `text-muted-foreground`.
 
-### 3. Primitivos UI (mudanças que se propagam para todo o app)
-- **`Card`**: padding harmonizado (`p-5`/`p-6` consistente), sombra mais suave, hover mais discreto, header com separador opcional.
-- **`Button`**: alturas refinadas (`sm` 36px, `default` 40px, `lg` 44px), hover sem `translate` agressivo, focus ring mais limpo, ícones melhor alinhados.
-- **`Input` / `Textarea` / `Select`**: altura uniforme (40px default, 44px em formulários longos), foco com ring suave, estado de erro mais claro.
-- **`Label`**: peso 500, tamanho 13px, cor `foreground/85` para melhor leitura.
-- **`Badge`**: padding e radius padronizados, variantes com contraste melhor.
-- **`Tabs`**: indicador ativo mais sutil, espaçamento horizontal uniforme.
-- **`Dialog` / `Sheet` / `Dropdown`**: padding e radius consistentes, sombra de elevação refinada.
+### 4. Transições entre steps (mais suaves)
+Em `ClientOnboarding.tsx`:
+- **Variants**: reduzir o desloc horizontal de 50px para 24px (movimento mais sutil, estilo Apple).
+- **Scale**: remover (`scale: 0.98` → 1) — apenas opacity + leve translate é mais elegante.
+- **Easing**: trocar `[0.25, 0.46, 0.45, 0.94]` por `[0.32, 0.72, 0, 1]` (curva tipo iOS spring).
+- **Duração**: 0.28s (mais responsivo, hoje 0.3s).
+- **Transition steps (boas-vindas, transições)**: orquestração já existe via `delay` — apenas refinar timings (delays de 0.15/0.3/0.5/0.7s para 0.1/0.2/0.35/0.5s).
 
-### 4. Layouts (`AdminLayout`, `ClientLayout`, `SuperAdminLayout`, `AdminClientLayout`)
-- Sidebar: espaçamento entre seções uniforme, hover states mais sutis, item ativo com indicador lateral elegante.
-- Header/breadcrumb: altura unificada (44px), tipografia mais clara, separador `ChevronRight` menor (14px em vez de 24px).
-- Main content: padding responsivo padronizado (`p-4 sm:p-6 lg:p-8`).
-- Mobile header: melhor altura de toque, transição da sidebar suave.
+### 5. Steps especiais (Welcome / Transition)
+- Reduzir tamanho do emoji em telas pequenas (`text-5xl` no mobile, hoje fica grande demais em viewports curtos).
+- Spacing vertical mais consistente (`space-y-5 md:space-y-7`).
+- Sparkle decorativo no Welcome com `opacity-10` (hoje 0.15) — mais sutil.
+- Badge "Identificação completa!" no Transition com radius e padding alinhados ao novo padrão de `Badge`.
 
-### 5. Páginas principais (apenas refinamentos visuais — nenhuma estrutura ou copy alterada)
-- **Login**: melhor espaçamento entre campos, botão CTA mais consistente com o resto do sistema.
-- **AdminDashboard**: padding dos cards KPI uniforme, melhor hierarquia entre seletor de período e botões de preset.
-- **ClientList**: linhas da lista com espaçamento melhor, ações (editar/excluir) com hover discreto.
-- **Onboarding (todos os steps)**: melhor espaçamento entre perguntas, progresso mais elegante.
-- **Configurações / Workspace / Parecer / Investimentos**: cards e formulários alinhados ao novo padrão.
+### 6. Loading state inicial
+- Substituir emoji 💰 estático por animação de carregamento mais elegante: dot pulse trio + texto, alinhado ao padrão visual do sistema.
 
-### 6. Responsividade
-- Revisar `text-` classes em headers para escalar com viewport.
-- Garantir botões com `min-h-[40px]` em mobile.
-- Corrigir grids que quebram em 768-900px (ex: cards 3-col → 2-col → 1-col).
-- Sidebar mobile com largura adaptativa.
-
-## Princípios de design aplicados
-
-```text
-Hierarquia    → Title (20-24px, semibold) > Section (16-17px, semibold) > Body (14-15px) > Meta (12-13px)
-Espaçamento   → Múltiplos de 4px (4, 8, 12, 16, 20, 24, 32, 40)
-Radius        → Cards 16px / Inputs 12px / Buttons 12px / Badges 8px
-Sombra        → 3 níveis: subtle (cards) / soft (hover) / elevated (modals)
-Cor           → Mantém paleta atual (terracotta/blue/Novare) — apenas melhora contraste
-Movimento     → 200ms ease-out padrão; sem translates agressivos
-```
+### 7. Responsividade
+- Header de progresso colapsa título em telas <380px (mantém apenas seção + contador).
+- Botões de navegação: largura mínima reduzida em mobile (`min-w-[120px]` em vez de 150px).
+- Padding lateral fluido (`px-4 sm:px-5 md:px-6`).
+- Container do step com `pb-28` mobile / `pb-24` desktop para evitar sobreposição com nav fixa em telas pequenas.
 
 ## Garantias
 
-- **Zero alteração** em copy, rotas, fluxos, funcionalidades, lógica de negócio, queries Supabase ou edge functions.
-- **Zero remoção** de componentes ou seções.
-- Todas as mudanças são **visuais** e propagadas via tokens/primitivos — risco mínimo de quebra funcional.
-- Light e dark mode revisados em paralelo.
+- **Zero alteração** em copy, ordem dos passos, validações, save, confetti, navegação, ou estrutura de dados.
+- **Zero remoção** de campos ou componentes.
+- Mudanças puramente visuais e de timing/animação.
+- Light e dark mode revisados em paralelo (usa tokens já refinados).
 
-## Arquivos principais a editar
+## Arquivos a editar
 
-- `src/index.css` (tokens, utilitários, dark mode)
-- `tailwind.config.ts` (escala, sombras, animações)
-- `src/components/ui/{card,button,input,textarea,label,badge,tabs,dialog,sheet,dropdown-menu,select}.tsx`
-- `src/components/layouts/{AdminLayout,ClientLayout,SuperAdminLayout,AdminClientLayout}.tsx`
-- Ajustes pontuais em páginas com layout customizado: `Login.tsx`, `AdminDashboard.tsx`, `ClientList.tsx`, steps de onboarding.
+- `src/components/onboarding/OnboardingProgress.tsx`
+- `src/components/onboarding/OnboardingNavigation.tsx`
+- `src/components/onboarding/steps/IdentificacaoSteps.tsx`
+- `src/components/onboarding/steps/ComportamentalSteps.tsx`
+- `src/components/onboarding/steps/TransitionSteps.tsx`
+- `src/pages/cliente/ClientOnboarding.tsx` (apenas variants, loading state e padding do container)
 
