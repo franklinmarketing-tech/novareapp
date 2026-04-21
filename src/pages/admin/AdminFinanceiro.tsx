@@ -12,6 +12,7 @@ import PageBanner from "@/components/PageBanner";
 import { SEO } from "@/components/SEO";
 import { EmptyState } from "@/components/ui/empty-state";
 import { motion } from "framer-motion";
+import { ScrollableTable } from "@/components/ui/scrollable-table";
 
 import iconVault from "@/assets/icon-vault-3d.png";
 import iconGrowth from "@/assets/icon-growth-3d.png";
@@ -450,9 +451,8 @@ const AdminFinanceiro = () => {
                 {totalClients} cliente{totalClients !== 1 ? "s" : ""}
               </span>
             </div>
-            <div className="relative">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[640px]">
+            <ScrollableTable fadeColor="rgba(13,27,42,0.95)">
+              <table className="w-full text-sm min-w-[640px]">
                 <thead>
                   <tr className="border-t border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                     <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Cliente</th>
@@ -494,14 +494,7 @@ const AdminFinanceiro = () => {
                   })}
                 </tbody>
               </table>
-              </div>
-              {/* Right edge fade hint (mobile only) */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute top-0 right-0 h-full w-10 sm:hidden"
-                style={{ background: "linear-gradient(to left, rgba(13,27,42,0.95), transparent)" }}
-              />
-            </div>
+            </ScrollableTable>
           </div>
         </Card3D>
       </motion.div>

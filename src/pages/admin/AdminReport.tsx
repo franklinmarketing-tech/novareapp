@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import { toast } from "@/hooks/use-toast";
+import { ScrollableTable } from "@/components/ui/scrollable-table";
 
 // ── Palette ──────────────────────────────────────────
 const CHART_COLORS = [
@@ -597,8 +598,7 @@ const AdminReport = () => {
             <Card>
               <CardContent className="py-4">
                 <p className="text-[10px] text-muted-foreground sm:hidden mb-2 text-center">← Arraste para ver mais →</p>
-                <div className="relative">
-                <div className="overflow-x-auto">
+                <ScrollableTable>
                   <table className="w-full text-sm min-w-[560px]">
                     <thead>
                       <tr className="border-b border-border">
@@ -611,15 +611,15 @@ const AdminReport = () => {
                       {debts.map((d) => (
                         <tr key={d.id} className="border-b border-border/30 ">
                           <td className="py-2.5 px-2 text-foreground capitalize">{d.type}</td>
-                          <td className="py-2.5 text-muted-foreground">{d.creditor || "—"}</td>
-                          <td className="py-2.5 text-right font-semibold text-foreground tabular-nums">{fmt(d.total_amount || 0)}</td>
-                          <td className="py-2.5 text-right tabular-nums text-muted-foreground">{fmt(d.monthly_payment || 0)}</td>
-                          <td className="py-2.5 text-right tabular-nums">
+                          <td className="py-2.5 px-2 text-muted-foreground">{d.creditor || "—"}</td>
+                          <td className="py-2.5 px-2 text-right font-semibold text-foreground tabular-nums">{fmt(d.total_amount || 0)}</td>
+                          <td className="py-2.5 px-2 text-right tabular-nums text-muted-foreground">{fmt(d.monthly_payment || 0)}</td>
+                          <td className="py-2.5 px-2 text-right tabular-nums">
                             {d.interest_rate ? (
                               <span className={d.interest_rate > 5 ? "text-red-500 font-semibold" : "text-muted-foreground"}>{d.interest_rate}% a.m.</span>
                             ) : "—"}
                           </td>
-                          <td className="py-2.5 text-right tabular-nums text-muted-foreground">{d.remaining_months ? `${d.remaining_months} meses` : "—"}</td>
+                          <td className="py-2.5 px-2 text-right tabular-nums text-muted-foreground">{d.remaining_months ? `${d.remaining_months} meses` : "—"}</td>
                         </tr>
                       ))}
                       <tr className="font-bold text-foreground">
@@ -630,9 +630,7 @@ const AdminReport = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
-                <div aria-hidden className="pointer-events-none absolute top-0 right-0 h-full w-8 sm:hidden" style={{ background: "linear-gradient(to left, hsl(var(--card)), transparent)" }} />
-                </div>
+                </ScrollableTable>
               </CardContent>
             </Card>
           </section>
@@ -796,8 +794,7 @@ const AdminReport = () => {
             <Card>
               <CardContent className="py-4">
                 <p className="text-[10px] text-muted-foreground sm:hidden mb-2 text-center">← Arraste para ver mais →</p>
-                <div className="relative">
-                <div className="overflow-x-auto">
+                <ScrollableTable>
                   <table className="w-full text-sm min-w-[640px]">
                     <thead>
                       <tr className="border-b border-border">
@@ -828,9 +825,7 @@ const AdminReport = () => {
                       })}
                     </tbody>
                   </table>
-                </div>
-                <div aria-hidden className="pointer-events-none absolute top-0 right-0 h-full w-8 sm:hidden" style={{ background: "linear-gradient(to left, hsl(var(--card)), transparent)" }} />
-                </div>
+                </ScrollableTable>
               </CardContent>
             </Card>
           </section>
