@@ -21,6 +21,40 @@ async function fetchBCBSeries(seriesId: number, lastN: number): Promise<BCBRecor
   }
 }
 
+interface IbovQuote {
+  current: number;
+  previous: number;
+  variation: number;
+  history: { date: string; value: number }[];
+}
+
+async function fetchIbovespa(): Promise<IbovQuote> {
+  // Brapi é público e gratuito para dados básicos do IBOV
+  try {
+    const url = "https://brapi.dev/api/quote/^BVSP?range=1mo&interval=1d";
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("brapi failed");
+    const json = await res.json();
+    const result = json.results?.[0];
+    if (!result) throw new Error("no data");
+    const current = Number(result.regularMarketPrice) || 0;
+    const previous = Number(result.regularMarketPreviousClose) || current;
+    const variation = previous !== 0 ? ((current - previous) / previous) * 100 : 0;
+    const history = (result.historicalDataPrice || [])
+      .slice(-22)
+      .map((h: { date: number; close: number }) => {
+        const d = new Date(h.date * 1000);
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        return { date: `${dd}/${mm}`, value: Number(h.close) || 0 };
+      });
+    return { current, previous, variation, history };
+  } catch (e) {
+    console.error("Brapi error:", e);
+    return { current: 0, previous: 0, variation: 0, history: [] };
+  }
+}
+
 async function fetchDolarOlindaAPI(): Promise<BCBRecord[]> {
   const today = new Date();
   const start = new Date(today);
@@ -97,12 +131,14 @@ Deno.serve(async (req) => {
     }
 
     // Fetch all series in parallel
-    const [selicRecs, cdiRecs, ipcaRecs, poupancaRecs, bcbDolarRecs] = await Promise.all([
+    const [selicRecs, cdiRecs, ipcaRecs, ipca12Recs, poupancaRecs, bcbDolarRecs, ibov] = await Promise.all([
       fetchBCBSeries(4189, 12),
       fetchBCBSeries(4391, 12),
       fetchBCBSeries(433, 12),
+      fetchBCBSeries(13522, 12), // IPCA acumulado 12 meses
       fetchBCBSeries(25, 12),
       fetchBCBSeries(10813, 30),
+      fetchIbovespa(),
     ]);
 
     let dolarRecs = bcbDolarRecs;
@@ -113,11 +149,17 @@ Deno.serve(async (req) => {
     const selic = calcVariation(selicRecs);
     const cdi = calcVariation(cdiRecs);
     const ipca = calcVariation(ipcaRecs);
+    const ipca12 = calcVariation(ipca12Recs);
     const poupanca = calcVariation(poupancaRecs);
     const dolar = calcVariation(dolarRecs);
 
     const selicRate = selic.current;
     const cdiRate = cdi.current;
+    // Juro real = ((1 + selic) / (1 + ipca12m)) - 1
+    const realRate = ipca12.current > -100
+      ? (((1 + selicRate / 100) / (1 + ipca12.current / 100)) - 1) * 100
+      : 0;
+
 
     const products = [
       { name: "Tesouro Selic", type: "Renda Fixa", estimatedReturn: `${selicRate.toFixed(2)}% a.a.`, returnValue: selicRate, risk: "Muito Baixo", liquidity: "D+1", minInvestment: "R$ 30", profiles: ["conservador", "moderado", "arrojado"] },
@@ -136,8 +178,25 @@ Deno.serve(async (req) => {
         selic: { ...selic, name: "Selic", unit: "% a.a.", history: formatHistory(selicRecs) },
         cdi: { ...cdi, name: "CDI", unit: "% a.a.", history: formatHistory(cdiRecs) },
         ipca: { ...ipca, name: "IPCA", unit: "% a.m.", history: formatHistory(ipcaRecs) },
+        ipca12m: { ...ipca12, name: "IPCA 12m", unit: "% a.a.", history: formatHistory(ipca12Recs) },
         poupanca: { ...poupanca, name: "Poupança", unit: "% a.m.", history: formatHistory(poupancaRecs) },
         dolar: { ...dolar, name: "Dólar", unit: "R$", history: formatHistory(dolarRecs) },
+        ibovespa: {
+          name: "Ibovespa",
+          unit: "pts",
+          current: ibov.current,
+          previous: ibov.previous,
+          variation: ibov.variation,
+          history: ibov.history,
+        },
+      },
+      analytics: {
+        realRate: { value: realRate, label: "Juro real (Selic - IPCA 12m)", unit: "% a.a." },
+        cdiVsPoupanca: {
+          value: cdiRate - poupanca.current * 12,
+          label: "CDI vs Poupança (a.a.)",
+          unit: "p.p.",
+        },
       },
       products,
       updatedAt: new Date().toISOString(),
