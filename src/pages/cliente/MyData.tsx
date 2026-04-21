@@ -31,6 +31,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAutoSaveDraft } from "@/hooks/useAutoSaveDraft";
 
 /* ── Helpers ── */
 const fmt = (v: string | number) => {
