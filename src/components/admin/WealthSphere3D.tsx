@@ -296,9 +296,8 @@ const WealthSphere3D = ({
 
       // Client particles: top 100 by current wealth
       if (clientIds.length > 0) {
-        const [diagRes, clientNames, assetsRes, debtsRes] = await Promise.all([
+        const [diagRes, assetsRes, debtsRes] = await Promise.all([
           supabase.from("diagnosis").select("client_id, risk_classification").in("client_id", clientIds),
-          supabase.from("profiles").select("user_id, full_name").in("user_id", (clientRows || []).map((c) => c.id) /* placeholder */),
           supabase.from("assets").select("client_id, estimated_value").in("client_id", clientIds),
           supabase.from("debts").select("client_id, total_amount").in("client_id", clientIds),
         ]);
