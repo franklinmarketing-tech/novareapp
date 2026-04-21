@@ -414,7 +414,8 @@ export const AdminLayout = ({ children }: Props) => {
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
         <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-2" />
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1">
+          <NotificationsBell className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
           <ThemeToggle className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
         </div>
       </div>
@@ -455,7 +456,8 @@ export const AdminLayout = ({ children }: Props) => {
                 </span>
               ))}
             </nav>
-            <div className="hidden lg:flex items-center shrink-0">
+            <div className="hidden lg:flex items-center gap-1 shrink-0">
+              <NotificationsBell />
               <ThemeToggle />
             </div>
           </div>
@@ -463,6 +465,9 @@ export const AdminLayout = ({ children }: Props) => {
 
         <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
       </main>
+
+      {/* Global ⌘K palette (admin only) */}
+      <CommandPalette />
     </div>
   );
 };
