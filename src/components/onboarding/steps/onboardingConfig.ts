@@ -16,6 +16,7 @@ export const SECTIONS = [
   { key: "objetivos", emoji: "🎯", label: "Objetivos", color: "text-success" },
   { key: "transition_comportamental", emoji: "🧠", label: "Comportamento", color: "text-accent" },
   { key: "comportamental", emoji: "🧠", label: "Seu perfil", color: "text-primary" },
+  { key: "summary", emoji: "✨", label: "Revisão", color: "text-success" },
 ] as const;
 
 // Step → section index for the SECTIONS array above
