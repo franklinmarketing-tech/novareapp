@@ -141,6 +141,37 @@ const MyData = () => {
 
   const markModified = (section: number) => setModifiedSections((prev) => new Set(prev).add(section));
 
+  // Auto-save draft to localStorage (per user) so the form survives reloads.
+  const draftKey = `mydata.draft.${user?.id ?? "anon"}`;
+  const draftValue = { identificacao, rendas, despesas, dividas, patrimonio, seguros, objetivos, comportamental };
+  const { draft: savedDraft, clear: clearDraft } = useAutoSaveDraft(
+    draftKey,
+    draftValue,
+    !loading && !!clientId && modifiedSections.size > 0,
+  );
+
+  // Restore once: if a draft exists and user reloaded mid-edit, hydrate state.
+  const [draftRestored, setDraftRestored] = useState(false);
+  useEffect(() => {
+    if (loading || !clientId || draftRestored || !savedDraft) return;
+    setDraftRestored(true);
+    try {
+      if (savedDraft.identificacao) setIdentificacao(savedDraft.identificacao);
+      if (Array.isArray(savedDraft.rendas)) setRendas(savedDraft.rendas);
+      if (Array.isArray(savedDraft.despesas)) setDespesas(savedDraft.despesas);
+      if (Array.isArray(savedDraft.dividas)) setDividas(savedDraft.dividas);
+      if (Array.isArray(savedDraft.patrimonio)) setPatrimonio(savedDraft.patrimonio);
+      if (Array.isArray(savedDraft.seguros)) setSeguros(savedDraft.seguros);
+      if (Array.isArray(savedDraft.objetivos)) setObjetivos(savedDraft.objetivos);
+      if (savedDraft.comportamental) setComportamental(savedDraft.comportamental);
+      // Mark all as modified so user knows there's unsaved work to flush.
+      setModifiedSections(new Set([0, 1, 2, 3, 4, 5, 6, 7]));
+      toast({ title: "Rascunho restaurado", description: "Recuperamos suas últimas edições não salvas." });
+    } catch {
+      // ignore
+    }
+  }, [loading, clientId, savedDraft, draftRestored]);
+
   const handleAtualizar = useCallback(() => {
     setHighlightActive(true);
     setHighlightedOnce(true);
