@@ -25,6 +25,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { FoundersShowcase } from "@/components/FoundersShowcase";
+import { MobileBottomNav } from "@/components/layouts/MobileBottomNav";
 
 const navItems = [
   { to: "/cliente", icon: LayoutDashboard, label: "Dashboard", end: true },
@@ -196,13 +197,13 @@ export const ClientLayout = ({ children }: Props) => {
           variant="ghost"
           size="icon"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="text-sidebar-foreground hover:bg-sidebar-accent/40 h-10 w-10"
+          className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40 h-10 w-10"
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
         <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-2" />
         <div className="ml-auto">
-          <ThemeToggle className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
+          <ThemeToggle className="!text-sidebar-foreground hover:!text-sidebar-foreground hover:!bg-sidebar-accent/40" />
         </div>
       </div>
 
@@ -214,8 +215,11 @@ export const ClientLayout = ({ children }: Props) => {
         </div>
       )}
 
+      {/* Mobile bottom nav (cliente) */}
+      <MobileBottomNav dataPending={dataPending} />
+
       {/* Main content */}
-      <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 min-h-screen">
+      <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 pb-20 lg:pb-0 min-h-screen">
         <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
       </main>
     </div>
