@@ -415,7 +415,7 @@ const WealthSphere3D = ({
       <Card3D glowColor="rgba(59,130,246,0.15)">
         <div className="relative overflow-hidden rounded-[inherit]">
           {/* Header */}
-          <div className="relative z-10 flex items-start justify-between p-6 pb-2">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 p-6 pb-2">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Globe2 className="h-5 w-5 text-primary" />
@@ -425,18 +425,80 @@ const WealthSphere3D = ({
                   Globo Patrimonial
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Visão 3D da carteira sob gestão · arraste para girar
+                  Visão 3D da carteira · arraste para girar
                 </p>
               </div>
             </div>
-            {series.length > 0 && firstValue !== 0 && (
-              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${trend > 0 ? "bg-success/10" : trend < 0 ? "bg-destructive/10" : "bg-muted"}`}>
-                <TrendIcon className={`h-3.5 w-3.5 ${trendColor}`} />
-                <span className={`text-xs font-bold tabular-nums ${trendColor}`}>
-                  {trend >= 0 ? "+" : ""}{trendPct}%
-                </span>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Period selector — local to the sphere */}
+              <div className="flex items-center gap-1 bg-muted/60 rounded-xl p-1">
+                <button
+                  onClick={goPrev}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-background transition-colors"
+                  title="Mês anterior"
+                  type="button"
+                >
+                  <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+                </button>
+                <select
+                  value={localMonth}
+                  onChange={(e) => {
+                    setIsCustom(true);
+                    setLocalMonth(Number(e.target.value));
+                  }}
+                  className="h-7 px-2 rounded-lg bg-transparent text-xs font-semibold text-foreground border-0 focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
+                  aria-label="Selecionar mês"
+                >
+                  {MONTHS_PT_FULL.map((name, idx) => (
+                    <option key={idx} value={idx}>{name}</option>
+                  ))}
+                </select>
+                <select
+                  value={localYear}
+                  onChange={(e) => {
+                    setIsCustom(true);
+                    setLocalYear(Number(e.target.value));
+                  }}
+                  className="h-7 px-2 rounded-lg bg-transparent text-xs font-semibold text-foreground border-0 focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer tabular-nums"
+                  aria-label="Selecionar ano"
+                >
+                  {Array.from({ length: 6 }, (_, i) => today.getFullYear() - i).map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={goNext}
+                  disabled={isCurrentMonth}
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${isCurrentMonth ? "opacity-30 cursor-not-allowed" : "hover:bg-background"}`}
+                  title="Próximo mês"
+                  type="button"
+                >
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
               </div>
-            )}
+
+              {isCustom && (
+                <button
+                  onClick={resetToParent}
+                  className="flex items-center gap-1 px-2 h-7 rounded-lg bg-muted/60 hover:bg-muted text-[10px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  title="Voltar ao período do dashboard"
+                  type="button"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Sincronizar
+                </button>
+              )}
+
+              {series.length > 0 && firstValue !== 0 && (
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${trend > 0 ? "bg-success/10" : trend < 0 ? "bg-destructive/10" : "bg-muted"}`}>
+                  <TrendIcon className={`h-3.5 w-3.5 ${trendColor}`} />
+                  <span className={`text-xs font-bold tabular-nums ${trendColor}`}>
+                    {trend >= 0 ? "+" : ""}{trendPct}%
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Canvas + HUD */}
