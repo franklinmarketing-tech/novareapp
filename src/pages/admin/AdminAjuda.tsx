@@ -28,11 +28,9 @@ import {
   Shield,
   HelpCircle,
   Download,
-  Mail,
   Keyboard,
   Lightbulb,
   Lock,
-  Bell,
 } from "lucide-react";
 
 type Section = {
