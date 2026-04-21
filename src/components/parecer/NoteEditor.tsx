@@ -540,14 +540,14 @@ export const NoteEditor = ({ clientId }: Props) => {
             </div>
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant={isEditing ? "default" : "outline"}
                 size="sm"
                 onClick={saveNote}
-                disabled={saving}
+                disabled={saving || !isDirty}
                 className="gap-1.5"
               >
                 {saving ? <Loader2 className="h-6 w-6 animate-spin" /> : <Save className="h-6 w-6" />}
-                Salvar
+                {isEditing ? "Salvar alterações" : "Salvar"}
               </Button>
               <Button
                 size="sm"
