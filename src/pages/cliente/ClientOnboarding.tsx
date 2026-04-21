@@ -62,6 +62,8 @@ const ClientOnboardingPage = () => {
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [showSuccessFlash, setShowSuccessFlash] = useState(false);
   const { remainingMin } = useOnboardingTimer(step, TOTAL_MICRO_STEPS);
+  const swipeRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const [identificacao, setIdentificacao] = useState({
     full_name: "", cpf: "", date_of_birth: "", marital_status: "", property_regime: "",
