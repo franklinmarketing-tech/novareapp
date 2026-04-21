@@ -41,7 +41,7 @@ function inviteEmailHtml(inviteUrl: string, role: string, inviterName: string) {
     </p>
   </td></tr>
   <tr><td style="background:${PRIMARY};padding:18px 32px;text-align:center;">
-    <span style="color:rgba(255,255,255,0.7);font-size:12px;">Novare App · Planejamento Financeiro Inteligente</span>
+    <span style="color:rgba(255,255,255,0.7);font-size:12px;">Novare App · Consultoria Financeira</span>
   </td></tr>
 </table>
 </td></tr>

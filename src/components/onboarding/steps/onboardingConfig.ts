@@ -94,7 +94,7 @@ export const STEP_ENCOURAGEMENT: Record<number, string> = {
 // Section-level narrative messages for transitions
 export const SECTION_NARRATIVES = {
   welcome: {
-    title: "Vamos construir seu\nplanejamento financeiro",
+    title: "Vamos construir sua\nconsultoria financeira",
     subtitle: "Em poucos minutos, vamos entender sua situação e montar um plano personalizado para você.",
     cta: "São apenas 20 perguntas rápidas. Cada resposta nos aproxima do plano ideal para você.",
   },

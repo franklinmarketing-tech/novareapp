@@ -33,7 +33,7 @@ function baseLayout(content: string): string {
     <a href="${APP_URL}" style="display:inline-block;background:${ACCENT};color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;">Ver no App</a>
   </td></tr>
   <tr><td style="background:${PRIMARY};padding:18px 32px;text-align:center;">
-    <span style="color:rgba(255,255,255,0.7);font-size:12px;">Novare App · Planejamento Financeiro Inteligente</span>
+    <span style="color:rgba(255,255,255,0.7);font-size:12px;">Novare App · Consultoria Financeira</span>
   </td></tr>
 </table>
 </td></tr>
