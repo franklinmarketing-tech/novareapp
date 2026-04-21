@@ -1,7 +1,7 @@
 // Maps micro-step index to the save section (0-7) that should be triggered.
 // null = don't save on this step, just advance.
 // Only the LAST micro-step of each section triggers a save.
-export const TOTAL_MICRO_STEPS = 23; // 0-22: welcome + 6 ident + transition + 6 finance + transition + 8 behavioral
+export const TOTAL_MICRO_STEPS = 24; // 0-22: welcome+ident+transitions+finance+behavioral · 23: summary review
 
 // Section definitions with emoji for personality
 export const SECTIONS = [
