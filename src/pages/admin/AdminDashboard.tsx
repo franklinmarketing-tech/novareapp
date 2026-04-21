@@ -38,12 +38,16 @@ const fmtShort = (v: number) => {
 
 const MONTH_NAMES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
+type PeriodPreset = "this_month" | "last_month" | "last_3" | "last_6" | "this_year" | "last_year" | "custom";
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [periodMonths, setPeriodMonths] = useState(1); // quantos meses o período cobre (1, 3, 6, 12)
+  const [activePreset, setActivePreset] = useState<PeriodPreset>("this_month");
   const [adminName, setAdminName] = useState("");
   const [stats, setStats] = useState({ total: 0, onboarding: 0, diagnostico: 0, acompanhamento: 0 });
   const [netWealth, setNetWealth] = useState(0);
@@ -53,15 +57,46 @@ const AdminDashboard = () => {
   const [pendingActions, setPendingActions] = useState<{ id: string; description: string; area: string; client_name?: string; client_slug?: string }[]>([]);
   const [unconfirmedClients, setUnconfirmedClients] = useState<{ id: string; slug: string; name: string; lastConfirmed?: string }[]>([]);
 
-  const isCurrentMonth = selectedMonth === now.getMonth() && selectedYear === now.getFullYear();
+  const isCurrentMonth = selectedMonth === now.getMonth() && selectedYear === now.getFullYear() && periodMonths === 1;
   const monthRef = useMemo(() => `${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}-01`, [selectedMonth, selectedYear]);
 
+  // Período selecionado: termina no fim do selectedMonth/selectedYear, começa periodMonths atrás
+  const periodLabel = useMemo(() => {
+    if (periodMonths === 1) return `${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
+    const startD = new Date(selectedYear, selectedMonth - (periodMonths - 1), 1);
+    if (periodMonths === 12 && selectedMonth === 11) return `${selectedYear}`;
+    return `${MONTH_NAMES[startD.getMonth()].slice(0, 3)}/${startD.getFullYear()} → ${MONTH_NAMES[selectedMonth].slice(0, 3)}/${selectedYear}`;
+  }, [selectedMonth, selectedYear, periodMonths]);
+
+  const applyPreset = (preset: PeriodPreset) => {
+    setActivePreset(preset);
+    const today = new Date();
+    if (preset === "this_month") {
+      setSelectedMonth(today.getMonth()); setSelectedYear(today.getFullYear()); setPeriodMonths(1);
+    } else if (preset === "last_month") {
+      const d = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      setSelectedMonth(d.getMonth()); setSelectedYear(d.getFullYear()); setPeriodMonths(1);
+    } else if (preset === "last_3") {
+      setSelectedMonth(today.getMonth()); setSelectedYear(today.getFullYear()); setPeriodMonths(3);
+    } else if (preset === "last_6") {
+      setSelectedMonth(today.getMonth()); setSelectedYear(today.getFullYear()); setPeriodMonths(6);
+    } else if (preset === "this_year") {
+      setSelectedMonth(today.getMonth()); setSelectedYear(today.getFullYear()); setPeriodMonths(today.getMonth() + 1);
+    } else if (preset === "last_year") {
+      setSelectedMonth(11); setSelectedYear(today.getFullYear() - 1); setPeriodMonths(12);
+    }
+  };
+
   const goToPrevMonth = () => {
+    setActivePreset("custom");
+    setPeriodMonths(1);
     if (selectedMonth === 0) { setSelectedMonth(11); setSelectedYear(y => y - 1); }
     else setSelectedMonth(m => m - 1);
   };
   const goToNextMonth = () => {
     if (isCurrentMonth) return;
+    setActivePreset("custom");
+    setPeriodMonths(1);
     if (selectedMonth === 11) { setSelectedMonth(0); setSelectedYear(y => y + 1); }
     else setSelectedMonth(m => m + 1);
   };
@@ -74,9 +109,9 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // End of selected month for filtering
+      // Período: termina no fim do selectedMonth, começa no início de (selectedMonth - periodMonths + 1)
       const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59);
-      const startOfMonth = new Date(selectedYear, selectedMonth, 1);
+      const startOfMonth = new Date(selectedYear, selectedMonth - (periodMonths - 1), 1);
       const startISO = startOfMonth.toISOString();
       const endISO = endOfMonth.toISOString();
 
@@ -209,7 +244,7 @@ const AdminDashboard = () => {
       setUnconfirmedClients(unconfirmed);
     };
     fetchData();
-  }, [monthRef, isCurrentMonth, selectedMonth, selectedYear]);
+  }, [monthRef, isCurrentMonth, selectedMonth, selectedYear, periodMonths]);
 
   const statusLabels: Record<string, string> = {
     onboarding_pendente: "Onboarding",
@@ -241,28 +276,58 @@ const AdminDashboard = () => {
 
       {/* ── Month Selector ── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        className="flex items-center justify-between">
+        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div className="flex items-center gap-2">
           <CalendarDays className="h-6 w-6 text-muted-foreground" />
           <span className="text-sm text-muted-foreground font-medium">Competência</span>
         </div>
-        <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
-          <button
-            onClick={goToPrevMonth}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-background transition-colors"
-          >
-            <ChevronLeft className="h-6 w-6 text-muted-foreground" />
-          </button>
-          <span className="px-3 py-1.5 text-sm font-semibold text-foreground min-w-[140px] text-center">
-            {MONTH_NAMES[selectedMonth]} {selectedYear}
-          </span>
-          <button
-            onClick={goToNextMonth}
-            disabled={isCurrentMonth}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isCurrentMonth ? "opacity-30 cursor-not-allowed" : "hover:bg-background"}`}
-          >
-            <ChevronRight className="h-6 w-6 text-muted-foreground" />
-          </button>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Atalhos rápidos */}
+          <div className="flex flex-wrap items-center gap-1 bg-muted/50 rounded-xl p-1">
+            {([
+              { key: "this_month", label: "Este mês" },
+              { key: "last_month", label: "Mês anterior" },
+              { key: "last_3", label: "Últimos 3m" },
+              { key: "last_6", label: "Últimos 6m" },
+              { key: "this_year", label: "Este ano" },
+              { key: "last_year", label: "Ano anterior" },
+            ] as { key: PeriodPreset; label: string }[]).map((p) => (
+              <button
+                key={p.key}
+                onClick={() => applyPreset(p.key)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                  activePreset === p.key
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Navegação mês a mês */}
+          <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
+            <button
+              onClick={goToPrevMonth}
+              className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-background transition-colors"
+              title="Mês anterior"
+            >
+              <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+            </button>
+            <span className="px-3 py-1.5 text-xs font-semibold text-foreground min-w-[160px] text-center">
+              {periodLabel}
+            </span>
+            <button
+              onClick={goToNextMonth}
+              disabled={isCurrentMonth}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isCurrentMonth ? "opacity-30 cursor-not-allowed" : "hover:bg-background"}`}
+              title="Próximo mês"
+            >
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
       </motion.div>
 
