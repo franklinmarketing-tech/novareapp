@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
+import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
@@ -170,7 +171,22 @@ export const StepDespesas = ({ data, onChange }: Props) => {
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label>Nome da despesa</Label>
-                  <Input value={item.description} onChange={(e) => updateCustom(globalIdx, "description", e.target.value)} placeholder="Ex: Pensão, Doações, Assinaturas" />
+                  <SelectWithCustom
+                    value={item.description}
+                    onValueChange={(v) => updateCustom(globalIdx, "description", v)}
+                    options={[
+                      { value: "Pensão alimentícia", label: "Pensão alimentícia" },
+                      { value: "Doações / Dízimo", label: "Doações / Dízimo" },
+                      { value: "Assinaturas digitais", label: "Assinaturas digitais" },
+                      { value: "Academia", label: "Academia" },
+                      { value: "Pet (ração, vet)", label: "Pet (ração, vet)" },
+                      { value: "Empregada / Diarista", label: "Empregada / Diarista" },
+                      { value: "Cuidador / Babá", label: "Cuidador / Babá" },
+                      { value: "Terapia", label: "Terapia" },
+                      { value: "Cursos extras", label: "Cursos extras" },
+                    ]}
+                    inputPlaceholder="Ex: Hobby, Clube..."
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Valor</Label>

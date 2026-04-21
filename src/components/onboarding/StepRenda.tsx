@@ -95,7 +95,32 @@ export const StepRenda = ({ data, onChange }: Props) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 space-y-1.5">
                   <Label>Descrição</Label>
-                  <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder={isPrimary ? "Ex: Salário CLT (líquido)" : "Ex: Aluguel, Comissão"} />
+                  <SelectWithCustom
+                    value={item.description}
+                    onValueChange={(v) => update(i, "description", v)}
+                    options={
+                      isPrimary
+                        ? [
+                            { value: "Salário CLT (líquido)", label: "Salário CLT (líquido)" },
+                            { value: "Pró-labore", label: "Pró-labore" },
+                            { value: "Autônomo", label: "Autônomo" },
+                            { value: "Servidor público", label: "Servidor público" },
+                            { value: "Aposentadoria", label: "Aposentadoria" },
+                            { value: "Pensão", label: "Pensão" },
+                          ]
+                        : [
+                            { value: "Aluguel recebido", label: "Aluguel recebido" },
+                            { value: "Comissão", label: "Comissão" },
+                            { value: "Bônus / PLR", label: "Bônus / PLR" },
+                            { value: "Freelance", label: "Freelance" },
+                            { value: "Renda de investimentos", label: "Renda de investimentos" },
+                            { value: "Dividendos", label: "Dividendos" },
+                            { value: "Pensão alimentícia", label: "Pensão alimentícia" },
+                            { value: "Renda extra eventual", label: "Renda extra eventual" },
+                          ]
+                    }
+                    inputPlaceholder={isPrimary ? "Ex: Sócio de empresa..." : "Ex: Royalties, Mesada..."}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Valor</Label>
