@@ -151,6 +151,7 @@ const ClientOnboardingPage = () => {
 
   const saveSection = async (section: number): Promise<boolean> => {
     if (!clientId) return false;
+    setSaveStatus("saving");
     try {
       switch (section) {
         case 0: {
@@ -245,9 +246,15 @@ const ClientOnboardingPage = () => {
           break;
         }
       }
+      const now = new Date();
+      setLastSavedAt(now);
+      setSaveStatus("saved");
+      // Drift back to "idle" after a moment so the timestamp stays subtle
+      window.setTimeout(() => setSaveStatus((s) => (s === "saved" ? "idle" : s)), 2200);
       return true;
     } catch (err: any) {
       if (import.meta.env.DEV) console.error(`Save error (section ${section}):`, err);
+      setSaveStatus("error");
       toast({
         title: "Erro ao salvar",
         description: err?.message ?? "Não foi possível salvar. Tente novamente.",
@@ -255,6 +262,19 @@ const ClientOnboardingPage = () => {
       });
       return false;
     }
+  };
+
+  const lastSaveSectionRef = (() => {
+    let last: number | null = null;
+    return {
+      get: () => last,
+      set: (v: number | null) => { last = v; },
+    };
+  })();
+
+  const retryLastSave = async () => {
+    const sec = getSaveSectionForStep(step);
+    if (sec !== null) await saveSection(sec);
   };
 
   const handleNext = async () => {
@@ -265,6 +285,10 @@ const ClientOnboardingPage = () => {
       const ok = await saveSection(currentSaveSection);
       setSubmitting(false);
       if (!ok) return; // não avança em caso de erro
+
+      // success flash on the CTA
+      setShowSuccessFlash(true);
+      window.setTimeout(() => setShowSuccessFlash(false), 420);
     }
 
     // Confetti em conclusões de seção
