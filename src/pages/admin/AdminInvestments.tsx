@@ -60,6 +60,10 @@ interface Product {
 
 interface MarketData {
   indicators: Record<string, Indicator>;
+  analytics?: {
+    realRate?: { value: number; label: string; unit: string };
+    cdiVsPoupanca?: { value: number; label: string; unit: string };
+  };
   products: Product[];
   updatedAt: string;
 }
