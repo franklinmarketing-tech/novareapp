@@ -451,7 +451,16 @@ const ClientOnboardingPage = () => {
           <span className="hidden sm:inline text-xs">Sair</span>
         </Button>
       </div>
-      <OnboardingProgress currentStep={step} totalSteps={TOTAL_MICRO_STEPS} />
+      <OnboardingProgress
+        currentStep={step}
+        totalSteps={TOTAL_MICRO_STEPS}
+        saveStatus={saveStatus}
+        lastSavedAt={lastSavedAt}
+        onRetrySave={retryLastSave}
+        onJumpToStep={handleJumpToStep}
+        drawerStats={drawerStats}
+        remainingMin={remainingMin}
+      />
       <div className={`flex-1 overflow-y-auto px-4 sm:px-5 md:px-6 ${isListStep ? "pt-3" : "pt-0"} pb-28 md:pb-24`}>
         <div className={`max-w-2xl mx-auto ${isCenteredStep ? "flex items-center justify-center min-h-full" : ""}`}>
           <AnimatePresence mode="wait" custom={direction}>
@@ -476,6 +485,7 @@ const ClientOnboardingPage = () => {
         onBack={handleBack}
         onNext={handleNext}
         isSubmitting={submitting}
+        showSuccessFlash={showSuccessFlash}
       />
     </PageTransition>
   );
