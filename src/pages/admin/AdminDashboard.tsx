@@ -316,7 +316,7 @@ const AdminDashboard = () => {
             >
               <ChevronLeft className="h-5 w-5 text-muted-foreground" />
             </button>
-            <span className="px-3 py-1.5 text-xs font-semibold text-foreground min-w-[160px] text-center">
+            <span className="px-3 py-1.5 text-xs font-semibold text-foreground min-w-[120px] sm:min-w-[160px] text-center">
               {periodLabel}
             </span>
             <button

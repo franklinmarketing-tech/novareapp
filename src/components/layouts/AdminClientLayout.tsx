@@ -92,22 +92,24 @@ const AdminClientLayout = () => {
       <div>
         {/* Client header */}
         <div className="mb-4">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 rounded-full bg-primary/8 flex items-center justify-center shrink-0">
-              <span className="text-xs font-medium text-primary">
-                {clientName ? clientName.charAt(0).toUpperCase() : "?"}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-medium text-foreground tracking-tight leading-none truncate">
-                {clientName || "Carregando..."}
-              </h1>
-              <div className="mt-1 flex items-center gap-2">
-                <Badge variant={st.variant as any} className="text-[10px]">{st.label}</Badge>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-1">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-primary/8 flex items-center justify-center shrink-0">
+                <span className="text-xs font-medium text-primary">
+                  {clientName ? clientName.charAt(0).toUpperCase() : "?"}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg font-medium text-foreground tracking-tight leading-none truncate">
+                  {clientName || "Carregando..."}
+                </h1>
+                <div className="mt-1 flex items-center gap-2">
+                  <Badge variant={st.variant as any} className="text-[10px]">{st.label}</Badge>
+                </div>
               </div>
             </div>
             <Select value={consultant || "__none__"} onValueChange={handleConsultantChange}>
-              <SelectTrigger className="h-8 w-auto min-w-[160px] bg-primary text-primary-foreground border-primary hover:bg-primary/90 text-xs font-medium [&>svg]:text-primary-foreground">
+              <SelectTrigger className="h-8 w-full sm:w-auto sm:min-w-[160px] bg-primary text-primary-foreground border-primary hover:bg-primary/90 text-xs font-medium [&>svg]:text-primary-foreground">
                 <UserCheck className="h-6 w-6 mr-1 shrink-0" />
                 <SelectValue placeholder="Consultor" />
               </SelectTrigger>

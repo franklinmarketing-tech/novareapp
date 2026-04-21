@@ -169,7 +169,7 @@ const ClientList = () => {
       />
 
       {/* Filter tabs */}
-      <div className="flex items-center gap-1 mb-6 border-b border-border/60 -mx-6 lg:-mx-10 px-6 lg:px-10">
+      <div className="flex items-center gap-1 mb-6 border-b border-border/60 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 overflow-x-auto scrollbar-none">
         {filterTabs.map((tab) => (
           <button
             key={tab.key}
@@ -225,8 +225,8 @@ const ClientList = () => {
                   className="group"
                   onClick={() => navigate(`/admin/cliente/${client.slug}/onboarding`)}
                 >
-                  <div className="flex items-center justify-between p-5">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 sm:p-5">
+                    <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                         style={{
@@ -238,15 +238,15 @@ const ClientList = () => {
                           {(profile?.full_name || "?").charAt(0)}
                         </span>
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="font-semibold text-foreground truncate text-[0.9375rem]">
                           {profile?.full_name || "Sem nome"}
                         </p>
                         <p className="text-[0.8125rem] text-muted-foreground truncate">{profile?.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <span className="text-xs text-muted-foreground font-medium hidden md:inline">
+                    <div className="flex items-center gap-2 sm:ml-4 flex-wrap sm:flex-nowrap justify-end">
+                      <span className="text-xs text-muted-foreground font-medium hidden lg:inline">
                         {(client as any).assigned_consultant || "Sem consultor"}
                       </span>
                       <Badge variant={st.variant as any}>{st.label}</Badge>
@@ -274,7 +274,7 @@ const ClientList = () => {
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="hidden sm:block h-5 w-5 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </div>
                 </Card3D>
