@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { SECTION_NARRATIVES } from "./onboardingConfig";
-import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 /* Subtle animated mesh gradient backdrop used on welcome / transition screens */
 const MeshGradientBg = () => (
