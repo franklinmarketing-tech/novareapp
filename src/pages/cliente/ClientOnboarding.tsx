@@ -24,6 +24,10 @@ import confetti from "canvas-confetti";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import { SummaryReview } from "@/components/onboarding/SummaryReview";
+import { useKeyboardNav } from "@/hooks/useKeyboardNav";
+import { useOnboardingTimer } from "@/hooks/useOnboardingTimer";
+import type { SaveStatus } from "@/components/onboarding/SaveIndicator";
 
 // Map step ranges to save section for auto-save on any step change
 const getSaveSectionForStep = (step: number): number | null => {
