@@ -43,30 +43,30 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="space-y-1.5">
-        <h2 className="font-display text-[1.75rem] md:text-[2rem] font-semibold text-foreground tracking-[-0.03em] leading-[1.15]">Patrimônio</h2>
-        <p className="font-body text-muted-foreground text-[0.9375rem] leading-relaxed tracking-[-0.01em]">Bens e ativos que você possui</p>
+        <h2 className="font-display font-semibold text-foreground tracking-[-0.025em] text-[clamp(1.5rem,1.25rem+1vw,2rem)] leading-[1.2]">Patrimônio</h2>
+        <p className="font-body text-muted-foreground/85 text-[0.9375rem] leading-[1.55] tracking-[-0.01em]">Bens e ativos que você possui</p>
       </div>
 
-      <button type="button" onClick={add} className="w-full h-16 rounded-2xl border-2 border-dashed border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/[0.03] transition-all duration-200 text-base font-semibold font-body flex items-center justify-center gap-3">
-        <Plus className="h-6 w-6" /> Adicionar ativo
+      <button type="button" onClick={add} className="w-full h-14 rounded-2xl border-2 border-dashed border-border/70 text-muted-foreground hover:border-primary/50 hover:text-primary hover:bg-primary/[0.03] transition-all duration-200 text-[0.9375rem] font-medium font-body flex items-center justify-center gap-2">
+        <Plus className="h-4 w-4" /> Adicionar ativo
       </button>
 
       <div className="space-y-3">
         {items.map((item, i) => (
-          <div key={item.id ?? i} data-item-id={item.id} className="p-5 rounded-2xl border border-border bg-card space-y-4 hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] hover:border-border/80 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)]">
+          <div key={item.id ?? i} data-item-id={item.id} className="p-5 rounded-2xl border border-border/60 bg-card space-y-4 shadow-soft hover:shadow-elevated hover:border-border transition-all duration-200">
             <div className="flex items-center justify-between">
-              <span className="font-body text-xs font-semibold text-muted-foreground uppercase tracking-[0.1em]">Ativo {i + 1}</span>
+              <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">Ativo {i + 1}</span>
               {items.length > 1 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive h-7 w-7">
-                  <Trash2 className="h-6 w-6" />
+                <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               )}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <Label className="font-body text-muted-foreground text-[0.8125rem]">Tipo</Label>
+                <Label>Tipo</Label>
                 <SelectWithCustom
                   value={item.type}
                   onValueChange={(v) => update(i, "type", v)}
@@ -80,12 +80,12 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-body text-muted-foreground text-[0.8125rem]">Descrição</Label>
-                <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder="Ex: Apartamento 3 quartos" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <Label>Descrição</Label>
+                <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder="Ex: Apartamento 3 quartos" />
               </div>
               <div className="space-y-1.5">
-                <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor estimado</Label>
-                <CurrencyInput value={item.estimated_value} onChange={(v) => update(i, "estimated_value", v)} className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <Label>Valor estimado</Label>
+                <CurrencyInput value={item.estimated_value} onChange={(v) => update(i, "estimated_value", v)} />
               </div>
             </div>
           </div>
