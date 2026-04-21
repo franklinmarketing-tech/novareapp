@@ -402,16 +402,16 @@ export const AdminLayout = ({ children }: Props) => {
       </aside>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-sidebar z-30 flex items-center px-4 border-b border-sidebar-border/20">
+      <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-sidebar z-30 flex items-center px-3 border-b border-sidebar-border/20">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="text-sidebar-foreground hover:bg-sidebar-accent/40"
+          className="text-sidebar-foreground hover:bg-sidebar-accent/40 h-10 w-10"
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
-        <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-3" />
+        <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-2" />
         <div className="ml-auto">
           <ThemeToggle className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
         </div>
@@ -419,33 +419,33 @@ export const AdminLayout = ({ children }: Props) => {
 
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-40">
-          <div className="absolute inset-0 bg-foreground/10 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-[260px] bg-sidebar h-full shadow-elevated">{sidebarContent}</aside>
+        <div className="lg:hidden fixed inset-0 z-40 animate-fade-in">
+          <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-[280px] max-w-[85vw] bg-sidebar h-full shadow-elevated animate-slide-up">{sidebarContent}</aside>
         </div>
       )}
 
       {/* Main content */}
       <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 min-h-screen">
         {/* Breadcrumb header */}
-        <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border/60">
-          <div className="flex items-center h-11 px-4 lg:px-8 gap-4">
-            <nav className="flex items-center gap-1 text-[0.8125rem] flex-1 min-w-0">
+        <div className="sticky top-0 z-20 bg-background/85 backdrop-blur-md border-b border-border/60">
+          <div className="flex items-center h-12 px-4 lg:px-8 gap-3">
+            <nav className="flex items-center gap-1.5 text-[0.8125rem] flex-1 min-w-0 overflow-x-auto scrollbar-none">
               <NavLink
                 to="/admin"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
               >
                 Dashboard
               </NavLink>
               {breadcrumbs.map((crumb, i) => (
-                <span key={crumb.path} className="flex items-center gap-1">
-                  <ChevronRight className="h-6 w-6 text-muted-foreground/40" />
+                <span key={crumb.path} className="flex items-center gap-1.5 shrink-0">
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
                   {i === breadcrumbs.length - 1 ? (
-                    <span className="font-medium text-foreground">{crumb.label}</span>
+                    <span className="font-medium text-foreground truncate">{crumb.label}</span>
                   ) : (
                     <NavLink
                       to={crumb.path}
-                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-muted-foreground hover:text-foreground transition-colors truncate"
                     >
                       {crumb.label}
                     </NavLink>
@@ -459,7 +459,7 @@ export const AdminLayout = ({ children }: Props) => {
           </div>
         </div>
 
-        <div className="p-4 lg:p-6 xl:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
       </main>
     </div>
   );
