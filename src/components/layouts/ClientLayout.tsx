@@ -117,7 +117,7 @@ export const ClientLayout = ({ children }: Props) => {
       </div>
 
       {/* Navigation */}
-      <nav className="px-3 space-y-1 shrink-0">
+      <nav className="px-3 space-y-0.5 shrink-0">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -126,15 +126,15 @@ export const ClientLayout = ({ children }: Props) => {
             onClick={() => setMobileOpen(false)}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                "relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-[0.8125rem] font-medium transition-colors duration-200",
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/80"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-sidebar-ring"
+                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground/85"
               )
             }
           >
-            <item.icon className="h-[18px] w-[18px]" />
-            {item.label}
+            <item.icon className="h-[18px] w-[18px] shrink-0" />
+            <span className="truncate">{item.label}</span>
             {(item as any).badgeKey === "meus-dados" && dataPending && (
               <span className="ml-auto w-2 h-2 rounded-full bg-accent shrink-0" />
             )}
@@ -156,15 +156,15 @@ export const ClientLayout = ({ children }: Props) => {
             onClick={() => setMobileOpen(false)}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full",
+                "relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-[0.8125rem] font-medium transition-colors duration-200 w-full",
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/70"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-sidebar-ring"
+                  : "text-sidebar-foreground/55 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground/80"
               )
             }
           >
-            <Settings className="h-[18px] w-[18px]" />
-            Configurações
+            <Settings className="h-[18px] w-[18px] shrink-0" />
+            <span className="truncate">Configurações</span>
           </NavLink>
           <ThemeToggle variant="sidebar" />
         </div>
@@ -191,16 +191,16 @@ export const ClientLayout = ({ children }: Props) => {
       </aside>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-sidebar z-30 flex items-center px-4 border-b border-sidebar-border/20">
+      <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-sidebar z-30 flex items-center px-3 border-b border-sidebar-border/20">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="text-sidebar-foreground hover:bg-sidebar-accent/40"
+          className="text-sidebar-foreground hover:bg-sidebar-accent/40 h-10 w-10"
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
-        <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-3" />
+        <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-2" />
         <div className="ml-auto">
           <ThemeToggle className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
         </div>
@@ -208,15 +208,15 @@ export const ClientLayout = ({ children }: Props) => {
 
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-40">
-          <div className="absolute inset-0 bg-foreground/10 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-[260px] bg-sidebar h-full shadow-elevated">{sidebarContent}</aside>
+        <div className="lg:hidden fixed inset-0 z-40 animate-fade-in">
+          <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-[280px] max-w-[85vw] bg-sidebar h-full shadow-elevated animate-slide-up">{sidebarContent}</aside>
         </div>
       )}
 
       {/* Main content */}
       <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 min-h-screen">
-        <div className="p-4 lg:p-6 xl:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
       </main>
     </div>
   );
