@@ -229,7 +229,7 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
 
                       {f.highlights.length > 0 && (
                         <motion.div
-                          className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+                          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: 0.35 }}
@@ -247,7 +247,9 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
                                 <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
                                   <Icon className="w-4 h-4 text-accent" />
                                 </div>
-                                <p className="text-sm text-foreground leading-snug sm:text-center break-words min-w-0">{h.text}</p>
+                                <p className="text-sm text-foreground leading-snug sm:text-center min-w-0 flex-1 break-words [overflow-wrap:anywhere] hyphens-auto">
+                                  {h.text}
+                                </p>
                               </motion.div>
                             );
                           })}
