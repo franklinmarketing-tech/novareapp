@@ -438,6 +438,7 @@ const DashboardCharts = ({
           </div>
         </Card3D>
       </motion.div>
+      </div>
     </div>
   );
 };
