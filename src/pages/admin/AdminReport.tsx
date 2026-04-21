@@ -887,7 +887,7 @@ const AdminReport = () => {
         {/* ══════ 10. EVOLUÇÃO ══════ */}
         {chartData.length >= 2 && (
           <section>
-            <SectionHeader number={sectionNumber()} title="Evolução Histórica" subtitle="Acompanhamento ao longo dos snapshots" />
+            <SectionHeader number={sectionNumber()} title="Evolução Histórica" subtitle="Acompanhamento ao longo dos registros periódicos" />
             <Card>
               <CardContent className="py-5 px-2 sm:px-6">
                 <ResponsiveContainer width="100%" height={220} className="sm:!h-[260px]">
@@ -930,7 +930,7 @@ const AdminReport = () => {
                     { phase: "Mês 1–2", title: "Implementação das ações prioritárias", desc: "Ajustes de orçamento, renegociação de dívidas e organização de reservas", color: "bg-accent text-accent-foreground" },
                     { phase: "Mês 3–4", title: "Estruturação de investimentos", desc: "Direcionamento de poupança, adequação de portfólio e diversificação", color: "bg-primary text-primary-foreground" },
                     { phase: "Mês 5–6", title: "Consolidação e ajustes finos", desc: "Revisão dos resultados, ajustes tributários e educação financeira", color: "bg-emerald-600 text-white" },
-                    { phase: "Contínuo", title: "Acompanhamento recorrente", desc: "Snapshots mensais, evolução de indicadores e realinhamento de metas", color: "bg-muted text-muted-foreground" },
+                    { phase: "Contínuo", title: "Acompanhamento recorrente", desc: "Registros mensais, evolução de indicadores e realinhamento de metas", color: "bg-muted text-muted-foreground" },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-4 relative">
                       <div className={`flex items-center justify-center w-9 h-9 rounded-full text-[10px] font-bold shrink-0 z-10 ${item.color}`}>

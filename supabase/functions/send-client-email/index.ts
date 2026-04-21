@@ -64,7 +64,7 @@ function templateSnapshotUpdate(data: any): { subject: string; html: string } {
           </td>
         </tr>
       </table>
-      <p style="color:${MUTED};font-size:13px;line-height:1.5;">Data do snapshot: ${data.date || "—"}</p>
+      <p style="color:${MUTED};font-size:13px;line-height:1.5;">Data do registro: ${data.date || "—"}</p>
     `),
   };
 }
