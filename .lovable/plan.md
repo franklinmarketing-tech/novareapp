@@ -1,77 +1,83 @@
 
 
-## Varredura Completa: Correções e Melhorias Identificadas
+# Refinamento visual completo do sistema
 
-Fiz uma varredura técnica do código (admin + cliente + componentes + estrutura) e identifiquei **9 problemas reais** organizados por severidade. Sem alterar copy nem fluxos.
+Polimento geral de design, tipografia, espaçamento e responsividade — **sem alterar estrutura, copy, fluxos ou funcionalidades**. Tudo é feito via tokens globais (`index.css`, `tailwind.config.ts`) e primitivos UI (`Card`, `Button`, `Input`, `Label`, `Badge`), garantindo que todas as 50+ páginas se beneficiem automaticamente.
 
----
+## O que vai mudar (resumo visual)
 
-### 🔴 Críticos (bugs que afetam o usuário)
+- **Tipografia mais hierárquica e legível** — escala consistente entre títulos de página, seções e cards.
+- **Cards mais elegantes** — sombras mais suaves, bordas refinadas, hover sutil, padding harmonizado.
+- **Botões mais consistentes** — alturas padronizadas, hover/active mais discretos, foco mais limpo.
+- **Inputs e formulários mais arejados** — labels com peso correto, espaçamento entre campos uniforme, foco refinado.
+- **Sidebar e header mais polidos** — densidade reduzida, separação melhor entre seções, breadcrumb mais legível.
+- **Responsividade mobile/tablet** — paddings adaptativos, tamanhos de toque mínimos, quebras corrigidas.
+- **Consistência geral** — radius, sombras, cores e espaçamentos unificados via tokens.
 
-**1. Conflito do tema escuro (3 lugares gravando chaves diferentes)**
-- `ThemeContext` salva em `novare-theme`
-- `main.tsx` lê `theme` (chave antiga, conflitante)
-- `AdminSettings.tsx` e `ClientSettings.tsx` ainda têm seus próprios `toggleTheme` que escrevem em `theme` e mexem direto no DOM, **fora** do `ThemeContext` → o estado fica dessincronizado entre toggle do header e toggle das configurações.
-- **Fix:** remover lógica antiga de `main.tsx`, `AdminSettings` e `ClientSettings`; usar `useTheme()` do contexto único em ambas as páginas de configuração.
+## Áreas de intervenção
 
-**2. Pasta `public/public/` duplicada**
-- Existe `public/placeholder.svg`, `public/robots.txt` E `public/public/placeholder.svg`, `public/public/robots.txt`, `public/public/favicon.png`. Duplicação confusa, pode quebrar refs.
-- **Fix:** consolidar em `public/` (mover `favicon.png` para a raiz e remover a pasta aninhada).
+### 1. Tokens globais (`src/index.css`)
+- Refinar a escala tipográfica usando `clamp()` para fluidez entre breakpoints.
+- Adicionar utilitários: `.surface-card`, `.surface-elevated`, `.stack-sm/md/lg` para espaçamento consistente.
+- Refinar os tons `muted-foreground` e `border` no light/dark para melhor contraste (WCAG AA).
+- Adicionar transições padrão suaves (`--transition-base`).
 
-**3. `index.html` ainda tem `<title>Novare App</title>` genérico + `<meta name="author" content="Lovable">` + comentários TODO**
-- SEO/OG fracos para o app em produção.
-- **Fix:** título descritivo ("Novare — Consultoria Financeira"), remover author Lovable, remover TODOs.
+### 2. Tailwind config (`tailwind.config.ts`)
+- Adicionar tamanhos de espaçamento intermediários (`5.5`, `7.5`, `13`).
+- Refinar `boxShadow` (sombras mais sutis, multi-camada estilo Apple/Linear).
+- Adicionar keyframes/animation: `fade-in`, `slide-up`, `scale-in` para reuso.
 
----
+### 3. Primitivos UI (mudanças que se propagam para todo o app)
+- **`Card`**: padding harmonizado (`p-5`/`p-6` consistente), sombra mais suave, hover mais discreto, header com separador opcional.
+- **`Button`**: alturas refinadas (`sm` 36px, `default` 40px, `lg` 44px), hover sem `translate` agressivo, focus ring mais limpo, ícones melhor alinhados.
+- **`Input` / `Textarea` / `Select`**: altura uniforme (40px default, 44px em formulários longos), foco com ring suave, estado de erro mais claro.
+- **`Label`**: peso 500, tamanho 13px, cor `foreground/85` para melhor leitura.
+- **`Badge`**: padding e radius padronizados, variantes com contraste melhor.
+- **`Tabs`**: indicador ativo mais sutil, espaçamento horizontal uniforme.
+- **`Dialog` / `Sheet` / `Dropdown`**: padding e radius consistentes, sombra de elevação refinada.
 
-### 🟡 Médios (qualidade visível)
+### 4. Layouts (`AdminLayout`, `ClientLayout`, `SuperAdminLayout`, `AdminClientLayout`)
+- Sidebar: espaçamento entre seções uniforme, hover states mais sutis, item ativo com indicador lateral elegante.
+- Header/breadcrumb: altura unificada (44px), tipografia mais clara, separador `ChevronRight` menor (14px em vez de 24px).
+- Main content: padding responsivo padronizado (`p-4 sm:p-6 lg:p-8`).
+- Mobile header: melhor altura de toque, transição da sidebar suave.
 
-**4. `src/pages/Index.tsx` órfão**
-- Não está importado em `App.tsx` (rota `/` usa `RootRedirect` inline). Arquivo morto.
-- **Fix:** deletar para reduzir confusão.
+### 5. Páginas principais (apenas refinamentos visuais — nenhuma estrutura ou copy alterada)
+- **Login**: melhor espaçamento entre campos, botão CTA mais consistente com o resto do sistema.
+- **AdminDashboard**: padding dos cards KPI uniforme, melhor hierarquia entre seletor de período e botões de preset.
+- **ClientList**: linhas da lista com espaçamento melhor, ações (editar/excluir) com hover discreto.
+- **Onboarding (todos os steps)**: melhor espaçamento entre perguntas, progresso mais elegante.
+- **Configurações / Workspace / Parecer / Investimentos**: cards e formulários alinhados ao novo padrão.
 
-**5. Toggle de tema duplicado em Configurações**
-- Como o header já tem `ThemeToggle`, manter o switch também em Configurações é redundante e fonte do bug #1.
-- **Fix:** substituir o switch das páginas de Configurações por uma referência ao mesmo `ThemeToggle` (variant default), eliminando lógica paralela.
+### 6. Responsividade
+- Revisar `text-` classes em headers para escalar com viewport.
+- Garantir botões com `min-h-[40px]` em mobile.
+- Corrigir grids que quebram em 768-900px (ex: cards 3-col → 2-col → 1-col).
+- Sidebar mobile com largura adaptativa.
 
-**6. Keys de array `key={i}` em listas dinâmicas**
-- `StepDividas`, `StepObjetivos`, `StepPatrimonio`, `StepRenda`, `StepSeguros`, `FoundersShowcase` e `ClientFinancialSidebar` usam o índice como key. Quando o usuário remove um item do meio da lista, React reusa o estado errado.
-- **Fix:** usar `item.id` quando existir, ou `crypto.randomUUID()` na criação. Foco nos onboarding steps onde o usuário adiciona/remove itens (impacto real).
-
-**7. Tipagem `any` exagerada em `AdminReport.tsx`**
-- ~30 ocorrências de `: any` em `incomes`, `expenses`, `debts`, `assets`, `goals`, etc. Sem segurança de tipo num arquivo crítico (gera o PDF).
-- **Fix:** criar tipos inline (`type ReportIncome = { id: string; amount: number; frequency: string; ... }`) e tipar os reduces/maps. Mantém o JSX intacto.
-
----
-
-### 🟢 Pequenas melhorias
-
-**8. `console.error` espalhados sem contexto**
-- 6 ocorrências em `AdminInvestments`, `AdminReport`, `ClientOnboarding` (admin/cliente), `MyData`, `SystemRecommendations`. Em produção poluem o console.
-- **Fix:** envolver com `if (import.meta.env.DEV)` ou substituir por toast quando falha de fato afeta UX (vários casos engolem o erro silenciosamente).
-
-**9. Comentário interno "BUG FIX #X" exposto no código**
-- `Login.tsx`, `AuthContext.tsx`, `ClientOnboarding.tsx` têm comentários do tipo "BUG FIX #2/4/5/6/7" — ruído visual de desenvolvimento.
-- **Fix:** reescrever esses comentários para descreverem **o que** o código faz (ex: "navigate em useEffect evita warning de setState durante render"), removendo as referências numeradas.
-
----
-
-### Resumo da execução
+## Princípios de design aplicados
 
 ```text
-Arquivo                                  Ação
-──────────────────────────────────────   ──────────────────────
-src/main.tsx                              limpar lógica de tema antiga
-index.html                                title/meta/SEO
-src/pages/Index.tsx                       deletar (órfão)
-src/pages/admin/AdminSettings.tsx         usar ThemeContext
-src/pages/cliente/ClientSettings.tsx      usar ThemeContext
-public/public/*                           mover para public/
-src/components/onboarding/Step*.tsx       keys estáveis
-src/pages/admin/AdminReport.tsx           remover `: any`
-6 arquivos com console.error              guardar com DEV
-3 arquivos com "BUG FIX #N"               limpar comentários
+Hierarquia    → Title (20-24px, semibold) > Section (16-17px, semibold) > Body (14-15px) > Meta (12-13px)
+Espaçamento   → Múltiplos de 4px (4, 8, 12, 16, 20, 24, 32, 40)
+Radius        → Cards 16px / Inputs 12px / Buttons 12px / Badges 8px
+Sombra        → 3 níveis: subtle (cards) / soft (hover) / elevated (modals)
+Cor           → Mantém paleta atual (terracotta/blue/Novare) — apenas melhora contraste
+Movimento     → 200ms ease-out padrão; sem translates agressivos
 ```
 
-**Total:** ~13 arquivos editados, 0 mudanças de fluxo, 0 mudanças de copy, 0 alterações em rotas ou em onboarding visual.
+## Garantias
+
+- **Zero alteração** em copy, rotas, fluxos, funcionalidades, lógica de negócio, queries Supabase ou edge functions.
+- **Zero remoção** de componentes ou seções.
+- Todas as mudanças são **visuais** e propagadas via tokens/primitivos — risco mínimo de quebra funcional.
+- Light e dark mode revisados em paralelo.
+
+## Arquivos principais a editar
+
+- `src/index.css` (tokens, utilitários, dark mode)
+- `tailwind.config.ts` (escala, sombras, animações)
+- `src/components/ui/{card,button,input,textarea,label,badge,tabs,dialog,sheet,dropdown-menu,select}.tsx`
+- `src/components/layouts/{AdminLayout,ClientLayout,SuperAdminLayout,AdminClientLayout}.tsx`
+- Ajustes pontuais em páginas com layout customizado: `Login.tsx`, `AdminDashboard.tsx`, `ClientList.tsx`, steps de onboarding.
 
