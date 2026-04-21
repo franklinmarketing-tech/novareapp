@@ -32,6 +32,7 @@ import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminParecer from "@/pages/admin/AdminParecer";
 import AdminObjetivos from "@/pages/admin/AdminObjetivos";
 import AdminWorkspace from "@/pages/admin/AdminWorkspace";
+import AdminAjuda from "@/pages/admin/AdminAjuda";
 import ClientDashboard from "@/pages/cliente/ClientDashboard";
 import ClientOnboardingPage from "@/pages/cliente/ClientOnboarding";
 
@@ -99,6 +100,7 @@ const App = () => (
                 <Route path="/admin/financeiro" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminFinanceiro /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/configuracoes" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSettings /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/workspace" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminWorkspace /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/ajuda" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminAjuda /></AdminLayout></ProtectedRoute>} />
 
                 {/* Admin client routes with tabs */}
                 <Route path="/admin/cliente/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminClientLayout /></AdminLayout></ProtectedRoute>}>

@@ -21,6 +21,7 @@ import {
   CreditCard,
   Lock,
   Shield,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +57,12 @@ const sections = [
       { to: "/admin/financeiro", icon: Wallet, label: "Financeiro" },
     ],
   },
+  {
+    label: "Suporte",
+    items: [
+      { to: "/admin/ajuda", icon: HelpCircle, label: "Ajuda & Manual" },
+    ],
+  },
 ];
 
 
@@ -77,6 +84,7 @@ const staticSegments: Record<string, string> = {
   acompanhamento: "Acompanhamento",
   relatorio: "Relatório",
   workspace: "Workspace",
+  ajuda: "Ajuda & Manual",
 };
 
 interface Props {
