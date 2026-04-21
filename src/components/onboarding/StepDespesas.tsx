@@ -80,10 +80,10 @@ export const StepDespesas = ({ data, onChange }: Props) => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="space-y-1.5">
-        <h2 className="font-display text-[1.75rem] md:text-[2rem] font-semibold text-foreground tracking-[-0.03em] leading-[1.15]">Despesas fixas mensais</h2>
-        <p className="font-body text-muted-foreground text-[0.9375rem] leading-relaxed tracking-[-0.01em]">
+        <h2 className="font-display font-semibold text-foreground tracking-[-0.025em] text-[clamp(1.5rem,1.25rem+1vw,2rem)] leading-[1.2]">Despesas fixas mensais</h2>
+        <p className="font-body text-muted-foreground/85 text-[0.9375rem] leading-[1.55] tracking-[-0.01em]">
           Valor mensal por categoria — o percentual será exibido no diagnóstico
         </p>
       </div>
@@ -91,15 +91,15 @@ export const StepDespesas = ({ data, onChange }: Props) => {
       <button
         type="button"
         onClick={addCustom}
-        className="w-full h-16 rounded-2xl border-2 border-dashed border-border text-muted-foreground hover:border-accent/40 hover:text-accent hover:bg-accent/[0.03] transition-all duration-200 text-base font-semibold font-body flex items-center justify-center gap-3"
+        className="w-full h-14 rounded-2xl border-2 border-dashed border-border/70 text-muted-foreground hover:border-accent/50 hover:text-accent hover:bg-accent/[0.03] transition-all duration-200 text-[0.9375rem] font-medium font-body flex items-center justify-center gap-2"
       >
-        <Plus className="h-6 w-6" /> Adicionar despesa personalizada
+        <Plus className="h-4 w-4" /> Adicionar despesa personalizada
       </button>
 
       {totalValue > 0 && (
-        <div className="p-5 rounded-2xl border border-border bg-card shadow-[0_1px_4px_0_rgba(0,0,0,0.06)]">
+        <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-soft">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-body text-xs font-semibold text-muted-foreground uppercase tracking-[0.1em]">Distribuição</span>
+            <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">Distribuição</span>
             <span className="text-sm font-semibold text-foreground tabular-nums">
               R$ {totalValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </span>
@@ -130,22 +130,22 @@ export const StepDespesas = ({ data, onChange }: Props) => {
           const item = defaultItems.find((i) => i.category === cat.key)!;
           const pct = getPercentage(item.amount);
           return (
-            <div key={cat.key} className="p-4 rounded-2xl border border-border bg-card shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] hover:border-border/80 transition-all duration-200">
+            <div key={cat.key} className="p-5 rounded-2xl border border-border/60 bg-card shadow-soft hover:shadow-elevated hover:border-border transition-all duration-200">
               <div className="flex items-baseline justify-between mb-3">
                 <div>
                   <span className="text-sm font-medium text-foreground">{cat.label}</span>
-                  <span className="font-body text-xs text-muted-foreground ml-2">{cat.hint}</span>
+                  <span className="font-body text-xs text-muted-foreground/85 ml-2">{cat.hint}</span>
                 </div>
                 {pct > 0 && <span className="text-xs font-semibold text-primary tabular-nums">{pct}%</span>}
               </div>
               <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor</Label>
-                  <CurrencyInput value={item.amount} onChange={(v) => update(cat.key, "amount", v)} className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <div className="space-y-1.5">
+                  <Label>Valor</Label>
+                  <CurrencyInput value={item.amount} onChange={(v) => update(cat.key, "amount", v)} />
                 </div>
-                <div className="space-y-1">
-                  <Label className="font-body text-muted-foreground text-[0.8125rem]">Observação</Label>
-                  <Input value={item.description} onChange={(e) => update(cat.key, "description", e.target.value)} placeholder="Opcional" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <div className="space-y-1.5">
+                  <Label>Observação</Label>
+                  <Input value={item.description} onChange={(e) => update(cat.key, "description", e.target.value)} placeholder="Opcional" />
                 </div>
               </div>
             </div>
@@ -157,24 +157,24 @@ export const StepDespesas = ({ data, onChange }: Props) => {
           const globalIdx = DEFAULT_CATEGORIES.length + ci;
           const pct = getPercentage(item.amount);
           return (
-            <div key={item.category} data-item-id={item.category} className="p-4 rounded-2xl border border-accent/30 bg-accent/[0.02] shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] transition-all duration-200">
+            <div key={item.category} data-item-id={item.category} className="p-5 rounded-2xl border border-accent/30 bg-accent/[0.03] shadow-soft hover:shadow-elevated transition-all duration-200">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-accent">Despesa personalizada</span>
                 <div className="flex items-center gap-2">
                   {pct > 0 && <span className="text-xs font-semibold text-accent tabular-nums">{pct}%</span>}
-                  <Button type="button" variant="ghost" size="icon" onClick={() => removeCustom(globalIdx)} className="text-destructive/60 hover:text-destructive h-7 w-7">
-                    <Trash2 className="h-5 w-5" />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => removeCustom(globalIdx)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
               <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="font-body text-muted-foreground text-[0.8125rem]">Nome da despesa</Label>
-                  <Input value={item.description} onChange={(e) => updateCustom(globalIdx, "description", e.target.value)} placeholder="Ex: Pensão, Doações, Assinaturas" className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <div className="space-y-1.5">
+                  <Label>Nome da despesa</Label>
+                  <Input value={item.description} onChange={(e) => updateCustom(globalIdx, "description", e.target.value)} placeholder="Ex: Pensão, Doações, Assinaturas" />
                 </div>
-                <div className="space-y-1">
-                  <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor</Label>
-                  <CurrencyInput value={item.amount} onChange={(v) => updateCustom(globalIdx, "amount", v)} className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                <div className="space-y-1.5">
+                  <Label>Valor</Label>
+                  <CurrencyInput value={item.amount} onChange={(v) => updateCustom(globalIdx, "amount", v)} />
                 </div>
               </div>
             </div>

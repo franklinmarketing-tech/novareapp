@@ -56,10 +56,10 @@ export const StepRenda = ({ data, onChange }: Props) => {
   const primaryIndex = items.findIndex((r) => r.is_primary);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="space-y-1.5">
-        <h2 className="font-display text-[1.75rem] md:text-[2rem] font-semibold text-foreground tracking-[-0.03em] leading-[1.15]">Fontes de renda</h2>
-        <p className="font-body text-muted-foreground text-[0.9375rem] leading-relaxed tracking-[-0.01em]">
+        <h2 className="font-display font-semibold text-foreground tracking-[-0.025em] text-[clamp(1.5rem,1.25rem+1vw,2rem)] leading-[1.2]">Fontes de renda</h2>
+        <p className="font-body text-muted-foreground/85 text-[0.9375rem] leading-[1.55] tracking-[-0.01em]">
           Informe a renda mensal principal (líquida) e rendas adicionais
         </p>
       </div>
@@ -68,9 +68,9 @@ export const StepRenda = ({ data, onChange }: Props) => {
       <button
         type="button"
         onClick={add}
-        className="w-full h-16 rounded-2xl border-2 border-dashed border-border text-muted-foreground hover:border-accent/40 hover:text-accent hover:bg-accent/[0.03] transition-all duration-200 text-base font-semibold font-body flex items-center justify-center gap-3"
+        className="w-full h-14 rounded-2xl border-2 border-dashed border-border/70 text-muted-foreground hover:border-accent/50 hover:text-accent hover:bg-accent/[0.03] transition-all duration-200 text-[0.9375rem] font-medium font-body flex items-center justify-center gap-2"
       >
-        <Plus className="h-6 w-6" /> Adicionar renda adicional
+        <Plus className="h-4 w-4" /> Adicionar renda adicional
       </button>
 
       <div className="space-y-3">
@@ -80,29 +80,29 @@ export const StepRenda = ({ data, onChange }: Props) => {
             <div
               key={item.id ?? i}
               data-item-id={item.id}
-              className={`p-5 rounded-2xl border space-y-4 transition-all duration-200 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.08)] ${isPrimary ? "border-primary/40 bg-primary/[0.04]" : "border-border bg-card hover:border-border/80"}`}
+              className={`p-5 rounded-2xl border space-y-4 transition-all duration-200 shadow-soft ${isPrimary ? "border-primary/40 bg-primary/[0.04]" : "border-border/60 bg-card hover:border-border hover:shadow-elevated"}`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-body text-xs font-semibold text-muted-foreground uppercase tracking-[0.1em]">
+                <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">
                   {isPrimary ? "Renda Principal (líquida)" : `Renda Adicional ${i}`}
                 </span>
                 {items.length > 1 && (
-                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive h-7 w-7">
-                    <Trash2 className="h-6 w-6" />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 space-y-1.5">
-                  <Label className="font-body text-muted-foreground text-[0.8125rem]">Descrição</Label>
-                  <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder={isPrimary ? "Ex: Salário CLT (líquido)" : "Ex: Aluguel, Comissão"} className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                  <Label>Descrição</Label>
+                  <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder={isPrimary ? "Ex: Salário CLT (líquido)" : "Ex: Aluguel, Comissão"} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="font-body text-muted-foreground text-[0.8125rem]">Valor</Label>
-                  <CurrencyInput value={item.amount} onChange={(v) => update(i, "amount", v)} className="text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+                  <Label>Valor</Label>
+                  <CurrencyInput value={item.amount} onChange={(v) => update(i, "amount", v)} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="font-body text-muted-foreground text-[0.8125rem]">Frequência</Label>
+                  <Label>Frequência</Label>
                   <SelectWithCustom
                     value={item.frequency}
                     onValueChange={(v) => update(i, "frequency", v)}
@@ -115,7 +115,7 @@ export const StepRenda = ({ data, onChange }: Props) => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="font-body text-muted-foreground text-[0.8125rem]">Estabilidade</Label>
+                  <Label>Estabilidade</Label>
                   <SelectWithCustom
                     value={item.stability}
                     onValueChange={(v) => update(i, "stability", v)}
@@ -135,7 +135,7 @@ export const StepRenda = ({ data, onChange }: Props) => {
                       onChange(next);
                     }}
                   />
-                  <Label className="cursor-pointer text-sm font-body text-muted-foreground">Renda principal</Label>
+                  <Label className="cursor-pointer">Renda principal</Label>
                 </div>
               </div>
             </div>
