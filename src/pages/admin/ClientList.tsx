@@ -301,6 +301,21 @@ const ClientList = () => {
           )}
         </motion.div>
       )}
+
+      <PasswordConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(v) => !v && setDeleteTarget(null)}
+        title="Excluir cliente"
+        description={
+          deleteTarget
+            ? `Tem certeza que deseja excluir ${deleteTarget.profiles?.full_name ?? "este cliente"}? Esta ação remove o cliente e seus dados permanentemente.`
+            : ""
+        }
+        destructive
+        requireConfirmText="EXCLUIR"
+        confirmLabel="Excluir definitivamente"
+        onConfirm={handleDeleteConfirm}
+      />
     </PageTransition>
   );
 };
