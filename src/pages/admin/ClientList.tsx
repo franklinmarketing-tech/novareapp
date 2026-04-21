@@ -242,12 +242,36 @@ const ClientList = () => {
                         <p className="text-[0.8125rem] text-muted-foreground truncate">{profile?.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 ml-4">
-                      <span className="text-xs text-muted-foreground font-medium">
+                    <div className="flex items-center gap-2 ml-4">
+                      <span className="text-xs text-muted-foreground font-medium hidden md:inline">
                         {(client as any).assigned_consultant || "Sem consultor"}
                       </span>
                       <Badge variant={st.variant as any}>{st.label}</Badge>
-                      <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        title="Editar cliente"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/admin/cliente/${client.slug}/onboarding`);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Excluir cliente"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget(client);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </div>
                 </Card3D>
