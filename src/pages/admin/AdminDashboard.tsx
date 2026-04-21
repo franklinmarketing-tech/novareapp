@@ -109,9 +109,9 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // End of selected month for filtering
+      // Período: termina no fim do selectedMonth, começa no início de (selectedMonth - periodMonths + 1)
       const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59);
-      const startOfMonth = new Date(selectedYear, selectedMonth, 1);
+      const startOfMonth = new Date(selectedYear, selectedMonth - (periodMonths - 1), 1);
       const startISO = startOfMonth.toISOString();
       const endISO = endOfMonth.toISOString();
 
