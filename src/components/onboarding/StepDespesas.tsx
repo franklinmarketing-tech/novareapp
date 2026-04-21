@@ -206,6 +206,18 @@ export const StepDespesas = ({ data, onChange }: Props) => {
           );
         })}
       </div>
+
+      <MobileAddSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Adicionar despesa"
+        categoryLabel="Categoria"
+        amountLabel="Valor mensal"
+        noteLabel="Observação"
+        categories={MOBILE_CHIPS}
+        customPlaceholder="Outra categoria..."
+        onConfirm={handleSheetConfirm}
+      />
     </div>
   );
 };
