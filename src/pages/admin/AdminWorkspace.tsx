@@ -19,7 +19,7 @@ interface Project {
 
 const projects: Project[] = [
   {
-    name: "Novare Planejamento Financeiro",
+    name: "Novare Consultoria Financeira",
     description: "Plataforma de consultoria financeira personalizada para planejadores e seus clientes.",
     url: "https://novareapp.com.br",
     icon: Sparkles,

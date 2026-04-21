@@ -241,7 +241,7 @@ const Login = () => {
           })
           .catch((err) => console.error("Falha ao enviar welcome:", err));
 
-        toast({ title: "Conta criada! 🎉", description: "Vamos iniciar seu planejamento financeiro." });
+        toast({ title: "Conta criada! 🎉", description: "Vamos iniciar sua consultoria financeira." });
       } else if (mode === "forgot") {
         const productionUrl = "https://novareapp.com.br";
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -295,7 +295,7 @@ const Login = () => {
                 <div className="text-center mb-8">
                   <h1 className="text-2xl font-display font-semibold tracking-tight text-foreground">
                     {mode === "login"
-                      ? "Planejamento Financeiro"
+                      ? "Consultoria Financeira"
                       : mode === "signup"
                       ? "Criar conta"
                       : "Recuperar senha"}

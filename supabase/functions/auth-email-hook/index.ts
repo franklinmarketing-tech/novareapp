@@ -82,7 +82,7 @@ function buildEmailHtml(params: {
           <tr>
             <td style="background:linear-gradient(145deg,hsl(220,40%,13%),hsl(220,45%,8%));padding:32px 40px;text-align:left;">
               <img src="${LOGO_URL}" alt="Novare" width="120" style="display:block;height:auto;max-width:120px;margin-bottom:8px;border:0;outline:none;text-decoration:none;" />
-              <div style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:0.18em;margin-top:4px;">Planejamento Financeiro</div>
+              <div style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:0.18em;margin-top:4px;">Consultoria Financeira</div>
             </td>
           </tr>
 
@@ -116,7 +116,7 @@ function buildEmailHtml(params: {
           <!-- Footer -->
           <tr>
             <td style="background-color:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb;">
-              <p style="margin:0;font-size:11px;color:#9ca3af;">© ${new Date().getFullYear()} Novare · Planejamento Financeiro</p>
+              <p style="margin:0;font-size:11px;color:#9ca3af;">© ${new Date().getFullYear()} Novare · Consultoria Financeira</p>
               <p style="margin:8px 0 0;font-size:11px;color:#9ca3af;"><a href="${PUBLIC_APP_URL}" style="color:#9ca3af;text-decoration:none;">${PUBLIC_APP_URL.replace(/^https?:\/\//, "")}</a></p>
             </td>
           </tr>
