@@ -417,17 +417,24 @@ export const NoteEditor = ({ clientId }: Props) => {
                   key={note.id}
                   className={`group relative flex flex-col rounded-xl border bg-card shadow-sm transition-all hover:shadow-md ${
                     isActive
-                      ? "border-accent/50 ring-2 ring-accent/20"
+                      ? isEditing
+                        ? "border-warning/50 ring-2 ring-warning/25 shadow-md animate-fade-in"
+                        : "border-accent/50 ring-2 ring-accent/20"
                       : "border-border/60 hover:border-accent/30"
                   }`}
                 >
                   {isActive && (
-                    <span className="absolute left-0 top-4 bottom-4 w-1 rounded-r-full bg-accent" aria-hidden />
+                    <span
+                      className={`absolute left-0 top-4 bottom-4 w-1 rounded-r-full ${
+                        isEditing ? "bg-warning animate-pulse" : "bg-accent"
+                      }`}
+                      aria-hidden
+                    />
                   )}
                   <header className="flex items-start justify-between gap-2 p-4 pb-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <FileText className="h-4 w-4 text-accent shrink-0" />
+                        <FileText className={`h-4 w-4 shrink-0 ${isActive && isEditing ? "text-warning" : "text-accent"}`} />
                         <h3 className="text-sm font-semibold text-foreground truncate">
                           {note.title || "Parecer sem título"}
                         </h3>
@@ -442,7 +449,16 @@ export const NoteEditor = ({ clientId }: Props) => {
                             editado
                           </Badge>
                         )}
-                        {isActive && (
+                        {isActive && isEditing && (
+                          <Badge variant="warning" className="text-[0.625rem] h-4 px-1.5 gap-1">
+                            <span className="relative flex h-1.5 w-1.5">
+                              <span className="absolute inline-flex h-full w-full rounded-full bg-warning opacity-75 animate-ping" />
+                              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-warning" />
+                            </span>
+                            alterações não salvas
+                          </Badge>
+                        )}
+                        {isActive && !isEditing && (
                           <Badge className="bg-accent/10 text-accent border-accent/30 text-[0.625rem] h-4 px-1.5">
                             em edição
                           </Badge>
