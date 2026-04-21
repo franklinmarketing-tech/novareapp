@@ -265,7 +265,7 @@ const SuperAdminClients = () => {
                     <TableCell>
                       {c.banned
                         ? <Badge variant="destructive">Desativada</Badge>
-                        : <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Ativa</Badge>}
+                        : <Badge variant="secondary">Ativa</Badge>}
                     </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Button size="sm" variant="ghost" onClick={() => navigate(`/admin/cliente/${c.slug}/onboarding`)}>
