@@ -38,12 +38,16 @@ const fmtShort = (v: number) => {
 
 const MONTH_NAMES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
+type PeriodPreset = "this_month" | "last_month" | "last_3" | "last_6" | "this_year" | "last_year" | "custom";
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [periodMonths, setPeriodMonths] = useState(1); // quantos meses o período cobre (1, 3, 6, 12)
+  const [activePreset, setActivePreset] = useState<PeriodPreset>("this_month");
   const [adminName, setAdminName] = useState("");
   const [stats, setStats] = useState({ total: 0, onboarding: 0, diagnostico: 0, acompanhamento: 0 });
   const [netWealth, setNetWealth] = useState(0);
@@ -53,15 +57,46 @@ const AdminDashboard = () => {
   const [pendingActions, setPendingActions] = useState<{ id: string; description: string; area: string; client_name?: string; client_slug?: string }[]>([]);
   const [unconfirmedClients, setUnconfirmedClients] = useState<{ id: string; slug: string; name: string; lastConfirmed?: string }[]>([]);
 
-  const isCurrentMonth = selectedMonth === now.getMonth() && selectedYear === now.getFullYear();
+  const isCurrentMonth = selectedMonth === now.getMonth() && selectedYear === now.getFullYear() && periodMonths === 1;
   const monthRef = useMemo(() => `${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}-01`, [selectedMonth, selectedYear]);
 
+  // Período selecionado: termina no fim do selectedMonth/selectedYear, começa periodMonths atrás
+  const periodLabel = useMemo(() => {
+    if (periodMonths === 1) return `${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
+    const startD = new Date(selectedYear, selectedMonth - (periodMonths - 1), 1);
+    if (periodMonths === 12 && selectedMonth === 11) return `${selectedYear}`;
+    return `${MONTH_NAMES[startD.getMonth()].slice(0, 3)}/${startD.getFullYear()} → ${MONTH_NAMES[selectedMonth].slice(0, 3)}/${selectedYear}`;
+  }, [selectedMonth, selectedYear, periodMonths]);
+
+  const applyPreset = (preset: PeriodPreset) => {
+    setActivePreset(preset);
+    const today = new Date();
+    if (preset === "this_month") {
+      setSelectedMonth(today.getMonth()); setSelectedYear(today.getFullYear()); setPeriodMonths(1);
+    } else if (preset === "last_month") {
+      const d = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      setSelectedMonth(d.getMonth()); setSelectedYear(d.getFullYear()); setPeriodMonths(1);
+    } else if (preset === "last_3") {
+      setSelectedMonth(today.getMonth()); setSelectedYear(today.getFullYear()); setPeriodMonths(3);
+    } else if (preset === "last_6") {
+      setSelectedMonth(today.getMonth()); setSelectedYear(today.getFullYear()); setPeriodMonths(6);
+    } else if (preset === "this_year") {
+      setSelectedMonth(today.getMonth()); setSelectedYear(today.getFullYear()); setPeriodMonths(today.getMonth() + 1);
+    } else if (preset === "last_year") {
+      setSelectedMonth(11); setSelectedYear(today.getFullYear() - 1); setPeriodMonths(12);
+    }
+  };
+
   const goToPrevMonth = () => {
+    setActivePreset("custom");
+    setPeriodMonths(1);
     if (selectedMonth === 0) { setSelectedMonth(11); setSelectedYear(y => y - 1); }
     else setSelectedMonth(m => m - 1);
   };
   const goToNextMonth = () => {
     if (isCurrentMonth) return;
+    setActivePreset("custom");
+    setPeriodMonths(1);
     if (selectedMonth === 11) { setSelectedMonth(0); setSelectedYear(y => y + 1); }
     else setSelectedMonth(m => m + 1);
   };
