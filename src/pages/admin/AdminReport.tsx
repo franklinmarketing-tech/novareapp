@@ -319,17 +319,17 @@ const AdminReport = () => {
   return (
     <div className="max-w-4xl mx-auto print:max-w-none">
       {/* Screen-only header */}
-      <div className="flex items-center justify-between mb-8 print:hidden">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8 print:hidden">
+        <div className="min-w-0">
           <h1 className="text-lg font-semibold text-foreground tracking-tight">Relatório Final</h1>
           <p className="text-xs text-muted-foreground mt-0.5">Documento consolidado para entrega ao cliente</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={handleDownloadPDF} disabled={generating} className="gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button onClick={handleDownloadPDF} disabled={generating} className="gap-2 flex-1 sm:flex-none">
             {generating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             {generating ? "Gerando..." : "Baixar PDF"}
           </Button>
-          <Button onClick={handlePrint} variant="outline" className="gap-2">
+          <Button onClick={handlePrint} variant="outline" className="gap-2 flex-1 sm:flex-none">
             <Printer className="h-5 w-5" /> Imprimir
           </Button>
         </div>
@@ -338,12 +338,12 @@ const AdminReport = () => {
       <div ref={reportRef} className="space-y-10 print:space-y-8">
 
         {/* ══════ COVER ══════ */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/90 text-primary-foreground p-10 print:p-8">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/90 text-primary-foreground p-6 sm:p-10 print:p-8">
           <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white/[0.03] -translate-y-1/2 translate-x-1/3" />
           <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/[0.02] translate-y-1/2 -translate-x-1/4" />
           <div className="relative">
             <p className="text-[10px] uppercase tracking-[0.3em] text-primary-foreground/50 mb-4">Método Novare</p>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-2">
               Relatório de<br />Consultoria Financeira
             </h1>
             <Separator className="bg-primary-foreground/10 my-5 max-w-[200px]" />
@@ -376,7 +376,7 @@ const AdminReport = () => {
               <p className="text-sm text-muted-foreground leading-relaxed mb-6">
                 O Método Novare é uma abordagem estruturada para organização, clareza e direção financeira, desenvolvida para oferecer resultados mensuráveis em cada etapa do processo.
               </p>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                 {[
                   { icon: BarChart3, title: "Mapear", desc: "Coleta estruturada" },
                   { icon: Target, title: "Diagnosticar", desc: "Análise completa" },
@@ -402,26 +402,26 @@ const AdminReport = () => {
           <SectionHeader number={sectionNumber()} title="Classificação de Risco" subtitle="Saúde financeira baseada na capacidade de poupança" />
           <Card className={`border ${riskInfo.borderColor} overflow-hidden`}>
             <div className={`bg-gradient-to-r ${riskInfo.gradient}`}>
-              <CardContent className="py-6">
-                <div className="flex items-center gap-6">
-                  <div className={`flex flex-col items-center justify-center h-24 w-24 rounded-2xl ${riskInfo.bgColor} shrink-0`}>
-                    <span className={`text-4xl font-black ${riskInfo.textColor}`}>{risk}</span>
+              <CardContent className="py-5 sm:py-6 px-4 sm:px-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                  <div className={`flex flex-col items-center justify-center h-20 w-20 sm:h-24 sm:w-24 rounded-2xl ${riskInfo.bgColor} shrink-0 self-start sm:self-auto`}>
+                    <span className={`text-3xl sm:text-4xl font-black ${riskInfo.textColor}`}>{risk}</span>
                     <span className={`text-[10px] font-semibold ${riskInfo.textColor} mt-0.5`}>{riskInfo.label}</span>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm text-muted-foreground mb-3">{riskInfo.description}</p>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Poupança</p>
-                        <p className={`text-lg font-bold ${riskInfo.textColor}`}>{fmtPct(savingsRate)}</p>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Poupança</p>
+                        <p className={`text-base sm:text-lg font-bold ${riskInfo.textColor}`}>{fmtPct(savingsRate)}</p>
                       </div>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Comprometimento</p>
-                        <p className={`text-lg font-bold ${debtRatio > 30 ? "text-red-500" : "text-foreground"}`}>{fmtPct(debtRatio)}</p>
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Comprom.</p>
+                        <p className={`text-base sm:text-lg font-bold ${debtRatio > 30 ? "text-red-500" : "text-foreground"}`}>{fmtPct(debtRatio)}</p>
                       </div>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Despesas/Renda</p>
-                        <p className={`text-lg font-bold ${expenseRatio > 80 ? "text-orange-500" : "text-foreground"}`}>{fmtPct(expenseRatio)}</p>
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Desp/Renda</p>
+                        <p className={`text-base sm:text-lg font-bold ${expenseRatio > 80 ? "text-orange-500" : "text-foreground"}`}>{fmtPct(expenseRatio)}</p>
                       </div>
                     </div>
                   </div>
@@ -429,8 +429,9 @@ const AdminReport = () => {
                 {/* Scale */}
                 <div className="grid grid-cols-5 gap-1 mt-5">
                   {(["A", "B", "C", "D", "E"] as const).map((l) => (
-                    <div key={l} className={`text-center py-2 rounded-lg text-xs font-medium transition-all ${l === risk ? `${riskInfo.bgColor} ${riskInfo.textColor} ring-1 ring-current/20` : "bg-muted/50 text-muted-foreground"}`}>
-                      {l} — {classificationConfig[l].label}
+                    <div key={l} className={`text-center py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-medium transition-all ${l === risk ? `${riskInfo.bgColor} ${riskInfo.textColor} ring-1 ring-current/20` : "bg-muted/50 text-muted-foreground"}`}>
+                      <span className="hidden sm:inline">{l} — {classificationConfig[l].label}</span>
+                      <span className="sm:hidden">{l}</span>
                     </div>
                   ))}
                 </div>
@@ -442,7 +443,7 @@ const AdminReport = () => {
         {/* ══════ 3. BALANÇO ══════ */}
         <section>
           <SectionHeader number={sectionNumber()} title="Balanço Patrimonial" subtitle="Visão consolidada de ativos e passivos" />
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <StatCard label="Ativos Totais" value={fmt(totalAssets)} icon={Wallet} color="bg-blue-500/10 text-blue-600" />
             <StatCard label="Passivos Totais" value={fmt(totalDebts)} icon={AlertTriangle} color="bg-red-500/10 text-red-500" />
             <StatCard label="Patrimônio Líquido" value={fmt(netWorth)} icon={Scale} color={netWorth >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-500"} className={netWorth >= 0 ? "card-glow-success" : "card-glow-destructive"} />
@@ -595,19 +596,21 @@ const AdminReport = () => {
             <SectionHeader number={sectionNumber()} title="Mapa de Dívidas" subtitle={`${debts.length} dívida${debts.length !== 1 ? "s" : ""} ativa${debts.length !== 1 ? "s" : ""}`} />
             <Card>
               <CardContent className="py-4">
+                <p className="text-[10px] text-muted-foreground sm:hidden mb-2 text-center">← Arraste para ver mais →</p>
+                <div className="relative">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm min-w-[560px]">
                     <thead>
                       <tr className="border-b border-border">
                         {["Tipo", "Credor", "Saldo", "Parcela", "Juros", "Prazo"].map(h => (
-                          <th key={h} className={`py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium ${h === "Tipo" || h === "Credor" ? "text-left" : "text-right"}`}>{h}</th>
+                          <th key={h} className={`py-2.5 px-2 text-[10px] uppercase tracking-wider text-muted-foreground font-medium ${h === "Tipo" || h === "Credor" ? "text-left" : "text-right"}`}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {debts.map((d) => (
                         <tr key={d.id} className="border-b border-border/30 ">
-                          <td className="py-2.5 text-foreground capitalize">{d.type}</td>
+                          <td className="py-2.5 px-2 text-foreground capitalize">{d.type}</td>
                           <td className="py-2.5 text-muted-foreground">{d.creditor || "—"}</td>
                           <td className="py-2.5 text-right font-semibold text-foreground tabular-nums">{fmt(d.total_amount || 0)}</td>
                           <td className="py-2.5 text-right tabular-nums text-muted-foreground">{fmt(d.monthly_payment || 0)}</td>
@@ -620,13 +623,15 @@ const AdminReport = () => {
                         </tr>
                       ))}
                       <tr className="font-bold text-foreground">
-                        <td colSpan={2} className="py-2.5">Total</td>
-                        <td className="py-2.5 text-right tabular-nums">{fmt(totalDebts)}</td>
-                        <td className="py-2.5 text-right tabular-nums">{fmt(monthlyDebtPayments)}</td>
+                        <td colSpan={2} className="py-2.5 px-2">Total</td>
+                        <td className="py-2.5 px-2 text-right tabular-nums">{fmt(totalDebts)}</td>
+                        <td className="py-2.5 px-2 text-right tabular-nums">{fmt(monthlyDebtPayments)}</td>
                         <td colSpan={2}></td>
                       </tr>
                     </tbody>
                   </table>
+                </div>
+                <div aria-hidden className="pointer-events-none absolute top-0 right-0 h-full w-8 sm:hidden" style={{ background: "linear-gradient(to left, hsl(var(--card)), transparent)" }} />
                 </div>
               </CardContent>
             </Card>
@@ -765,7 +770,7 @@ const AdminReport = () => {
             <SectionHeader number={sectionNumber()} title="Plano de Ação" subtitle={`${totalActions} ações • ${completedActions} concluídas`} />
 
             {/* Progress summary */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
               <Card>
                 <CardContent className="p-4 text-center">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total de Ações</p>
@@ -790,12 +795,14 @@ const AdminReport = () => {
             {/* Action items table */}
             <Card>
               <CardContent className="py-4">
+                <p className="text-[10px] text-muted-foreground sm:hidden mb-2 text-center">← Arraste para ver mais →</p>
+                <div className="relative">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm min-w-[640px]">
                     <thead>
                       <tr className="border-b border-border">
                         {["Área", "Ação", "Responsável", "Prazo", "Status"].map(h => (
-                          <th key={h} className="py-2.5 text-left text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{h}</th>
+                          <th key={h} className="py-2.5 px-2 text-left text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -804,15 +811,15 @@ const AdminReport = () => {
                         const st = STATUS_MAP[a.status] || STATUS_MAP.pendente;
                         return (
                           <tr key={a.id} className="border-b border-border/30 ">
-                            <td className="py-2.5">
+                            <td className="py-2.5 px-2">
                               <Badge variant="outline" className="text-[10px]">{AREA_LABELS[a.area] || a.area}</Badge>
                             </td>
-                            <td className="py-2.5 text-foreground max-w-[220px]">{a.description}</td>
-                            <td className="py-2.5 text-muted-foreground">{a.responsible || "Novare"}</td>
-                            <td className="py-2.5 text-muted-foreground tabular-nums">{a.deadline ? new Date(a.deadline).toLocaleDateString("pt-BR") : "—"}</td>
-                            <td className="py-2.5">
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${st.color}`}>
-                                {a.status === "concluido" && <CheckCircle2 className="h-6 w-6" />}
+                            <td className="py-2.5 px-2 text-foreground max-w-[260px]">{a.description}</td>
+                            <td className="py-2.5 px-2 text-muted-foreground">{a.responsible || "Novare"}</td>
+                            <td className="py-2.5 px-2 text-muted-foreground tabular-nums whitespace-nowrap">{a.deadline ? new Date(a.deadline).toLocaleDateString("pt-BR") : "—"}</td>
+                            <td className="py-2.5 px-2">
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap ${st.color}`}>
+                                {a.status === "concluido" && <CheckCircle2 className="h-3 w-3" />}
                                 {st.label}
                               </span>
                             </td>
@@ -821,6 +828,8 @@ const AdminReport = () => {
                       })}
                     </tbody>
                   </table>
+                </div>
+                <div aria-hidden className="pointer-events-none absolute top-0 right-0 h-full w-8 sm:hidden" style={{ background: "linear-gradient(to left, hsl(var(--card)), transparent)" }} />
                 </div>
               </CardContent>
             </Card>
@@ -885,8 +894,8 @@ const AdminReport = () => {
           <section>
             <SectionHeader number={sectionNumber()} title="Evolução Histórica" subtitle="Acompanhamento ao longo dos snapshots" />
             <Card>
-              <CardContent className="py-5">
-                <ResponsiveContainer width="100%" height={260}>
+              <CardContent className="py-5 px-2 sm:px-6">
+                <ResponsiveContainer width="100%" height={220} className="sm:!h-[260px]">
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="rptGradAtivos" x1="0" y1="0" x2="0" y2="1">

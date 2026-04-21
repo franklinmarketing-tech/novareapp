@@ -316,17 +316,17 @@ const ClientDiagnosis = () => {
   return (
     <div className="space-y-6">
       {/* ── Header ──────────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/clientes")} className="h-8 w-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-start gap-3 min-w-0">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/clientes")} className="h-8 w-8 shrink-0">
             <ArrowLeft className="h-6 w-6" />
           </Button>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-lg font-semibold text-foreground tracking-tight">Diagnóstico Financeiro</h1>
             <p className="text-xs text-muted-foreground mt-0.5">Análise calculada automaticamente a partir dos dados do onboarding</p>
           </div>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
+        <Button onClick={handleSave} disabled={saving} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 w-full sm:w-auto shrink-0">
           <Save className="h-6 w-6" />
           {saving ? "Salvando..." : "Salvar Diagnóstico"}
         </Button>
@@ -335,41 +335,43 @@ const ClientDiagnosis = () => {
       {/* ── 1. Classification Hero ──────────────── */}
       <Card className={`border ${risk.borderColor} overflow-hidden`}>
         <div className={`bg-gradient-to-r ${risk.gradient}`}>
-          <CardContent className="py-6">
-            <div className="flex items-center gap-6">
-              {/* Grade badge */}
-              <div className={`flex flex-col items-center justify-center h-20 w-20 rounded-2xl ${risk.bgColor} shrink-0`}>
-                <span className={`text-3xl font-black ${risk.textColor}`}>{diagnosis.riskClassification}</span>
-                <span className={`text-[10px] font-semibold ${risk.textColor} mt-0.5`}>{risk.label}</span>
+          <CardContent className="py-5 sm:py-6 px-4 sm:px-6">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-6">
+              <div className="flex items-start gap-4">
+                {/* Grade badge */}
+                <div className={`flex flex-col items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-2xl ${risk.bgColor} shrink-0`}>
+                  <span className={`text-2xl sm:text-3xl font-black ${risk.textColor}`}>{diagnosis.riskClassification}</span>
+                  <span className={`text-[10px] font-semibold ${risk.textColor} mt-0.5`}>{risk.label}</span>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-muted-foreground">{risk.description}</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1 leading-relaxed">{risk.advice}</p>
+                </div>
               </div>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-muted-foreground">{risk.description}</p>
-                <p className="text-xs text-muted-foreground/70 mt-1 leading-relaxed">{risk.advice}</p>
-
-                {/* Key indicators inline */}
-                <div className="flex flex-wrap gap-4 mt-4">
-                  <div className="flex items-center gap-2">
-                    <PiggyBank className="h-6 w-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Poupança:</span>
-                    <span className={`text-xs font-bold ${risk.textColor}`}>{fmtPct(diagnosis.savingsCapacity)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Scale className="h-6 w-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Comprometimento:</span>
-                    <span className={`text-xs font-bold ${diagnosis.debtRatio > 30 ? "text-red-500" : "text-foreground"}`}>{fmtPct(diagnosis.debtRatio)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Gauge className="h-6 w-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Despesas/Renda:</span>
-                    <span className={`text-xs font-bold ${expenseRatio > 80 ? "text-orange-500" : "text-foreground"}`}>{fmtPct(expenseRatio)}</span>
-                  </div>
+              {/* Key indicators */}
+              <div className="flex flex-wrap gap-x-4 gap-y-2 lg:flex-1">
+                <div className="flex items-center gap-2">
+                  <PiggyBank className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-muted-foreground">Poupança:</span>
+                  <span className={`text-xs font-bold ${risk.textColor}`}>{fmtPct(diagnosis.savingsCapacity)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Scale className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-muted-foreground">Comprometimento:</span>
+                  <span className={`text-xs font-bold ${diagnosis.debtRatio > 30 ? "text-red-500" : "text-foreground"}`}>{fmtPct(diagnosis.debtRatio)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Gauge className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-muted-foreground">Despesas/Renda:</span>
+                  <span className={`text-xs font-bold ${expenseRatio > 80 ? "text-orange-500" : "text-foreground"}`}>{fmtPct(expenseRatio)}</span>
                 </div>
               </div>
 
               {/* Savings gauge */}
-              <div className="shrink-0">
+              <div className="shrink-0 w-full lg:w-auto flex justify-center lg:justify-end">
                 <SavingsGauge value={diagnosis.savingsCapacity} label="Cap. de poupança" />
               </div>
             </div>
@@ -557,7 +559,7 @@ const ClientDiagnosis = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Chart */}
               <div className="flex items-center justify-center">
-                <div className="h-56 w-full max-w-[280px]">
+                <div className="h-48 sm:h-56 w-full max-w-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie

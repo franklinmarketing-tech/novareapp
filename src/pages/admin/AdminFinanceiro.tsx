@@ -229,23 +229,23 @@ const AdminFinanceiro = () => {
       {/* ━━━ HERO: North Star + Narrative ━━━ */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0}>
         <Card3D glow="radial-gradient(circle, rgba(96,165,250,0.12) 0%, transparent 70%)">
-          <div className="p-6 lg:p-8">
+          <div className="p-5 sm:p-6 lg:p-8">
             <div className="flex flex-col lg:flex-row lg:items-center gap-6">
               {/* North Star */}
-              <div className="flex items-center gap-5 flex-1">
+              <div className="flex items-center gap-4 sm:gap-5 flex-1 min-w-0">
                 <motion.div
                   className="shrink-0"
                   animate={{ y: [0, -4, 0] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <img src={iconVault} alt="" className="w-16 h-16 lg:w-20 lg:h-20 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)]" />
+                  <img src={iconVault} alt="" className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)]" />
                 </motion.div>
-                <div>
-                  <span className="text-[11px] font-medium tracking-widest uppercase" style={{ color: "rgba(96,165,250,0.6)" }}>
+                <div className="min-w-0">
+                  <span className="text-[10px] sm:text-[11px] font-medium tracking-widest uppercase" style={{ color: "rgba(96,165,250,0.6)" }}>
                     Patrimônio sob Gestão
                   </span>
                   <motion.p
-                    className="text-4xl lg:text-5xl font-black tracking-tight text-white tabular-nums"
+                    className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white tabular-nums"
                     style={{ textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -254,7 +254,7 @@ const AdminFinanceiro = () => {
                     {fmtShort(totalAssets)}
                   </motion.p>
                   {narrative && (
-                    <p className="text-sm mt-2 max-w-md" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    <p className="text-xs sm:text-sm mt-2 max-w-md" style={{ color: "rgba(255,255,255,0.5)" }}>
                       <span className="mr-1">{narrative.emoji}</span>{narrative.text}
                     </p>
                   )}
@@ -262,7 +262,7 @@ const AdminFinanceiro = () => {
               </div>
 
               {/* Secondary KPIs */}
-              <div className="grid grid-cols-3 gap-4 lg:gap-6">
+              <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                 {[
                   { icon: iconGrowth, value: fmtShort(totalIncome), label: "Receita pot.", accent: "#34d399" },
                   { icon: iconPremium, value: fmtShort(avgTicket), label: "Ticket médio", accent: "#fbbf24" },
@@ -276,9 +276,9 @@ const AdminFinanceiro = () => {
                     transition={{ delay: 0.3 + i * 0.1 }}
                   >
                     <div className="flex items-center justify-center lg:justify-end gap-1.5 mb-1">
-                      <img src={kpi.icon} alt="" className="w-6 h-6 drop-shadow-md" loading="lazy" />
+                      <img src={kpi.icon} alt="" className="w-5 h-5 sm:w-6 sm:h-6 drop-shadow-md" loading="lazy" />
                     </div>
-                    <p className="text-xl lg:text-2xl font-bold text-white tabular-nums">{kpi.value}</p>
+                    <p className="text-base sm:text-xl lg:text-2xl font-bold text-white tabular-nums">{kpi.value}</p>
                     <p className="text-[0.625rem] font-medium uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>{kpi.label}</p>
                   </motion.div>
                 ))}
@@ -371,7 +371,7 @@ const AdminFinanceiro = () => {
                 <p className="text-[0.6875rem]" style={{ color: "rgba(255,255,255,0.4)" }}>{totalClients} total · {activeClients} convertidos</p>
               </div>
             </div>
-            <ChartContainer config={{ pipeline: { label: "Clientes" } }} className="h-[200px] w-full [&_.recharts-text]:!fill-white/50">
+            <ChartContainer config={{ pipeline: { label: "Clientes" } }} className="h-[180px] sm:h-[200px] w-full [&_.recharts-text]:!fill-white/50">
               <PieChart>
                 <Pie data={pipelineData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={78} paddingAngle={4} strokeWidth={0}>
                   {pipelineData.map((_, i) => (<Cell key={i} fill={PIPE_COLORS[i]} />))}
@@ -413,7 +413,7 @@ const AdminFinanceiro = () => {
                 <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Patrimônio aparecerá quando clientes tiverem ativos.</p>
               </div>
             ) : (
-              <ChartContainer config={{ patrimonio: { label: "Patrimônio", color: "#34d399" } }} className="h-[200px] w-full">
+              <ChartContainer config={{ patrimonio: { label: "Patrimônio", color: "#34d399" } }} className="h-[180px] sm:h-[200px] w-full">
                 <BarChart data={assetData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -434,21 +434,25 @@ const AdminFinanceiro = () => {
           glow="radial-gradient(circle, rgba(96,165,250,0.06) 0%, transparent 70%)"
         >
           <div>
-            <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <motion.img
-                  src={iconPremium} alt="" className="w-7 h-7 drop-shadow-lg" loading="lazy"
+                  src={iconPremium} alt="" className="w-7 h-7 drop-shadow-lg shrink-0" loading="lazy"
                   whileHover={{ scale: 1.1, rotate: -5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 />
-                <p className="text-sm font-semibold text-white">Detalhamento por Cliente</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">Detalhamento por Cliente</p>
+                  <p className="text-[10px] sm:hidden" style={{ color: "rgba(255,255,255,0.4)" }}>← Arraste para ver mais →</p>
+                </div>
               </div>
-              <span className="text-[10px] font-medium px-2.5 py-1 rounded-md text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <span className="text-[10px] font-medium px-2.5 py-1 rounded-md text-white/30 shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
                 {totalClients} cliente{totalClients !== 1 ? "s" : ""}
               </span>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="relative">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[640px]">
                 <thead>
                   <tr className="border-t border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                     <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>Cliente</th>
@@ -490,6 +494,13 @@ const AdminFinanceiro = () => {
                   })}
                 </tbody>
               </table>
+              </div>
+              {/* Right edge fade hint (mobile only) */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute top-0 right-0 h-full w-10 sm:hidden"
+                style={{ background: "linear-gradient(to left, rgba(13,27,42,0.95), transparent)" }}
+              />
             </div>
           </div>
         </Card3D>
