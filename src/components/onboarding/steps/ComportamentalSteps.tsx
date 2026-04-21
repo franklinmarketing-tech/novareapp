@@ -13,24 +13,30 @@ interface StepProps {
 /* ── Shared layout pieces ── */
 
 const Wrapper = ({ children, stepNumber }: { children: React.ReactNode; stepNumber?: string }) => (
-  <div className="flex flex-col items-center justify-center space-y-6 w-full">
+  <div className="flex flex-col items-center justify-center space-y-7 w-full">
     {stepNumber && (
-      <span className="font-body text-[0.75rem] font-semibold text-primary tracking-[0.2em] uppercase">Passo {stepNumber}</span>
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-primary/8 font-body text-[0.6875rem] font-semibold text-primary tracking-[0.18em] uppercase">
+        Passo {stepNumber}
+      </span>
     )}
     {children}
   </div>
 );
 
 const Question = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="font-display text-[1.75rem] md:text-[2.25rem] font-medium text-foreground text-center leading-[1.15] tracking-[-0.03em] max-w-lg">{children}</h2>
+  <h2 className="font-display font-medium text-foreground text-center tracking-[-0.025em] max-w-xl text-[clamp(1.5rem,1.25rem+1.2vw,2.125rem)] leading-[1.2]">
+    {children}
+  </h2>
 );
 
 const Hint = ({ children }: { children: React.ReactNode }) => (
-  <p className="font-body text-muted-foreground text-center text-[0.9375rem] tracking-[-0.01em] max-w-sm leading-relaxed">{children}</p>
+  <p className="font-body text-muted-foreground/85 text-center text-[0.9375rem] tracking-[-0.01em] max-w-md leading-[1.55]">
+    {children}
+  </p>
 );
 
 const FieldGroup = ({ children }: { children: React.ReactNode }) => (
-  <div className="w-full max-w-md space-y-3">{children}</div>
+  <div className="w-full max-w-md space-y-4">{children}</div>
 );
 
 /* ── Reusable Slider Step ── */

@@ -302,24 +302,26 @@ const ClientOnboardingPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-5xl"
-        >
-          💰
-        </motion.div>
-        <p className="text-sm text-muted-foreground font-body">Preparando seu onboarding...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-5">
+        <div className="flex items-center gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <motion.span
+              key={i}
+              className="h-2 w-2 rounded-full bg-primary"
+              animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1, 0.8] }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
+            />
+          ))}
+        </div>
+        <p className="text-[0.8125rem] text-muted-foreground/85 font-body tracking-[-0.01em]">Preparando seu onboarding...</p>
       </div>
     );
   }
 
   const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 50 : -50, opacity: 0, scale: 0.98 }),
-    center: { x: 0, opacity: 1, scale: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -50 : 50, opacity: 0, scale: 0.98 }),
+    enter: (dir: number) => ({ x: dir > 0 ? 24 : -24, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -24 : 24, opacity: 0 }),
   };
 
   const renderStep = () => {
@@ -373,7 +375,7 @@ const ClientOnboardingPage = () => {
         </Button>
       </div>
       <OnboardingProgress currentStep={step} totalSteps={TOTAL_MICRO_STEPS} />
-      <div className={`flex-1 overflow-y-auto px-4 ${isListStep ? "pt-3" : "pt-0"} pb-24`}>
+      <div className={`flex-1 overflow-y-auto px-4 sm:px-5 md:px-6 ${isListStep ? "pt-3" : "pt-0"} pb-28 md:pb-24`}>
         <div className={`max-w-2xl mx-auto ${isCenteredStep ? "flex items-center justify-center min-h-full" : ""}`}>
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
@@ -383,7 +385,7 @@ const ClientOnboardingPage = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
               className="w-full"
             >
               {renderStep()}

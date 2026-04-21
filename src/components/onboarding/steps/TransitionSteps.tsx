@@ -11,12 +11,12 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
   const firstName = userName?.split(" ")[0];
 
   return (
-    <div className="flex flex-col items-center justify-center text-center space-y-4 md:space-y-5 px-4 py-2">
+    <div className="flex flex-col items-center justify-center text-center space-y-5 md:space-y-7 px-4 py-2">
       {/* Animated emoji */}
       <motion.div
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
+        transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
         className="text-5xl md:text-6xl"
       >
         👋
@@ -24,9 +24,9 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
 
       {/* Title with name */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.6 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
         className="space-y-2"
       >
         {firstName && (
@@ -34,7 +34,7 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
             Olá, {firstName}!
           </p>
         )}
-        <h1 className="font-display text-[1.75rem] md:text-[2.25rem] font-bold text-foreground leading-[1.1] tracking-[-0.04em] whitespace-pre-line max-w-2xl">
+        <h1 className="font-display font-bold text-foreground tracking-[-0.035em] whitespace-pre-line max-w-2xl text-[clamp(1.625rem,1.3rem+1.4vw,2.25rem)] leading-[1.1]">
           {narrative.title}
         </h1>
       </motion.div>
@@ -42,7 +42,7 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
+        transition={{ delay: 0.35, duration: 0.5 }}
         className="font-body text-muted-foreground text-[0.9375rem] md:text-[1rem] max-w-xl leading-relaxed tracking-[-0.01em]"
       >
         {narrative.subtitle}
@@ -52,7 +52,7 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7, duration: 0.5 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
         className="flex flex-col items-center gap-2 pt-1"
       >
         <div className="flex items-center gap-3 md:gap-5 text-[0.875rem] md:text-[0.9375rem] font-body font-medium text-foreground/80">
@@ -68,7 +68,7 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
             <span className="text-lg">💡</span> Perfil
           </span>
         </div>
-        <p className="font-body text-muted-foreground text-[0.8125rem] italic max-w-md">
+        <p className="font-body text-muted-foreground/85 text-[0.8125rem] max-w-md">
           {narrative.cta}
         </p>
       </motion.div>
@@ -76,8 +76,8 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
       {/* Decorative sparkle */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.15 }}
-        transition={{ delay: 1, duration: 1 }}
+        animate={{ opacity: 0.1 }}
+        transition={{ delay: 0.8, duration: 1 }}
         className="absolute bottom-32 right-8 text-accent pointer-events-none"
       >
         <Sparkles className="h-24 w-24" />
@@ -94,25 +94,25 @@ export const StepTransition = ({ type }: TransitionProps) => {
   const narrative = SECTION_NARRATIVES[type];
 
   return (
-    <div className="flex flex-col items-center justify-center text-center space-y-7 px-4">
+    <div className="flex flex-col items-center justify-center text-center space-y-5 md:space-y-7 px-4">
       {/* Completed badge */}
       {narrative.completedLabel && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 border border-success/20"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 border border-success/20"
         >
-          <CheckCircle2 className="h-6 w-6 text-success" />
-          <span className="text-sm font-medium text-success font-body">{narrative.completedLabel}</span>
+          <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+          <span className="text-[0.75rem] font-semibold text-success font-body tracking-wide">{narrative.completedLabel}</span>
         </motion.div>
       )}
 
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.15 }}
-        className="text-6xl md:text-7xl"
+        transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
+        className="text-5xl md:text-7xl"
       >
         {type === "transition_financas" ? "💰" : "💡"}
       </motion.div>
@@ -120,10 +120,10 @@ export const StepTransition = ({ type }: TransitionProps) => {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25, duration: 0.5 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
         className="space-y-3"
       >
-        <h2 className="font-display text-[1.75rem] md:text-[2.25rem] font-bold text-foreground leading-[1.1] tracking-[-0.04em] whitespace-pre-line max-w-md">
+        <h2 className="font-display font-bold text-foreground tracking-[-0.035em] whitespace-pre-line max-w-md text-[clamp(1.625rem,1.3rem+1.4vw,2.25rem)] leading-[1.1]">
           {narrative.title}
         </h2>
         <p className="font-body text-muted-foreground text-[0.9375rem] md:text-[1rem] max-w-sm leading-relaxed tracking-[-0.01em] mx-auto">
@@ -134,8 +134,8 @@ export const StepTransition = ({ type }: TransitionProps) => {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
-        className="font-body text-muted-foreground text-[0.8125rem] italic max-w-xs"
+        transition={{ delay: 0.35, duration: 0.4 }}
+        className="font-body text-muted-foreground/85 text-[0.8125rem] max-w-xs"
       >
         {narrative.cta}
       </motion.p>
@@ -144,9 +144,9 @@ export const StepTransition = ({ type }: TransitionProps) => {
       <motion.div
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 0.4, y: 0 }}
-        transition={{ delay: 0.7, repeat: Infinity, repeatType: "reverse", duration: 1.2 }}
+        transition={{ delay: 0.5, repeat: Infinity, repeatType: "reverse", duration: 1.2 }}
       >
-        <ArrowRight className="h-6 w-6 text-accent" />
+        <ArrowRight className="h-5 w-5 text-accent" />
       </motion.div>
     </div>
   );
