@@ -296,6 +296,51 @@ export const NoteEditor = ({ clientId }: Props) => {
     setAnalyzing(false);
   };
 
+  // Anexa um trecho ao parecer atual e persiste no banco (auto-save)
+  const appendToParecer = async (snippet: string) => {
+    const separator = content.trim() ? "\n\n" : "";
+    const newContent = `${content}${separator}${snippet}`.trimStart();
+    setContent(newContent);
+
+    try {
+      if (activeNote) {
+        // Atualiza nota existente
+        const { error } = await supabase
+          .from("consultant_notes")
+          .update({ title: title || activeNote.title, content: newContent })
+          .eq("id", activeNote.id);
+        if (error) throw error;
+        setActiveNote({ ...activeNote, title: title || activeNote.title, content: newContent });
+        setNotes((prev) =>
+          prev.map((n) =>
+            n.id === activeNote.id ? { ...n, title: title || activeNote.title, content: newContent } : n
+          )
+        );
+      } else {
+        // Cria nova nota se ainda não existe
+        const noteTitle = title.trim() || `Parecer ${format(new Date(), "dd/MM/yyyy")}`;
+        const { data: created, error } = await supabase
+          .from("consultant_notes")
+          .insert({ client_id: clientId, title: noteTitle, content: newContent })
+          .select()
+          .single();
+        if (error) throw error;
+        if (created) {
+          setActiveNote(created as Note);
+          setTitle(created.title);
+          setNotes((prev) => [created as Note, ...prev]);
+        }
+      }
+    } catch (e) {
+      // Falha de auto-save não impede a inclusão visual; apenas avisa
+      toast({
+        title: "Sugestão adicionada ao texto, mas não salva",
+        description: "Clique em Salvar para persistir o parecer.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const applyAiAction = async (action: SuggestedAction, idx: number) => {
     setApplyingAiId(idx);
     try {
@@ -338,8 +383,18 @@ export const NoteEditor = ({ clientId }: Props) => {
           goal_id: goalId,
         });
       }
+
+      // Acrescenta a sugestão ao corpo do parecer
+      const areaLabel = areaLabels[action.area] || action.area;
+      const impactLine =
+        action.financial_impact && action.financial_impact > 0
+          ? ` _(impacto estimado: ${fmt(action.financial_impact)})_`
+          : "";
+      const snippet = `**[${areaLabel}] ${action.description}**${impactLine}\n→ ${action.objective}`;
+      await appendToParecer(snippet);
+
       setAppliedAiIds(prev => new Set(prev).add(idx));
-      toast({ title: "Ação aplicada ao plano!" });
+      toast({ title: "Ação aplicada ao plano e ao parecer!" });
     } catch {
       toast({ title: "Erro ao aplicar ação", variant: "destructive" });
     }
@@ -359,8 +414,18 @@ export const NoteEditor = ({ clientId }: Props) => {
         rationale: inv.rationale,
         expected_return: inv.expected_return || null,
       });
+
+      // Acrescenta a recomendação de investimento ao corpo do parecer
+      const valueLine =
+        inv.invested_amount && inv.invested_amount > 0
+          ? ` — ${fmt(inv.invested_amount)}`
+          : "";
+      const returnLine = inv.expected_return ? ` · Retorno esperado: ${inv.expected_return}` : "";
+      const snippet = `**[Investimento] ${inv.product_name}**${valueLine}\nRisco: ${inv.risk_level}${returnLine}\n→ ${inv.rationale}`;
+      await appendToParecer(snippet);
+
       setAppliedAiIds(prev => new Set(prev).add(globalIdx));
-      toast({ title: "Investimento aplicado!" });
+      toast({ title: "Investimento aplicado e adicionado ao parecer!" });
     } catch {
       toast({ title: "Erro ao aplicar investimento", variant: "destructive" });
     }
