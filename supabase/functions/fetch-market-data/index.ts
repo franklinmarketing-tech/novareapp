@@ -21,6 +21,40 @@ async function fetchBCBSeries(seriesId: number, lastN: number): Promise<BCBRecor
   }
 }
 
+interface IbovQuote {
+  current: number;
+  previous: number;
+  variation: number;
+  history: { date: string; value: number }[];
+}
+
+async function fetchIbovespa(): Promise<IbovQuote> {
+  // Brapi é público e gratuito para dados básicos do IBOV
+  try {
+    const url = "https://brapi.dev/api/quote/^BVSP?range=1mo&interval=1d";
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("brapi failed");
+    const json = await res.json();
+    const result = json.results?.[0];
+    if (!result) throw new Error("no data");
+    const current = Number(result.regularMarketPrice) || 0;
+    const previous = Number(result.regularMarketPreviousClose) || current;
+    const variation = previous !== 0 ? ((current - previous) / previous) * 100 : 0;
+    const history = (result.historicalDataPrice || [])
+      .slice(-22)
+      .map((h: { date: number; close: number }) => {
+        const d = new Date(h.date * 1000);
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        return { date: `${dd}/${mm}`, value: Number(h.close) || 0 };
+      });
+    return { current, previous, variation, history };
+  } catch (e) {
+    console.error("Brapi error:", e);
+    return { current: 0, previous: 0, variation: 0, history: [] };
+  }
+}
+
 async function fetchDolarOlindaAPI(): Promise<BCBRecord[]> {
   const today = new Date();
   const start = new Date(today);
