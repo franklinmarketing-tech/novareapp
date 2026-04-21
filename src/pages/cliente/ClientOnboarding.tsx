@@ -24,6 +24,10 @@ import confetti from "canvas-confetti";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import { SummaryReview } from "@/components/onboarding/SummaryReview";
+import { useKeyboardNav } from "@/hooks/useKeyboardNav";
+import { useOnboardingTimer } from "@/hooks/useOnboardingTimer";
+import type { SaveStatus } from "@/components/onboarding/SaveIndicator";
 
 // Map step ranges to save section for auto-save on any step change
 const getSaveSectionForStep = (step: number): number | null => {
@@ -52,6 +56,10 @@ const ClientOnboardingPage = () => {
   const [direction, setDirection] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [showSuccessFlash, setShowSuccessFlash] = useState(false);
+  const { remainingMin } = useOnboardingTimer(step, TOTAL_MICRO_STEPS);
 
   const [identificacao, setIdentificacao] = useState({
     full_name: "", cpf: "", date_of_birth: "", marital_status: "", property_regime: "",
@@ -143,6 +151,7 @@ const ClientOnboardingPage = () => {
 
   const saveSection = async (section: number): Promise<boolean> => {
     if (!clientId) return false;
+    setSaveStatus("saving");
     try {
       switch (section) {
         case 0: {
@@ -237,9 +246,15 @@ const ClientOnboardingPage = () => {
           break;
         }
       }
+      const now = new Date();
+      setLastSavedAt(now);
+      setSaveStatus("saved");
+      // Drift back to "idle" after a moment so the timestamp stays subtle
+      window.setTimeout(() => setSaveStatus((s) => (s === "saved" ? "idle" : s)), 2200);
       return true;
     } catch (err: any) {
       if (import.meta.env.DEV) console.error(`Save error (section ${section}):`, err);
+      setSaveStatus("error");
       toast({
         title: "Erro ao salvar",
         description: err?.message ?? "Não foi possível salvar. Tente novamente.",
@@ -247,6 +262,13 @@ const ClientOnboardingPage = () => {
       });
       return false;
     }
+  };
+
+
+
+  const retryLastSave = async () => {
+    const sec = getSaveSectionForStep(step);
+    if (sec !== null) await saveSection(sec);
   };
 
   const handleNext = async () => {
@@ -257,6 +279,10 @@ const ClientOnboardingPage = () => {
       const ok = await saveSection(currentSaveSection);
       setSubmitting(false);
       if (!ok) return; // não avança em caso de erro
+
+      // success flash on the CTA
+      setShowSuccessFlash(true);
+      window.setTimeout(() => setShowSuccessFlash(false), 420);
     }
 
     // Confetti em conclusões de seção
@@ -300,6 +326,22 @@ const ClientOnboardingPage = () => {
     setStep((s) => s - 1);
   };
 
+  const handleJumpToStep = (target: number) => {
+    if (target === step) return;
+    const currentSaveSection = getSaveSectionForStep(step);
+    if (currentSaveSection !== null) saveSection(currentSaveSection);
+    setDirection(target > step ? 1 : -1);
+    setStep(target);
+  };
+
+  // Keyboard nav: Enter advances, Shift+Enter goes back, Esc exits
+  useKeyboardNav({
+    onNext: () => { if (!submitting) handleNext(); },
+    onBack: handleBack,
+    onClose: () => navigate("/cliente"),
+    enabled: !loading,
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-5">
@@ -324,9 +366,26 @@ const ClientOnboardingPage = () => {
     exit: (dir: number) => ({ x: dir > 0 ? -24 : 24, opacity: 0 }),
   };
 
+  const totalRenda = rendas.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+  const totalDespesas = despesas.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+  const totalDividas = dividas.reduce((s, d) => s + (parseFloat(d.total_amount) || 0), 0);
+  const totalPatrimonio = patrimonio.reduce((s, a) => s + (parseFloat(a.estimated_value) || 0), 0);
+  const fmtBRL = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+  // Stats keyed by SECTION index (see SECTIONS in onboardingConfig)
+  const drawerStats: Record<number, { hint?: string }> = {
+    1: { hint: identificacao.full_name || "Sem nome" },
+    3: { hint: rendas.length ? `${rendas.length} fonte(s) · ${fmtBRL(totalRenda)}` : "Nenhuma renda" },
+    4: { hint: despesas.length ? `${despesas.length} despesa(s) · ${fmtBRL(totalDespesas)}` : "Nenhuma despesa" },
+    5: { hint: dividas.length ? `${dividas.length} dívida(s) · ${fmtBRL(totalDividas)}` : "Sem dívidas" },
+    6: { hint: patrimonio.length ? `${patrimonio.length} ativo(s) · ${fmtBRL(totalPatrimonio)}` : "Nenhum ativo" },
+    7: { hint: seguros.length ? `${seguros.length} seguro(s)` : "Nenhum seguro" },
+    8: { hint: objetivos.length ? `${objetivos.length} objetivo(s)` : "Nenhum objetivo" },
+  };
+
   const renderStep = () => {
     switch (step) {
-      case 0: return <StepWelcome userName={identificacao.full_name} />;
+      case 0: return <StepWelcome userName={identificacao.full_name} estimatedMin={remainingMin} />;
       case 1: return <StepNome data={identificacao} onChange={setIdentificacao} />;
       case 2: return <StepCpfNascimento data={identificacao} onChange={setIdentificacao} />;
       case 3: return <StepEstadoCivil data={identificacao} onChange={setIdentificacao} />;
@@ -349,12 +408,24 @@ const ClientOnboardingPage = () => {
       case 20: return <StepRisco data={comportamental} onChange={setComportamental} />;
       case 21: return <StepGatilhos data={comportamental} onChange={setComportamental} />;
       case 22: return <StepPerfilResultado data={comportamental} onChange={setComportamental} />;
+      case 23: return (
+        <SummaryReview
+          identificacao={identificacao}
+          rendas={rendas}
+          despesas={despesas}
+          dividas={dividas}
+          patrimonio={patrimonio}
+          seguros={seguros}
+          objetivos={objetivos}
+          comportamental={comportamental}
+        />
+      );
       default: return null;
     }
   };
 
   const isListStep = step >= 8 && step <= 13;
-  const isCenteredStep = step === 0 || step === 7 || step === 14 || (step >= 15 && step <= 22);
+  const isCenteredStep = step === 0 || step === 7 || step === 14 || (step >= 15 && step <= 22) || step === 23;
 
   return (
     <PageTransition className="h-screen bg-background flex flex-col overflow-hidden">
@@ -374,7 +445,16 @@ const ClientOnboardingPage = () => {
           <span className="hidden sm:inline text-xs">Sair</span>
         </Button>
       </div>
-      <OnboardingProgress currentStep={step} totalSteps={TOTAL_MICRO_STEPS} />
+      <OnboardingProgress
+        currentStep={step}
+        totalSteps={TOTAL_MICRO_STEPS}
+        saveStatus={saveStatus}
+        lastSavedAt={lastSavedAt}
+        onRetrySave={retryLastSave}
+        onJumpToStep={handleJumpToStep}
+        drawerStats={drawerStats}
+        remainingMin={remainingMin}
+      />
       <div className={`flex-1 overflow-y-auto px-4 sm:px-5 md:px-6 ${isListStep ? "pt-3" : "pt-0"} pb-28 md:pb-24`}>
         <div className={`max-w-2xl mx-auto ${isCenteredStep ? "flex items-center justify-center min-h-full" : ""}`}>
           <AnimatePresence mode="wait" custom={direction}>
@@ -399,6 +479,7 @@ const ClientOnboardingPage = () => {
         onBack={handleBack}
         onNext={handleNext}
         isSubmitting={submitting}
+        showSuccessFlash={showSuccessFlash}
       />
     </PageTransition>
   );

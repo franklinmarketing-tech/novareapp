@@ -1,7 +1,7 @@
 // Maps micro-step index to the save section (0-7) that should be triggered.
 // null = don't save on this step, just advance.
 // Only the LAST micro-step of each section triggers a save.
-export const TOTAL_MICRO_STEPS = 23; // 0-22: welcome + 6 ident + transition + 6 finance + transition + 8 behavioral
+export const TOTAL_MICRO_STEPS = 24; // 0-22: welcome+ident+transitions+finance+behavioral · 23: summary review
 
 // Section definitions with emoji for personality
 export const SECTIONS = [
@@ -16,6 +16,7 @@ export const SECTIONS = [
   { key: "objetivos", emoji: "🎯", label: "Objetivos", color: "text-success" },
   { key: "transition_comportamental", emoji: "🧠", label: "Comportamento", color: "text-accent" },
   { key: "comportamental", emoji: "🧠", label: "Seu perfil", color: "text-primary" },
+  { key: "summary", emoji: "✨", label: "Revisão", color: "text-success" },
 ] as const;
 
 // Step → section index for the SECTIONS array above
@@ -26,6 +27,7 @@ export const STEP_TO_SECTION: number[] = [
   3, 4, 5, 6, 7, 8,  // 8-13: Renda, Despesas, Dívidas, Patrimônio, Seguros, Objetivos
   9,  // 14: Transition comportamental
   10, 10, 10, 10, 10, 10, 10, 10, // 15-22: Comportamental (8 steps)
+  11, // 23: Summary review
 ];
 
 // Save triggers: which section to save when leaving a step
@@ -43,6 +45,7 @@ export const microStepToSaveSection: Record<number, number | null> = {
   14: null, // Transition
   15: null, 16: null, 17: null, 18: null, 19: null, 20: null, 21: null,
   22: 7,   // last of Comportamental → save section 7
+  23: null, // Summary review (no save, just finalize)
 };
 
 export const STEP_SECTION_LABELS: string[] = [
@@ -52,6 +55,7 @@ export const STEP_SECTION_LABELS: string[] = [
   "Renda", "Despesas", "Dívidas", "Patrimônio", "Seguros", "Objetivos",
   "Comportamento",
   "Comportamental", "Comportamental", "Comportamental", "Comportamental", "Comportamental", "Comportamental", "Comportamental", "Comportamental",
+  "Revisão",
 ];
 
 export const STEP_TITLES: string[] = [
@@ -62,6 +66,7 @@ export const STEP_TITLES: string[] = [
   "Seu comportamento",
   "Organização financeira", "Disciplina de poupança", "Ansiedade financeira", "Confiança financeira",
   "Compras por impulso", "Apetite por risco", "Gatilhos de consumo", "Histórico e perfil",
+  "Revisão final",
 ];
 
 // Contextual encouragement per step
@@ -89,6 +94,7 @@ export const STEP_ENCOURAGEMENT: Record<number, string> = {
   20: "Risco não é bom nem ruim — é contexto",
   21: "Autoconhecimento é o primeiro investimento 🧠",
   22: "Estamos construindo seu perfil financeiro...",
+  23: "Tudo certo? Só falta finalizar!",
 };
 
 // Section-level narrative messages for transitions

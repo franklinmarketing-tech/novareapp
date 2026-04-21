@@ -2,16 +2,40 @@ import { motion } from "framer-motion";
 import { SECTION_NARRATIVES } from "./onboardingConfig";
 import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 
+/* Subtle animated mesh gradient backdrop used on welcome / transition screens */
+const MeshGradientBg = () => (
+  <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+    <motion.div
+      className="absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full bg-primary/15 blur-[120px]"
+      animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
+      transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+    />
+    <motion.div
+      className="absolute -bottom-32 -right-24 w-[520px] h-[520px] rounded-full bg-accent/15 blur-[120px]"
+      animate={{ x: [0, -20, 0], y: [0, -30, 0] }}
+      transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+    />
+    <motion.div
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full bg-success/10 blur-[140px]"
+      animate={{ scale: [1, 1.1, 1] }}
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+    />
+  </div>
+);
+
 interface WelcomeProps {
   userName?: string;
+  estimatedMin?: number;
 }
 
-export const StepWelcome = ({ userName }: WelcomeProps) => {
+export const StepWelcome = ({ userName, estimatedMin = 8 }: WelcomeProps) => {
   const narrative = SECTION_NARRATIVES.welcome;
   const firstName = userName?.split(" ")[0];
 
   return (
-    <div className="flex flex-col items-center justify-center text-center space-y-5 md:space-y-7 px-4 py-2">
+    <div className="relative flex flex-col items-center justify-center text-center space-y-5 md:space-y-7 px-4 py-2">
+      <MeshGradientBg />
+
       {/* Animated emoji */}
       <motion.div
         initial={{ scale: 0, rotate: -20 }}
@@ -69,7 +93,7 @@ export const StepWelcome = ({ userName }: WelcomeProps) => {
           </span>
         </div>
         <p className="font-body text-muted-foreground/85 text-[0.8125rem] max-w-md">
-          {narrative.cta}
+          Vamos lá — leva uns {estimatedMin} minutos.
         </p>
       </motion.div>
 
@@ -93,8 +117,16 @@ interface TransitionProps {
 export const StepTransition = ({ type }: TransitionProps) => {
   const narrative = SECTION_NARRATIVES[type];
 
+  // Mini-preview: floating icons hinting next sections
+  const previewIcons =
+    type === "transition_financas"
+      ? ["📈", "🧾", "💳", "🏠", "🛡️", "🎯"]
+      : ["🧠", "💭", "🎲", "✨"];
+
   return (
-    <div className="flex flex-col items-center justify-center text-center space-y-5 md:space-y-7 px-4">
+    <div className="relative flex flex-col items-center justify-center text-center space-y-5 md:space-y-7 px-4">
+      <MeshGradientBg />
+
       {/* Completed badge */}
       {narrative.completedLabel && (
         <motion.div
@@ -131,10 +163,29 @@ export const StepTransition = ({ type }: TransitionProps) => {
         </p>
       </motion.div>
 
+      {/* Floating icons preview */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+        className="flex items-center gap-2.5 md:gap-3.5 pt-1"
+      >
+        {previewIcons.map((icon, i) => (
+          <motion.div
+            key={i}
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.18, ease: "easeInOut" }}
+            className="w-9 h-9 md:w-10 md:h-10 rounded-2xl bg-card border border-border/40 shadow-soft flex items-center justify-center text-lg md:text-xl"
+          >
+            {icon}
+          </motion.div>
+        ))}
+      </motion.div>
+
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.35, duration: 0.4 }}
+        transition={{ delay: 0.55, duration: 0.4 }}
         className="font-body text-muted-foreground/85 text-[0.8125rem] max-w-xs"
       >
         {narrative.cta}
@@ -144,7 +195,7 @@ export const StepTransition = ({ type }: TransitionProps) => {
       <motion.div
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 0.4, y: 0 }}
-        transition={{ delay: 0.5, repeat: Infinity, repeatType: "reverse", duration: 1.2 }}
+        transition={{ delay: 0.7, repeat: Infinity, repeatType: "reverse", duration: 1.2 }}
       >
         <ArrowRight className="h-5 w-5 text-accent" />
       </motion.div>
