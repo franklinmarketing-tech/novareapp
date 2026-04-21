@@ -33,7 +33,7 @@ export const StepWelcome = ({ userName, estimatedMin = 8 }: WelcomeProps) => {
   const firstName = userName?.split(" ")[0];
 
   return (
-    <div className="relative flex flex-col items-center justify-center text-center space-y-5 md:space-y-7 px-4 py-2">
+    <div className="relative flex flex-col items-center justify-center text-center gap-3 md:gap-5 px-4 py-2">
       <MeshGradientBg />
 
       {/* Animated emoji */}
@@ -41,7 +41,7 @@ export const StepWelcome = ({ userName, estimatedMin = 8 }: WelcomeProps) => {
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
-        className="text-5xl md:text-6xl"
+        className="text-4xl md:text-6xl"
       >
         👋
       </motion.div>
@@ -51,14 +51,14 @@ export const StepWelcome = ({ userName, estimatedMin = 8 }: WelcomeProps) => {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="space-y-2"
+        className="space-y-1.5"
       >
         {firstName && (
-          <p className="font-body text-accent text-[0.8125rem] md:text-[0.875rem] font-semibold tracking-wide uppercase">
+          <p className="font-body text-accent text-[0.75rem] md:text-[0.8125rem] font-semibold tracking-wide uppercase">
             Olá, {firstName}!
           </p>
         )}
-        <h1 className="font-display font-bold text-foreground tracking-[-0.035em] whitespace-pre-line max-w-2xl text-[clamp(1.625rem,1.3rem+1.4vw,2.25rem)] leading-[1.1]">
+        <h1 className="font-display font-bold text-foreground tracking-[-0.035em] whitespace-pre-line max-w-2xl text-[clamp(1.5rem,1.2rem+1.3vw,2rem)] leading-[1.1]">
           {narrative.title}
         </h1>
       </motion.div>
@@ -67,7 +67,7 @@ export const StepWelcome = ({ userName, estimatedMin = 8 }: WelcomeProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.35, duration: 0.5 }}
-        className="font-body text-muted-foreground text-[0.9375rem] md:text-[1rem] max-w-xl leading-relaxed tracking-[-0.01em]"
+        className="font-body text-muted-foreground text-[0.875rem] md:text-[0.9375rem] max-w-xl leading-[1.5] tracking-[-0.01em]"
       >
         {narrative.subtitle}
       </motion.p>
@@ -77,34 +77,24 @@ export const StepWelcome = ({ userName, estimatedMin = 8 }: WelcomeProps) => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.5 }}
-        className="flex flex-col items-center gap-2 pt-1"
+        className="flex flex-col items-center gap-1.5"
       >
-        <div className="flex items-center gap-3 md:gap-5 text-[0.875rem] md:text-[0.9375rem] font-body font-medium text-foreground/80">
+        <div className="flex items-center gap-2.5 md:gap-4 text-[0.8125rem] md:text-[0.9375rem] font-body font-medium text-foreground/80">
           <span className="flex items-center gap-1.5">
-            <span className="text-lg">🧑</span> Identificação
+            <span className="text-base md:text-lg">🧑</span> Identificação
           </span>
           <span className="text-muted-foreground/40">→</span>
           <span className="flex items-center gap-1.5">
-            <span className="text-lg">💰</span> Finanças
+            <span className="text-base md:text-lg">💰</span> Finanças
           </span>
           <span className="text-muted-foreground/40">→</span>
           <span className="flex items-center gap-1.5">
-            <span className="text-lg">💡</span> Perfil
+            <span className="text-base md:text-lg">💡</span> Perfil
           </span>
         </div>
         <p className="font-body text-muted-foreground/85 text-[0.8125rem] max-w-md">
           Vamos lá — leva uns {estimatedMin} minutos.
         </p>
-      </motion.div>
-
-      {/* Decorative sparkle */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.1 }}
-        transition={{ delay: 0.8, duration: 1 }}
-        className="absolute bottom-32 right-8 text-accent pointer-events-none"
-      >
-        <Sparkles className="h-24 w-24" />
       </motion.div>
     </div>
   );
