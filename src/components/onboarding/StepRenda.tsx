@@ -199,6 +199,18 @@ export const StepRenda = ({ data, onChange }: Props) => {
           );
         })}
       </div>
+
+      <MobileAddSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Adicionar fonte de renda"
+        categoryLabel="Tipo de renda"
+        amountLabel="Valor mensal"
+        noteLabel="Observação"
+        categories={RENDA_CHIPS}
+        customPlaceholder="Outra fonte..."
+        onConfirm={handleSheetConfirm}
+      />
     </div>
   );
 };

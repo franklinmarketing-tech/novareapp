@@ -126,6 +126,18 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
           ))}
         </AnimatePresence>
       </div>
+
+      <MobileAddSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Adicionar ativo"
+        categoryLabel="Tipo de ativo"
+        amountLabel="Valor estimado"
+        noteLabel="Descrição"
+        categories={PATRIMONIO_CHIPS}
+        customPlaceholder="Outro tipo..."
+        onConfirm={handleSheetConfirm}
+      />
     </div>
   );
 };

@@ -147,6 +147,18 @@ export const StepDividas = ({ data, onChange }: Props) => {
           </div>
         ))}
       </div>
+
+      <MobileAddSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Adicionar dívida"
+        categoryLabel="Tipo de dívida"
+        amountLabel="Valor total"
+        noteLabel="Credor (opcional)"
+        categories={DIVIDA_CHIPS}
+        customPlaceholder="Outro tipo..."
+        onConfirm={handleSheetConfirm}
+      />
     </div>
   );
 };
