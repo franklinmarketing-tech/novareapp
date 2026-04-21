@@ -1,15 +1,18 @@
 import { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { forwardRef } from "react";
+import { Icon3D, type Icon3DName } from "@/components/ui/Icon3D";
 
 interface PageBannerProps {
   title: string;
   description: string;
   icon?: LucideIcon;
+  /** When provided, renders a 3D PNG icon instead of the lucide circle. */
+  icon3D?: Icon3DName;
   action?: React.ReactNode;
 }
 
-const PageBanner = forwardRef<HTMLDivElement, PageBannerProps>(({ title, description, icon: Icon, action }, ref) => {
+const PageBanner = forwardRef<HTMLDivElement, PageBannerProps>(({ title, description, icon: Icon, icon3D, action }, ref) => {
   return (
     <motion.div
       ref={ref as any}
@@ -44,7 +47,11 @@ const PageBanner = forwardRef<HTMLDivElement, PageBannerProps>(({ title, descrip
 
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-          {Icon && (
+          {icon3D ? (
+            <div className="shrink-0 flex items-center justify-center">
+              <Icon3D name={icon3D} size="xl" floating lazy={false} alt={title} />
+            </div>
+          ) : Icon ? (
             <div
               className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shrink-0"
               style={{
@@ -55,7 +62,7 @@ const PageBanner = forwardRef<HTMLDivElement, PageBannerProps>(({ title, descrip
             >
               <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white/80" />
             </div>
-          )}
+          ) : null}
           <div className="min-w-0">
             <h1 className="text-lg sm:text-xl font-semibold text-white tracking-[-0.02em] leading-tight truncate">
               {title}

@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Icon3D } from "@/components/ui/Icon3D";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -247,9 +248,12 @@ const AdminMonitoring = () => {
     <div className="space-y-6">
       {/* ── Header ─────────────────────────────── */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-foreground tracking-tight">Acompanhamento</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Registros periódicos da situação financeira do cliente</p>
+        <div className="flex items-center gap-3">
+          <Icon3D name="snapshot" size="lg" floating lazy={false} alt="Acompanhamento" />
+          <div>
+            <h1 className="text-lg font-semibold text-foreground tracking-tight">Acompanhamento</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Registros periódicos da situação financeira do cliente</p>
+          </div>
         </div>
         <Button
           onClick={handleNewSnapshot}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Icon3D } from "@/components/ui/Icon3D";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -317,12 +318,15 @@ const AdminInvestments = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground tracking-tight">Investimentos & Mercado</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Indicadores em tempo real (BCB · B3) e catálogo de produtos · atualizado{" "}
-            {new Date(data.updatedAt).toLocaleString("pt-BR")}
-          </p>
+        <div className="flex items-center gap-3">
+          <Icon3D name="market" size="lg" floating lazy={false} alt="Mercado" />
+          <div>
+            <h2 className="text-lg font-semibold text-foreground tracking-tight">Investimentos & Mercado</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Indicadores em tempo real (BCB · B3) e catálogo de produtos · atualizado{" "}
+              {new Date(data.updatedAt).toLocaleString("pt-BR")}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-[0.6875rem] gap-1">
