@@ -88,12 +88,14 @@ export async function pushNotification(input: {
   link?: string;
   payload?: Record<string, unknown>;
 }) {
-  await supabase.from("notifications").insert({
-    user_id: input.user_id,
-    type: input.type,
-    title: input.title,
-    body: input.body ?? null,
-    link: input.link ?? null,
-    payload: input.payload ?? {},
-  });
+  await supabase.from("notifications").insert([
+    {
+      user_id: input.user_id,
+      type: input.type,
+      title: input.title,
+      body: input.body ?? null,
+      link: input.link ?? null,
+      payload: (input.payload ?? {}) as never,
+    },
+  ]);
 }
