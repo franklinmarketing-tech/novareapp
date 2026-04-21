@@ -15,11 +15,10 @@ import {
   ShieldCheck,
   BarChart3,
   AlertTriangle,
-  Briefcase,
   Wallet,
-  Target,
-  PieChart as PieChartIcon,
-  Sparkles,
+  LineChart as LineIcon,
+  Activity,
+  Info,
 } from "lucide-react";
 import {
   XAxis,
@@ -29,10 +28,6 @@ import {
   ResponsiveContainer,
   Area,
   AreaChart,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
