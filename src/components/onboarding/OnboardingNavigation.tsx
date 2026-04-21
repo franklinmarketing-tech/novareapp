@@ -58,8 +58,8 @@ export const OnboardingNavigation = ({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/30">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3.5 space-y-3.5">
+      <div className="shrink-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/30">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-2.5 space-y-2.5">
           {/* Section dots */}
           <div className="flex items-center justify-center gap-1.5">
             {uniqueSections.map((sec) => {

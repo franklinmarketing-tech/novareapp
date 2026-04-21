@@ -65,7 +65,7 @@ export const OnboardingProgress = ({
         </div>
 
         {/* Header */}
-        <div className={`px-4 sm:px-5 md:px-6 py-2.5 bg-background/90 backdrop-blur-xl border-b border-border/20 transition-all duration-300 ${isSpecialStep ? "py-2" : ""}`}>
+        <div className={`px-4 sm:px-5 md:px-6 py-2 bg-background/90 backdrop-blur-xl border-b border-border/20 transition-all duration-300 ${isSpecialStep ? "py-1.5" : ""}`}>
           {/* Top row: section info left, save indicator/actions right */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -153,7 +153,7 @@ export const OnboardingProgress = ({
               key={encouragement}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="block text-[0.8125rem] text-muted-foreground/85 font-body text-center leading-snug mt-1.5"
+              className="hidden md:block text-[0.8125rem] text-muted-foreground/85 font-body text-center leading-snug mt-1"
             >
               {encouragement}
             </motion.span>
