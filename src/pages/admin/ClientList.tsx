@@ -148,6 +148,10 @@ const ClientList = () => {
     toast({ title: "Cliente excluído", description: `${deleteTarget.profiles?.full_name ?? "Cliente"} foi removido.` });
     setClients((prev) => prev.filter((c) => c.id !== deleteTarget.id));
     setDeleteTarget(null);
+    setSearch("");
+    setActiveFilter("all");
+    // Recarrega lista do servidor para garantir consistência
+    await loadClients();
   };
 
   return (
