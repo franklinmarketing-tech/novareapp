@@ -338,12 +338,32 @@ const ClientOnboardingPage = () => {
     setStep(target);
   };
 
+  const handleSaveAndExit = async () => {
+    const currentSaveSection = getSaveSectionForStep(step);
+    if (currentSaveSection !== null) {
+      const ok = await saveSection(currentSaveSection);
+      if (!ok) return;
+    }
+    toast({
+      title: "✓ Tudo salvo",
+      description: "Você pode voltar e continuar de onde parou quando quiser.",
+    });
+    navigate("/cliente");
+  };
+
   // Keyboard nav: Enter advances, Shift+Enter goes back, Esc exits
   useKeyboardNav({
     onNext: () => { if (!submitting) handleNext(); },
     onBack: handleBack,
     onClose: () => navigate("/cliente"),
     enabled: !loading,
+  });
+
+  // Swipe nav (mobile only): swipe-left = next, swipe-right = back
+  useSwipeNavigation(swipeRef, {
+    enabled: isMobile && !loading,
+    onSwipeLeft: () => { if (!submitting) handleNext(); },
+    onSwipeRight: handleBack,
   });
 
   if (loading) {
