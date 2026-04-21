@@ -43,14 +43,15 @@ export function useNotifications() {
     }
     refresh();
 
-    const channel = supabase
-      .channel(`notifications:${user.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        () => refresh(),
-      )
-      .subscribe();
+    const channel = supabase.channel(
+      `notifications:${user.id}:${Math.random().toString(36).slice(2)}`,
+    );
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+      () => refresh(),
+    );
+    channel.subscribe();
 
     return () => {
       supabase.removeChannel(channel);
