@@ -276,28 +276,58 @@ const AdminDashboard = () => {
 
       {/* ── Month Selector ── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        className="flex items-center justify-between">
+        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div className="flex items-center gap-2">
           <CalendarDays className="h-6 w-6 text-muted-foreground" />
           <span className="text-sm text-muted-foreground font-medium">Competência</span>
         </div>
-        <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
-          <button
-            onClick={goToPrevMonth}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-background transition-colors"
-          >
-            <ChevronLeft className="h-6 w-6 text-muted-foreground" />
-          </button>
-          <span className="px-3 py-1.5 text-sm font-semibold text-foreground min-w-[140px] text-center">
-            {MONTH_NAMES[selectedMonth]} {selectedYear}
-          </span>
-          <button
-            onClick={goToNextMonth}
-            disabled={isCurrentMonth}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isCurrentMonth ? "opacity-30 cursor-not-allowed" : "hover:bg-background"}`}
-          >
-            <ChevronRight className="h-6 w-6 text-muted-foreground" />
-          </button>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Atalhos rápidos */}
+          <div className="flex flex-wrap items-center gap-1 bg-muted/50 rounded-xl p-1">
+            {([
+              { key: "this_month", label: "Este mês" },
+              { key: "last_month", label: "Mês anterior" },
+              { key: "last_3", label: "Últimos 3m" },
+              { key: "last_6", label: "Últimos 6m" },
+              { key: "this_year", label: "Este ano" },
+              { key: "last_year", label: "Ano anterior" },
+            ] as { key: PeriodPreset; label: string }[]).map((p) => (
+              <button
+                key={p.key}
+                onClick={() => applyPreset(p.key)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                  activePreset === p.key
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Navegação mês a mês */}
+          <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
+            <button
+              onClick={goToPrevMonth}
+              className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-background transition-colors"
+              title="Mês anterior"
+            >
+              <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+            </button>
+            <span className="px-3 py-1.5 text-xs font-semibold text-foreground min-w-[160px] text-center">
+              {periodLabel}
+            </span>
+            <button
+              onClick={goToNextMonth}
+              disabled={isCurrentMonth}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isCurrentMonth ? "opacity-30 cursor-not-allowed" : "hover:bg-background"}`}
+              title="Próximo mês"
+            >
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
       </motion.div>
 
