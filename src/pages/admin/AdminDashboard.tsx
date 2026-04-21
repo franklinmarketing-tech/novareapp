@@ -362,17 +362,24 @@ const AdminDashboard = () => {
       </motion.div>
 
       {/* ── North Star + Supporting KPIs ── */}
-      <motion.div initial="hidden" animate="visible" className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <SkeletonCard lines={3} />
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={2} />
+        </div>
+      ) : (
+      <motion.div initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* North Star: Total Clients */}
-        <motion.div variants={fadeUp} custom={0}>
+        <motion.div variants={fadeUp} custom={0} className="sm:col-span-2 lg:col-span-1">
           <Card3D interactive glowColor="rgba(96,165,250,0.1)">
             <div className="p-6 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="h-6 w-6 text-primary" />
-                <span className="text-xs text-muted-foreground font-medium">Clientes ativos</span>
+                <span className="text-label-xs">Clientes ativos</span>
               </div>
-              <p className="text-5xl font-bold text-foreground tracking-tight tabular-nums">{stats.total}</p>
-              <div className="flex items-center gap-3 mt-4">
+              <p className="text-5xl font-bold text-foreground tracking-tight tabular-nums">{totalCount}</p>
+              <div className="flex items-center gap-3 mt-4 flex-wrap">
                 <PipelineDot color="bg-accent" label="Onboarding" count={stats.onboarding} />
                 <PipelineDot color="bg-destructive" label="Diagnóstico" count={stats.diagnostico} />
                 <PipelineDot color="bg-success" label="Acompanhamento" count={stats.acompanhamento} />
@@ -387,12 +394,12 @@ const AdminDashboard = () => {
             <div className="p-6 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="h-6 w-6 text-success" />
-                <span className="text-xs text-muted-foreground font-medium">Patrimônio sob gestão</span>
+                <span className="text-label-xs">Patrimônio sob gestão</span>
               </div>
               <p className={`text-3xl font-bold tracking-tight tabular-nums ${netWealth >= 0 ? "text-foreground" : "text-destructive"}`}>
-                {fmtShort(netWealth)}
+                {fmtShort(wealthCount)}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-meta-sm mt-1">
                 {stats.total > 0 ? `Média de ${fmtShort(Math.round(netWealth / stats.total))} por cliente` : "—"}
               </p>
             </div>
@@ -405,14 +412,15 @@ const AdminDashboard = () => {
             <div className="p-6 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-1">
                 <Target className="h-6 w-6 text-accent" />
-                <span className="text-xs text-muted-foreground font-medium">Progresso dos planos</span>
+                <span className="text-label-xs">Progresso dos planos</span>
               </div>
-              <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{avgPlanProgress}%</p>
+              <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{progressCount}%</p>
               <Progress value={avgPlanProgress} className="h-2 rounded-full mt-3 [&>div]:bg-accent" />
             </div>
           </Card3D>
         </motion.div>
       </motion.div>
+      )}
 
       {/* ── Advanced Metrics: MRR, Funnel, Birthdays ── */}
       <AdvancedMetrics selectedMonth={selectedMonth} selectedYear={selectedYear} />
