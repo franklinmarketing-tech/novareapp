@@ -1,131 +1,109 @@
-# Varredura Completa do Sistema — Melhorias Propostas
+# Modernização do Onboarding — Versão 2026
 
-Análise feita em dashboards (Admin, Cliente, Super Admin), tipografia, efeitos visuais, responsividade e funcionalidades. Abaixo está um plano organizado em **5 frentes**, da maior para a menor prioridade.
+Proposta de melhorias para deixar o fluxo mais moderno, fluido e com sensação premium (estilo Linear / Notion / Stripe). Dividido em **4 fases** que podem ser implementadas independentemente.
 
----
+## Fase 1 — Polish visual e micro-interações (quick wins)
 
-## 1. Dashboards — Consistência e Profundidade
+**Header e progresso**
 
-### 1.1 Super Admin Dashboard (mais defasado)
+&nbsp;
 
-- Cards atuais são planos (`Card` simples) enquanto Admin/Cliente usam `Card3D` e gradientes — falta hierarquia visual.
-- Nenhum gráfico, só KPIs estáticos.
-- **Mudanças:** adicionar mini sparklines (clientes novos por dia, e-mails enviados 7d), seção "Atividade recente" (últimos 10 eventos do `audit_log`), banner crítico quando `failed_emails > 0` ou `maintenance_mode = ON`, padronizar com glow-cards (`card-glow-primary/accent/warning`) já existentes no CSS.
+- Barra de progresso "morphing": além da linha de 2px, adicionar um indicador numérico fixo "4 / 23" no canto, com animação tabular-nums.
+- Steppers de seção com **tooltip ao hover** mostrando o nome da seção e se já foi concluída.
 
-### 1.2 Admin Dashboard
+**Cards de item (Renda, Despesas, Patrimônio, etc.)**
 
-- Bom, mas o seletor de período tem 6 botões + navegação mês a mês = poluído no mobile.
-- **Mudanças:** colapsar atalhos em `Select` no mobile (≤sm), manter pills no desktop. Adicionar card "Próximas reuniões / lembretes" com clientes não confirmados há +30d (já temos `data_confirmations`). Animar contadores numéricos (count-up) nos KPIs principais.
+- Animação de **entrada/saída em layout** com `layout` do framer-motion — quando o usuário adiciona ou remove um item, os outros deslizam suavemente.
+- Estado vazio ilustrado: quando não há nenhum item ainda, mostrar um placeholder amigável com ícone + microcopy ("Ainda nada por aqui — clique acima para adicionar sua primeira fonte de renda").
+- Hover state mais sutil (sombra + leve translate-y de 1px).
 
-### 1.3 Cliente Dashboard
+**Botões e navegação**
 
-- Insight card e CTA de onboarding bons, mas falta um "Resumo do mês" comparativo (este mês vs anterior em renda, despesas, patrimônio).
-- **Mudanças:** card "Evolução" com mini-chart de patrimônio dos últimos 6 meses (de `monitoring_snapshots`), badge de "streak" quando confirma dados todo mês.
+- Atalhos de teclado: **Enter** avança, **Shift+Enter** volta, **Esc** fecha. Mostrar dica `↵ Enter` no botão Próximo.
+- Botão "Próximo" com **estado de sucesso transitório** (✓ verde por 400ms antes de animar para o próximo step).
 
----
+## Fase 2 — Inteligência e contexto
 
-## 2. Tipografia — Padronização
+**Auto-save visível**
 
-Hoje há mistura caótica de `text-[0.6875rem]`, `text-[0.8125rem]`, `text-[0.9375rem]` espalhados em vários componentes.
+- Indicador "Salvo às 14:32" no header (estilo Notion/Google Docs), substituindo o atual save silencioso.
+- Toast de erro mais claro com botão "Tentar novamente".
 
-- **Criar utilitários semânticos no `index.css`:**
-  - `.text-label-xs` (0.6875rem, uppercase, tracking 0.14em) — usado em labels de KPI
-  - `.text-meta-sm` (0.75rem, muted)
-  - `.text-body-md` (0.875rem) — texto padrão
-  - `.text-display-lg` (clamp 2rem–2.5rem, font-display) — números grandes
-- Substituir `text-[0.xxxrem]` arbitrários nas páginas principais (MyData, Dashboard, ClientDashboard) pelos novos utilitários.
-- Padronizar `font-display` (Playfair) apenas para números "hero" (patrimônio, KPIs principais), nunca em texto corrido.
-- Heading hierarchy: garantir h1 sempre na PageBanner, h2 para seções, h3 para cards.
+**Resumo lateral / drawer "Meu progresso"**
 
----
+- Botão flutuante no canto superior que abre um drawer com checklist de tudo que já foi preenchido — o usuário pode pular para qualquer seção concluída.
+- Mostra contadores: "3 fontes de renda", "5 despesas", "R$ 4.200 total mensal".
 
-## 3. Efeitos & Polimento Visual
+&nbsp;
 
-### 3.1 Microinterações
+## Fase 3 — Experiência mobile-first
 
-- **Skeleton loaders consistentes:** hoje SuperAdmin usa `animate-pulse bg-muted/30` simples. Criar `<SkeletonCard>` reutilizável com shimmer (já temos animação de shimmer no Login).
-- **Hover states unificados:** cards levantam `hover:-translate-y-0.5` em algumas páginas, em outras só sombra. Padronizar via classe `.card-interactive`.
-- **Transições de página:** `PageTransition` existe mas alguns dashboards animam manualmente com framer-motion duplicando trabalho. Auditar e usar só `PageTransition`.
+**Bottom sheet para adicionar itens**
 
-### 3.2 Efeitos novos
+- Em mobile, ao clicar "Adicionar despesa", abrir um **sheet inferior** em vez de criar card inline — reduz fricção e poluição visual.
+- Categorias viram **chips selecionáveis grandes** com ícone (touch-friendly).
 
-- **Glass effect** no breadcrumb header (já tem `backdrop-blur-md`, melhorar borda gradiente).
-- **Glow accent** em CTAs primários (variant `premium` no Button já existe — usar mais).
-- **Numeric count-up** em todos os KPIs grandes (criar hook `useCountUp` reutilizável extraído do Login).
-- **Toast positioning:** atualmente bottom-right; mudar para top-center no mobile (melhor UX).
+**Navegação por gestos**
 
-### 3.3 Empty states
+- Swipe horizontal entre steps em mobile (com indicador de "puxe para avançar").
+- Sticky bottom CTA com altura aumentada (mín 48px tap target).
 
-- `EmptyState` existe mas é pouco usado. Aplicar em: AdminDashboard sem clientes, ClientDashboard sem objetivos, ClientList sem resultados de filtro.
+**Telas de transição mais cinematográficas**
 
----
+- StepWelcome e StepTransition com **gradiente animado de fundo** (mesh gradient sutil).
+- Mostrar mini-preview animado da próxima seção (ex: ícones flutuando representando "Renda → Despesas → Dívidas").
 
-## 4. Responsividade — Refinamentos Mobile
+## Fase 4 — Gamificação e motivação
 
-Cobrimos muito nas iterações anteriores. Restam pontos específicos:
+**Marcos de conquista**
 
-- **AdminLayout breadcrumb:** scroll horizontal funciona, mas falta fade nas bordas + esconder breadcrumbs intermediários no mobile (manter só primeiro e último).
-- **AdminDashboard "North Star":** card de Total Clientes ocupa 1/3 em desktop mas no tablet (md) fica espremido. Mudar para `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`.
-- **Sidebar mobile:** drawer atual é 280px / 85vw — bom. Adicionar swipe-to-close gesture.
-- **Bottom Navigation Bar para Cliente (mobile):** adicionar barra fixa inferior com 4 ícones (Dashboard, Meus Dados, Plano, Acompanhamento) — substitui menu hambúrguer no celular para o cliente final, padrão de apps modernos.
-- **Tabelas restantes:** ainda há tabelas em `AdminMonitoring`, `AdminInvestments`, `SuperAdminClients`, `SuperAdminAdmins` que não usam `ScrollableTable` — padronizar.
-- **Modais/Dialogs:** garantir `max-h-[90vh] overflow-y-auto` em todos os Dialogs (alguns cortam conteúdo no mobile).
+- Após completar Identificação: card de celebração "🎉 Você conhece +30% do seu perfil financeiro" com mini-progresso de "diagnóstico desbloqueado".
+- Badge sutil em cada transição: "Seção 2 de 3 concluída".
+
+**Tempo estimado dinâmico**
+
+- Mostrar "≈ 4 min restantes" no header, recalculando conforme o ritmo do usuário.
+- Após o welcome: "Vamos lá — leva uns 8 minutos".
+
+**Resumo final pré-finalização**
+
+- Antes do confetti final, uma tela de **resumo visual**: "Aqui está o que você compartilhou conosco" com cards agrupados (renda total, nº de objetivos, perfil comportamental) — antes de clicar Finalizar.
 
 ---
 
-## 5. Funcionalidades — Melhorias e Correções
+## Detalhes técnicos (resumo)
 
-### 5.1 Quick wins funcionais
+**Arquivos novos:**
 
-- **Busca global (Cmd+K):** adicionar `cmdk` (já temos `command.tsx`) com atalhos: ir para cliente, novo cliente, configurações. Disponível só para admin.
-- **Notificações in-app:** sino no header com lista de eventos (cliente confirmou dados, novo cliente cadastrado, e-mail falhou). Persistir em nova tabela `notifications` com RLS.
-- **Auto-save em formulários longos:** MyData e Onboarding podem perder dados se o admin sair. Salvar rascunho no `localStorage` por step.
-- **Undo de exclusão:** ao excluir cliente, mostrar toast com botão "Desfazer" (5s) antes de confirmar exclusão na edge function.
-- **Exportar dashboard como PDF:** botão "Exportar" no AdminDashboard que gera relatório executivo (similar ao já existente `generateReportPdf`).
+- `src/components/onboarding/OnboardingProgressDrawer.tsx` — drawer lateral de progresso
+- `src/components/onboarding/SaveIndicator.tsx` — indicador "Salvo às HH:MM"
+- `src/components/onboarding/SummaryReview.tsx` — tela de revisão pré-finalização
+- `src/hooks/useKeyboardNav.ts` — atalhos Enter/Esc
+- `src/hooks/useOnboardingTimer.ts` — estimativa de tempo
 
-### 5.2 Bugs/inconsistências detectados
+**Arquivos editados:**
 
-- `ClientLayout` re-fetcha profile a cada render se user mudar — usar React Query com cache.
-- `AdminDashboard` faz 7+ queries sequenciais no `useEffect` — paralelizar em `Promise.all` (em parte já feito, mas separado por blocos).
-- `recentClients` query traz **todos** os clientes só para fatiar 5 — adicionar `.limit(5)` no Supabase.
-- Theme toggle no mobile header pode ficar invisível em tema claro (cor sidebar-foreground sobre fundo sidebar).
+- `OnboardingProgress.tsx` — adicionar SaveIndicator + tooltip nos dots
+- `OnboardingNavigation.tsx` — atalhos visuais + estado de sucesso
+- `ClientOnboarding.tsx` — integrar drawer + summary review + lastSavedAt
+- `TransitionSteps.tsx` — gradiente animado + mini preview
+  &nbsp;
+  &nbsp;
 
-### 5.3 Novas funcionalidades sugeridas (opcional, decidir depois)
-
-- **Modo apresentação:** botão fullscreen no relatório do cliente para apresentar em reunião.
-- **Comentários do consultor visíveis ao cliente:** hoje só o admin vê o "Parecer". Permitir publicar trechos selecionados ao cliente.
-- **Tags em clientes:** permitir admin classificar clientes (VIP, atenção, novo) com cores.
+**Sem migrations** — todas as mudanças são front-end. Auto-save já existe; só precisamos expor o timestamp.
 
 ---
 
-## Roadmap de execução sugerido
+## Recomendação de priorização
+
+Sugiro começar pela **Fase 1 + auto-save visível da Fase 2** — são as mudanças com maior impacto percebido pelo menor esforço. Posso implementar tudo de uma vez ou ir fase a fase, como preferir.
 
 ```text
-Fase 1 (alta prioridade, ~30min):
-  └─ Tipografia (utilitários + substituições principais)
-  └─ Skeletons + count-up reutilizáveis
-  └─ Bottom nav mobile (cliente)
-  └─ Bugs de queries (.limit, paralelização)
-
-Fase 2 (média, ~30min):
-  └─ Super Admin Dashboard com sparklines + atividade recente
-  └─ Cliente Dashboard "Evolução" com mini-chart
-  └─ ScrollableTable nas tabelas restantes
-  └─ Modais responsivos
-
-Fase 3 (alto valor, ~45min):
-  └─ Busca global Cmd+K
-  └─ Notificações in-app
-  └─ Undo de exclusão
-  └─ Auto-save em formulários
+Esforço estimado:
+Fase 1  ████░░░░░░  Baixo  — ganho visual imediato
+Fase 2  ██████░░░░  Médio  — confiança e clareza
+Fase 3  ███████░░░  Médio  — mobile premium
+Fase 4  █████░░░░░  Médio  — engajamento e finalização
 ```
 
-### Detalhes técnicos
-
-- Criar `src/hooks/useCountUp.ts` extraindo lógica do Login.
-- Criar `src/components/ui/skeleton-card.tsx` com shimmer.
-- Criar `src/components/layouts/MobileBottomNav.tsx` (renderizar dentro de `ClientLayout` em `lg:hidden`).
-- Nova migration para tabela `notifications (id, user_id, type, payload jsonb, read_at, created_at)` com RLS por `user_id`
-- Adicionar `motion.span` count-up em KPIs do `AdminDashboard` linhas 350+.
-- Refactor de `AdminLayout` breadcrumb (linhas 432-460) com fade lateral + colapso mobile.
-
+&nbsp;
