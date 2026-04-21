@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card3D } from "@/components/ui/card-3d";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
-import { Search, ChevronRight, UserPlus, Users, SearchX } from "lucide-react";
+import { Search, ChevronRight, UserPlus, Users, SearchX, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/PageTransition";
@@ -14,6 +14,8 @@ import PageBanner from "@/components/PageBanner";
 import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { PasswordConfirmDialog } from "@/components/super-admin/PasswordConfirmDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -52,8 +54,10 @@ const ClientList = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [deleteTarget, setDeleteTarget] = useState<ClientRow | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const loadClients = async () => {
     const { data: clientsData } = await supabase
@@ -125,6 +129,26 @@ const ClientList = () => {
 
   const countByStatus = (filter: FilterKey) =>
     filter === "all" ? clients.length : clients.filter((c) => matchesFilter(c.status, filter)).length;
+
+  const handleDeleteConfirm = async ({ password }: { password: string; reason: string; confirm_text: string }) => {
+    if (!deleteTarget || !user?.email) return;
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password,
+    });
+    if (authError) {
+      toast({ title: "Senha incorreta", description: "Não foi possível confirmar sua identidade.", variant: "destructive" });
+      throw authError;
+    }
+    const { error } = await supabase.from("clients").delete().eq("id", deleteTarget.id);
+    if (error) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+      throw error;
+    }
+    toast({ title: "Cliente excluído", description: `${deleteTarget.profiles?.full_name ?? "Cliente"} foi removido.` });
+    setClients((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+    setDeleteTarget(null);
+  };
 
   return (
     <PageTransition>
@@ -218,12 +242,36 @@ const ClientList = () => {
                         <p className="text-[0.8125rem] text-muted-foreground truncate">{profile?.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 ml-4">
-                      <span className="text-xs text-muted-foreground font-medium">
+                    <div className="flex items-center gap-2 ml-4">
+                      <span className="text-xs text-muted-foreground font-medium hidden md:inline">
                         {(client as any).assigned_consultant || "Sem consultor"}
                       </span>
                       <Badge variant={st.variant as any}>{st.label}</Badge>
-                      <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        title="Editar cliente"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/admin/cliente/${client.slug}/onboarding`);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Excluir cliente"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget(client);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </div>
                 </Card3D>
@@ -253,6 +301,21 @@ const ClientList = () => {
           )}
         </motion.div>
       )}
+
+      <PasswordConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(v) => !v && setDeleteTarget(null)}
+        title="Excluir cliente"
+        description={
+          deleteTarget
+            ? `Tem certeza que deseja excluir ${deleteTarget.profiles?.full_name ?? "este cliente"}? Esta ação remove o cliente e seus dados permanentemente.`
+            : ""
+        }
+        destructive
+        requireConfirmText="EXCLUIR"
+        confirmLabel="Excluir definitivamente"
+        onConfirm={handleDeleteConfirm}
+      />
     </PageTransition>
   );
 };
