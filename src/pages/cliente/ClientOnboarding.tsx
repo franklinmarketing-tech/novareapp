@@ -56,6 +56,10 @@ const ClientOnboardingPage = () => {
   const [direction, setDirection] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [showSuccessFlash, setShowSuccessFlash] = useState(false);
+  const { remainingMin } = useOnboardingTimer(step, TOTAL_MICRO_STEPS);
 
   const [identificacao, setIdentificacao] = useState({
     full_name: "", cpf: "", date_of_birth: "", marital_status: "", property_regime: "",
