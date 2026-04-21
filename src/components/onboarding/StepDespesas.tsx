@@ -6,6 +6,8 @@ import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileAddSheet } from "./MobileAddSheet";
 
 const CATEGORY_OPTIONS = [
   { value: "moradia", label: "Moradia (aluguel, condomínio, IPTU, contas)" },
@@ -25,6 +27,19 @@ const CATEGORY_OPTIONS = [
   { value: "terapia", label: "Terapia" },
   { value: "cursos", label: "Cursos extras" },
   { value: "outros", label: "Outros" },
+];
+
+const MOBILE_CHIPS = [
+  { value: "moradia", label: "Moradia", emoji: "🏠" },
+  { value: "alimentacao", label: "Alimentação", emoji: "🛒" },
+  { value: "transporte", label: "Transporte", emoji: "🚗" },
+  { value: "saude", label: "Saúde", emoji: "💊" },
+  { value: "educacao", label: "Educação", emoji: "📚" },
+  { value: "lazer", label: "Lazer", emoji: "🎬" },
+  { value: "assinaturas", label: "Assinaturas", emoji: "📱" },
+  { value: "pet", label: "Pet", emoji: "🐾" },
+  { value: "academia", label: "Academia", emoji: "🏋️" },
+  { value: "vestuario", label: "Vestuário", emoji: "👕" },
 ];
 
 export interface ExpenseItem {
@@ -49,6 +64,8 @@ interface Props {
 export const StepDespesas = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyExpense()];
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
 
   const totalValue = items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
@@ -60,9 +77,18 @@ export const StepDespesas = ({ data, onChange }: Props) => {
   };
 
   const add = () => {
+    if (isMobile) {
+      setSheetOpen(true);
+      return;
+    }
     const novo = emptyExpense();
     onChange([novo, ...items]);
     setFocusId(novo.id!);
+  };
+
+  const handleSheetConfirm = ({ category, amount, note }: { category: string; amount: string; note: string }) => {
+    const novo: ExpenseItem = { ...emptyExpense(), category, amount, description: note };
+    onChange([novo, ...items.filter((i) => i.amount || i.category)]);
   };
 
   const remove = (i: number) => {
