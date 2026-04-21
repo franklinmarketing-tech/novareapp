@@ -13,13 +13,16 @@ const json = (body: unknown, status = 200) =>
   });
 
 async function requirePassword(email: string, password: string) {
+  // Cliente temporário sem persistência de sessão — não interfere na sessão do super admin
   const tmp = createClient(
     Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { auth: { persistSession: false, autoRefreshToken: false } }
   );
   const { data, error } = await tmp.auth.signInWithPassword({ email, password });
   if (error || !data?.user) return false;
-  await tmp.auth.signOut();
+  // signOut local apenas — não invalida outras sessões do usuário
+  await tmp.auth.signOut({ scope: "local" });
   return true;
 }
 
