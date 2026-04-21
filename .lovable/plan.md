@@ -1,77 +1,131 @@
+# Varredura Completa do Sistema — Melhorias Propostas
 
+Análise feita em dashboards (Admin, Cliente, Super Admin), tipografia, efeitos visuais, responsividade e funcionalidades. Abaixo está um plano organizado em **5 frentes**, da maior para a menor prioridade.
 
-# Polimento das telas de onboarding
+---
 
-Refinamento visual completo do fluxo de onboarding (23 micro-passos), focando em **progresso mais elegante**, **espaçamento consistente entre perguntas** e **transições suaves entre steps**. Sem alterar copy, ordem dos steps, validações ou lógica de save.
+## 1. Dashboards — Consistência e Profundidade
 
-## O que vai mudar
+### 1.1 Super Admin Dashboard (mais defasado)
 
-### 1. Progresso (`OnboardingProgress.tsx`) — mais elegante
-- **Barra de progresso refinada**: altura 2px (em vez de 3px), com gradient mais suave (`from-primary/80 via-primary to-accent`), animação spring em vez de ease, e sutil "glow" embaixo para dar profundidade.
-- **Header mais limpo**: reduzir densidade vertical, melhorar alinhamento entre emoji da seção, label e contador (`X/Y` com ponto separador estilo `· 3 de 23`).
-- **Emoji da seção**: container com sombra sutil (`shadow-soft`), tamanho refinado (`w-9 h-9`), background `bg-primary/8` com leve borda interna.
-- **Tipografia**: título do step com tamanho consistente (`text-[0.9375rem]`, peso 500), label da seção com letter-spacing refinado (`tracking-[0.14em]`).
-- **Encorajamento**: tipografia mais delicada, sem itálico forçado em telas pequenas, spacing-top melhor (`mt-1.5`).
-- **Botão fechar (X)**: ícone reduzido (`h-4 w-4`, hoje está h-6), hover state mais discreto.
+- Cards atuais são planos (`Card` simples) enquanto Admin/Cliente usam `Card3D` e gradientes — falta hierarquia visual.
+- Nenhum gráfico, só KPIs estáticos.
+- **Mudanças:** adicionar mini sparklines (clientes novos por dia, e-mails enviados 7d), seção "Atividade recente" (últimos 10 eventos do `audit_log`), banner crítico quando `failed_emails > 0` ou `maintenance_mode = ON`, padronizar com glow-cards (`card-glow-primary/accent/warning`) já existentes no CSS.
 
-### 2. Navegação inferior (`OnboardingNavigation.tsx`)
-- **Section dots**: dots com largura mais harmônica (active: w-6, complete: w-2.5, pending: w-1.5), altura 1.5px, transição suave 400ms; dot ativo com leve glow `shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]`.
-- **Botões**: altura unificada para 44px (em vez de 12 inconsistente com tokens), ícones reduzidos para `h-4 w-4` (hoje `h-6 w-6` — desproporcional ao botão).
-- **CTA "Próximo"**: usar a variante `premium` já refinada nos tokens, com sombra mais suave, sem variação custom de success no último step (apenas mudar variant para `success`).
-- **Spacing**: padding-x reduzido em mobile (`px-4 sm:px-6`), gap entre dots e botões mais arejado (`space-y-3.5`).
-- **Loading state**: spinner menor (`h-4 w-4`) e melhor alinhado verticalmente.
+### 1.2 Admin Dashboard
 
-### 3. Steps individuais — espaçamento entre perguntas
-Padronização dos componentes `Wrapper`, `Question`, `Hint`, `FieldGroup` (atualmente duplicados em `IdentificacaoSteps.tsx` e `ComportamentalSteps.tsx`):
+- Bom, mas o seletor de período tem 6 botões + navegação mês a mês = poluído no mobile.
+- **Mudanças:** colapsar atalhos em `Select` no mobile (≤sm), manter pills no desktop. Adicionar card "Próximas reuniões / lembretes" com clientes não confirmados há +30d (já temos `data_confirmations`). Animar contadores numéricos (count-up) nos KPIs principais.
 
-- **Wrapper**: `space-y-7` (em vez de `space-y-6`) — mais respiro entre pergunta, hint e campos.
-- **Question (título da pergunta)**:
-  - Tipografia escalonada com `clamp()` para responsividade fluida.
-  - `tracking-[-0.025em]` (mais legível em mobile que `-0.03em`).
-  - `leading-[1.2]` (em vez de 1.15) — melhora respiração vertical.
-  - max-width unificado em `max-w-xl`.
-- **Hint**: cor refinada para `text-muted-foreground/85`, max-width `max-w-md`, `leading-[1.55]`.
-- **Indicador "Passo 01"**: pill mais elegante — pequeno fundo `bg-primary/8` + padding `px-2.5 py-1` + radius full em vez de só texto solto. Mantém copy.
-- **FieldGroup**: spacing entre campos `space-y-4` (em vez de `space-y-3`/`space-y-4` inconsistente entre arquivos), max-width unificado `max-w-md`.
-- **Inputs do onboarding**: altura padronizada `h-12` (em vez de mistura de h-13/h-14), focus ring usando o novo token `ring-ring/15` definido nos primitivos refinados, remover overrides inconsistentes (`focus-visible:ring-primary/30`) — herdar do componente base.
-- **Labels**: usar componente `<Label>` refinado nos tokens, sem override de `text-muted-foreground`.
+### 1.3 Cliente Dashboard
 
-### 4. Transições entre steps (mais suaves)
-Em `ClientOnboarding.tsx`:
-- **Variants**: reduzir o desloc horizontal de 50px para 24px (movimento mais sutil, estilo Apple).
-- **Scale**: remover (`scale: 0.98` → 1) — apenas opacity + leve translate é mais elegante.
-- **Easing**: trocar `[0.25, 0.46, 0.45, 0.94]` por `[0.32, 0.72, 0, 1]` (curva tipo iOS spring).
-- **Duração**: 0.28s (mais responsivo, hoje 0.3s).
-- **Transition steps (boas-vindas, transições)**: orquestração já existe via `delay` — apenas refinar timings (delays de 0.15/0.3/0.5/0.7s para 0.1/0.2/0.35/0.5s).
+- Insight card e CTA de onboarding bons, mas falta um "Resumo do mês" comparativo (este mês vs anterior em renda, despesas, patrimônio).
+- **Mudanças:** card "Evolução" com mini-chart de patrimônio dos últimos 6 meses (de `monitoring_snapshots`), badge de "streak" quando confirma dados todo mês.
 
-### 5. Steps especiais (Welcome / Transition)
-- Reduzir tamanho do emoji em telas pequenas (`text-5xl` no mobile, hoje fica grande demais em viewports curtos).
-- Spacing vertical mais consistente (`space-y-5 md:space-y-7`).
-- Sparkle decorativo no Welcome com `opacity-10` (hoje 0.15) — mais sutil.
-- Badge "Identificação completa!" no Transition com radius e padding alinhados ao novo padrão de `Badge`.
+---
 
-### 6. Loading state inicial
-- Substituir emoji 💰 estático por animação de carregamento mais elegante: dot pulse trio + texto, alinhado ao padrão visual do sistema.
+## 2. Tipografia — Padronização
 
-### 7. Responsividade
-- Header de progresso colapsa título em telas <380px (mantém apenas seção + contador).
-- Botões de navegação: largura mínima reduzida em mobile (`min-w-[120px]` em vez de 150px).
-- Padding lateral fluido (`px-4 sm:px-5 md:px-6`).
-- Container do step com `pb-28` mobile / `pb-24` desktop para evitar sobreposição com nav fixa em telas pequenas.
+Hoje há mistura caótica de `text-[0.6875rem]`, `text-[0.8125rem]`, `text-[0.9375rem]` espalhados em vários componentes.
 
-## Garantias
+- **Criar utilitários semânticos no `index.css`:**
+  - `.text-label-xs` (0.6875rem, uppercase, tracking 0.14em) — usado em labels de KPI
+  - `.text-meta-sm` (0.75rem, muted)
+  - `.text-body-md` (0.875rem) — texto padrão
+  - `.text-display-lg` (clamp 2rem–2.5rem, font-display) — números grandes
+- Substituir `text-[0.xxxrem]` arbitrários nas páginas principais (MyData, Dashboard, ClientDashboard) pelos novos utilitários.
+- Padronizar `font-display` (Playfair) apenas para números "hero" (patrimônio, KPIs principais), nunca em texto corrido.
+- Heading hierarchy: garantir h1 sempre na PageBanner, h2 para seções, h3 para cards.
 
-- **Zero alteração** em copy, ordem dos passos, validações, save, confetti, navegação, ou estrutura de dados.
-- **Zero remoção** de campos ou componentes.
-- Mudanças puramente visuais e de timing/animação.
-- Light e dark mode revisados em paralelo (usa tokens já refinados).
+---
 
-## Arquivos a editar
+## 3. Efeitos & Polimento Visual
 
-- `src/components/onboarding/OnboardingProgress.tsx`
-- `src/components/onboarding/OnboardingNavigation.tsx`
-- `src/components/onboarding/steps/IdentificacaoSteps.tsx`
-- `src/components/onboarding/steps/ComportamentalSteps.tsx`
-- `src/components/onboarding/steps/TransitionSteps.tsx`
-- `src/pages/cliente/ClientOnboarding.tsx` (apenas variants, loading state e padding do container)
+### 3.1 Microinterações
+
+- **Skeleton loaders consistentes:** hoje SuperAdmin usa `animate-pulse bg-muted/30` simples. Criar `<SkeletonCard>` reutilizável com shimmer (já temos animação de shimmer no Login).
+- **Hover states unificados:** cards levantam `hover:-translate-y-0.5` em algumas páginas, em outras só sombra. Padronizar via classe `.card-interactive`.
+- **Transições de página:** `PageTransition` existe mas alguns dashboards animam manualmente com framer-motion duplicando trabalho. Auditar e usar só `PageTransition`.
+
+### 3.2 Efeitos novos
+
+- **Glass effect** no breadcrumb header (já tem `backdrop-blur-md`, melhorar borda gradiente).
+- **Glow accent** em CTAs primários (variant `premium` no Button já existe — usar mais).
+- **Numeric count-up** em todos os KPIs grandes (criar hook `useCountUp` reutilizável extraído do Login).
+- **Toast positioning:** atualmente bottom-right; mudar para top-center no mobile (melhor UX).
+
+### 3.3 Empty states
+
+- `EmptyState` existe mas é pouco usado. Aplicar em: AdminDashboard sem clientes, ClientDashboard sem objetivos, ClientList sem resultados de filtro.
+
+---
+
+## 4. Responsividade — Refinamentos Mobile
+
+Cobrimos muito nas iterações anteriores. Restam pontos específicos:
+
+- **AdminLayout breadcrumb:** scroll horizontal funciona, mas falta fade nas bordas + esconder breadcrumbs intermediários no mobile (manter só primeiro e último).
+- **AdminDashboard "North Star":** card de Total Clientes ocupa 1/3 em desktop mas no tablet (md) fica espremido. Mudar para `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`.
+- **Sidebar mobile:** drawer atual é 280px / 85vw — bom. Adicionar swipe-to-close gesture.
+- **Bottom Navigation Bar para Cliente (mobile):** adicionar barra fixa inferior com 4 ícones (Dashboard, Meus Dados, Plano, Acompanhamento) — substitui menu hambúrguer no celular para o cliente final, padrão de apps modernos.
+- **Tabelas restantes:** ainda há tabelas em `AdminMonitoring`, `AdminInvestments`, `SuperAdminClients`, `SuperAdminAdmins` que não usam `ScrollableTable` — padronizar.
+- **Modais/Dialogs:** garantir `max-h-[90vh] overflow-y-auto` em todos os Dialogs (alguns cortam conteúdo no mobile).
+
+---
+
+## 5. Funcionalidades — Melhorias e Correções
+
+### 5.1 Quick wins funcionais
+
+- **Busca global (Cmd+K):** adicionar `cmdk` (já temos `command.tsx`) com atalhos: ir para cliente, novo cliente, configurações. Disponível só para admin.
+- **Notificações in-app:** sino no header com lista de eventos (cliente confirmou dados, novo cliente cadastrado, e-mail falhou). Persistir em nova tabela `notifications` com RLS.
+- **Auto-save em formulários longos:** MyData e Onboarding podem perder dados se o admin sair. Salvar rascunho no `localStorage` por step.
+- **Undo de exclusão:** ao excluir cliente, mostrar toast com botão "Desfazer" (5s) antes de confirmar exclusão na edge function.
+- **Exportar dashboard como PDF:** botão "Exportar" no AdminDashboard que gera relatório executivo (similar ao já existente `generateReportPdf`).
+
+### 5.2 Bugs/inconsistências detectados
+
+- `ClientLayout` re-fetcha profile a cada render se user mudar — usar React Query com cache.
+- `AdminDashboard` faz 7+ queries sequenciais no `useEffect` — paralelizar em `Promise.all` (em parte já feito, mas separado por blocos).
+- `recentClients` query traz **todos** os clientes só para fatiar 5 — adicionar `.limit(5)` no Supabase.
+- Theme toggle no mobile header pode ficar invisível em tema claro (cor sidebar-foreground sobre fundo sidebar).
+
+### 5.3 Novas funcionalidades sugeridas (opcional, decidir depois)
+
+- **Modo apresentação:** botão fullscreen no relatório do cliente para apresentar em reunião.
+- **Comentários do consultor visíveis ao cliente:** hoje só o admin vê o "Parecer". Permitir publicar trechos selecionados ao cliente.
+- **Tags em clientes:** permitir admin classificar clientes (VIP, atenção, novo) com cores.
+
+---
+
+## Roadmap de execução sugerido
+
+```text
+Fase 1 (alta prioridade, ~30min):
+  └─ Tipografia (utilitários + substituições principais)
+  └─ Skeletons + count-up reutilizáveis
+  └─ Bottom nav mobile (cliente)
+  └─ Bugs de queries (.limit, paralelização)
+
+Fase 2 (média, ~30min):
+  └─ Super Admin Dashboard com sparklines + atividade recente
+  └─ Cliente Dashboard "Evolução" com mini-chart
+  └─ ScrollableTable nas tabelas restantes
+  └─ Modais responsivos
+
+Fase 3 (alto valor, ~45min):
+  └─ Busca global Cmd+K
+  └─ Notificações in-app
+  └─ Undo de exclusão
+  └─ Auto-save em formulários
+```
+
+### Detalhes técnicos
+
+- Criar `src/hooks/useCountUp.ts` extraindo lógica do Login.
+- Criar `src/components/ui/skeleton-card.tsx` com shimmer.
+- Criar `src/components/layouts/MobileBottomNav.tsx` (renderizar dentro de `ClientLayout` em `lg:hidden`).
+- Nova migration para tabela `notifications (id, user_id, type, payload jsonb, read_at, created_at)` com RLS por `user_id`
+- Adicionar `motion.span` count-up em KPIs do `AdminDashboard` linhas 350+.
+- Refactor de `AdminLayout` breadcrumb (linhas 432-460) com fade lateral + colapso mobile.
 
