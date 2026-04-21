@@ -14,6 +14,7 @@ import PageBanner from "@/components/PageBanner";
 import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { PasswordConfirmDialog } from "@/components/super-admin/PasswordConfirmDialog";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -132,25 +133,49 @@ const ClientList = () => {
 
   const handleDeleteConfirm = async ({ password }: { password: string; reason: string; confirm_text: string }) => {
     if (!deleteTarget || !user?.email) return;
+    const target = deleteTarget;
+    const targetName = target.profiles?.full_name ?? "Cliente";
 
-    const { data, error } = await supabase.functions.invoke("admin-delete-client", {
-      body: {
-        client_id: deleteTarget.id,
-        password,
+    // Close dialog and optimistically hide the row immediately for instant feedback.
+    setDeleteTarget(null);
+    setClients((prev) => prev.filter((c) => c.id !== target.id));
+
+    let cancelled = false;
+    let executed = false;
+
+    const doDelete = async () => {
+      if (cancelled || executed) return;
+      executed = true;
+      const { data, error } = await supabase.functions.invoke("admin-delete-client", {
+        body: { client_id: target.id, password },
+      });
+      if (error || data?.error) {
+        const message = data?.error ?? error?.message ?? "Não foi possível excluir o cliente.";
+        toast({ title: "Erro ao excluir", description: message, variant: "destructive" });
+        // Restore the row since the delete failed.
+        await loadClients();
+        return;
+      }
+      sonnerToast.success("Cliente excluído", { description: `${targetName} foi removido.` });
+      await loadClients();
+    };
+
+    const timer = setTimeout(doDelete, 5000);
+
+    sonnerToast(`${targetName} será excluído`, {
+      description: "Você tem 5 segundos para desfazer.",
+      duration: 5000,
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          cancelled = true;
+          clearTimeout(timer);
+          // Restore the row visually (refetch to be safe).
+          loadClients();
+          sonnerToast.info("Exclusão cancelada", { description: `${targetName} foi mantido.` });
+        },
       },
     });
-
-    if (error || data?.error) {
-      const message = data?.error ?? error?.message ?? "Não foi possível excluir o cliente.";
-      toast({ title: "Erro ao excluir", description: message, variant: "destructive" });
-      throw new Error(message);
-    }
-
-    toast({ title: "Cliente excluído", description: `${deleteTarget.profiles?.full_name ?? "Cliente"} foi removido.` });
-    setDeleteTarget(null);
-    setSearch("");
-    setActiveFilter("all");
-    await loadClients();
   };
 
   return (
