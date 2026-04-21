@@ -402,6 +402,27 @@ const AdminInvestments = () => {
       }
     };
     fetchProfile();
+
+    // Realtime: atualiza a carteira quando recomendações mudam (Parecer → Investimentos)
+    const channel = supabase
+      .channel(`investment-recs-${clientId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "investment_recommendations",
+          filter: `client_id=eq.${clientId}`,
+        },
+        () => {
+          fetchRecommendations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
