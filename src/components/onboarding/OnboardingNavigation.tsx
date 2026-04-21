@@ -94,8 +94,10 @@ export const OnboardingNavigation = ({ currentStep, totalSteps, onBack, onNext, 
                 type="button"
                 onClick={onNext}
                 disabled={isSubmitting}
-                variant={isLast ? "success" : "premium"}
-                className="gap-2 min-w-[120px] sm:min-w-[140px] h-11 rounded-full text-[0.9375rem] font-medium font-body tracking-[-0.01em]"
+                variant="premium"
+                className={`gap-2 min-w-[120px] sm:min-w-[140px] h-11 rounded-full text-[0.9375rem] font-medium font-body tracking-[-0.01em] ${
+                  isLast ? "bg-success text-success-foreground hover:bg-success/90" : ""
+                }`}
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
