@@ -36,6 +36,8 @@ interface Props {
 export const StepPatrimonio = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyAsset()];
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof AssetItem, value: string) => {
@@ -45,9 +47,19 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
   };
 
   const add = () => {
+    if (isMobile) {
+      setSheetOpen(true);
+      return;
+    }
     const novo = emptyAsset();
     onChange([novo, ...items]);
     setFocusId(novo.id!);
+  };
+
+  const handleSheetConfirm = ({ category, amount, note }: { category: string; amount: string; note: string }) => {
+    const type = category.startsWith("custom:") ? category.slice(7) : category;
+    const novo: AssetItem = { ...emptyAsset(), type, estimated_value: amount, description: note };
+    onChange([novo, ...items.filter((a) => a.type || a.estimated_value)]);
   };
   const remove = (i: number) => {
     if (items.length <= 1) return;

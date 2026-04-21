@@ -44,6 +44,8 @@ interface Props {
 export const StepRenda = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyIncome()];
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof IncomeItem, value: any) => {
@@ -54,6 +56,10 @@ export const StepRenda = ({ data, onChange }: Props) => {
 
   // Insere a nova renda logo após a Principal (índice 0), no topo da lista de adicionais
   const add = () => {
+    if (isMobile) {
+      setSheetOpen(true);
+      return;
+    }
     const novo = emptyIncome();
     if (items.length === 0) {
       onChange([novo]);
@@ -62,6 +68,17 @@ export const StepRenda = ({ data, onChange }: Props) => {
       onChange([first, novo, ...rest]);
     }
     setFocusId(novo.id!);
+  };
+
+  const handleSheetConfirm = ({ category, amount }: { category: string; amount: string }) => {
+    const desc = category.startsWith("custom:") ? category.slice(7) : category;
+    const novo: IncomeItem = { ...emptyIncome(), description: desc, amount };
+    if (items.length === 0) {
+      onChange([novo]);
+    } else {
+      const [first, ...rest] = items;
+      onChange([first, novo, ...rest]);
+    }
   };
   const remove = (i: number) => {
     if (items.length <= 1) return;

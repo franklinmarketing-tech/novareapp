@@ -42,6 +42,8 @@ interface Props {
 export const StepDividas = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyDebt()];
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
 
   const update = (index: number, field: keyof DebtItem, value: string) => {
@@ -51,9 +53,19 @@ export const StepDividas = ({ data, onChange }: Props) => {
   };
 
   const add = () => {
+    if (isMobile) {
+      setSheetOpen(true);
+      return;
+    }
     const novo = emptyDebt();
     onChange([novo, ...items]);
     setFocusId(novo.id!);
+  };
+
+  const handleSheetConfirm = ({ category, amount }: { category: string; amount: string }) => {
+    const type = category.startsWith("custom:") ? category.slice(7) : category;
+    const novo: DebtItem = { ...emptyDebt(), type, total_amount: amount };
+    onChange([novo, ...items.filter((d) => d.type || d.total_amount)]);
   };
   const remove = (i: number) => {
     if (items.length <= 1) return;
