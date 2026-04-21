@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
+import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
@@ -67,11 +67,38 @@ export const StepSeguros = ({ data, onChange }: Props) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Tipo</Label>
-                <Input value={item.type} onChange={(e) => update(i, "type", e.target.value)} placeholder="Ex: Vida, Auto, Residencial" />
+                <SelectWithCustom
+                  value={item.type}
+                  onValueChange={(v) => update(i, "type", v)}
+                  options={[
+                    { value: "Vida", label: "Vida" },
+                    { value: "Auto", label: "Auto" },
+                    { value: "Residencial", label: "Residencial" },
+                    { value: "Saúde", label: "Saúde" },
+                    { value: "Invalidez", label: "Invalidez" },
+                    { value: "Viagem", label: "Viagem" },
+                    { value: "Empresarial", label: "Empresarial" },
+                  ]}
+                  inputPlaceholder="Ex: Pet, Equipamentos..."
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Seguradora</Label>
-                <Input value={item.provider} onChange={(e) => update(i, "provider", e.target.value)} placeholder="Ex: Porto Seguro" />
+                <SelectWithCustom
+                  value={item.provider}
+                  onValueChange={(v) => update(i, "provider", v)}
+                  options={[
+                    { value: "Porto Seguro", label: "Porto Seguro" },
+                    { value: "Bradesco Seguros", label: "Bradesco Seguros" },
+                    { value: "SulAmérica", label: "SulAmérica" },
+                    { value: "Allianz", label: "Allianz" },
+                    { value: "Mapfre", label: "Mapfre" },
+                    { value: "Tokio Marine", label: "Tokio Marine" },
+                    { value: "Liberty", label: "Liberty" },
+                    { value: "HDI", label: "HDI" },
+                  ]}
+                  inputPlaceholder="Ex: Azos, Youse..."
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Prêmio mensal</Label>

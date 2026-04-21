@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
+import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
@@ -71,11 +72,39 @@ export const StepDividas = ({ data, onChange }: Props) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Tipo</Label>
-                <Input value={item.type} onChange={(e) => update(i, "type", e.target.value)} placeholder="Ex: Financiamento imobiliário" />
+                <SelectWithCustom
+                  value={item.type}
+                  onValueChange={(v) => update(i, "type", v)}
+                  options={[
+                    { value: "Financiamento imobiliário", label: "Financiamento imobiliário" },
+                    { value: "Financiamento de veículo", label: "Financiamento de veículo" },
+                    { value: "Empréstimo pessoal", label: "Empréstimo pessoal" },
+                    { value: "Empréstimo consignado", label: "Empréstimo consignado" },
+                    { value: "Cartão de crédito", label: "Cartão de crédito" },
+                    { value: "Cheque especial", label: "Cheque especial" },
+                    { value: "Crédito estudantil", label: "Crédito estudantil" },
+                    { value: "Parcelamento", label: "Parcelamento" },
+                  ]}
+                  inputPlaceholder="Ex: Crédito rural, Antecipação..."
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Credor</Label>
-                <Input value={item.creditor} onChange={(e) => update(i, "creditor", e.target.value)} placeholder="Ex: Banco do Brasil" />
+                <SelectWithCustom
+                  value={item.creditor}
+                  onValueChange={(v) => update(i, "creditor", v)}
+                  options={[
+                    { value: "Banco do Brasil", label: "Banco do Brasil" },
+                    { value: "Caixa Econômica", label: "Caixa Econômica" },
+                    { value: "Itaú", label: "Itaú" },
+                    { value: "Bradesco", label: "Bradesco" },
+                    { value: "Santander", label: "Santander" },
+                    { value: "Nubank", label: "Nubank" },
+                    { value: "Inter", label: "Inter" },
+                    { value: "BTG Pactual", label: "BTG Pactual" },
+                  ]}
+                  inputPlaceholder="Ex: Sicoob, Banco XP..."
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Valor total</Label>
