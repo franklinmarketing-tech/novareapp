@@ -307,7 +307,13 @@ const MyData = () => {
     await saveSection(section);
     setSubmitting(false);
     setEditingDialog(null);
-    setModifiedSections((prev) => { const n = new Set(prev); n.delete(section); return n; });
+    setModifiedSections((prev) => {
+      const n = new Set(prev);
+      n.delete(section);
+      // When everything is flushed, drop the local draft.
+      if (n.size === 0) clearDraft();
+      return n;
+    });
     toast({ title: "Salvo com sucesso! ✨", description: "Suas alterações foram registradas." });
   };
 
