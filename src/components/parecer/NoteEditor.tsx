@@ -506,14 +506,37 @@ export const NoteEditor = ({ clientId }: Props) => {
       </Collapsible>
 
       {/* Editor */}
-      <Card className="flex-1">
+      <Card
+        className={`flex-1 transition-all ${
+          isEditing
+            ? "border-warning/40 ring-2 ring-warning/15 shadow-md"
+            : activeNote
+            ? "border-accent/30"
+            : ""
+        }`}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-2">
-              <PenLine className="h-6 w-6 text-accent" />
-              <CardTitle className="text-lg">
+            <div className="flex items-center gap-2 min-w-0">
+              <PenLine className={`h-6 w-6 ${isEditing ? "text-warning" : "text-accent"}`} />
+              <CardTitle className="text-lg truncate">
                 {activeNote ? "Editar Parecer" : "Novo Parecer"}
               </CardTitle>
+              {isEditing && (
+                <Badge variant="warning" className="gap-1.5 ml-1 animate-fade-in">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-warning opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-warning" />
+                  </span>
+                  Editando — alterações não salvas
+                </Badge>
+              )}
+              {activeNote && !isEditing && (
+                <Badge variant="success" className="gap-1 ml-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Salvo
+                </Badge>
+              )}
             </div>
             <div className="flex gap-2">
               <Button
