@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card3D } from "@/components/ui/card-3d";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
-import { Search, ChevronRight, UserPlus, Users, SearchX } from "lucide-react";
+import { Search, ChevronRight, UserPlus, Users, SearchX, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/PageTransition";
@@ -14,6 +14,8 @@ import PageBanner from "@/components/PageBanner";
 import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { PasswordConfirmDialog } from "@/components/super-admin/PasswordConfirmDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
