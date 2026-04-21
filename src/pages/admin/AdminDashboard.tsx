@@ -19,6 +19,8 @@ import { motion } from "framer-motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import AdvancedMetrics from "@/components/admin/AdvancedMetrics";
 import DashboardCharts from "@/components/admin/DashboardCharts";
+import { useCountUp } from "@/hooks/useCountUp";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -56,6 +58,12 @@ const AdminDashboard = () => {
   const [recentClients, setRecentClients] = useState<{ id: string; slug: string; status: string; name: string; risk?: string }[]>([]);
   const [pendingActions, setPendingActions] = useState<{ id: string; description: string; area: string; client_name?: string; client_slug?: string }[]>([]);
   const [unconfirmedClients, setUnconfirmedClients] = useState<{ id: string; slug: string; name: string; lastConfirmed?: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Count-up animated KPIs
+  const totalCount = useCountUp(stats.total, 1200);
+  const wealthCount = useCountUp(netWealth, 1400);
+  const progressCount = useCountUp(avgPlanProgress, 1000);
 
   const isCurrentMonth = selectedMonth === now.getMonth() && selectedYear === now.getFullYear() && periodMonths === 1;
   const monthRef = useMemo(() => `${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}-01`, [selectedMonth, selectedYear]);
@@ -109,6 +117,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       // Período: termina no fim do selectedMonth, começa no início de (selectedMonth - periodMonths + 1)
       const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59);
       const startOfMonth = new Date(selectedYear, selectedMonth - (periodMonths - 1), 1);
@@ -126,6 +135,7 @@ const AdminDashboard = () => {
         setUnconfirmedClients([]);
         setNetWealth(0);
         setAvgPlanProgress(0);
+        setLoading(false);
         return;
       }
 
@@ -135,23 +145,35 @@ const AdminDashboard = () => {
       setStats({ total: clients.length, onboarding, diagnostico, acompanhamento });
 
       const userIds = clients.map((c) => c.user_id);
-      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+      const clientIds = clients.map((c) => c.id);
+
+      // ── Parallelize independent lookups ──
+      const [
+        { data: profiles },
+        { data: diagnoses },
+        { data: actionPlans },
+        { data: confirmations },
+      ] = await Promise.all([
+        supabase.from("profiles").select("user_id, full_name").in("user_id", userIds),
+        supabase.from("diagnosis").select("client_id, risk_classification").in("client_id", clientIds),
+        supabase.from("action_plans").select("id, client_id").in("client_id", clientIds),
+        supabase.from("data_confirmations").select("client_id").eq("month_ref", monthRef),
+      ]);
+
       const profileMap: Record<string, string> = {};
       profiles?.forEach((p) => { profileMap[p.user_id] = p.full_name || "Sem nome"; });
       const clientMap: Record<string, string> = {};
       clients.forEach((c) => { clientMap[c.id] = profileMap[c.user_id] || "Sem nome"; });
 
-      const clientIds = clients.map((c) => c.id);
-      const { data: diagnoses } = await supabase.from("diagnosis").select("client_id, risk_classification").in("client_id", clientIds);
       const diagMap: Record<string, string> = {};
       diagnoses?.forEach((d) => { diagMap[d.client_id] = d.risk_classification || "C"; });
-
       const classifiedIds = new Set(diagnoses?.map((d) => d.client_id) || []);
       setUnclassifiedCount(clients.filter((c) => !classifiedIds.has(c.id)).length);
 
       const slugMap: Record<string, string> = {};
       clients.forEach((c) => { slugMap[c.id] = c.slug; });
 
+      // Already capped by parent (we fetched all to compute counts) — slice for display only.
       setRecentClients(clients.slice(0, 5).map((c) => ({
         id: c.id, slug: c.slug, status: c.status, name: clientMap[c.id], risk: diagMap[c.id],
       })));
@@ -166,7 +188,6 @@ const AdminDashboard = () => {
         const debts = debtsRes.data?.reduce((s, r) => s + (r.total_amount || 0), 0) || 0;
         setNetWealth(assets - debts);
       } else {
-        // Use monitoring_snapshots closest to end of selected month
         const { data: snapshots } = await supabase
           .from("monitoring_snapshots")
           .select("total_assets, total_debts, plan_completion_pct, client_id")
@@ -174,7 +195,6 @@ const AdminDashboard = () => {
           .gte("snapshot_date", startISO.slice(0, 10))
           .lte("snapshot_date", endISO.slice(0, 10));
         if (snapshots && snapshots.length > 0) {
-          // Use the latest snapshot per client
           const latestByClient: Record<string, typeof snapshots[0]> = {};
           snapshots.forEach((s) => { latestByClient[s.client_id] = s; });
           const vals = Object.values(latestByClient);
@@ -192,7 +212,6 @@ const AdminDashboard = () => {
       }
 
       // ── Action plans & progress (current month only for live progress) ──
-      const { data: actionPlans } = await supabase.from("action_plans").select("id, client_id").in("client_id", clientIds);
       if (actionPlans && actionPlans.length > 0) {
         const planIds = actionPlans.map((p) => p.id);
         const planClientMap: Record<string, string> = {};
@@ -230,11 +249,6 @@ const AdminDashboard = () => {
         if (isCurrentMonth) setAvgPlanProgress(0);
       }
 
-      // Fetch clients who haven't confirmed data this month
-      const { data: confirmations } = await supabase
-        .from("data_confirmations")
-        .select("client_id")
-        .eq("month_ref", monthRef);
       const confirmedIds = new Set(confirmations?.map((c) => c.client_id) || []);
       const activeClients = clients.filter((c) => c.status !== "onboarding_pendente");
       const unconfirmed = activeClients
@@ -242,6 +256,7 @@ const AdminDashboard = () => {
         .slice(0, 5)
         .map((c) => ({ id: c.id, slug: c.slug, name: clientMap[c.id] }));
       setUnconfirmedClients(unconfirmed);
+      setLoading(false);
     };
     fetchData();
   }, [monthRef, isCurrentMonth, selectedMonth, selectedYear, periodMonths]);
