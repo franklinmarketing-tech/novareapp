@@ -54,67 +54,55 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
         <Plus className="h-4 w-4" /> Adicionar ativo
       </button>
 
-      {data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center py-10 px-6 rounded-2xl border border-dashed border-border/50 bg-muted/20">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
-            <Home className="h-5 w-5 text-primary/70" strokeWidth={1.75} />
-          </div>
-          <p className="text-[0.875rem] font-medium text-foreground/85 font-body">Ainda nada por aqui</p>
-          <p className="text-[0.8125rem] text-muted-foreground/85 font-body mt-1 max-w-xs">
-            Clique em <span className="font-medium text-primary">Adicionar ativo</span> para incluir seu primeiro bem.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <AnimatePresence initial={false} mode="popLayout">
-            {items.map((item, i) => (
-              <motion.div
-                key={item.id ?? i}
-                layout
-                initial={{ opacity: 0, y: -8, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.15 } }}
-                transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                data-item-id={item.id}
-                className="p-5 rounded-2xl border border-border/60 bg-card space-y-4 shadow-soft hover:shadow-elevated hover:-translate-y-px hover:border-border transition-all duration-200"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">Ativo {i + 1}</span>
-                  {items.length > 1 && (
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+      <div className="space-y-3">
+        <AnimatePresence initial={false} mode="popLayout">
+          {items.map((item, i) => (
+            <motion.div
+              key={item.id ?? i}
+              layout
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.15 } }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              data-item-id={item.id}
+              className="p-5 rounded-2xl border border-border/60 bg-card space-y-4 shadow-soft hover:shadow-elevated hover:-translate-y-px hover:border-border transition-all duration-200"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">Ativo {i + 1}</span>
+                {items.length > 1 && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Tipo</Label>
+                  <SelectWithCustom
+                    value={item.type}
+                    onValueChange={(v) => update(i, "type", v)}
+                    options={[
+                      { value: "Imóvel", label: "Imóvel" },
+                      { value: "Veículo", label: "Veículo" },
+                      { value: "Investimento", label: "Investimento" },
+                      { value: "Outros", label: "Outros" },
+                    ]}
+                    inputPlaceholder="Ex: Criptomoedas, Joias..."
+                  />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Tipo</Label>
-                    <SelectWithCustom
-                      value={item.type}
-                      onValueChange={(v) => update(i, "type", v)}
-                      options={[
-                        { value: "Imóvel", label: "Imóvel" },
-                        { value: "Veículo", label: "Veículo" },
-                        { value: "Investimento", label: "Investimento" },
-                        { value: "Outros", label: "Outros" },
-                      ]}
-                      inputPlaceholder="Ex: Criptomoedas, Joias..."
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Descrição</Label>
-                    <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder="Ex: Apartamento 3 quartos" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Valor estimado</Label>
-                    <CurrencyInput value={item.estimated_value} onChange={(v) => update(i, "estimated_value", v)} />
-                  </div>
+                <div className="space-y-1.5">
+                  <Label>Descrição</Label>
+                  <Input value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder="Ex: Apartamento 3 quartos" />
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
+                <div className="space-y-1.5">
+                  <Label>Valor estimado</Label>
+                  <CurrencyInput value={item.estimated_value} onChange={(v) => update(i, "estimated_value", v)} />
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
