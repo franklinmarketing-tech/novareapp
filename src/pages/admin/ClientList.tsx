@@ -205,6 +205,26 @@ const ClientList = () => {
       }
     };
     init();
+
+    // Realtime: refletir mudanças em clients e profiles sem reload
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleReload = () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
+      reloadTimer = setTimeout(() => {
+        loadClients();
+      }, 250);
+    };
+
+    const channel = supabase
+      .channel("admin-clients-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "clients" }, scheduleReload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, scheduleReload)
+      .subscribe();
+
+    return () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
+      supabase.removeChannel(channel);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
