@@ -94,6 +94,12 @@ export const NoteEditor = ({ clientId }: Props) => {
   const [appliedAiIds, setAppliedAiIds] = useState<Set<number>>(new Set());
   const [applyingAiId, setApplyingAiId] = useState<number | null>(null);
 
+  // Detecta alterações não salvas (estado "em edição")
+  const isDirty = activeNote
+    ? title !== activeNote.title || content !== activeNote.content
+    : Boolean(title.trim() || content.trim());
+  const isEditing = Boolean(activeNote) && isDirty;
+
   // Load notes on mount
   useEffect(() => {
     loadNotes();
