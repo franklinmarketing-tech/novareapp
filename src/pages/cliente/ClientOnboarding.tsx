@@ -479,7 +479,7 @@ const ClientOnboardingPage = () => {
         drawerStats={drawerStats}
         remainingMin={remainingMin}
       />
-      <div className={`flex-1 overflow-y-auto px-4 sm:px-5 md:px-6 ${isListStep ? "pt-3" : "pt-0"} pb-28 md:pb-24`}>
+      <div ref={swipeRef} className={`flex-1 overflow-y-auto px-4 sm:px-5 md:px-6 ${isListStep ? "pt-3" : "pt-0"} pb-28 md:pb-24`}>
         <div className={`max-w-2xl mx-auto ${isCenteredStep ? "flex items-center justify-center min-h-full" : ""}`}>
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
@@ -502,6 +502,7 @@ const ClientOnboardingPage = () => {
         totalSteps={TOTAL_MICRO_STEPS}
         onBack={handleBack}
         onNext={handleNext}
+        onSaveAndExit={handleSaveAndExit}
         isSubmitting={submitting}
         showSuccessFlash={showSuccessFlash}
       />
