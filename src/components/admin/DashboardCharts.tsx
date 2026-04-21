@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { Card3D } from "@/components/ui/card-3d";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { TrendingUp, ShieldAlert } from "lucide-react";
+import { TrendingUp, TrendingDown, ShieldAlert, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const MONTHS_PT = [
