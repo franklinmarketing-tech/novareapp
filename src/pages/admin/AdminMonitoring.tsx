@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Icon3D } from "@/components/ui/Icon3D";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
