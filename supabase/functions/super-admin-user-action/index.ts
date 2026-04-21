@@ -6,6 +6,7 @@ import {
   logAction,
   requirePassword,
 } from "../_shared/super-admin-auth.ts";
+import { deleteUserAccount } from "../_shared/delete-user-account.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -23,7 +24,6 @@ Deno.serve(async (req) => {
 
     if (!action || !targetUserId) return json({ error: "action e target_user_id obrigatórios" }, 400);
 
-    // Require password (unless explicitly disabled in config)
     const { data: cfg } = await admin
       .from("app_global_config")
       .select("require_password_for_destructive")
@@ -35,7 +35,6 @@ Deno.serve(async (req) => {
       if (!ok) return json({ error: "Senha incorreta" }, 403);
     }
 
-    // Get target email
     const { data: targetUser } = await admin.auth.admin.getUserById(targetUserId);
     const targetEmail = targetUser?.user?.email ?? null;
 
@@ -46,7 +45,6 @@ Deno.serve(async (req) => {
 
     switch (action) {
       case "force_logout": {
-        // Invalidate all refresh tokens for this user
         const { error } = await admin.auth.admin.signOut(targetUserId, "global");
         if (error) return json({ error: error.message }, 500);
         result = { ok: true, message: "Sessões encerradas" };
@@ -56,11 +54,9 @@ Deno.serve(async (req) => {
       case "ban": {
         const banDays = Number(body.ban_days ?? 0);
         const banUntil = banDays > 0 ? new Date(Date.now() + banDays * 86400000).toISOString() : null;
-        // Ban via auth admin (sets banned_until on auth.users)
         await admin.auth.admin.updateUserById(targetUserId, {
-          ban_duration: banDays > 0 ? `${banDays * 24}h` : "876000h", // ~100y if permanent
+          ban_duration: banDays > 0 ? `${banDays * 24}h` : "876000h",
         });
-        // Persist in our table for visibility
         await admin.from("banned_users").upsert({
           user_id: targetUserId,
           email: targetEmail ?? "unknown",
@@ -68,7 +64,6 @@ Deno.serve(async (req) => {
           banned_by: user.id,
           banned_until: banUntil,
         }, { onConflict: "user_id" });
-        // Force logout
         await admin.auth.admin.signOut(targetUserId, "global");
         result = { ok: true, message: banDays > 0 ? `Banido por ${banDays} dias` : "Banido permanentemente" };
         break;
@@ -93,9 +88,8 @@ Deno.serve(async (req) => {
       }
 
       case "delete_user": {
-        const { error } = await admin.auth.admin.deleteUser(targetUserId);
-        if (error) return json({ error: error.message }, 500);
-        result = { ok: true, message: "Usuário deletado" };
+        const deletion = await deleteUserAccount(admin, targetUserId);
+        result = { ok: true, message: "Usuário deletado", ...deletion };
         break;
       }
 
