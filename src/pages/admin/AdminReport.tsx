@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import { toast } from "@/hooks/use-toast";
+import { ScrollableTable } from "@/components/ui/scrollable-table";
 
 // ── Palette ──────────────────────────────────────────
 const CHART_COLORS = [
@@ -796,8 +797,7 @@ const AdminReport = () => {
             <Card>
               <CardContent className="py-4">
                 <p className="text-[10px] text-muted-foreground sm:hidden mb-2 text-center">← Arraste para ver mais →</p>
-                <div className="relative">
-                <div className="overflow-x-auto">
+                <ScrollableTable>
                   <table className="w-full text-sm min-w-[640px]">
                     <thead>
                       <tr className="border-b border-border">
@@ -828,9 +828,7 @@ const AdminReport = () => {
                       })}
                     </tbody>
                   </table>
-                </div>
-                <div aria-hidden className="pointer-events-none absolute top-0 right-0 h-full w-8 sm:hidden" style={{ background: "linear-gradient(to left, hsl(var(--card)), transparent)" }} />
-                </div>
+                </ScrollableTable>
               </CardContent>
             </Card>
           </section>
