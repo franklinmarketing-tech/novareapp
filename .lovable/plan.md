@@ -1,61 +1,86 @@
-# Próximas melhorias do Onboarding — o que ainda dá para evoluir
-
-A Fase 1 + auto-save da Fase 2 já estão no ar. Aqui vão as melhorias **mais impactantes que ainda faltam**, organizadas pelo retorno percebido pelo cliente.
-
----
 
 
+## Modernizar a aba Clientes
 
----
+Vou transformar a página `/admin/clientes` num painel mais profissional, com KPIs no topo, cards de cliente mais ricos em informação, e uma experiência visual mais polida — mantendo toda a lógica funcional atual (busca, filtros, exclusão com undo, seed automático).
 
-## 2. Mobile-first premium (alto impacto · médio esforço)
+### O que muda visualmente
 
-**Bottom sheet ao adicionar item (mobile)**
+**1. Faixa de KPIs no topo (4 cards)**
+Logo abaixo do banner, uma linha com métricas em tempo real:
+- **Total de Clientes** (com ícone Users)
+- **Em Acompanhamento** (verde, ícone TrendingUp)
+- **Pendentes Onboarding** (âmbar, ícone Clock)
+- **Novos este mês** (azul, ícone Sparkles) — calculado por `created_at`
 
-- Em telas <768px, o botão "Adicionar despesa/renda/patrimônio" abre um **sheet inferior** com os campos focados, em vez de empilhar mais um card.
-- Categorias viram **chips grandes com ícone** (ex: 🏠 Moradia, 🚗 Transporte) — toque único seleciona.
+Cada KPI mostra número grande, label, ícone com fundo translúcido e uma micro-tendência ("+2 esta semana").
 
-**Gestos de navegação**
+**2. Barra de ações refinada**
+- Busca com ícone à esquerda + atalho visual `⌘K`
+- Toggle de **visualização** (Lista / Grade) à direita com ícones `List` / `LayoutGrid`
+- Dropdown de **ordenação** (Mais recentes / A-Z / Status)
+- Contador "Mostrando X de Y clientes" abaixo
 
-- Swipe horizontal entre micro-steps.
-- CTA inferior com altura mínima 52px (tap target confortável).
+**3. Filtros em formato pílula (chips)**
+Substituo as tabs com sublinhado por chips arredondados modernos:
+- Pílula ativa com fundo `accent/10`, borda `accent/30`, texto `accent`
+- Pílulas inativas com hover suave
+- Contagem como badge interno
 
-**Telas de transição cinematográficas**
+**4. Cards de cliente redesenhados (modo Lista)**
+Cada linha ganha:
+- **Avatar maior (h-12 w-12)** com gradiente accent + iniciais (2 letras)
+- **Indicador de status** em ponto colorido animado (pulse) ao lado do nome
+- **Linha de metadata**: cidade · profissão · "Cliente há Xd" (usa `created_at` com `date-fns`)
+- **Badge de consultor** com avatar pequeno (se houver `assigned_consultant`)
+- **Badge de status** colorida (mantém atual)
+- **Ações revealed on hover**: editar, excluir, "abrir parecer" — agrupadas em pílula no canto direito
+- Borda esquerda colorida fina (4px) refletindo o status (verde/âmbar)
+- Hover: leve elevação + shimmer accent na borda esquerda
 
-- StepWelcome e StepTransition com **mesh gradient animado** de fundo (já temos a estrutura, falta o efeito).
-- Mini-preview animado: ícones dos próximos steps flutuando sutilmente ("Renda → Despesas → Dívidas").
+**5. Modo Grade (novo)**
+Layout em grid `1/2/3 colunas` (mobile/tablet/desktop) com cards verticais:
+- Avatar centralizado no topo
+- Nome, email, status
+- Mini-stats: profissão, cidade
+- Botão "Abrir cliente" no rodapé do card
 
----
+**6. Empty states aprimorados**
+Mantenho os existentes mas com ilustração mais rica (ícone em círculo gradiente accent).
 
-## 3. Gamificação e finalização (médio impacto · médio esforço)
+### Implementação técnica
 
-**Marcos de conquista**
+**Arquivo único editado:** `src/pages/admin/ClientList.tsx`
 
-- Card de celebração ao terminar Identificação: "🎉 Você desbloqueou 30% do seu diagnóstico" com mini-progress.
-- Badge sutil em transições: "Seção 2 de 3 concluída".
+- Adicionar 4 novos imports: `TrendingUp, Clock, Sparkles, LayoutGrid, List, ArrowUpDown` do `lucide-react`, `formatDistanceToNow` do `date-fns/locale ptBR`, `DropdownMenu*` do `@/components/ui/dropdown-menu`
+- Novo state: `viewMode: "list" | "grid"` (persistido em `localStorage`), `sortBy: "recent" | "name" | "status"`
+- Novo cálculo `kpis` via `useMemo` derivado de `clients`
+- Componente interno `<KpiCard>` reutilizável (4 instâncias)
+- Componente interno `<ClientCardGrid>` para o modo grade
+- Manter toda lógica de `loadClients`, `handleDeleteConfirm`, seed demo, `PasswordConfirmDialog`
+- Animações com `framer-motion` reutilizando o `fadeUp` existente, com `staggerChildren`
 
-**Cronômetro adaptativo visível**
+### Layout (ASCII)
 
-- O hook `useOnboardingTimer` já existe — falta exibir "≈ 4 min restantes" no header, atualizando conforme o ritmo real.
+```text
+┌─ PageBanner: Clientes ───────────────────[+ Novo Cliente]─┐
+└──────────────────────────────────────────────────────────┘
 
-**/**
+┌─KPI: Total─┐ ┌─KPI: Acomp.─┐ ┌─KPI: Pendentes─┐ ┌─KPI: Novos─┐
+│  12        │ │  8 ↑        │ │  3 ⏱           │ │  +2 ✨     │
+└────────────┘ └─────────────┘ └────────────────┘ └────────────┘
 
----
+[● Todos 12] [Pendente 3] [Acompanhamento 8]    [List|Grid] [Sort▾]
+[🔍 Buscar...                              ⌘K]    Mostrando 12 de 12
 
-## 4. Confiança e transparência (médio impacto · baixo esforço)
+┃ ● [JD] João da Silva                     SP · Engenheiro · há 5d
+┃     joao@email.com               [Maria↗] [Acomp.]  ✏ 🗑 →
+┃ ● [MA] Maria Andrade                     RJ · Médica · há 2d
+┃     maria@email.com              [Sem cons.] [Pend.] ✏ 🗑 →
+```
 
-**Microcopy de confiança**
+### Sem mudanças
 
-- Selo discreto no header: "🔒 Dados criptografados · LGPD".
-- Tooltip em campos sensíveis (CPF, renda): "Visível apenas para você e seu consultor".
-
-**Botão "Salvar e continuar depois"**
-
-- Já salvamos automaticamente — falta um CTA explícito que confirma "✓ Tudo salvo. Você pode fechar e voltar quando quiser".
-
-**Recuperação de erro melhor**
-
-- Quando o save falha (status `error` no SaveIndicator), mostrar toast com botão **"Tentar novamente"** que reexecuta o save da seção atual.
-
----
+- Rotas, navegação, lógica de exclusão (undo de 5s), seed demo, `SEO`, `PageBanner`, `PasswordConfirmDialog` permanecem idênticos
+- Nenhuma alteração de banco ou edge function
 
