@@ -17,10 +17,17 @@ import {
 import PageTransition from "@/components/PageTransition";
 import { ClientProvider } from "@/contexts/ClientContext";
 
-const statusMap: Record<string, { label: string; variant: string }> = {
-  onboarding_pendente: { label: "Onboarding Pendente", variant: "warning" },
-  em_diagnostico: { label: "Em Diagnóstico", variant: "accent" },
-  em_acompanhamento: { label: "Em Acompanhamento", variant: "success" },
+const statusMap: Record<string, { label: string; variant: string; dot: string }> = {
+  onboarding_pendente: { label: "Onboarding Pendente", variant: "warning", dot: "bg-amber-500" },
+  em_diagnostico: { label: "Em Diagnóstico", variant: "accent", dot: "bg-blue-500" },
+  em_acompanhamento: { label: "Em Acompanhamento", variant: "success", dot: "bg-emerald-500" },
+};
+
+const getInitials = (name?: string | null) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
 const tabs = [
