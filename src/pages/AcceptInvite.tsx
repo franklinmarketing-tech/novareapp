@@ -79,11 +79,24 @@ const AcceptInvite = () => {
     }
     setState({ kind: "submitting", email: state.email, role: state.role });
     const { data, error } = await supabase.functions.invoke("accept-admin-invite", {
-      body: { action: "accept", token, full_name: fullName.trim(), password },
+      body: { action: "accept", token: token?.trim(), full_name: fullName.trim(), password },
     });
-    const err = error?.message ?? (data as any)?.error;
-    if (err) {
-      toast({ title: "Erro", description: err, variant: "destructive" });
+    let realError: string | null = (data as any)?.error ?? null;
+    if (error && !realError) {
+      try {
+        const ctx: any = (error as any).context;
+        if (ctx && typeof ctx.json === "function") {
+          const body = await ctx.json();
+          realError = body?.error ?? null;
+        } else if (ctx && typeof ctx.text === "function") {
+          const txt = await ctx.text();
+          try { realError = JSON.parse(txt)?.error ?? txt; } catch { realError = txt; }
+        }
+      } catch { /* ignore */ }
+      if (!realError) realError = error.message;
+    }
+    if (realError) {
+      toast({ title: "Erro", description: realError, variant: "destructive" });
       setState({ kind: "ready", email: state.email, role: state.role });
       return;
     }
