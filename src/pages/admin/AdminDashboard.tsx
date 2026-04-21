@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Card3D } from "@/components/ui/card-3d";
+import { KpiCard3D } from "@/components/ui/kpi-card-3d";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
