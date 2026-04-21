@@ -297,9 +297,9 @@ const AdminDashboard = () => {
           <span className="text-sm text-muted-foreground font-medium">Competência</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Atalhos rápidos */}
-          <div className="flex flex-wrap items-center gap-1 bg-muted/50 rounded-xl p-1">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Atalhos rápidos — pills no desktop */}
+          <div className="hidden sm:flex flex-wrap items-center gap-1 bg-muted/50 rounded-xl p-1">
             {([
               { key: "this_month", label: "Este mês" },
               { key: "last_month", label: "Mês anterior" },
@@ -321,6 +321,21 @@ const AdminDashboard = () => {
               </button>
             ))}
           </div>
+
+          {/* Atalhos rápidos — select no mobile */}
+          <select
+            value={activePreset === "custom" ? "" : activePreset}
+            onChange={(e) => e.target.value && applyPreset(e.target.value as PeriodPreset)}
+            className="sm:hidden flex-1 min-w-0 h-9 px-3 rounded-xl bg-muted/50 text-xs font-semibold text-foreground border-0 focus:outline-none focus:ring-2 focus:ring-ring/30"
+          >
+            <option value="">Personalizado…</option>
+            <option value="this_month">Este mês</option>
+            <option value="last_month">Mês anterior</option>
+            <option value="last_3">Últimos 3 meses</option>
+            <option value="last_6">Últimos 6 meses</option>
+            <option value="this_year">Este ano</option>
+            <option value="last_year">Ano anterior</option>
+          </select>
 
           {/* Navegação mês a mês */}
           <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
