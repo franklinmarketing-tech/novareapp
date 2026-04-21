@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import logoPreta from "@/assets/logo-preta.png";
 import iconBehavioral from "@/assets/icon-behavioral.png";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,8 @@ import { LogOut } from "lucide-react";
 import { SummaryReview } from "@/components/onboarding/SummaryReview";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 import { useOnboardingTimer } from "@/hooks/useOnboardingTimer";
+import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { SaveStatus } from "@/components/onboarding/SaveIndicator";
 
 // Map step ranges to save section for auto-save on any step change
