@@ -244,7 +244,7 @@ export const AdminLayout = ({ children }: Props) => {
       <nav className="px-3 space-y-5 shrink-0">
         {sections.map((section) => (
           <div key={section.label}>
-            <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-sidebar-foreground/40">
+            <p className="px-4 mb-2 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/40">
               {section.label}
             </p>
             <div className="space-y-0.5">
@@ -256,15 +256,15 @@ export const AdminLayout = ({ children }: Props) => {
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                      "relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-[0.8125rem] font-medium transition-colors duration-200 group",
                       isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/80"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-sidebar-ring"
+                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground/85"
                     )
                   }
                 >
-                  <item.icon className="h-[18px] w-[18px]" />
-                  {item.label}
+                  <item.icon className="h-[18px] w-[18px] shrink-0" />
+                  <span className="truncate">{item.label}</span>
                 </NavLink>
               ))}
             </div>
@@ -284,16 +284,16 @@ export const AdminLayout = ({ children }: Props) => {
           onClick={() => setMobileOpen(false)}
           className={({ isActive }) =>
             cn(
-              "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+              "relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-[0.8125rem] font-medium transition-colors duration-200",
               isActive
-                ? "bg-sidebar-accent text-sidebar-foreground"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/40"
+                ? "bg-sidebar-accent text-sidebar-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-sidebar-ring"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground"
             )
           }
         >
-          <Gem className="h-[18px] w-[18px]" />
-          <span className="flex-1">Projetos</span>
-          <ChevronRight className="h-4 w-4 opacity-50" />
+          <Gem className="h-[18px] w-[18px] shrink-0" />
+          <span className="flex-1 truncate">Projetos</span>
+          <ChevronRight className="h-3.5 w-3.5 opacity-50" />
         </NavLink>
       </div>
 
@@ -308,15 +308,15 @@ export const AdminLayout = ({ children }: Props) => {
             }}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full",
+                "relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-[0.8125rem] font-medium transition-colors duration-200 w-full",
                 isActive || isOnSettings
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/80"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-sidebar-ring"
+                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground/85"
               )
             }
           >
-            <Settings className="h-[18px] w-[18px]" />
-            <span className="flex-1 text-left">Configurações</span>
+            <Settings className="h-[18px] w-[18px] shrink-0" />
+            <span className="flex-1 text-left truncate">Configurações</span>
             {!settingsCompletion.loading && settingsCompletion.pendingCount > 0 && (
               <span
                 className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold"
@@ -338,7 +338,7 @@ export const AdminLayout = ({ children }: Props) => {
             >
               <ChevronDown
                 className={cn(
-                  "h-4 w-4 opacity-60 transition-transform duration-200",
+                  "h-3.5 w-3.5 opacity-60 transition-transform duration-200",
                   settingsOpen ? "rotate-0" : "-rotate-90"
                 )}
               />
