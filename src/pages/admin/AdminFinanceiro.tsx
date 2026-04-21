@@ -202,7 +202,7 @@ const AdminFinanceiro = () => {
   if (clients.length === 0) {
     return (
       <div className="space-y-8">
-        <PageBanner title="Financeiro" description="Visão financeira da sua consultoria" icon={Landmark} />
+        <PageBanner title="Financeiro" description="Visão financeira da sua consultoria" icon3D="vault" />
         <Card className="rounded-3xl border-border/40">
           <CardContent className="py-16">
             <EmptyState
@@ -225,7 +225,7 @@ const AdminFinanceiro = () => {
   return (
     <div className="space-y-6">
       <SEO title="Financeiro" description="Painel financeiro da consultoria Novare: patrimônio, pipeline e insights." index={false} />
-      <PageBanner title="Financeiro" description="Visão financeira da sua consultoria" icon={Landmark} />
+        <PageBanner title="Financeiro" description="Visão financeira da sua consultoria" icon3D="vault" />
 
       {/* ━━━ HERO: North Star + Narrative ━━━ */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0}>

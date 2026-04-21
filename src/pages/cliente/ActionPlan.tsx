@@ -189,7 +189,7 @@ const ActionPlan = () => {
   if (!hasActions && !hasInvestments) {
     return (
       <PageTransition>
-        <PageBanner title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor" icon={ClipboardList} />
+        <PageBanner title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor" icon3D="clipboard" />
         <Card>
           <CardContent className="py-20 text-center">
             <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
@@ -205,7 +205,7 @@ const ActionPlan = () => {
   return (
     <PageTransition>
       <SEO title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor Novare." index={false} />
-      <PageBanner title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor" icon={ClipboardList} />
+        <PageBanner title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor" icon3D="clipboard" />
 
       {/* ── 3D PROGRESS HERO ────────────────────── */}
       {allChildren.length > 0 && (

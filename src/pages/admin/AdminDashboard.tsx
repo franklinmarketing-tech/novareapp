@@ -287,7 +287,7 @@ const AdminDashboard = () => {
   return (
     <PageTransition className="space-y-6">
       <SEO title="Dashboard" description="Visão geral da sua consultoria Novare: clientes, métricas e progresso." index={false} />
-      <PageBanner title="Dashboard" description="Visão geral da sua consultoria" icon={LayoutDashboard} />
+      <PageBanner title="Dashboard" description="Visão geral da sua consultoria" icon3D="dashboard" />
 
       {/* ── Month Selector ── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
