@@ -395,7 +395,7 @@ const WealthSphere3D = ({
       setLoading(false);
     };
     fetchData();
-  }, [selectedMonth, selectedYear]);
+  }, [localMonth, localYear]);
 
   const lastValue = series[series.length - 1]?.value || 0;
   const firstValue = series[0]?.value || 0;
