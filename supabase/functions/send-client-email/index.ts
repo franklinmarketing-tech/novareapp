@@ -163,8 +163,49 @@ function templateWelcome(data: any): { subject: string; html: string } {
   };
 }
 
+function templateWelcomeWithPassword(data: any): { subject: string; html: string } {
+  const name = (data.clientName || "").split(" ")[0];
+  const email = data.email || "";
+  const password = data.password || "";
+  return {
+    subject: "Bem-vindo(a) à Novare — seu acesso está pronto 👋",
+    html: baseLayout(`
+      <h1 style="color:${PRIMARY};font-size:24px;margin:0 0 16px;">Bem-vindo(a) à Novare${name ? `, ${name}` : ""}!</h1>
+      <p style="color:${TEXT_COLOR};font-size:15px;line-height:1.6;margin:0 0 18px;">
+        Sua conta na plataforma de Consultoria Financeira da Novare foi criada pelo seu consultor. Use as credenciais abaixo para acessar pela primeira vez.
+      </p>
+      <div style="background:#f8f9fb;border:1px solid #e5e7eb;border-radius:10px;padding:18px 20px;margin:0 0 22px;">
+        <div style="margin-bottom:10px;">
+          <span style="color:${MUTED};font-size:12px;text-transform:uppercase;letter-spacing:1px;">E-mail</span><br/>
+          <strong style="color:${PRIMARY};font-size:15px;font-family:Menlo,monospace;">${email}</strong>
+        </div>
+        <div>
+          <span style="color:${MUTED};font-size:12px;text-transform:uppercase;letter-spacing:1px;">Senha temporária</span><br/>
+          <strong style="color:${ACCENT};font-size:18px;font-family:Menlo,monospace;letter-spacing:1px;">${password}</strong>
+        </div>
+      </div>
+      <p style="color:${TEXT_COLOR};font-size:14px;line-height:1.6;margin:0 0 18px;">
+        🔒 <strong>Por segurança</strong>, recomendamos que você troque a senha no primeiro acesso pela página <strong>Configurações → Segurança</strong> ou usando <strong>"Esqueci minha senha"</strong> na tela de login.
+      </p>
+      <div style="background:#fff7ed;border-left:4px solid ${ACCENT};padding:14px 18px;border-radius:6px;margin:0 0 22px;">
+        <strong style="color:${PRIMARY};font-size:14px;">Próximos passos</strong>
+        <ul style="margin:8px 0 0;padding-left:18px;color:${TEXT_COLOR};font-size:14px;line-height:1.6;">
+          <li>Acesse o app pelo botão abaixo</li>
+          <li>Faça login com seu e-mail e senha temporária</li>
+          <li>Troque sua senha nas Configurações</li>
+          <li>Conclua seu onboarding com seu consultor</li>
+        </ul>
+      </div>
+      <p style="color:${MUTED};font-size:13px;line-height:1.5;margin:0;">
+        Qualquer dúvida, é só responder este e-mail. Estamos aqui para te ajudar.
+      </p>
+    `),
+  };
+}
+
 const TEMPLATES: Record<string, (data: any) => { subject: string; html: string }> = {
   welcome: templateWelcome,
+  "welcome-with-password": templateWelcomeWithPassword,
   "snapshot-update": templateSnapshotUpdate,
   "task-completed": templateTaskCompleted,
   "goal-achieved": templateGoalAchieved,

@@ -6,13 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-function generateRandomPassword(): string {
-  // Senha aleatória apenas técnica — o cliente NÃO usa essa senha.
-  // Ele se cadastra/define a própria senha pelo signup público.
-  // Isso só existe porque o Supabase exige password no createUser.
-  return crypto.randomUUID() + "Aa1!";
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -61,7 +54,7 @@ Deno.serve(async (req) => {
     }
 
     // ── INPUT VALIDATION ──
-    const { name, email } = await req.json();
+    const { name, email, password } = await req.json();
     if (!name || typeof name !== "string" || name.trim().length < 2 || name.length > 200) {
       return new Response(JSON.stringify({ error: "Nome inválido (2-200 caracteres)" }), {
         status: 400,
@@ -75,15 +68,20 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (!password || typeof password !== "string" || password.length < 8 || password.length > 72) {
+      return new Response(JSON.stringify({ error: "Senha inválida (mínimo 8 caracteres)" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // Cria usuário JÁ confirmado — sem necessidade de confirmar email.
-    // O cliente posteriormente usa "Esqueci minha senha" ou se cadastra normalmente
-    // pelo signup público para definir a própria senha.
+    // Cria usuário JÁ confirmado com a senha definida pelo admin.
+    // O cliente pode trocar essa senha depois pelo "Esqueci minha senha" ou nas Configurações.
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
       email: email.trim(),
-      password: generateRandomPassword(),
+      password,
       email_confirm: true,
       user_metadata: { full_name: name.trim() },
     });
@@ -104,13 +102,13 @@ Deno.serve(async (req) => {
 
         const { data: existingClient } = await adminClient
           .from("clients")
-          .select("id")
+          .select("id, slug")
           .eq("user_id", userId)
           .single();
 
         if (existingClient) {
           return new Response(
-            JSON.stringify({ clientId: existingClient.id, userId, alreadyExisted: true }),
+            JSON.stringify({ clientId: existingClient.id, slug: existingClient.slug, userId, alreadyExisted: true }),
             { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
@@ -118,11 +116,11 @@ Deno.serve(async (req) => {
         const { data: newClient } = await adminClient
           .from("clients")
           .insert({ user_id: userId })
-          .select("id")
+          .select("id, slug")
           .single();
 
         return new Response(
-          JSON.stringify({ clientId: newClient?.id, userId, alreadyExisted: true }),
+          JSON.stringify({ clientId: newClient?.id, slug: newClient?.slug, userId, alreadyExisted: true }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -140,17 +138,21 @@ Deno.serve(async (req) => {
 
     const { data: clientRecord } = await adminClient
       .from("clients")
-      .select("id")
+      .select("id, slug")
       .eq("user_id", userId)
       .single();
 
-    // Dispara e-mail de boas-vindas (não bloqueia a resposta em caso de erro)
+    // Dispara e-mail de boas-vindas com a senha temporária
     try {
       await adminClient.functions.invoke("send-client-email", {
         body: {
           to: email.trim(),
-          templateName: "welcome",
-          templateData: { clientName: name.trim() },
+          templateName: "welcome-with-password",
+          templateData: {
+            clientName: name.trim(),
+            email: email.trim(),
+            password,
+          },
         },
         headers: { Authorization: authHeader },
       });
@@ -159,7 +161,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ clientId: clientRecord?.id, userId }),
+      JSON.stringify({ clientId: clientRecord?.id, slug: clientRecord?.slug, userId }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
