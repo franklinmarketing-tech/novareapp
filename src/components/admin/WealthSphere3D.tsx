@@ -3,12 +3,13 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, MeshDistortMaterial, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { motion } from "framer-motion";
-import { Globe2, TrendingUp, TrendingDown, Users, Activity } from "lucide-react";
+import { Globe2, TrendingUp, TrendingDown, Users, Activity, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { Card3D } from "@/components/ui/card-3d";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const MONTHS_PT = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const MONTHS_PT_FULL = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
 const RISK_COLORS_HEX: Record<string, string> = {
   A: "#10b981", // success / emerald
