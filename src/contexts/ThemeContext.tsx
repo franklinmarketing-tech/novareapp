@@ -20,7 +20,8 @@ const getInitialTheme = (): Theme => {
   } catch {
     /* ignore */
   }
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  // Padrão: claro (não seguir preferência do sistema)
+  return "light";
 };
 
 const applyTheme = (theme: Theme) => {

@@ -23,13 +23,11 @@
 
   <body>
     <script>
-      // Anti-FOUC: apply theme before React mounts
+      // Anti-FOUC: apply theme before React mounts (default = light)
       (function () {
         try {
           var stored = localStorage.getItem('novare-theme');
-          var theme = (stored === 'light' || stored === 'dark')
-            ? stored
-            : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          var theme = (stored === 'light' || stored === 'dark') ? stored : 'light';
           if (theme === 'dark') document.documentElement.classList.add('dark');
           document.documentElement.style.colorScheme = theme;
         } catch (e) { /* ignore */ }
