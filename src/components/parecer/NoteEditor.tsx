@@ -379,51 +379,106 @@ export const NoteEditor = ({ clientId }: Props) => {
           </Button>
         </div>
         <CollapsibleContent>
-          <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 max-h-[28rem] overflow-y-auto pr-1">
             {loading && (
-              <div className="px-1">
+              <div className="sm:col-span-2 space-y-2">
                 <LoadingState variant="inline" />
                 <LoadingState variant="inline" />
               </div>
             )}
             {!loading && notes.length === 0 && (
-              <EmptyState
-                icon={FileText}
-                variant="compact"
-                tone="neutral"
-                title="Nenhum parecer salvo"
-                description="Crie sua primeira nota para começar."
-              />
+              <div className="sm:col-span-2">
+                <EmptyState
+                  icon={FileText}
+                  variant="compact"
+                  tone="neutral"
+                  title="Nenhum parecer salvo"
+                  description="Crie sua primeira nota para começar."
+                />
+              </div>
             )}
-            {notes.map((note) => (
-              <button
-                key={note.id}
-                onClick={() => selectNote(note)}
-                className={`w-full text-left p-2.5 rounded-lg border transition-all group ${
-                  activeNote?.id === note.id
-                    ? "bg-accent/8 border-accent/30"
-                    : "bg-card border-border/40 hover:border-border"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-foreground truncate">
-                      {note.title || "Sem título"}
-                    </p>
-                    <p className="text-[0.6875rem] text-muted-foreground flex items-center gap-1 mt-0.5">
-                      <Clock className="h-6 w-6" />
-                      {format(new Date(note.created_at), "dd MMM yyyy, HH:mm", { locale: ptBR })}
-                    </p>
+            {notes.map((note) => {
+              const isActive = activeNote?.id === note.id;
+              const plainText = (note.content || "")
+                .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+              const preview = plainText.length > 220 ? plainText.slice(0, 220) + "…" : plainText;
+              const wordCount = plainText ? plainText.split(/\s+/).filter(Boolean).length : 0;
+              const updated = note.updated_at && note.updated_at !== note.created_at;
+              return (
+                <article
+                  key={note.id}
+                  className={`group relative flex flex-col rounded-xl border bg-card shadow-sm transition-all hover:shadow-md ${
+                    isActive
+                      ? "border-accent/50 ring-2 ring-accent/20"
+                      : "border-border/60 hover:border-accent/30"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute left-0 top-4 bottom-4 w-1 rounded-r-full bg-accent" aria-hidden />
+                  )}
+                  <header className="flex items-start justify-between gap-2 p-4 pb-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <FileText className="h-4 w-4 text-accent shrink-0" />
+                        <h3 className="text-sm font-semibold text-foreground truncate">
+                          {note.title || "Parecer sem título"}
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap text-[0.6875rem] text-muted-foreground">
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {format(new Date(note.created_at), "dd MMM yyyy 'às' HH:mm", { locale: ptBR })}
+                        </span>
+                        {updated && (
+                          <Badge variant="secondary" className="text-[0.625rem] h-4 px-1.5">
+                            editado
+                          </Badge>
+                        )}
+                        {isActive && (
+                          <Badge className="bg-accent/10 text-accent border-accent/30 text-[0.625rem] h-4 px-1.5">
+                            em edição
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteNote(note.id); }}
+                      className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 hover:bg-destructive/10 rounded-md shrink-0"
+                      aria-label="Excluir parecer"
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </button>
+                  </header>
+
+                  <div className="px-4 pb-3 flex-1">
+                    {preview ? (
+                      <p className="text-xs leading-relaxed text-muted-foreground line-clamp-5 whitespace-pre-wrap">
+                        {preview}
+                      </p>
+                    ) : (
+                      <p className="text-xs italic text-muted-foreground/60">Sem conteúdo</p>
+                    )}
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); deleteNote(note.id); }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded"
-                  >
-                    <Trash2 className="h-6 w-6 text-destructive" />
-                  </button>
-                </div>
-              </button>
-            ))}
+
+                  <footer className="flex items-center justify-between gap-2 px-4 py-3 border-t border-border/40 bg-muted/20 rounded-b-xl">
+                    <span className="text-[0.6875rem] text-muted-foreground">
+                      {wordCount} {wordCount === 1 ? "palavra" : "palavras"}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant={isActive ? "default" : "outline"}
+                      className="h-7 text-xs gap-1.5"
+                      onClick={() => selectNote(note)}
+                    >
+                      <PenLine className="h-3 w-3" />
+                      {isActive ? "Editando" : "Abrir"}
+                    </Button>
+                  </footer>
+                </article>
+              );
+            })}
           </div>
         </CollapsibleContent>
       </Collapsible>
