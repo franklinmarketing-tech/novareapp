@@ -129,152 +129,158 @@ export const FoundersShowcase = ({ variant = "full" }: Props) => {
       </div>
 
       {/* Popup detalhes */}
-      <AnimatePresence>
-        {selected && (() => {
-          const f = founders.find((x) => x.id === selected);
-          if (!f) return null;
-          return (
-            <motion.div
-              key="founder-overlay"
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-            >
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {selected && (() => {
+            const f = founders.find((x) => x.id === selected);
+            if (!f) return null;
+            return (
               <motion.div
-                className="absolute inset-0 bg-primary/60 backdrop-blur-md"
-                onClick={() => setSelected(null)}
+                key="founder-overlay"
+                className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-              />
-
-              <motion.div
-                className="relative z-10 w-full max-w-lg bg-background rounded-3xl shadow-2xl overflow-hidden border border-border/40"
-                initial={{ opacity: 0, scale: 0.8, y: 40, rotateX: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
-                exit={{ opacity: 0, scale: 0.85, y: 30 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                transition={{ duration: 0.25 }}
               >
-                <button
+                <motion.div
+                  className="absolute inset-0 bg-primary/55 backdrop-blur-md"
                   onClick={() => setSelected(null)}
-                  className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+
+                <motion.div
+                  className="relative z-10 w-full sm:max-w-lg md:max-w-2xl max-h-[92svh] sm:max-h-[88vh] overflow-hidden bg-background rounded-t-[1.75rem] sm:rounded-3xl shadow-2xl border border-border/40"
+                  initial={{ opacity: 0, scale: 0.98, y: 44 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: 28 }}
+                  transition={{ type: "spring", damping: 26, stiffness: 300 }}
                 >
-                  <X className="w-4 h-4 text-foreground" />
-                </button>
-
-                {isAdmin && (
                   <button
-                    onClick={() => { setEditing(f); setSelected(null); }}
-                    className="absolute top-4 left-4 z-20 px-3 h-8 rounded-full bg-foreground/90 text-background text-xs font-semibold flex items-center gap-1.5 hover:bg-foreground transition-colors"
+                    onClick={() => setSelected(null)}
+                    className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-background/90 hover:bg-muted flex items-center justify-center transition-colors shadow-soft"
+                    aria-label="Fechar apresentação do consultor"
                   >
-                    <Pencil className="w-3 h-3" /> Editar
+                    <X className="w-4 h-4 text-foreground" />
                   </button>
-                )}
 
-                <div className="relative bg-gradient-to-br from-primary via-primary/90 to-accent/30 px-8 pt-8 pb-16">
-                  <motion.div
-                    className="absolute top-4 left-4 w-24 h-24 rounded-full bg-accent/10"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 6, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="absolute bottom-8 right-8 w-16 h-16 rounded-full bg-primary-foreground/5"
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 4, repeat: Infinity }}
-                  />
-                </div>
-
-                <div className="flex justify-center -mt-14 relative z-10">
-                  <motion.div
-                    className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-background shadow-xl bg-muted"
-                    initial={{ scale: 0, rotate: -10 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", delay: 0.15, damping: 20 }}
-                  >
-                    {f.image_url && (
-                      <img src={f.image_url} alt={f.name} className="w-full h-full object-cover object-top" />
-                    )}
-                  </motion.div>
-                </div>
-
-                <div className="px-8 pb-8 pt-4 space-y-5">
-                  <motion.div
-                    className="text-center space-y-1"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <h3 className="text-xl font-bold text-foreground">{f.name}</h3>
-                    {f.certs && <p className="text-sm text-accent font-semibold">{f.certs}</p>}
-                    <p className="text-xs text-muted-foreground">
-                      {f.role}{f.short_bio && ` · ${f.short_bio}`}
-                    </p>
-                  </motion.div>
-
-                  {f.bio && (
-                    <motion.p
-                      className="text-sm text-muted-foreground leading-relaxed text-center"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
+                  {isAdmin && (
+                    <button
+                      onClick={() => { setEditing(f); setSelected(null); }}
+                      className="absolute top-3 left-3 z-20 px-3 h-9 rounded-full bg-foreground/90 text-background text-xs font-semibold flex items-center gap-1.5 hover:bg-foreground transition-colors"
                     >
-                      {f.bio}
-                    </motion.p>
+                      <Pencil className="w-3 h-3" /> Editar
+                    </button>
                   )}
 
-                  {f.highlights.length > 0 && (
-                    <motion.div
-                      className="space-y-3"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.35 }}
-                    >
-                      {f.highlights.map((h, i) => {
-                        const Icon = ICON_OPTIONS[h.icon as IconName] ?? Star;
-                        return (
-                          <motion.div
-                            key={i}
-                            className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.4 + i * 0.08 }}
-                          >
-                            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <Icon className="w-4 h-4 text-accent" />
-                            </div>
-                            <p className="text-sm text-foreground leading-snug">{h.text}</p>
-                          </motion.div>
-                        );
-                      })}
-                    </motion.div>
-                  )}
+                  <div className="overflow-y-auto max-h-[92svh] sm:max-h-[88vh] sidebar-scroll">
+                    <div className="relative bg-gradient-to-br from-primary via-primary/90 to-accent/30 px-5 sm:px-8 pt-7 sm:pt-8 pb-12 sm:pb-16">
+                      <motion.div
+                        className="absolute top-4 left-4 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-accent/10"
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 6, repeat: Infinity }}
+                      />
+                      <motion.div
+                        className="absolute bottom-8 right-8 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary-foreground/5"
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 4, repeat: Infinity }}
+                      />
+                    </div>
 
-                  {f.linkedin_url && (
-                    <motion.div
-                      className="pt-2"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 }}
-                    >
-                      <a
-                        href={f.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                    <div className="flex justify-center -mt-12 sm:-mt-14 relative z-10">
+                      <motion.div
+                        className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-background shadow-xl bg-muted"
+                        initial={{ scale: 0, rotate: -10 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", delay: 0.15, damping: 20 }}
                       >
-                        <Linkedin className="w-4 h-4" />
-                        Ver perfil no LinkedIn
-                      </a>
-                    </motion.div>
-                  )}
-                </div>
+                        {f.image_url && (
+                          <img src={f.image_url} alt={f.name} className="w-full h-full object-cover object-top" />
+                        )}
+                      </motion.div>
+                    </div>
+
+                    <div className="px-5 sm:px-8 pb-6 sm:pb-8 pt-4 space-y-4 sm:space-y-5">
+                      <motion.div
+                        className="text-center space-y-1"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <h3 className="text-lg sm:text-xl font-bold text-foreground leading-tight">{f.name}</h3>
+                        {f.certs && <p className="text-sm text-accent font-semibold">{f.certs}</p>}
+                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
+                          {f.role}{f.short_bio && ` · ${f.short_bio}`}
+                        </p>
+                      </motion.div>
+
+                      {f.bio && (
+                        <motion.p
+                          className="text-sm sm:text-[0.9375rem] text-muted-foreground leading-relaxed text-center max-w-md mx-auto"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                        >
+                          {f.bio}
+                        </motion.p>
+                      )}
+
+                      {f.highlights.length > 0 && (
+                        <motion.div
+                          className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.35 }}
+                        >
+                          {f.highlights.map((h, i) => {
+                            const Icon = ICON_OPTIONS[h.icon as IconName] ?? Star;
+                            return (
+                              <motion.div
+                                key={i}
+                                className="flex sm:flex-col items-start sm:items-center gap-3 p-3 sm:p-4 rounded-2xl bg-muted/40 hover:bg-muted/70 transition-colors min-w-0"
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 + i * 0.08 }}
+                              >
+                                <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                                  <Icon className="w-4 h-4 text-accent" />
+                                </div>
+                                <p className="text-sm text-foreground leading-snug sm:text-center break-words min-w-0">{h.text}</p>
+                              </motion.div>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+
+                      {f.linkedin_url && (
+                        <motion.div
+                          className="pt-1 sm:pt-2"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.6 }}
+                        >
+                          <a
+                            href={f.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                          >
+                            <Linkedin className="w-4 h-4" />
+                            Ver perfil no LinkedIn
+                          </a>
+                        </motion.div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          );
-        })()}
-      </AnimatePresence>
+            );
+          })()}
+        </AnimatePresence>,
+        document.body,
+      )}
 
       {/* Editor admin */}
       <AnimatePresence>
