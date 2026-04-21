@@ -1,9 +1,12 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
+import { Icon3D, type Icon3DName } from "@/components/ui/Icon3D";
 
 interface EmptyStateProps {
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  /** When provided, renders a 3D PNG icon instead of the lucide circle. Overrides `icon`. */
+  icon3D?: Icon3DName;
   title: string;
   description?: string;
   action?: ReactNode;
@@ -26,6 +29,7 @@ const toneClasses: Record<NonNullable<EmptyStateProps["tone"]>, { bg: string; ri
  */
 export const EmptyState = ({
   icon: Icon,
+  icon3D,
   title,
   description,
   action,
@@ -43,16 +47,22 @@ export const EmptyState = ({
         className,
       )}
     >
-      <div
-        className={cn(
-          "flex items-center justify-center rounded-2xl ring-1 mb-4",
-          t.bg,
-          t.ring,
-          compact ? "w-12 h-12" : "w-16 h-16",
-        )}
-      >
-        <Icon className={cn(t.text, compact ? "h-6 w-6" : "h-8 w-8")} strokeWidth={1.75} />
-      </div>
+      {icon3D ? (
+        <div className={cn("mb-4 flex items-center justify-center", compact ? "w-14 h-14" : "w-20 h-20")}>
+          <Icon3D name={icon3D} size={compact ? "lg" : "2xl"} alt={title} />
+        </div>
+      ) : Icon ? (
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-2xl ring-1 mb-4",
+            t.bg,
+            t.ring,
+            compact ? "w-12 h-12" : "w-16 h-16",
+          )}
+        >
+          <Icon className={cn(t.text, compact ? "h-6 w-6" : "h-8 w-8")} strokeWidth={1.75} />
+        </div>
+      ) : null}
       <h3 className={cn("font-semibold text-foreground tracking-tight", compact ? "text-sm" : "text-base mb-1.5")}>
         {title}
       </h3>
