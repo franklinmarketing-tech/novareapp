@@ -27,6 +27,7 @@ export const STEP_TO_SECTION: number[] = [
   3, 4, 5, 6, 7, 8,  // 8-13: Renda, Despesas, Dívidas, Patrimônio, Seguros, Objetivos
   9,  // 14: Transition comportamental
   10, 10, 10, 10, 10, 10, 10, 10, // 15-22: Comportamental (8 steps)
+  11, // 23: Summary review
 ];
 
 // Save triggers: which section to save when leaving a step
