@@ -31,10 +31,11 @@ const SuperAdminUsuarios = () => {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: profiles }, { data: roles }, { data: bans }] = await Promise.all([
+    const [{ data: profiles }, { data: roles }, { data: bans }, { data: clients }] = await Promise.all([
       supabase.from("profiles").select("user_id, email, full_name, created_at"),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("banned_users").select("user_id"),
+      supabase.from("clients").select("user_id"),
     ]);
     const roleMap = new Map<string, string>();
     (roles ?? []).forEach((r) => {
@@ -44,14 +45,20 @@ const SuperAdminUsuarios = () => {
       if (!cur || rank(r.role) > rank(cur)) roleMap.set(r.user_id, r.role);
     });
     const banSet = new Set((bans ?? []).map((b) => b.user_id));
-    setUsers(((profiles ?? []) as any[]).map((p) => ({
-      user_id: p.user_id,
-      email: p.email,
-      full_name: p.full_name,
-      role: roleMap.get(p.user_id) ?? "client",
-      banned: banSet.has(p.user_id),
-      created_at: p.created_at,
-    })));
+    const clientSet = new Set((clients ?? []).map((c) => c.user_id));
+
+    setUsers(
+      ((profiles ?? []) as any[])
+        .map((p) => ({
+          user_id: p.user_id,
+          email: p.email,
+          full_name: p.full_name,
+          role: roleMap.get(p.user_id) ?? "client",
+          banned: banSet.has(p.user_id),
+          created_at: p.created_at,
+        }))
+        .filter((user) => user.role !== "client" || clientSet.has(user.user_id))
+    );
     setLoading(false);
   };
 
