@@ -36,6 +36,8 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { FoundersShowcase } from "@/components/FoundersShowcase";
 import { useSettingsCompletion, type SettingsTabId } from "@/hooks/useSettingsCompletion";
+import { CommandPalette } from "@/components/CommandPalette";
+import { NotificationsBell } from "@/components/NotificationsBell";
 
 /* ── nav config ─────────────────────────────────────────── */
 
