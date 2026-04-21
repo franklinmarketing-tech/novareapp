@@ -122,7 +122,7 @@ const AdminClientLayout = () => {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-border/60 mb-6 -mx-4 lg:-mx-6 xl:-mx-8 px-4 lg:px-6 xl:px-8">
+        <div className="border-b border-border/60 mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
           <nav className="flex gap-0 overflow-x-auto scrollbar-none">
             {tabs.map((tab) => {
               const isDisabled = disabled.includes(tab.path);
@@ -133,19 +133,19 @@ const AdminClientLayout = () => {
                   onClick={(e) => isDisabled && e.preventDefault()}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium border-b-2 transition-colors duration-200 whitespace-nowrap",
+                      "flex items-center gap-1.5 px-3.5 py-2.5 text-[0.8125rem] font-medium border-b-2 transition-colors duration-200 whitespace-nowrap -mb-px",
                       isActive && !isDisabled
                         ? "border-accent text-accent"
                         : "border-transparent",
                       isDisabled
                         ? "text-muted-foreground/30 cursor-not-allowed"
                         : !isActive
-                          ? "text-muted-foreground hover:text-foreground hover:border-border"
+                          ? "text-muted-foreground hover:text-foreground hover:border-border/70"
                           : ""
                     )
                   }
                 >
-                  <tab.icon className="h-6 w-6" />
+                  <tab.icon className="h-4 w-4 shrink-0" />
                   <span>{tab.label}</span>
                 </NavLink>
               );

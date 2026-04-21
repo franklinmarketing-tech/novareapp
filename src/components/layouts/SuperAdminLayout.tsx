@@ -125,7 +125,7 @@ export const SuperAdminLayout = ({ children }: Props) => {
         </div>
       </div>
 
-      <nav className="px-3 space-y-1 flex-1 overflow-y-auto">
+      <nav className="px-3 space-y-1 flex-1 overflow-y-auto sidebar-scroll">
         {sections.map((section) => {
           const isOpen = !!openSections[section.id];
           const SectionIcon = section.icon;
@@ -133,11 +133,11 @@ export const SuperAdminLayout = ({ children }: Props) => {
             <div key={section.id}>
               <button
                 onClick={() => toggleSection(section.id)}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground transition-all"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[0.8125rem] font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground transition-colors duration-200"
               >
-                <SectionIcon className="h-[18px] w-[18px]" />
+                <SectionIcon className="h-[18px] w-[18px] shrink-0" />
                 <span className="flex-1 text-left">{section.label}</span>
-                <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen ? "rotate-0" : "-rotate-90")} />
+                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200 opacity-60", isOpen ? "rotate-0" : "-rotate-90")} />
               </button>
               {isOpen && (
                 <div className="mt-0.5 ml-3 pl-3 border-l border-sidebar-border/30 space-y-0.5">
@@ -149,15 +149,15 @@ export const SuperAdminLayout = ({ children }: Props) => {
                       onClick={() => setMobileOpen(false)}
                       className={({ isActive }) =>
                         cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+                          "relative flex items-center gap-3 px-3 py-2 rounded-lg text-[0.8125rem] transition-colors duration-200",
                           isActive
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/80"
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium before:absolute before:-left-[13px] before:top-1/2 before:-translate-y-1/2 before:h-4 before:w-[2px] before:rounded-r-full before:bg-sidebar-ring"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground/85"
                         )
                       }
                     >
-                      <item.icon className="h-4 w-4" />
-                      {item.label}
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{item.label}</span>
                     </NavLink>
                   ))}
                 </div>
@@ -186,28 +186,28 @@ export const SuperAdminLayout = ({ children }: Props) => {
         {sidebar}
       </aside>
 
-      <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-sidebar z-30 flex items-center px-4 border-b border-sidebar-border/20">
+      <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-sidebar z-30 flex items-center px-3 border-b border-sidebar-border/20">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="text-sidebar-foreground hover:bg-sidebar-accent/40"
+          className="text-sidebar-foreground hover:bg-sidebar-accent/40 h-10 w-10"
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
-        <span className="ml-3 font-bold text-sidebar-foreground">SUPER ADMIN</span>
+        <span className="ml-2 font-bold text-sidebar-foreground text-sm tracking-tight">SUPER ADMIN</span>
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-40">
-          <div className="absolute inset-0 bg-foreground/10 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-[260px] bg-sidebar h-full shadow-elevated">{sidebar}</aside>
+        <div className="lg:hidden fixed inset-0 z-40 animate-fade-in">
+          <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-[280px] max-w-[85vw] bg-sidebar h-full shadow-elevated animate-slide-up">{sidebar}</aside>
         </div>
       )}
 
       <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 min-h-screen">
         <GlobalBanners />
-        <div className="p-4 lg:p-6 xl:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
       </main>
     </div>
   );
