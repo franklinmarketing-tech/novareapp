@@ -45,6 +45,7 @@ export const microStepToSaveSection: Record<number, number | null> = {
   14: null, // Transition
   15: null, 16: null, 17: null, 18: null, 19: null, 20: null, 21: null,
   22: 7,   // last of Comportamental → save section 7
+  23: null, // Summary review (no save, just finalize)
 };
 
 export const STEP_SECTION_LABELS: string[] = [
@@ -54,6 +55,7 @@ export const STEP_SECTION_LABELS: string[] = [
   "Renda", "Despesas", "Dívidas", "Patrimônio", "Seguros", "Objetivos",
   "Comportamento",
   "Comportamental", "Comportamental", "Comportamental", "Comportamental", "Comportamental", "Comportamental", "Comportamental", "Comportamental",
+  "Revisão",
 ];
 
 export const STEP_TITLES: string[] = [
@@ -64,6 +66,7 @@ export const STEP_TITLES: string[] = [
   "Seu comportamento",
   "Organização financeira", "Disciplina de poupança", "Ansiedade financeira", "Confiança financeira",
   "Compras por impulso", "Apetite por risco", "Gatilhos de consumo", "Histórico e perfil",
+  "Revisão final",
 ];
 
 // Contextual encouragement per step
@@ -91,6 +94,7 @@ export const STEP_ENCOURAGEMENT: Record<number, string> = {
   20: "Risco não é bom nem ruim — é contexto",
   21: "Autoconhecimento é o primeiro investimento 🧠",
   22: "Estamos construindo seu perfil financeiro...",
+  23: "Tudo certo? Só falta finalizar!",
 };
 
 // Section-level narrative messages for transitions
