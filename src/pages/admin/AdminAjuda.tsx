@@ -469,12 +469,6 @@ export default function AdminAjuda() {
               Baixar PDF
             </a>
           </Button>
-          <Button asChild>
-            <a href="mailto:suporte@novareapp.com.br">
-              <Mail className="h-4 w-4 mr-2" />
-              Falar com suporte
-            </a>
-          </Button>
         </div>
       </div>
 
@@ -576,27 +570,6 @@ export default function AdminAjuda() {
             );
           })}
 
-          {/* Footer CTA */}
-          <Card className="p-6 lg:p-8 bg-gradient-to-br from-primary/5 to-accent/30 border-primary/20">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6">
-              <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
-                <Bell className="h-6 w-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold text-foreground">Não encontrou o que procurava?</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Nossa equipe responde em até 1 dia útil. Envie sua dúvida com prints e o nome do cliente
-                  envolvido (se for o caso).
-                </p>
-              </div>
-              <Button asChild className="shrink-0">
-                <a href="mailto:suporte@novareapp.com.br">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Enviar e-mail
-                </a>
-              </Button>
-            </div>
-          </Card>
         </div>
       </div>
     </div>
