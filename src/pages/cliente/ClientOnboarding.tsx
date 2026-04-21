@@ -479,8 +479,8 @@ const ClientOnboardingPage = () => {
         drawerStats={drawerStats}
         remainingMin={remainingMin}
       />
-      <div ref={swipeRef} className={`flex-1 overflow-y-auto px-4 sm:px-5 md:px-6 ${isListStep ? "pt-3" : "pt-0"} pb-28 md:pb-24`}>
-        <div className={`max-w-2xl mx-auto ${isCenteredStep ? "flex items-center justify-center min-h-full" : ""}`}>
+      <div ref={swipeRef} className={`flex-1 overflow-y-auto px-4 sm:px-5 md:px-6 ${isListStep ? "pt-3" : "pt-2"} pb-24 md:pb-20`}>
+        <div className={`max-w-2xl mx-auto ${isCenteredStep ? "flex items-center justify-center min-h-full py-4" : ""}`}>
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={step}
