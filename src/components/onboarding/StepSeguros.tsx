@@ -43,10 +43,10 @@ export const StepSeguros = ({ data, onChange }: Props) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1.5">
-        <h2 className="font-display font-semibold text-foreground tracking-[-0.025em] text-[clamp(1.5rem,1.25rem+1vw,2rem)] leading-[1.2]">Seguros</h2>
-        <p className="font-body text-muted-foreground/85 text-[0.9375rem] leading-[1.55] tracking-[-0.01em]">Seguros que você possui atualmente</p>
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <h2 className="font-display font-semibold text-foreground tracking-[-0.025em] text-[clamp(1.375rem,1.15rem+0.9vw,1.75rem)] leading-[1.2]">Seguros</h2>
+        <p className="font-body text-muted-foreground/85 text-[0.875rem] leading-[1.5] tracking-[-0.01em]">Seguros que você possui atualmente</p>
       </div>
 
       <button type="button" onClick={add} className="w-full h-14 rounded-2xl border-2 border-dashed border-border/70 text-muted-foreground hover:border-accent/50 hover:text-accent hover:bg-accent/[0.03] transition-all duration-200 text-[0.9375rem] font-medium font-body flex items-center justify-center gap-2">
