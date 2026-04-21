@@ -70,7 +70,7 @@ export const StepRenda = ({ data, onChange }: Props) => {
         onClick={add}
         className="w-full h-14 rounded-2xl border-2 border-dashed border-border/70 text-muted-foreground hover:border-accent/50 hover:text-accent hover:bg-accent/[0.03] transition-all duration-200 text-[0.9375rem] font-medium font-body flex items-center justify-center gap-2"
       >
-        <Plus className="h-4 w-4" /> Adicionar renda adicional
+        <Plus className="h-4 w-4" /> Adicionar fonte
       </button>
 
       <div className="space-y-3">
