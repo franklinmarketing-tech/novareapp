@@ -25,14 +25,13 @@ export const SelectWithCustom = ({
   triggerClassName = "",
   inputPlaceholder = "Digite aqui...",
 }: SelectWithCustomProps) => {
-  const isCustom = value?.startsWith("custom:") || (value && !options.some((o) => o.value === value) && value !== "");
+  const isCustom = !!value?.startsWith("custom:");
   const [showCustomInput, setShowCustomInput] = useState(isCustom);
-  const customText = isCustom ? (value.startsWith("custom:") ? value.slice(7) : value) : "";
+  const customText = isCustom ? value.slice(7) : "";
 
   useEffect(() => {
-    const isCurrentCustom = value?.startsWith("custom:") || (value && !options.some((o) => o.value === value) && value !== "");
-    setShowCustomInput(!!isCurrentCustom);
-  }, [value, options]);
+    setShowCustomInput(!!value?.startsWith("custom:"));
+  }, [value]);
 
   const handleSelectChange = (v: string) => {
     if (v === "__custom__") {
