@@ -7,6 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileAddSheet } from "./MobileAddSheet";
+
+const RENDA_CHIPS = [
+  { value: "Salário CLT (líquido)", label: "Salário CLT", emoji: "💼" },
+  { value: "Pró-labore", label: "Pró-labore", emoji: "🧾" },
+  { value: "Autônomo", label: "Autônomo", emoji: "🛠️" },
+  { value: "Aluguel recebido", label: "Aluguel", emoji: "🏠" },
+  { value: "Comissão", label: "Comissão", emoji: "💸" },
+  { value: "Bônus / PLR", label: "Bônus", emoji: "🎁" },
+  { value: "Freelance", label: "Freelance", emoji: "💻" },
+  { value: "Aposentadoria", label: "Aposentadoria", emoji: "👴" },
+  { value: "Renda de investimentos", label: "Investimentos", emoji: "📈" },
+  { value: "Dividendos", label: "Dividendos", emoji: "💰" },
+];
 
 export interface IncomeItem {
   id?: string;

@@ -6,6 +6,19 @@ import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileAddSheet } from "./MobileAddSheet";
+
+const DIVIDA_CHIPS = [
+  { value: "Cartão de crédito", label: "Cartão", emoji: "💳" },
+  { value: "Empréstimo pessoal", label: "Empréstimo", emoji: "💵" },
+  { value: "Financiamento imobiliário", label: "Imóvel", emoji: "🏠" },
+  { value: "Financiamento de veículo", label: "Veículo", emoji: "🚗" },
+  { value: "Empréstimo consignado", label: "Consignado", emoji: "🏦" },
+  { value: "Cheque especial", label: "Cheque especial", emoji: "📉" },
+  { value: "Crédito estudantil", label: "Estudantil", emoji: "🎓" },
+  { value: "Parcelamento", label: "Parcelamento", emoji: "🧾" },
+];
 
 export interface DebtItem {
   id?: string;

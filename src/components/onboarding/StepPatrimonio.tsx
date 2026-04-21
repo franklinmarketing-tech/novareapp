@@ -7,6 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileAddSheet } from "./MobileAddSheet";
+
+const PATRIMONIO_CHIPS = [
+  { value: "Imóvel", label: "Imóvel", emoji: "🏠" },
+  { value: "Veículo", label: "Veículo", emoji: "🚗" },
+  { value: "Investimento", label: "Investimento", emoji: "📈" },
+  { value: "Conta corrente", label: "Conta", emoji: "🏦" },
+  { value: "Reserva de emergência", label: "Reserva", emoji: "🛟" },
+  { value: "Outros", label: "Outros", emoji: "✨" },
+];
 
 export interface AssetItem {
   id?: string;
