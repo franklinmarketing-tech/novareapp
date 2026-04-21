@@ -296,11 +296,11 @@ const WealthSphere3D = ({
       // Window of 6 months ending at selected
       const months: { year: number; month: number }[] = [];
       for (let i = 5; i >= 0; i--) {
-        const d = new Date(selectedYear, selectedMonth - i, 1);
+        const d = new Date(localYear, localMonth - i, 1);
         months.push({ year: d.getFullYear(), month: d.getMonth() });
       }
       const windowStart = new Date(months[0].year, months[0].month, 1);
-      const windowEnd = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59);
+      const windowEnd = new Date(localYear, localMonth + 1, 0, 23, 59, 59);
 
       const { data: clientRows } = await supabase
         .from("clients")
