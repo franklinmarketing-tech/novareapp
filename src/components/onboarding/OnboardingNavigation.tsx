@@ -40,28 +40,28 @@ export const OnboardingNavigation = ({ currentStep, totalSteps, onBack, onNext, 
   };
 
   const getCtaIcon = () => {
-    if (isLast) return <Check className="h-6 w-6" />;
-    if (isWelcome) return <Sparkles className="h-6 w-6" />;
-    return <ArrowRight className="h-6 w-6" />;
+    if (isLast) return <Check className="h-4 w-4" />;
+    if (isWelcome) return <Sparkles className="h-4 w-4" />;
+    return <ArrowRight className="h-4 w-4" />;
   };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/30">
-      <div className="max-w-2xl mx-auto px-5 md:px-6 py-4 space-y-3">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3.5 space-y-3.5">
         {/* Section dots */}
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1.5">
           {uniqueSections.map((sec) => {
             const isActive = sec.idx === currentSectionIdx;
             const isComplete = sec.idx < currentSectionIdx;
             return (
               <div
                 key={sec.idx}
-                className={`h-1.5 rounded-full transition-all duration-500 ${
+                className={`h-[6px] rounded-full transition-all duration-[400ms] ease-out ${
                   isActive
-                    ? "w-8 bg-primary"
+                    ? "w-6 bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
                     : isComplete
-                    ? "w-3 bg-primary/40"
-                    : "w-1.5 bg-muted-foreground/30"
+                    ? "w-2.5 bg-primary/45"
+                    : "w-1.5 bg-muted-foreground/25"
                 }`}
                 title={sec.label}
               />
@@ -76,9 +76,9 @@ export const OnboardingNavigation = ({ currentStep, totalSteps, onBack, onNext, 
             variant="ghost"
             onClick={onBack}
             disabled={currentStep === 0}
-            className="gap-2 text-muted-foreground hover:text-foreground h-12 px-5 text-[0.9375rem] font-body rounded-full"
+            className="gap-1.5 text-muted-foreground hover:text-foreground h-11 px-4 text-[0.9375rem] font-body rounded-full"
           >
-            <ArrowLeft className="h-6 w-6" />
+            <ArrowLeft className="h-4 w-4" />
             <span>Voltar</span>
           </Button>
 
@@ -95,15 +95,13 @@ export const OnboardingNavigation = ({ currentStep, totalSteps, onBack, onNext, 
                 onClick={onNext}
                 disabled={isSubmitting}
                 variant="premium"
-                className={`gap-2.5 min-w-[150px] h-12 rounded-full text-[0.9375rem] font-medium font-body tracking-[-0.01em] transition-all duration-200 ${
-                  isLast
-                    ? "bg-success text-success-foreground shadow-[0_6px_20px_-4px_hsl(var(--success)/0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_28px_-4px_hsl(var(--success)/0.6)]"
-                    : ""
+                className={`gap-2 min-w-[120px] sm:min-w-[140px] h-11 rounded-full text-[0.9375rem] font-medium font-body tracking-[-0.01em] ${
+                  isLast ? "bg-success text-success-foreground hover:bg-success/90" : ""
                 }`}
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
-                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-foreground border-t-transparent" />
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                     Salvando
                   </span>
                 ) : (

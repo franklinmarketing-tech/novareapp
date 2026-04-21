@@ -14,25 +14,33 @@ interface StepProps {
 }
 
 const Wrapper = ({ children, stepNumber }: { children: React.ReactNode; stepNumber?: string }) => (
-  <div className="flex flex-col items-center justify-center space-y-6 w-full">
+  <div className="flex flex-col items-center justify-center space-y-7 w-full">
     {stepNumber && (
-      <span className="font-body text-[0.75rem] font-semibold text-primary tracking-[0.2em] uppercase">Passo {stepNumber}</span>
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-primary/8 font-body text-[0.6875rem] font-semibold text-primary tracking-[0.18em] uppercase">
+        Passo {stepNumber}
+      </span>
     )}
     {children}
   </div>
 );
 
 const Question = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="font-display text-[1.75rem] md:text-[2.25rem] font-medium text-foreground text-center leading-[1.15] tracking-[-0.03em] max-w-lg">{children}</h2>
+  <h2 className="font-display font-medium text-foreground text-center tracking-[-0.025em] max-w-xl text-[clamp(1.5rem,1.25rem+1.2vw,2.125rem)] leading-[1.2]">
+    {children}
+  </h2>
 );
 
 const Hint = ({ children }: { children: React.ReactNode }) => (
-  <p className="font-body text-muted-foreground text-center text-[0.9375rem] tracking-[-0.01em] max-w-sm leading-relaxed">{children}</p>
+  <p className="font-body text-muted-foreground/85 text-center text-[0.9375rem] tracking-[-0.01em] max-w-md leading-[1.55]">
+    {children}
+  </p>
 );
 
 const FieldGroup = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full max-w-md space-y-4">{children}</div>
 );
+
+const inputClass = "h-12 text-[0.9375rem] tracking-[-0.01em]";
 
 // Step 0: Nome completo
 export const StepNome = ({ data, onChange }: StepProps) => {
@@ -46,7 +54,7 @@ export const StepNome = ({ data, onChange }: StepProps) => {
           value={data.full_name}
           onChange={(e) => update(e.target.value)}
           placeholder="Digite seu nome completo"
-          className="h-14 text-lg text-center tracking-[-0.01em] border-border bg-background focus-visible:ring-primary/30"
+          className="h-12 text-base text-center tracking-[-0.01em]"
           autoFocus
         />
       </FieldGroup>
@@ -63,12 +71,12 @@ export const StepCpfNascimento = ({ data, onChange }: StepProps) => {
       <Hint>Precisamos dessas informações para identificação</Hint>
       <FieldGroup>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">CPF</Label>
-          <Input value={data.cpf} onChange={(e) => update("cpf", e.target.value)} placeholder="000.000.000-00" className="h-13 text-[0.9375rem] tracking-[-0.01em] border-border bg-background focus-visible:ring-primary/30" autoFocus />
+          <Label>CPF</Label>
+          <Input value={data.cpf} onChange={(e) => update("cpf", e.target.value)} placeholder="000.000.000-00" className={inputClass} autoFocus />
         </div>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Data de nascimento</Label>
-          <Input type="date" value={data.date_of_birth} onChange={(e) => update("date_of_birth", e.target.value)} className="h-13 text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+          <Label>Data de nascimento</Label>
+          <Input type="date" value={data.date_of_birth} onChange={(e) => update("date_of_birth", e.target.value)} className={inputClass} />
         </div>
       </FieldGroup>
     </Wrapper>
@@ -84,7 +92,7 @@ export const StepEstadoCivil = ({ data, onChange }: StepProps) => {
       <Hint>Essas informações impactam no planejamento patrimonial</Hint>
       <FieldGroup>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Estado civil</Label>
+          <Label>Estado civil</Label>
           <SelectWithCustom
             value={data.marital_status}
             onValueChange={(v) => update("marital_status", v)}
@@ -95,12 +103,12 @@ export const StepEstadoCivil = ({ data, onChange }: StepProps) => {
               { value: "viuvo", label: "Viúvo(a)" },
               { value: "uniao_estavel", label: "União Estável" },
             ]}
-            triggerClassName="h-13 text-[0.9375rem]"
+            triggerClassName="h-12 text-[0.9375rem]"
             inputPlaceholder="Ex: Separado judicialmente"
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Regime de bens</Label>
+          <Label>Regime de bens</Label>
           <SelectWithCustom
             value={data.property_regime}
             onValueChange={(v) => update("property_regime", v)}
@@ -110,7 +118,7 @@ export const StepEstadoCivil = ({ data, onChange }: StepProps) => {
               { value: "separacao_total", label: "Separação Total" },
               { value: "participacao_final", label: "Participação Final" },
             ]}
-            triggerClassName="h-13 text-[0.9375rem]"
+            triggerClassName="h-12 text-[0.9375rem]"
             inputPlaceholder="Ex: Regime misto"
           />
         </div>
@@ -128,16 +136,16 @@ export const StepProfissao = ({ data, onChange }: StepProps) => {
       <Hint>Entender sua carreira nos ajuda a planejar melhor</Hint>
       <FieldGroup>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Profissão</Label>
-          <Input value={data.profession} onChange={(e) => update("profession", e.target.value)} placeholder="Ex: Engenheiro, Médica..." className="h-13 text-[0.9375rem] tracking-[-0.01em] border-border bg-background focus-visible:ring-primary/30" autoFocus />
+          <Label>Profissão</Label>
+          <Input value={data.profession} onChange={(e) => update("profession", e.target.value)} placeholder="Ex: Engenheiro, Médica..." className={inputClass} autoFocus />
         </div>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Empresa</Label>
-          <Input value={data.company} onChange={(e) => update("company", e.target.value)} placeholder="Onde trabalha" className="h-13 text-[0.9375rem] tracking-[-0.01em] border-border bg-background focus-visible:ring-primary/30" />
+          <Label>Empresa</Label>
+          <Input value={data.company} onChange={(e) => update("company", e.target.value)} placeholder="Onde trabalha" className={inputClass} />
         </div>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Anos na profissão</Label>
-          <Input type="number" value={data.years_in_profession} onChange={(e) => update("years_in_profession", e.target.value)} placeholder="0" className="h-13 text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" />
+          <Label>Anos na profissão</Label>
+          <Input type="number" value={data.years_in_profession} onChange={(e) => update("years_in_profession", e.target.value)} placeholder="0" className={inputClass} />
         </div>
       </FieldGroup>
     </Wrapper>
@@ -153,12 +161,12 @@ export const StepDependentes = ({ data, onChange }: StepProps) => {
       <Hint>Filhos, cônjuge ou outros que dependem financeiramente de você</Hint>
       <FieldGroup>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Quantidade de dependentes</Label>
-          <Input type="number" value={data.dependents_count} onChange={(e) => update("dependents_count", e.target.value)} placeholder="0" className="h-13 text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" autoFocus />
+          <Label>Quantidade de dependentes</Label>
+          <Input type="number" value={data.dependents_count} onChange={(e) => update("dependents_count", e.target.value)} placeholder="0" className={inputClass} autoFocus />
         </div>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Idades dos dependentes</Label>
-          <Input value={data.dependents_ages} onChange={(e) => update("dependents_ages", e.target.value)} placeholder="Ex: 5, 12, 18" className="h-13 text-[0.9375rem] tracking-[-0.01em] border-border bg-background focus-visible:ring-primary/30" />
+          <Label>Idades dos dependentes</Label>
+          <Input value={data.dependents_ages} onChange={(e) => update("dependents_ages", e.target.value)} placeholder="Ex: 5, 12, 18" className={inputClass} />
         </div>
       </FieldGroup>
     </Wrapper>
@@ -174,12 +182,12 @@ export const StepLocalizacao = ({ data, onChange }: StepProps) => {
       <Hint>Sua localização pode influenciar no planejamento tributário</Hint>
       <FieldGroup>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Cidade</Label>
-          <Input value={data.city} onChange={(e) => update("city", e.target.value)} placeholder="Sua cidade" className="h-13 text-[0.9375rem] tracking-[-0.01em] border-border bg-background focus-visible:ring-primary/30" autoFocus />
+          <Label>Cidade</Label>
+          <Input value={data.city} onChange={(e) => update("city", e.target.value)} placeholder="Sua cidade" className={inputClass} autoFocus />
         </div>
         <div className="space-y-1.5">
-          <Label className="font-body text-muted-foreground text-[0.8125rem]">Estado</Label>
-          <Input value={data.state} onChange={(e) => update("state", e.target.value)} placeholder="UF" className="h-13 text-[0.9375rem] border-border bg-background focus-visible:ring-primary/30" maxLength={2} />
+          <Label>Estado</Label>
+          <Input value={data.state} onChange={(e) => update("state", e.target.value)} placeholder="UF" className={inputClass} maxLength={2} />
         </div>
       </FieldGroup>
     </Wrapper>
