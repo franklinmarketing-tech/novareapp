@@ -9,6 +9,7 @@ interface Props {
   totalSteps: number;
   onBack: () => void;
   onNext: () => void;
+  onSaveAndExit?: () => void;
   isSubmitting?: boolean;
   showSuccessFlash?: boolean;
 }
@@ -18,6 +19,7 @@ export const OnboardingNavigation = ({
   totalSteps,
   onBack,
   onNext,
+  onSaveAndExit,
   isSubmitting,
   showSuccessFlash,
 }: Props) => {
@@ -89,13 +91,13 @@ export const OnboardingNavigation = ({
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <Button
               type="button"
               variant="ghost"
               onClick={onBack}
               disabled={currentStep === 0}
-              className="gap-1.5 text-muted-foreground hover:text-foreground h-11 px-4 text-[0.9375rem] font-body rounded-full"
+              className="gap-1.5 text-muted-foreground hover:text-foreground min-h-[52px] sm:min-h-[44px] h-[52px] sm:h-11 px-4 text-[0.9375rem] font-body rounded-full"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>
@@ -125,7 +127,7 @@ export const OnboardingNavigation = ({
                   onClick={onNext}
                   disabled={isSubmitting || showSuccessFlash}
                   variant="premium"
-                  className={`gap-2 min-w-[120px] sm:min-w-[140px] h-11 rounded-full text-[0.9375rem] font-medium font-body tracking-[-0.01em] ${
+                  className={`gap-2 min-w-[140px] sm:min-w-[140px] min-h-[52px] sm:min-h-[44px] h-[52px] sm:h-11 rounded-full text-[0.9375rem] font-medium font-body tracking-[-0.01em] ${
                     showSuccessFlash
                       ? "bg-success text-success-foreground hover:bg-success"
                       : isLast
@@ -159,6 +161,19 @@ export const OnboardingNavigation = ({
               </motion.div>
             </AnimatePresence>
           </div>
+
+          {/* Save and continue later */}
+          {onSaveAndExit && !isWelcome && !isLast && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={onSaveAndExit}
+                className="text-[0.75rem] font-body text-muted-foreground/75 hover:text-foreground transition-colors underline-offset-4 hover:underline"
+              >
+                ✓ Salvar e continuar depois
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </TooltipProvider>
