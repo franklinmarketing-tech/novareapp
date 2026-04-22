@@ -87,7 +87,8 @@ export const StepDespesas = ({ data, onChange }: Props) => {
   };
 
   const handleSheetConfirm = ({ category, amount, note }: { category: string; amount: string; note: string }) => {
-    const novo: ExpenseItem = { ...emptyExpense(), category, amount, description: note };
+    const cleanCategory = category.startsWith("custom:") ? category.slice(7).trim() : category;
+    const novo: ExpenseItem = { ...emptyExpense(), category: cleanCategory, amount, description: note };
     onChange([novo, ...items.filter((i) => i.amount || i.category)]);
   };
 

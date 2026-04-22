@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +22,6 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ClientFinancialSidebar, type ClientFinancials } from "@/components/parecer/ClientFinancialSidebar";
 import { SystemRecommendationsPanel, type SystemRecommendation, type RiskProfile } from "@/components/parecer/SystemRecommendations";
 import type { BehavioralProfile } from "@/components/onboarding/StepComportamental";
@@ -68,6 +67,37 @@ const regimeLabels: Record<string, string> = {
 const frequencyLabels: Record<string, string> = { mensal: "Mensal", anual: "Anual", eventual: "Eventual" };
 const stabilityLabels: Record<string, string> = { alta: "Alta", media: "Média", baixa: "Baixa" };
 const priorityLabels: Record<string, string> = { alta: "Alta", media: "Média", baixa: "Baixa" };
+
+const expenseLabels: Record<string, string> = {
+  moradia: "Moradia", educacao: "Educação", saude: "Saúde", transporte: "Transporte",
+  alimentacao: "Alimentação", lazer: "Lazer", vestuario: "Vestuário", pensao: "Pensão alimentícia",
+  doacoes: "Doações / Dízimo", assinaturas: "Assinaturas digitais", academia: "Academia",
+  pet: "Pet", empregada: "Empregada / Diarista", cuidador: "Cuidador / Babá", terapia: "Terapia",
+  cursos: "Cursos extras", outros: "Outros",
+};
+
+const cleanCustomValue = (value?: string | null) => {
+  const trimmed = value?.trim() ?? "";
+  return trimmed.startsWith("custom:") ? trimmed.slice(7).trim() : trimmed;
+};
+
+const humanizeValue = (value?: string | null, labels: Record<string, string> = {}) => {
+  const cleaned = cleanCustomValue(value);
+  if (!cleaned) return "";
+  return labels[cleaned] ?? cleaned.replace(/_/g, " ");
+};
+
+const ReadonlyItem = ({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <div className={`bg-muted/40 rounded-xl p-4 min-w-0 ${className}`}>
+    {children}
+  </div>
+);
 
 const EditButton = ({
   onClick,
@@ -332,13 +362,15 @@ const ClientOnboarding = () => {
     rendas.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhuma renda cadastrada</p> : (
       <div className="space-y-2.5">
         {rendas.map((r, i) => (
-          <div key={i} className={`flex items-center justify-between bg-muted/40 rounded-xl p-4 ${r.is_primary ? "border-l-2 border-accent/40" : ""}`}>
-            <div>
-              <p className="text-[0.9375rem] font-medium text-foreground">{r.description || "Sem descrição"}{r.is_primary && <span className="ml-2 text-[0.6875rem] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full uppercase tracking-wide">Principal</span>}</p>
-              <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5">{frequencyLabels[r.frequency] || r.frequency} · Estabilidade: {stabilityLabels[r.stability] || r.stability}</p>
+          <ReadonlyItem key={i} className={r.is_primary ? "border-l-2 border-accent/40" : ""}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 break-words">
+                <p className="text-[0.9375rem] font-medium text-foreground break-words">{humanizeValue(r.description) || "Sem descrição"}{r.is_primary && <span className="ml-2 inline-flex text-[0.6875rem] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full uppercase tracking-wide">Principal</span>}</p>
+                <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5 break-words">{humanizeValue(r.frequency, frequencyLabels)} · Estabilidade: {humanizeValue(r.stability, stabilityLabels)}</p>
+              </div>
+              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(r.amount)}</span>
             </div>
-            <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(r.amount)}</span>
-          </div>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -348,13 +380,15 @@ const ClientOnboarding = () => {
     despesas.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhuma despesa cadastrada</p> : (
       <div className="space-y-2.5">
         {despesas.filter(e => parseFloat(e.amount) > 0).map((e, i) => (
-          <div key={i} className="flex items-center justify-between bg-muted/40 rounded-xl p-4">
-            <div>
-              <p className="text-[0.9375rem] font-medium text-foreground capitalize">{e.category.replace(/_/g, " ")}</p>
-              {e.description && <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5">{e.description}</p>}
+          <ReadonlyItem key={i}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 break-words">
+                <p className="text-[0.9375rem] font-medium text-foreground break-words">{humanizeValue(e.category, expenseLabels) || "Sem categoria"}</p>
+                {e.description && <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5 break-words">{cleanCustomValue(e.description)}</p>}
+              </div>
+              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(e.amount)}</span>
             </div>
-            <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(e.amount)}</span>
-          </div>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -366,15 +400,15 @@ const ClientOnboarding = () => {
         {dividas.map((d, i) => {
           const highInterest = parseFloat(d.interest_rate) > 5;
           return (
-            <div key={i} className={`bg-muted/40 rounded-xl p-4 ${highInterest ? "border-l-2 border-destructive/40" : ""}`}>
-              <div className="flex items-center justify-between">
-                <p className="text-[0.9375rem] font-medium text-foreground capitalize">{d.type.replace(/_/g, " ")}{d.creditor && ` · ${d.creditor}`}</p>
-                <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(d.total_amount)}</span>
+            <ReadonlyItem key={i} className={highInterest ? "border-l-2 border-destructive/40" : ""}>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <p className="text-[0.9375rem] font-medium text-foreground break-words min-w-0">{humanizeValue(d.type) || "Sem tipo"}{d.creditor && ` · ${humanizeValue(d.creditor)}`}</p>
+                <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(d.total_amount)}</span>
               </div>
-              <p className="font-body text-[0.8125rem] text-muted-foreground mt-1">
+              <p className="font-body text-[0.8125rem] text-muted-foreground mt-1 break-words">
                 Parcela: {formatCurrency(d.monthly_payment)} · Juros: {d.interest_rate || "—"}% · {d.remaining_months || "—"} meses restantes
               </p>
-            </div>
+            </ReadonlyItem>
           );
         })}
       </div>
@@ -385,13 +419,15 @@ const ClientOnboarding = () => {
     patrimonio.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhum ativo cadastrado</p> : (
       <div className="space-y-2.5">
         {patrimonio.map((a, i) => (
-          <div key={i} className="flex items-center justify-between bg-muted/40 rounded-xl p-4">
-            <div>
-              <p className="text-[0.9375rem] font-medium text-foreground capitalize">{a.type.replace(/_/g, " ")}</p>
-              {a.description && <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5">{a.description}</p>}
+          <ReadonlyItem key={i}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 break-words">
+                <p className="text-[0.9375rem] font-medium text-foreground break-words">{humanizeValue(a.type) || "Sem tipo"}</p>
+                {a.description && <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5 break-words">{cleanCustomValue(a.description)}</p>}
+              </div>
+              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(a.estimated_value)}</span>
             </div>
-            <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(a.estimated_value)}</span>
-          </div>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -401,13 +437,13 @@ const ClientOnboarding = () => {
     seguros.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhum seguro cadastrado</p> : (
       <div className="space-y-2.5">
         {seguros.map((s, i) => (
-          <div key={i} className="bg-muted/40 rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-[0.9375rem] font-medium text-foreground capitalize">{s.type.replace(/_/g, " ")}{s.provider && ` · ${s.provider}`}</p>
-              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(s.monthly_premium)}/mês</span>
+          <ReadonlyItem key={i}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <p className="text-[0.9375rem] font-medium text-foreground break-words min-w-0">{humanizeValue(s.type) || "Sem tipo"}{s.provider && ` · ${humanizeValue(s.provider)}`}</p>
+              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(s.monthly_premium)}/mês</span>
             </div>
-            <p className="font-body text-[0.8125rem] text-muted-foreground mt-1">Cobertura: {formatCurrency(s.coverage_amount)}</p>
-          </div>
+            <p className="font-body text-[0.8125rem] text-muted-foreground mt-1 break-words">Cobertura: {formatCurrency(s.coverage_amount)}</p>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -417,15 +453,15 @@ const ClientOnboarding = () => {
     objetivos.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhum objetivo cadastrado</p> : (
       <div className="space-y-2.5">
         {objetivos.map((g, i) => (
-          <div key={i} className={`bg-muted/40 rounded-xl p-4 ${g.priority === "alta" ? "border-l-2 border-accent/40" : ""}`}>
-            <div className="flex items-center justify-between">
-              <p className="text-[0.9375rem] font-medium text-foreground">{g.description}</p>
-              <span className="text-[0.6875rem] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-accent/10 text-accent">{priorityLabels[g.priority] || g.priority}</span>
+          <ReadonlyItem key={i} className={g.priority === "alta" ? "border-l-2 border-accent/40" : ""}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <p className="text-[0.9375rem] font-medium text-foreground break-words min-w-0">{humanizeValue(g.description) || "Sem descrição"}</p>
+              <span className="text-[0.6875rem] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-accent/10 text-accent shrink-0 w-fit">{humanizeValue(g.priority, priorityLabels)}</span>
             </div>
-            <p className="font-body text-[0.8125rem] text-muted-foreground mt-1">
+            <p className="font-body text-[0.8125rem] text-muted-foreground mt-1 break-words">
               Meta: {formatCurrency(g.target_amount)} · Prazo: {formatDate(g.deadline)}
             </p>
-          </div>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -466,8 +502,8 @@ const ClientOnboarding = () => {
     <div className="space-y-6">
       {/* Edit Dialog */}
       <Dialog open={editingDialog !== null} onOpenChange={(open) => { if (!open) closeEditDialog(); }}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
-          <DialogHeader>
+        <DialogContent className="w-[calc(100vw-1.5rem)] max-w-2xl h-[min(85vh,760px)] max-h-[calc(100dvh-1.5rem)] overflow-hidden p-0 flex flex-col gap-0">
+          <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 shrink-0 border-b border-border/40">
             <DialogTitle className="flex items-center gap-3 font-display">
               {editingDialog !== null && (
                 <>
@@ -477,12 +513,10 @@ const ClientOnboarding = () => {
               )}
             </DialogTitle>
           </DialogHeader>
-          <ScrollArea className="flex-1 pr-4 -mr-4">
-            <div className="py-2">
-              {editingDialog !== null && sections[editingDialog].edit}
-            </div>
-          </ScrollArea>
-          <DialogFooter className="pt-4 border-t border-border/40">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6">
+            {editingDialog !== null && sections[editingDialog].edit}
+          </div>
+          <DialogFooter className="shrink-0 px-4 py-4 sm:px-6 border-t border-border/40 bg-background/95">
             <Button variant="outline" onClick={closeEditDialog}>Cancelar</Button>
             <Button
               onClick={async () => {
