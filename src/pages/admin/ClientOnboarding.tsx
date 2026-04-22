@@ -419,13 +419,15 @@ const ClientOnboarding = () => {
     patrimonio.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhum ativo cadastrado</p> : (
       <div className="space-y-2.5">
         {patrimonio.map((a, i) => (
-          <div key={i} className="flex items-center justify-between bg-muted/40 rounded-xl p-4">
-            <div>
-              <p className="text-[0.9375rem] font-medium text-foreground capitalize">{a.type.replace(/_/g, " ")}</p>
-              {a.description && <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5">{a.description}</p>}
+          <ReadonlyItem key={i}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 break-words">
+                <p className="text-[0.9375rem] font-medium text-foreground break-words">{humanizeValue(a.type) || "Sem tipo"}</p>
+                {a.description && <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5 break-words">{cleanCustomValue(a.description)}</p>}
+              </div>
+              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(a.estimated_value)}</span>
             </div>
-            <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(a.estimated_value)}</span>
-          </div>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -435,13 +437,13 @@ const ClientOnboarding = () => {
     seguros.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhum seguro cadastrado</p> : (
       <div className="space-y-2.5">
         {seguros.map((s, i) => (
-          <div key={i} className="bg-muted/40 rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-[0.9375rem] font-medium text-foreground capitalize">{s.type.replace(/_/g, " ")}{s.provider && ` · ${s.provider}`}</p>
-              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(s.monthly_premium)}/mês</span>
+          <ReadonlyItem key={i}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <p className="text-[0.9375rem] font-medium text-foreground break-words min-w-0">{humanizeValue(s.type) || "Sem tipo"}{s.provider && ` · ${humanizeValue(s.provider)}`}</p>
+              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(s.monthly_premium)}/mês</span>
             </div>
-            <p className="font-body text-[0.8125rem] text-muted-foreground mt-1">Cobertura: {formatCurrency(s.coverage_amount)}</p>
-          </div>
+            <p className="font-body text-[0.8125rem] text-muted-foreground mt-1 break-words">Cobertura: {formatCurrency(s.coverage_amount)}</p>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -451,15 +453,15 @@ const ClientOnboarding = () => {
     objetivos.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhum objetivo cadastrado</p> : (
       <div className="space-y-2.5">
         {objetivos.map((g, i) => (
-          <div key={i} className={`bg-muted/40 rounded-xl p-4 ${g.priority === "alta" ? "border-l-2 border-accent/40" : ""}`}>
-            <div className="flex items-center justify-between">
-              <p className="text-[0.9375rem] font-medium text-foreground">{g.description}</p>
-              <span className="text-[0.6875rem] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-accent/10 text-accent">{priorityLabels[g.priority] || g.priority}</span>
+          <ReadonlyItem key={i} className={g.priority === "alta" ? "border-l-2 border-accent/40" : ""}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <p className="text-[0.9375rem] font-medium text-foreground break-words min-w-0">{humanizeValue(g.description) || "Sem descrição"}</p>
+              <span className="text-[0.6875rem] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-accent/10 text-accent shrink-0 w-fit">{humanizeValue(g.priority, priorityLabels)}</span>
             </div>
-            <p className="font-body text-[0.8125rem] text-muted-foreground mt-1">
+            <p className="font-body text-[0.8125rem] text-muted-foreground mt-1 break-words">
               Meta: {formatCurrency(g.target_amount)} · Prazo: {formatDate(g.deadline)}
             </p>
-          </div>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -500,8 +502,8 @@ const ClientOnboarding = () => {
     <div className="space-y-6">
       {/* Edit Dialog */}
       <Dialog open={editingDialog !== null} onOpenChange={(open) => { if (!open) closeEditDialog(); }}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
-          <DialogHeader>
+        <DialogContent className="w-[calc(100vw-1.5rem)] max-w-2xl h-[min(85vh,760px)] max-h-[calc(100dvh-1.5rem)] overflow-hidden p-0 flex flex-col gap-0">
+          <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 shrink-0 border-b border-border/40">
             <DialogTitle className="flex items-center gap-3 font-display">
               {editingDialog !== null && (
                 <>
@@ -511,12 +513,10 @@ const ClientOnboarding = () => {
               )}
             </DialogTitle>
           </DialogHeader>
-          <ScrollArea className="flex-1 pr-4 -mr-4">
-            <div className="py-2">
-              {editingDialog !== null && sections[editingDialog].edit}
-            </div>
-          </ScrollArea>
-          <DialogFooter className="pt-4 border-t border-border/40">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6">
+            {editingDialog !== null && sections[editingDialog].edit}
+          </div>
+          <DialogFooter className="shrink-0 px-4 py-4 sm:px-6 border-t border-border/40 bg-background/95">
             <Button variant="outline" onClick={closeEditDialog}>Cancelar</Button>
             <Button
               onClick={async () => {
