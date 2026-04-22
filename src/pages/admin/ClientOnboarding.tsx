@@ -562,12 +562,15 @@ const ClientOnboarding = () => {
                     className={i < sections.length - 1 ? "border-b border-border/30" : "border-0"}
                   >
                     <AccordionTrigger className="hover:no-underline py-3.5 px-5 gap-3">
-                      <div className="flex items-center justify-between w-full pr-2">
-                        <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between w-full pr-2 gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
                             <Icon className={`h-6 w-6 ${config.text}`} />
                           </div>
-                          <span className="text-[0.8125rem] font-medium text-foreground">{s.title}</span>
+                          <div className="min-w-0 text-left">
+                            <span className="block text-[0.8125rem] font-medium text-foreground truncate">{s.title}</span>
+                            <span className="block text-[0.75rem] font-semibold text-muted-foreground tabular-nums truncate">{s.summary}</span>
+                          </div>
                         </div>
                         <EditButton onClick={() => openEditDialog(s.key)} />
                       </div>
