@@ -147,7 +147,7 @@ const AdvancedMetrics = ({ selectedMonth, selectedYear }: Props) => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
-      className="grid grid-cols-1 lg:grid-cols-3 gap-4"
+      className="grid grid-cols-1 xl:grid-cols-3 gap-4"
     >
       {/* ── MRR ── */}
       <motion.div
@@ -156,14 +156,14 @@ const AdvancedMetrics = ({ selectedMonth, selectedYear }: Props) => {
         transition={{ duration: 0.4, delay: 0.05 }}
       >
         <Card3D interactive glowColor="rgba(34,197,94,0.1)">
-          <div className="p-6 flex flex-col justify-center h-full">
+          <div className="p-4 sm:p-5 xl:p-6 flex flex-col justify-center h-full min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <DollarSign className="h-6 w-6 text-success" />
               <span className="text-xs text-muted-foreground font-medium">
                 Receita mensal recorrente
               </span>
             </div>
-            <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">
+            <p className="text-2xl xl:text-3xl font-bold text-foreground tracking-tight tabular-nums break-words">
               {loading ? "—" : fmtBRL(mrr)}
             </p>
             <div className="flex items-center gap-1.5 mt-1">
@@ -183,7 +183,7 @@ const AdvancedMetrics = ({ selectedMonth, selectedYear }: Props) => {
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <Card3D interactive glowColor="rgba(96,165,250,0.1)">
-          <div className="p-6 flex flex-col h-full">
+          <div className="p-4 sm:p-5 xl:p-6 flex flex-col h-full min-w-0">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <GitBranch className="h-6 w-6 text-primary" />
@@ -229,7 +229,7 @@ const AdvancedMetrics = ({ selectedMonth, selectedYear }: Props) => {
         transition={{ duration: 0.4, delay: 0.15 }}
       >
         <Card3D interactive glowColor="rgba(236,72,153,0.1)">
-          <div className="p-6 flex flex-col h-full">
+          <div className="p-4 sm:p-5 xl:p-6 flex flex-col h-full min-w-0">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Cake className="h-6 w-6 text-accent" />

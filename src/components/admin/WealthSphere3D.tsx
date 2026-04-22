@@ -11,12 +11,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const MONTHS_PT = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const MONTHS_PT_FULL = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-const RISK_COLORS_HEX: Record<string, string> = {
-  A: "#10b981", // success / emerald
-  B: "#3b82f6", // primary / blue
-  C: "#f59e0b", // accent / amber
-  D: "#f97316", // warning / orange
-  E: "#ef4444", // destructive / red
+const RISK_COLORS_HSL: Record<string, string> = {
+  A: "hsl(var(--success))",
+  B: "hsl(var(--primary))",
+  C: "hsl(var(--accent))",
+  D: "hsl(var(--warning))",
+  E: "hsl(var(--destructive))",
 };
 
 const fmtBRLShort = (v: number) => {
@@ -50,7 +50,7 @@ const CentralSphere = ({ trend, scale }: { trend: number; scale: number }) => {
     }
   });
 
-  const color = trend > 0 ? "#10b981" : trend < 0 ? "#ef4444" : "#3b82f6";
+  const color = trend > 0 ? "hsl(var(--success))" : trend < 0 ? "hsl(var(--destructive))" : "hsl(var(--primary))";
 
   return (
     <mesh ref={meshRef}>
@@ -93,8 +93,8 @@ const WealthRing = ({ series }: { series: WealthMonth[] }) => {
           <mesh key={i} position={[x, 0, z]} rotation={[0, -angle, 0]}>
             <boxGeometry args={[0.18, height, 0.18]} />
             <meshStandardMaterial
-              color={isPositive ? "#10b981" : "#ef4444"}
-              emissive={isPositive ? "#10b981" : "#ef4444"}
+              color={isPositive ? "hsl(var(--success))" : "hsl(var(--destructive))"}
+              emissive={isPositive ? "hsl(var(--success))" : "hsl(var(--destructive))"}
               emissiveIntensity={0.4}
               metalness={0.7}
               roughness={0.3}
@@ -105,7 +105,7 @@ const WealthRing = ({ series }: { series: WealthMonth[] }) => {
       {/* Ring base */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[radius, 0.015, 16, 100]} />
-        <meshBasicMaterial color="#3b82f6" transparent opacity={0.3} />
+        <meshBasicMaterial color="hsl(var(--primary))" transparent opacity={0.3} />
       </mesh>
     </group>
   );
@@ -158,8 +158,8 @@ const ClientParticles = ({ clients }: { clients: ClientParticle[] }) => {
         >
           <sphereGeometry args={[p.size, 16, 16]} />
           <meshStandardMaterial
-            color={RISK_COLORS_HEX[p.client.risk] || "#3b82f6"}
-            emissive={RISK_COLORS_HEX[p.client.risk] || "#3b82f6"}
+            color={RISK_COLORS_HSL[p.client.risk] || "hsl(var(--primary))"}
+            emissive={RISK_COLORS_HSL[p.client.risk] || "hsl(var(--primary))"}
             emissiveIntensity={0.6}
           />
         </mesh>
@@ -209,7 +209,7 @@ const Scene = ({
     <>
       <ambientLight intensity={0.4} />
       <pointLight position={[10, 10, 10]} intensity={1.2} />
-      <pointLight position={[-10, -10, -5]} intensity={0.6} color="#3b82f6" />
+      <pointLight position={[-10, -10, -5]} intensity={0.6} color="hsl(var(--primary))" />
       <Stars radius={50} depth={30} count={800} factor={2} fade speed={0.5} />
       <CentralSphere trend={trend} scale={scale} />
       {series.length > 0 && <WealthRing series={series} />}
@@ -415,8 +415,8 @@ const WealthSphere3D = ({
       <Card3D glowColor="rgba(59,130,246,0.15)">
         <div className="relative overflow-hidden rounded-[inherit]">
           {/* Header */}
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 p-6 pb-2">
-            <div className="flex items-center gap-3">
+          <div className="relative z-10 flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3 p-4 sm:p-5 xl:p-6 pb-2">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Globe2 className="h-5 w-5 text-primary" />
               </div>
@@ -430,9 +430,9 @@ const WealthSphere3D = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap xl:justify-end min-w-0">
               {/* Period selector — local to the sphere */}
-              <div className="flex items-center gap-1 bg-muted/60 rounded-xl p-1">
+              <div className="flex items-center gap-1 bg-muted/60 rounded-xl p-1 max-w-full overflow-x-auto scrollbar-none">
                 <button
                   onClick={goPrev}
                   className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-background transition-colors"
@@ -447,7 +447,7 @@ const WealthSphere3D = ({
                     setIsCustom(true);
                     setLocalMonth(Number(e.target.value));
                   }}
-                  className="h-7 px-2 rounded-lg bg-transparent text-xs font-semibold text-foreground border-0 focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
+                  className="h-7 max-w-[112px] xl:max-w-none px-2 rounded-lg bg-transparent text-xs font-semibold text-foreground border-0 focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
                   aria-label="Selecionar mês"
                 >
                   {MONTHS_PT_FULL.map((name, idx) => (
@@ -502,7 +502,7 @@ const WealthSphere3D = ({
           </div>
 
           {/* Canvas + HUD */}
-          <div className="relative h-[380px] w-full">
+          <div className="relative h-[320px] xl:h-[380px] w-full overflow-hidden">
             {/* Background gradient */}
             <div
               className="absolute inset-0 pointer-events-none"
@@ -514,15 +514,15 @@ const WealthSphere3D = ({
 
             {/* HUD overlay */}
             <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 pointer-events-none">
-              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-3 py-2">
+              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-2.5 sm:px-3 py-2">
                 <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Sob gestão</p>
-                <p className="text-lg font-bold text-foreground tabular-nums leading-tight">
+                <p className="text-base sm:text-lg font-bold text-foreground tabular-nums leading-tight">
                   {loading ? "—" : fmtBRLShort(lastValue)}
                 </p>
               </div>
             </div>
             <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 pointer-events-none">
-              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-3 py-2 text-right">
+              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-2.5 sm:px-3 py-2 text-right">
                 <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center justify-end gap-1">
                   <Users className="h-2.5 w-2.5" /> Clientes
                 </p>
@@ -532,7 +532,7 @@ const WealthSphere3D = ({
               </div>
             </div>
             <div className="absolute bottom-4 left-4 z-10 pointer-events-none">
-              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-3 py-2">
+              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-2.5 sm:px-3 py-2">
                 <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Carteira saudável</p>
                 <p className="text-lg font-bold text-success tabular-nums leading-tight">
                   {healthyPct}%
@@ -548,7 +548,7 @@ const WealthSphere3D = ({
                   >
                     <span
                       className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: RISK_COLORS_HEX[r] }}
+                      style={{ backgroundColor: RISK_COLORS_HSL[r] }}
                     />
                     <span className="text-[9px] font-semibold text-muted-foreground">{r}</span>
                   </div>

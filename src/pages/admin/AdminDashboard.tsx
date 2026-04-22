@@ -292,15 +292,15 @@ const AdminDashboard = () => {
 
       {/* ── Month Selector ── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-w-0">
         <div className="flex items-center gap-2">
           <CalendarDays className="h-6 w-6 text-muted-foreground" />
           <span className="text-sm text-muted-foreground font-medium">Competência</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto min-w-0">
           {/* Atalhos rápidos — pills no desktop */}
-          <div className="hidden sm:flex flex-wrap items-center gap-1 bg-muted/50 rounded-xl p-1">
+          <div className="hidden sm:flex flex-wrap items-center gap-1 bg-muted/50 rounded-xl p-1 max-w-full">
             {([
               { key: "this_month", label: "Este mês" },
               { key: "last_month", label: "Mês anterior" },
@@ -312,7 +312,7 @@ const AdminDashboard = () => {
               <button
                 key={p.key}
                 onClick={() => applyPreset(p.key)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                className={`px-2.5 xl:px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                   activePreset === p.key
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -339,7 +339,7 @@ const AdminDashboard = () => {
           </select>
 
           {/* Navegação mês a mês */}
-          <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 max-w-full">
             <button
               onClick={goToPrevMonth}
               className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-background transition-colors"
@@ -347,7 +347,7 @@ const AdminDashboard = () => {
             >
               <ChevronLeft className="h-5 w-5 text-muted-foreground" />
             </button>
-            <span className="px-3 py-1.5 text-xs font-semibold text-foreground min-w-[120px] sm:min-w-[160px] text-center">
+            <span className="px-2 sm:px-3 py-1.5 text-xs font-semibold text-foreground min-w-[112px] sm:min-w-[150px] text-center truncate">
               {periodLabel}
             </span>
             <button
@@ -364,11 +364,11 @@ const AdminDashboard = () => {
 
       {/* ── Smart Insight Card ── */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <div className="flex items-center gap-4 rounded-2xl border border-accent/20 bg-accent/[0.04] px-5 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 rounded-2xl border border-accent/20 bg-accent/[0.04] px-4 sm:px-5 py-4">
           <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
             <Zap className="h-6 w-6 text-accent" />
           </div>
-          <p className="text-sm text-foreground flex-1 font-medium">{insight.text}</p>
+          <p className="text-sm text-foreground flex-1 font-medium min-w-0">{insight.text}</p>
           {insight.action && (
             <Button size="sm" variant="ghost" onClick={() => navigate(insight.action!)} className="shrink-0 text-accent hover:text-accent gap-1">
               {insight.actionLabel} <ChevronRight className="h-6 w-6" />
@@ -389,14 +389,14 @@ const AdminDashboard = () => {
         {/* North Star: Total Clients */}
         <motion.div variants={fadeUp} custom={0} className="sm:col-span-2 lg:col-span-1">
           <KpiCard3D accent="primary">
-            <div className="p-6 flex flex-col justify-center">
+            <div className="p-4 sm:p-5 xl:p-6 flex flex-col justify-center min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center shadow-[inset_0_1px_0_hsl(var(--primary)/0.25),0_4px_10px_-4px_hsl(var(--primary)/0.4)]">
                   <Users className="h-4 w-4 text-primary" />
                 </div>
                 <span className="text-label-xs">Clientes ativos</span>
               </div>
-              <p className="text-5xl font-bold text-foreground tracking-tight tabular-nums drop-shadow-sm">{totalCount}</p>
+              <p className="text-4xl xl:text-5xl font-bold text-foreground tracking-tight tabular-nums drop-shadow-sm">{totalCount}</p>
               <div className="flex items-center gap-3 mt-4 flex-wrap">
                 <PipelineDot color="bg-accent" label="Onboarding" count={stats.onboarding} />
                 <PipelineDot color="bg-destructive" label="Diagnóstico" count={stats.diagnostico} />
@@ -409,14 +409,14 @@ const AdminDashboard = () => {
         {/* Supporting: AUM */}
         <motion.div variants={fadeUp} custom={1}>
           <KpiCard3D accent="success">
-            <div className="p-6 flex flex-col justify-center">
+            <div className="p-4 sm:p-5 xl:p-6 flex flex-col justify-center min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-xl bg-success/15 flex items-center justify-center shadow-[inset_0_1px_0_hsl(var(--success)/0.25),0_4px_10px_-4px_hsl(var(--success)/0.4)]">
                   <TrendingUp className="h-4 w-4 text-success" />
                 </div>
                 <span className="text-label-xs">Patrimônio sob gestão</span>
               </div>
-              <p className={`text-3xl font-bold tracking-tight tabular-nums drop-shadow-sm ${netWealth >= 0 ? "text-foreground" : "text-destructive"}`}>
+              <p className={`text-2xl xl:text-3xl font-bold tracking-tight tabular-nums drop-shadow-sm break-words ${netWealth >= 0 ? "text-foreground" : "text-destructive"}`}>
                 {fmtShort(wealthCount)}
               </p>
               <p className="text-meta-sm mt-1">
@@ -429,7 +429,7 @@ const AdminDashboard = () => {
         {/* Supporting: Plan progress */}
         <motion.div variants={fadeUp} custom={2}>
           <KpiCard3D accent="accent">
-            <div className="p-6 flex flex-col justify-center">
+            <div className="p-4 sm:p-5 xl:p-6 flex flex-col justify-center min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shadow-[inset_0_1px_0_hsl(var(--accent)/0.25),0_4px_10px_-4px_hsl(var(--accent)/0.4)]">
                   <Target className="h-4 w-4 text-accent" />
