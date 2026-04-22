@@ -516,13 +516,18 @@ const ClientOnboarding = () => {
     <div className="space-y-6">
       {/* Edit Dialog */}
       <Dialog open={editingDialog !== null} onOpenChange={(open) => { if (!open) closeEditDialog(); }}>
-        <DialogContent className="w-[calc(100vw-1.5rem)] max-w-2xl h-[min(85vh,760px)] max-h-[calc(100dvh-1.5rem)] overflow-hidden p-0 flex flex-col gap-0">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-4xl h-[calc(100dvh-1rem)] sm:h-[min(92vh,860px)] max-h-[calc(100dvh-1rem)] overflow-hidden p-0 flex flex-col gap-0">
           <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 shrink-0 border-b border-border/40">
-            <DialogTitle className="flex items-center gap-3 font-display">
+            <DialogTitle className="flex items-start gap-3 font-display">
               {editingDialog !== null && (
                 <>
                   <SectionIcon icon={sectionIcons[editingDialog]} index={editingDialog} />
-                  {sections[editingDialog].title}
+                  <span className="min-w-0">
+                    <span className="block">Editar {sections[editingDialog].title}</span>
+                    <span className="mt-1 block text-xs font-semibold text-muted-foreground tabular-nums">
+                      {sections[editingDialog].summary}{modifiedSections.has(editingDialog) ? " · Não salvo" : ""}
+                    </span>
+                  </span>
                 </>
               )}
             </DialogTitle>
@@ -535,11 +540,18 @@ const ClientOnboarding = () => {
             <Button
               onClick={async () => {
                 if (editingDialog !== null && modifiedSections.has(editingDialog)) {
-                  setSubmitting(true);
-                  await saveSection(editingDialog);
-                  setSubmitting(false);
-                  setModifiedSections((prev) => { const next = new Set(prev); next.delete(editingDialog!); return next; });
-                  toast({ title: "Dados salvos!", description: "Alterações salvas com sucesso." });
+                  try {
+                    setSubmitting(true);
+                    await saveSection(editingDialog);
+                    setModifiedSections((prev) => { const next = new Set(prev); next.delete(editingDialog!); return next; });
+                    toast({ title: "Salvo com sucesso", description: "Alterações salvas com segurança." });
+                  } catch {
+                    toast({ title: "Erro ao salvar", description: "Revise os dados e tente novamente.", variant: "destructive" });
+                    setSubmitting(false);
+                    return;
+                  } finally {
+                    setSubmitting(false);
+                  }
                 }
                 closeEditDialog();
               }}
