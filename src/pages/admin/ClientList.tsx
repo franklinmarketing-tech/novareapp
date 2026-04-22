@@ -149,6 +149,8 @@ const ClientList = () => {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [deleteTarget, setDeleteTarget] = useState<ClientRow | null>(null);
+  const [deletingClientId, setDeletingClientId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window === "undefined") return "list";
     return (localStorage.getItem("clients_view_mode") as ViewMode) || "list";
@@ -156,7 +158,6 @@ const ClientList = () => {
   const [sortBy, setSortBy] = useState<SortKey>("recent");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -165,49 +166,46 @@ const ClientList = () => {
   }, [viewMode]);
 
   const loadClients = async () => {
-    const { data: clientsData } = await supabase
-      .from("clients")
-      .select("id, user_id, status, city, profession, assigned_consultant, slug, created_at")
-      .order("created_at", { ascending: false });
-    if (!clientsData) return [] as any[];
+    try {
+      setLoadError(false);
+      const { data: clientsData, error: clientsError } = await supabase
+        .from("clients")
+        .select("id, user_id, status, city, profession, assigned_consultant, slug, created_at")
+        .order("created_at", { ascending: false });
 
-    const userIds = clientsData.map((c) => c.user_id);
-    const { data: profilesData } = await supabase
-      .from("profiles")
-      .select("user_id, full_name, email")
-      .in("user_id", userIds);
+      if (clientsError) throw clientsError;
+      if (!clientsData?.length) {
+        setClients([]);
+        return [] as ClientRow[];
+      }
 
-    const profileMap = new Map((profilesData ?? []).map((p) => [p.user_id, p]));
-    const merged = clientsData.map((c) => ({ ...c, profiles: profileMap.get(c.user_id) ?? null })) as any[];
-    setClients(merged);
-    return merged;
+      const userIds = clientsData.map((c) => c.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .in("user_id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      const profileMap = new Map((profilesData ?? []).map((p) => [p.user_id, p]));
+      const merged = clientsData.map((c) => ({ ...c, profiles: profileMap.get(c.user_id) ?? null })) as ClientRow[];
+      setClients(merged);
+      return merged;
+    } catch (error) {
+      setLoadError(true);
+      toast({
+        title: "Não foi possível carregar os clientes",
+        description: error instanceof Error ? error.message : "Tente novamente em instantes.",
+        variant: "destructive",
+      });
+      return [] as ClientRow[];
+    }
   };
 
   useEffect(() => {
     const init = async () => {
-      const list = await loadClients();
+      await loadClients();
       setLoading(false);
-
-      const maria = list.find((c: any) => c.profiles?.email === "maria.endividada@novare.com");
-      const lucas = list.find((c: any) => c.profiles?.email === "lucas.teste@novare.com");
-      const mariaIncomplete = !maria || maria.status === "onboarding_pendente";
-      const lucasIncomplete = !lucas || lucas.status === "onboarding_pendente";
-      const needsSeed = mariaIncomplete || lucasIncomplete;
-      const alreadyTried = sessionStorage.getItem("seed_demo_attempted");
-
-      if (needsSeed && !alreadyTried) {
-        sessionStorage.setItem("seed_demo_attempted", "1");
-        (async () => {
-          try {
-            const { error } = await supabase.functions.invoke("seed-all-demo-clients", { body: {} });
-            if (!error) {
-              await loadClients();
-            }
-          } catch {
-            // silencioso
-          }
-        })();
-      }
     };
     init();
 
