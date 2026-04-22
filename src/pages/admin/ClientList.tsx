@@ -22,6 +22,7 @@ import {
   ArrowUpDown,
   MapPin,
   Briefcase,
+  Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,6 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { PasswordConfirmDialog } from "@/components/super-admin/PasswordConfirmDialog";
-import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,20 +72,20 @@ const statusMap: Record<
   onboarding_pendente: {
     label: "Pendente Onboarding",
     variant: "warning",
-    dot: "bg-amber-500",
-    border: "before:bg-amber-500/70",
+    dot: "bg-warning",
+    border: "before:bg-warning/70",
   },
   em_diagnostico: {
-    label: "Acompanhamento",
-    variant: "success",
-    dot: "bg-emerald-500",
-    border: "before:bg-emerald-500/70",
+    label: "Em Diagnóstico",
+    variant: "accent",
+    dot: "bg-accent",
+    border: "before:bg-accent/70",
   },
   em_acompanhamento: {
     label: "Acompanhamento",
     variant: "success",
-    dot: "bg-emerald-500",
-    border: "before:bg-emerald-500/70",
+    dot: "bg-success",
+    border: "before:bg-success/70",
   },
 };
 
@@ -111,6 +111,12 @@ const getInitials = (name?: string | null) => {
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
+
+const normalizeSearch = (value?: string | null) =>
+  (value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 
 interface KpiCardProps {
   label: string;
@@ -144,6 +150,8 @@ const ClientList = () => {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [deleteTarget, setDeleteTarget] = useState<ClientRow | null>(null);
+  const [deletingClientId, setDeletingClientId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window === "undefined") return "list";
     return (localStorage.getItem("clients_view_mode") as ViewMode) || "list";
@@ -151,7 +159,6 @@ const ClientList = () => {
   const [sortBy, setSortBy] = useState<SortKey>("recent");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -160,49 +167,46 @@ const ClientList = () => {
   }, [viewMode]);
 
   const loadClients = async () => {
-    const { data: clientsData } = await supabase
-      .from("clients")
-      .select("id, user_id, status, city, profession, assigned_consultant, slug, created_at")
-      .order("created_at", { ascending: false });
-    if (!clientsData) return [] as any[];
+    try {
+      setLoadError(false);
+      const { data: clientsData, error: clientsError } = await supabase
+        .from("clients")
+        .select("id, user_id, status, city, profession, assigned_consultant, slug, created_at")
+        .order("created_at", { ascending: false });
 
-    const userIds = clientsData.map((c) => c.user_id);
-    const { data: profilesData } = await supabase
-      .from("profiles")
-      .select("user_id, full_name, email")
-      .in("user_id", userIds);
+      if (clientsError) throw clientsError;
+      if (!clientsData?.length) {
+        setClients([]);
+        return [] as ClientRow[];
+      }
 
-    const profileMap = new Map((profilesData ?? []).map((p) => [p.user_id, p]));
-    const merged = clientsData.map((c) => ({ ...c, profiles: profileMap.get(c.user_id) ?? null })) as any[];
-    setClients(merged);
-    return merged;
+      const userIds = clientsData.map((c) => c.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .in("user_id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      const profileMap = new Map((profilesData ?? []).map((p) => [p.user_id, p]));
+      const merged = clientsData.map((c) => ({ ...c, profiles: profileMap.get(c.user_id) ?? null })) as ClientRow[];
+      setClients(merged);
+      return merged;
+    } catch (error) {
+      setLoadError(true);
+      toast({
+        title: "Não foi possível carregar os clientes",
+        description: error instanceof Error ? error.message : "Tente novamente em instantes.",
+        variant: "destructive",
+      });
+      return [] as ClientRow[];
+    }
   };
 
   useEffect(() => {
     const init = async () => {
-      const list = await loadClients();
+      await loadClients();
       setLoading(false);
-
-      const maria = list.find((c: any) => c.profiles?.email === "maria.endividada@novare.com");
-      const lucas = list.find((c: any) => c.profiles?.email === "lucas.teste@novare.com");
-      const mariaIncomplete = !maria || maria.status === "onboarding_pendente";
-      const lucasIncomplete = !lucas || lucas.status === "onboarding_pendente";
-      const needsSeed = mariaIncomplete || lucasIncomplete;
-      const alreadyTried = sessionStorage.getItem("seed_demo_attempted");
-
-      if (needsSeed && !alreadyTried) {
-        sessionStorage.setItem("seed_demo_attempted", "1");
-        (async () => {
-          try {
-            const { error } = await supabase.functions.invoke("seed-all-demo-clients", { body: {} });
-            if (!error) {
-              await loadClients();
-            }
-          } catch {
-            // silencioso
-          }
-        })();
-      }
     };
     init();
 
@@ -249,12 +253,15 @@ const ClientList = () => {
   }, [clients]);
 
   const filtered = useMemo(() => {
-    const s = search.toLowerCase();
+    const s = normalizeSearch(search.trim());
     const arr = clients.filter((c) => {
       const name = (c.profiles as any)?.full_name ?? "";
       const email = (c.profiles as any)?.email ?? "";
-      const matchesSearch =
-        !s || name.toLowerCase().includes(s) || email.toLowerCase().includes(s);
+      const statusLabel = statusMap[c.status]?.label ?? c.status;
+      const searchable = [name, email, c.city, c.profession, c.assigned_consultant, statusLabel, c.status]
+        .map(normalizeSearch)
+        .join(" ");
+      const matchesSearch = !s || searchable.includes(s);
       return matchesSearch && matchesFilter(c.status, activeFilter);
     });
 
@@ -279,54 +286,39 @@ const ClientList = () => {
   const countByStatus = (filter: FilterKey) =>
     filter === "all" ? clients.length : clients.filter((c) => matchesFilter(c.status, filter)).length;
 
+  const clearSearchAndFilters = () => {
+    setSearch("");
+    setActiveFilter("all");
+  };
+
   const handleDeleteConfirm = async ({ password }: { password: string; reason: string; confirm_text: string }) => {
-    if (!deleteTarget || !user?.email) return;
+    if (!deleteTarget) return;
     const target = deleteTarget;
     const targetName = target.profiles?.full_name ?? "Cliente";
 
-    setDeleteTarget(null);
-    setClients((prev) => prev.filter((c) => c.id !== target.id));
-
-    let cancelled = false;
-    let executed = false;
-
-    const doDelete = async () => {
-      if (cancelled || executed) return;
-      executed = true;
+    setDeletingClientId(target.id);
+    try {
       const { data, error } = await supabase.functions.invoke("admin-delete-client", {
         body: { client_id: target.id, password },
       });
       if (error || data?.error) {
         const message = data?.error ?? error?.message ?? "Não foi possível excluir o cliente.";
         toast({ title: "Erro ao excluir", description: message, variant: "destructive" });
-        await loadClients();
         return;
       }
-      sonnerToast.success("Cliente excluído", { description: `${targetName} foi removido.` });
+      sonnerToast.success("Cliente excluído", { description: `${targetName} foi removido permanentemente.` });
       await loadClients();
-    };
-
-    const timer = setTimeout(doDelete, 5000);
-
-    sonnerToast(`${targetName} será excluído`, {
-      description: "Você tem 5 segundos para desfazer.",
-      duration: 5000,
-      action: {
-        label: "Desfazer",
-        onClick: () => {
-          cancelled = true;
-          clearTimeout(timer);
-          loadClients();
-          sonnerToast.info("Exclusão cancelada", { description: `${targetName} foi mantido.` });
-        },
-      },
-    });
+      setDeleteTarget(null);
+    } finally {
+      setDeletingClientId(null);
+    }
   };
 
   const renderListCard = (client: ClientRow, i: number) => {
     const profile = client.profiles as any;
     const st = statusMap[client.status] ?? statusMap.onboarding_pendente;
     const initials = getInitials(profile?.full_name);
+    const isDeleting = deletingClientId === client.id;
     const since = client.created_at
       ? formatDistanceToNow(new Date(client.created_at), { locale: ptBR, addSuffix: false })
       : null;
@@ -404,6 +396,7 @@ const ClientList = () => {
                   variant="ghost"
                   className="h-8 w-8"
                   title="Editar cliente"
+                  aria-label={`Editar ${profile?.full_name || "cliente"}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/admin/cliente/${client.slug}/onboarding`);
@@ -416,12 +409,14 @@ const ClientList = () => {
                   variant="ghost"
                   className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                   title="Excluir cliente"
+                  aria-label={`Excluir ${profile?.full_name || "cliente"}`}
+                  disabled={isDeleting}
                   onClick={(e) => {
                     e.stopPropagation();
                     setDeleteTarget(client);
                   }}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                 </Button>
               </div>
               <ChevronRight className="hidden xl:block h-5 w-5 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
@@ -436,6 +431,7 @@ const ClientList = () => {
     const profile = client.profiles as any;
     const st = statusMap[client.status] ?? statusMap.onboarding_pendente;
     const initials = getInitials(profile?.full_name);
+    const isDeleting = deletingClientId === client.id;
     const since = client.created_at
       ? formatDistanceToNow(new Date(client.created_at), { locale: ptBR, addSuffix: false })
       : null;
@@ -505,6 +501,7 @@ const ClientList = () => {
                 size="sm"
                 variant="ghost"
                 className="text-xs h-8"
+                aria-label={`Editar ${profile?.full_name || "cliente"}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/admin/cliente/${client.slug}/onboarding`);
@@ -517,13 +514,15 @@ const ClientList = () => {
                 size="sm"
                 variant="ghost"
                 className="text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                aria-label={`Excluir ${profile?.full_name || "cliente"}`}
+                disabled={isDeleting}
                 onClick={(e) => {
                   e.stopPropagation();
                   setDeleteTarget(client);
                 }}
               >
-                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                Excluir
+                {isDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1.5" />}
+                {isDeleting ? "Excluindo" : "Excluir"}
               </Button>
               <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-accent group-hover:translate-x-0.5 transition-all ml-auto" />
             </div>
@@ -570,8 +569,8 @@ const ClientList = () => {
             value={kpis.tracking}
             hint={kpis.total ? `${Math.round((kpis.tracking / kpis.total) * 100)}% do total` : "—"}
             icon={TrendingUp}
-            tint="bg-emerald-500/10"
-            iconColor="text-emerald-600 dark:text-emerald-400"
+            tint="bg-success/10"
+            iconColor="text-success"
           />
         </motion.div>
         <motion.div variants={fadeUp} custom={2}>
@@ -580,8 +579,8 @@ const ClientList = () => {
             value={kpis.pending}
             hint={kpis.pending > 0 ? "Aguardando preenchimento" : "Todos em dia"}
             icon={Clock}
-            tint="bg-amber-500/10"
-            iconColor="text-amber-600 dark:text-amber-400"
+            tint="bg-warning/10"
+            iconColor="text-warning"
           />
         </motion.div>
         <motion.div variants={fadeUp} custom={3}>
@@ -590,8 +589,8 @@ const ClientList = () => {
             value={kpis.newThisMonth}
             hint={kpis.newThisMonth === 0 ? "Nenhum ainda" : "Cadastrados no mês"}
             icon={Sparkles}
-            tint="bg-blue-500/10"
-            iconColor="text-blue-600 dark:text-blue-400"
+            tint="bg-primary/10"
+            iconColor="text-primary"
           />
         </motion.div>
       </motion.div>
@@ -687,7 +686,7 @@ const ClientList = () => {
         <div className="relative max-w-md min-w-0">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
           <Input
-            placeholder="Buscar por nome ou email..."
+            placeholder="Buscar por nome, email, cidade, profissão, consultor ou status..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 pr-16 h-10"
@@ -707,6 +706,18 @@ const ClientList = () => {
       {/* Client cards */}
       {loading ? (
         <LoadingState variant="list" rows={5} />
+      ) : loadError ? (
+        <EmptyState
+          icon={SearchX}
+          tone="destructive"
+          title="Não foi possível carregar os clientes"
+          description="Tente novamente em instantes."
+          action={
+            <Button variant="outline" className="rounded-xl" onClick={loadClients}>
+              Tentar novamente
+            </Button>
+          }
+        />
       ) : (
         <motion.div
           initial="hidden"
@@ -740,8 +751,13 @@ const ClientList = () => {
               <EmptyState
                 icon={SearchX}
                 variant="compact"
-                title="Nenhum resultado"
-                description="Tente ajustar a busca ou os filtros."
+                title="Nenhum resultado encontrado"
+                description="Tente ajustar a busca ou limpar os filtros ativos."
+                action={
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={clearSearchAndFilters}>
+                    Limpar busca e filtros
+                  </Button>
+                }
               />
             </div>
           )}
