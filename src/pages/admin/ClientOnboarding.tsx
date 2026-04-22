@@ -362,13 +362,15 @@ const ClientOnboarding = () => {
     rendas.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhuma renda cadastrada</p> : (
       <div className="space-y-2.5">
         {rendas.map((r, i) => (
-          <div key={i} className={`flex items-center justify-between bg-muted/40 rounded-xl p-4 ${r.is_primary ? "border-l-2 border-accent/40" : ""}`}>
-            <div>
-              <p className="text-[0.9375rem] font-medium text-foreground">{r.description || "Sem descrição"}{r.is_primary && <span className="ml-2 text-[0.6875rem] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full uppercase tracking-wide">Principal</span>}</p>
-              <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5">{frequencyLabels[r.frequency] || r.frequency} · Estabilidade: {stabilityLabels[r.stability] || r.stability}</p>
+          <ReadonlyItem key={i} className={r.is_primary ? "border-l-2 border-accent/40" : ""}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 break-words">
+                <p className="text-[0.9375rem] font-medium text-foreground break-words">{humanizeValue(r.description) || "Sem descrição"}{r.is_primary && <span className="ml-2 inline-flex text-[0.6875rem] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full uppercase tracking-wide">Principal</span>}</p>
+                <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5 break-words">{humanizeValue(r.frequency, frequencyLabels)} · Estabilidade: {humanizeValue(r.stability, stabilityLabels)}</p>
+              </div>
+              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(r.amount)}</span>
             </div>
-            <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(r.amount)}</span>
-          </div>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -378,13 +380,15 @@ const ClientOnboarding = () => {
     despesas.length === 0 ? <p className="font-body text-sm text-muted-foreground/60 italic">Nenhuma despesa cadastrada</p> : (
       <div className="space-y-2.5">
         {despesas.filter(e => parseFloat(e.amount) > 0).map((e, i) => (
-          <div key={i} className="flex items-center justify-between bg-muted/40 rounded-xl p-4">
-            <div>
-              <p className="text-[0.9375rem] font-medium text-foreground capitalize">{e.category.replace(/_/g, " ")}</p>
-              {e.description && <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5">{e.description}</p>}
+          <ReadonlyItem key={i}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 break-words">
+                <p className="text-[0.9375rem] font-medium text-foreground break-words">{humanizeValue(e.category, expenseLabels) || "Sem categoria"}</p>
+                {e.description && <p className="font-body text-[0.8125rem] text-muted-foreground mt-0.5 break-words">{cleanCustomValue(e.description)}</p>}
+              </div>
+              <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(e.amount)}</span>
             </div>
-            <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(e.amount)}</span>
-          </div>
+          </ReadonlyItem>
         ))}
       </div>
     )
@@ -396,15 +400,15 @@ const ClientOnboarding = () => {
         {dividas.map((d, i) => {
           const highInterest = parseFloat(d.interest_rate) > 5;
           return (
-            <div key={i} className={`bg-muted/40 rounded-xl p-4 ${highInterest ? "border-l-2 border-destructive/40" : ""}`}>
-              <div className="flex items-center justify-between">
-                <p className="text-[0.9375rem] font-medium text-foreground capitalize">{d.type.replace(/_/g, " ")}{d.creditor && ` · ${d.creditor}`}</p>
-                <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums">{formatCurrency(d.total_amount)}</span>
+            <ReadonlyItem key={i} className={highInterest ? "border-l-2 border-destructive/40" : ""}>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <p className="text-[0.9375rem] font-medium text-foreground break-words min-w-0">{humanizeValue(d.type) || "Sem tipo"}{d.creditor && ` · ${humanizeValue(d.creditor)}`}</p>
+                <span className="text-[0.9375rem] font-semibold text-foreground tabular-nums shrink-0">{formatCurrency(d.total_amount)}</span>
               </div>
-              <p className="font-body text-[0.8125rem] text-muted-foreground mt-1">
+              <p className="font-body text-[0.8125rem] text-muted-foreground mt-1 break-words">
                 Parcela: {formatCurrency(d.monthly_payment)} · Juros: {d.interest_rate || "—"}% · {d.remaining_months || "—"} meses restantes
               </p>
-            </div>
+            </ReadonlyItem>
           );
         })}
       </div>
