@@ -494,14 +494,14 @@ const ClientOnboarding = () => {
   const sectionIcons: LucideIcon[] = [User, Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain];
 
   const sections = [
-    { key: 0, title: "Identificação", readonly: renderIdentificacaoReadonly, edit: <StepIdentificacao data={identificacao} onChange={(d) => { setIdentificacao(d); markModified(0); }} /> },
-    { key: 1, title: "Renda", readonly: renderRendasReadonly, edit: <StepRenda data={rendas} onChange={(d) => { setRendas(d); markModified(1); }} /> },
-    { key: 2, title: "Despesas", readonly: renderDespesasReadonly, edit: <StepDespesas data={despesas} onChange={(d) => { setDespesas(d); markModified(2); }} /> },
-    { key: 3, title: "Dívidas", readonly: renderDividasReadonly, edit: <StepDividas data={dividas} onChange={(d) => { setDividas(d); markModified(3); }} /> },
-    { key: 4, title: "Patrimônio", readonly: renderPatrimonioReadonly, edit: <StepPatrimonio data={patrimonio} onChange={(d) => { setPatrimonio(d); markModified(4); }} /> },
-    { key: 5, title: "Seguros", readonly: renderSegurosReadonly, edit: <StepSeguros data={seguros} onChange={(d) => { setSeguros(d); markModified(5); }} /> },
-    { key: 6, title: "Objetivos", readonly: renderObjetivosReadonly, edit: <StepObjetivos data={objetivos} onChange={(d) => { setObjetivos(d); markModified(6); }} /> },
-    { key: 7, title: "Perfil Comportamental", readonly: renderComportamentalReadonly, edit: <div className="text-sm text-muted-foreground italic">Edição disponível no onboarding do cliente</div> },
+    { key: 0, title: "Identificação", summary: identificacao.full_name || "Não informado", readonly: renderIdentificacaoReadonly, edit: <StepIdentificacao data={identificacao} onChange={(d) => { setIdentificacao(d); markModified(0); }} /> },
+    { key: 1, title: "Renda", summary: `${formatCurrencyTotal(totalRenda)}/mês`, readonly: renderRendasReadonly, edit: <StepRenda data={rendas} onChange={(d) => { setRendas(d); markModified(1); }} /> },
+    { key: 2, title: "Despesas", summary: `${formatCurrencyTotal(totalDespesas)}/mês`, readonly: renderDespesasReadonly, edit: <StepDespesas data={despesas} onChange={(d) => { setDespesas(d); markModified(2); }} /> },
+    { key: 3, title: "Dívidas", summary: formatCurrencyTotal(totalDividas), readonly: renderDividasReadonly, edit: <StepDividas data={dividas} onChange={(d) => { setDividas(d); markModified(3); }} /> },
+    { key: 4, title: "Patrimônio", summary: formatCurrencyTotal(totalPatrimonio), readonly: renderPatrimonioReadonly, edit: <StepPatrimonio data={patrimonio} onChange={(d) => { setPatrimonio(d); markModified(4); }} /> },
+    { key: 5, title: "Seguros", summary: `${formatCurrencyTotal(totalSegurosMensal)}/mês`, readonly: renderSegurosReadonly, edit: <StepSeguros data={seguros} onChange={(d) => { setSeguros(d); markModified(5); }} /> },
+    { key: 6, title: "Objetivos", summary: formatCurrencyTotal(totalObjetivos), readonly: renderObjetivosReadonly, edit: <StepObjetivos data={objetivos} onChange={(d) => { setObjetivos(d); markModified(6); }} /> },
+    { key: 7, title: "Perfil Comportamental", summary: perfilComportamental, readonly: renderComportamentalReadonly, edit: <div className="text-sm text-muted-foreground italic">Edição disponível no onboarding do cliente</div> },
   ];
 
   return (
