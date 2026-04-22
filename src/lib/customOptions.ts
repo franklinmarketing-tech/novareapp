@@ -1,4 +1,4 @@
-export type SelectOption = { value: string; label: string };
+export type SelectOption = { value: string; label: string; custom?: boolean };
 
 const CUSTOM_PREFIX = "custom:";
 
@@ -27,7 +27,7 @@ export const mergeCustomOptions = <T extends SelectOption>(
     if (seen.has(key)) return;
 
     seen.add(key);
-    merged.push(createOption ? createOption(cleanValue) : ({ value: cleanValue, label: cleanValue } as T));
+    merged.push(createOption ? { ...createOption(cleanValue), custom: true } : ({ value: cleanValue, label: cleanValue, custom: true } as T));
   });
 
   return merged;

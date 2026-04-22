@@ -11,6 +11,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileAddSheet } from "./MobileAddSheet";
 import { mergeCustomOptions } from "@/lib/customOptions";
 
+const cleanValue = (value?: string) => value?.replace(/^custom:/, "").trim() || "";
+const formatMoney = (value?: string) => {
+  const amount = parseFloat(value || "");
+  return amount > 0 ? `R$ ${amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "Sem valor";
+};
+
 const RENDA_CHIPS = [
   { value: "Salário CLT (líquido)", label: "Salário CLT", emoji: "💼" },
   { value: "Pró-labore", label: "Pró-labore", emoji: "🧾" },
@@ -110,6 +116,9 @@ export const StepRenda = ({ data, onChange }: Props) => {
     }
   };
   const remove = (i: number) => {
+    const item = items[i];
+    const hasData = Object.values(item).some((value) => typeof value === "string" ? cleanValue(value).length > 0 : Boolean(value));
+    if (hasData && !window.confirm("Excluir esta renda?")) return;
     onChange(items.length <= 1 ? [] : items.filter((_, idx) => idx !== i));
   };
 
@@ -142,12 +151,16 @@ export const StepRenda = ({ data, onChange }: Props) => {
               data-item-id={item.id}
               className={`p-5 rounded-2xl border space-y-4 transition-all duration-200 shadow-soft ${isPrimary ? "border-primary/40 bg-primary/[0.04]" : "border-border/60 bg-card hover:border-border hover:shadow-elevated"}`}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">
-                  {isPrimary ? "Renda Principal (líquida)" : `Renda Adicional ${i}`}
-                </span>
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
-                  <Trash2 className="h-4 w-4" />
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">
+                    {isPrimary ? "Renda Principal (líquida)" : `Renda Adicional ${i}`}
+                  </span>
+                  <p className="mt-1 truncate text-[0.9375rem] font-semibold text-foreground">{cleanValue(item.description) || "Nova renda"}</p>
+                  <p className="text-xs font-medium text-muted-foreground">{formatMoney(item.amount)} · {cleanValue(item.frequency) || "mensal"}</p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={() => remove(i)} className="shrink-0 gap-1 text-destructive hover:text-destructive hover:bg-destructive/8">
+                  <Trash2 className="h-4 w-4" /> Excluir
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

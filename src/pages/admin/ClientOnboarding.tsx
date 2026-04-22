@@ -41,6 +41,8 @@ const formatCurrency = (v: string | number) => {
 const formatCurrencyTotal = (v: number) =>
   `R$ ${(Number.isFinite(v) ? v : 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
+const itemCountLabel = (count: number, singular: string, plural: string) => `${count} ${count === 1 ? singular : plural}`;
+
 const formatDate = (d: string) => {
   if (!d) return "—";
   const [y, m, day] = d.split("-");
@@ -174,7 +176,10 @@ const ClientOnboarding = () => {
   });
 
   const openEditDialog = (section: number) => setEditingDialog(section);
-  const closeEditDialog = () => setEditingDialog(null);
+  const closeEditDialog = () => {
+    if (editingDialog !== null && modifiedSections.has(editingDialog) && !window.confirm("Existem alterações não salvas. Deseja sair sem salvar?")) return;
+    setEditingDialog(null);
+  };
 
   const markModified = (section: number) => {
     setModifiedSections((prev) => new Set(prev).add(section));
@@ -281,7 +286,10 @@ const ClientOnboarding = () => {
           break;
         }
       }
-    } catch (err) { if (import.meta.env.DEV) console.error("Save error:", err); }
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Save error:", err);
+      throw err;
+    }
   };
 
   const handleSaveAll = async () => {
@@ -495,12 +503,12 @@ const ClientOnboarding = () => {
 
   const sections = [
     { key: 0, title: "Identificação", summary: identificacao.full_name || "Não informado", readonly: renderIdentificacaoReadonly, edit: <StepIdentificacao data={identificacao} onChange={(d) => { setIdentificacao(d); markModified(0); }} /> },
-    { key: 1, title: "Renda", summary: `${formatCurrencyTotal(totalRenda)}/mês`, readonly: renderRendasReadonly, edit: <StepRenda data={rendas} onChange={(d) => { setRendas(d); markModified(1); }} /> },
-    { key: 2, title: "Despesas", summary: `${formatCurrencyTotal(totalDespesas)}/mês`, readonly: renderDespesasReadonly, edit: <StepDespesas data={despesas} onChange={(d) => { setDespesas(d); markModified(2); }} /> },
-    { key: 3, title: "Dívidas", summary: formatCurrencyTotal(totalDividas), readonly: renderDividasReadonly, edit: <StepDividas data={dividas} onChange={(d) => { setDividas(d); markModified(3); }} /> },
-    { key: 4, title: "Patrimônio", summary: formatCurrencyTotal(totalPatrimonio), readonly: renderPatrimonioReadonly, edit: <StepPatrimonio data={patrimonio} onChange={(d) => { setPatrimonio(d); markModified(4); }} /> },
-    { key: 5, title: "Seguros", summary: `${formatCurrencyTotal(totalSegurosMensal)}/mês`, readonly: renderSegurosReadonly, edit: <StepSeguros data={seguros} onChange={(d) => { setSeguros(d); markModified(5); }} /> },
-    { key: 6, title: "Objetivos", summary: formatCurrencyTotal(totalObjetivos), readonly: renderObjetivosReadonly, edit: <StepObjetivos data={objetivos} onChange={(d) => { setObjetivos(d); markModified(6); }} /> },
+    { key: 1, title: "Renda", summary: `${formatCurrencyTotal(totalRenda)}/mês · ${itemCountLabel(rendas.length, "fonte", "fontes")}`, readonly: renderRendasReadonly, edit: <StepRenda data={rendas} onChange={(d) => { setRendas(d); markModified(1); }} /> },
+    { key: 2, title: "Despesas", summary: `${formatCurrencyTotal(totalDespesas)}/mês · ${itemCountLabel(despesas.length, "despesa", "despesas")}`, readonly: renderDespesasReadonly, edit: <StepDespesas data={despesas} onChange={(d) => { setDespesas(d); markModified(2); }} /> },
+    { key: 3, title: "Dívidas", summary: `${formatCurrencyTotal(totalDividas)} · ${itemCountLabel(dividas.length, "dívida", "dívidas")}`, readonly: renderDividasReadonly, edit: <StepDividas data={dividas} onChange={(d) => { setDividas(d); markModified(3); }} /> },
+    { key: 4, title: "Patrimônio", summary: `${formatCurrencyTotal(totalPatrimonio)} · ${itemCountLabel(patrimonio.length, "ativo", "ativos")}`, readonly: renderPatrimonioReadonly, edit: <StepPatrimonio data={patrimonio} onChange={(d) => { setPatrimonio(d); markModified(4); }} /> },
+    { key: 5, title: "Seguros", summary: `${formatCurrencyTotal(totalSegurosMensal)}/mês · ${itemCountLabel(seguros.length, "seguro", "seguros")}`, readonly: renderSegurosReadonly, edit: <StepSeguros data={seguros} onChange={(d) => { setSeguros(d); markModified(5); }} /> },
+    { key: 6, title: "Objetivos", summary: `${formatCurrencyTotal(totalObjetivos)} · ${itemCountLabel(objetivos.length, "objetivo", "objetivos")}`, readonly: renderObjetivosReadonly, edit: <StepObjetivos data={objetivos} onChange={(d) => { setObjetivos(d); markModified(6); }} /> },
     { key: 7, title: "Perfil Comportamental", summary: perfilComportamental, readonly: renderComportamentalReadonly, edit: <div className="text-sm text-muted-foreground italic">Edição disponível no onboarding do cliente</div> },
   ];
 
@@ -508,13 +516,18 @@ const ClientOnboarding = () => {
     <div className="space-y-6">
       {/* Edit Dialog */}
       <Dialog open={editingDialog !== null} onOpenChange={(open) => { if (!open) closeEditDialog(); }}>
-        <DialogContent className="w-[calc(100vw-1.5rem)] max-w-2xl h-[min(85vh,760px)] max-h-[calc(100dvh-1.5rem)] overflow-hidden p-0 flex flex-col gap-0">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-4xl h-[calc(100dvh-1rem)] sm:h-[min(92vh,860px)] max-h-[calc(100dvh-1rem)] overflow-hidden p-0 flex flex-col gap-0">
           <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 shrink-0 border-b border-border/40">
-            <DialogTitle className="flex items-center gap-3 font-display">
+            <DialogTitle className="flex items-start gap-3 font-display">
               {editingDialog !== null && (
                 <>
                   <SectionIcon icon={sectionIcons[editingDialog]} index={editingDialog} />
-                  {sections[editingDialog].title}
+                  <span className="min-w-0">
+                    <span className="block">Editar {sections[editingDialog].title}</span>
+                    <span className="mt-1 block text-xs font-semibold text-muted-foreground tabular-nums">
+                      {sections[editingDialog].summary}{modifiedSections.has(editingDialog) ? " · Não salvo" : ""}
+                    </span>
+                  </span>
                 </>
               )}
             </DialogTitle>
@@ -527,11 +540,18 @@ const ClientOnboarding = () => {
             <Button
               onClick={async () => {
                 if (editingDialog !== null && modifiedSections.has(editingDialog)) {
-                  setSubmitting(true);
-                  await saveSection(editingDialog);
-                  setSubmitting(false);
-                  setModifiedSections((prev) => { const next = new Set(prev); next.delete(editingDialog!); return next; });
-                  toast({ title: "Dados salvos!", description: "Alterações salvas com sucesso." });
+                  try {
+                    setSubmitting(true);
+                    await saveSection(editingDialog);
+                    setModifiedSections((prev) => { const next = new Set(prev); next.delete(editingDialog!); return next; });
+                    toast({ title: "Salvo com sucesso", description: "Alterações salvas com segurança." });
+                  } catch {
+                    toast({ title: "Erro ao salvar", description: "Revise os dados e tente novamente.", variant: "destructive" });
+                    setSubmitting(false);
+                    return;
+                  } finally {
+                    setSubmitting(false);
+                  }
                 }
                 closeEditDialog();
               }}
@@ -568,8 +588,13 @@ const ClientOnboarding = () => {
                             <Icon className={`h-6 w-6 ${config.text}`} />
                           </div>
                           <div className="min-w-0 text-left">
-                            <span className="block text-[0.8125rem] font-medium text-foreground truncate">{s.title}</span>
-                            <span className="block text-[0.75rem] font-semibold text-muted-foreground tabular-nums truncate">{s.summary}</span>
+                            <span className="flex items-center gap-2 text-[0.8125rem] font-medium text-foreground truncate">
+                              {modifiedSections.has(s.key) && <span className="h-2 w-2 rounded-full bg-accent shrink-0" />}
+                              <span className="truncate">{s.title}</span>
+                            </span>
+                            <span className="block text-[0.75rem] font-semibold text-muted-foreground tabular-nums truncate">
+                              {s.summary}{modifiedSections.has(s.key) ? " · Alterado" : ""}
+                            </span>
                           </div>
                         </div>
                         <EditButton onClick={() => openEditDialog(s.key)} />
