@@ -686,7 +686,7 @@ const ClientList = () => {
         <div className="relative max-w-md min-w-0">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
           <Input
-            placeholder="Buscar por nome ou email..."
+            placeholder="Buscar por nome, email, cidade, profissão, consultor ou status..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 pr-16 h-10"
@@ -706,6 +706,18 @@ const ClientList = () => {
       {/* Client cards */}
       {loading ? (
         <LoadingState variant="list" rows={5} />
+      ) : loadError ? (
+        <EmptyState
+          icon={SearchX}
+          tone="destructive"
+          title="Não foi possível carregar os clientes"
+          description="Tente novamente em instantes."
+          action={
+            <Button variant="outline" className="rounded-xl" onClick={loadClients}>
+              Tentar novamente
+            </Button>
+          }
+        />
       ) : (
         <motion.div
           initial="hidden"
@@ -739,8 +751,13 @@ const ClientList = () => {
               <EmptyState
                 icon={SearchX}
                 variant="compact"
-                title="Nenhum resultado"
-                description="Tente ajustar a busca ou os filtros."
+                title="Nenhum resultado encontrado"
+                description="Tente ajustar a busca ou limpar os filtros ativos."
+                action={
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={clearSearchAndFilters}>
+                    Limpar busca e filtros
+                  </Button>
+                }
               />
             </div>
           )}
