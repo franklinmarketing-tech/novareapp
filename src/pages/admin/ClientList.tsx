@@ -32,7 +32,6 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { PasswordConfirmDialog } from "@/components/super-admin/PasswordConfirmDialog";
-import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,20 +71,20 @@ const statusMap: Record<
   onboarding_pendente: {
     label: "Pendente Onboarding",
     variant: "warning",
-    dot: "bg-amber-500",
-    border: "before:bg-amber-500/70",
+    dot: "bg-warning",
+    border: "before:bg-warning/70",
   },
   em_diagnostico: {
-    label: "Acompanhamento",
-    variant: "success",
-    dot: "bg-emerald-500",
-    border: "before:bg-emerald-500/70",
+    label: "Em Diagnóstico",
+    variant: "accent",
+    dot: "bg-accent",
+    border: "before:bg-accent/70",
   },
   em_acompanhamento: {
     label: "Acompanhamento",
     variant: "success",
-    dot: "bg-emerald-500",
-    border: "before:bg-emerald-500/70",
+    dot: "bg-success",
+    border: "before:bg-success/70",
   },
 };
 
@@ -111,6 +110,12 @@ const getInitials = (name?: string | null) => {
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
+
+const normalizeSearch = (value?: string | null) =>
+  (value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 
 interface KpiCardProps {
   label: string;
