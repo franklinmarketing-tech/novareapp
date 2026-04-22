@@ -252,12 +252,15 @@ const ClientList = () => {
   }, [clients]);
 
   const filtered = useMemo(() => {
-    const s = search.toLowerCase();
+    const s = normalizeSearch(search.trim());
     const arr = clients.filter((c) => {
       const name = (c.profiles as any)?.full_name ?? "";
       const email = (c.profiles as any)?.email ?? "";
-      const matchesSearch =
-        !s || name.toLowerCase().includes(s) || email.toLowerCase().includes(s);
+      const statusLabel = statusMap[c.status]?.label ?? c.status;
+      const searchable = [name, email, c.city, c.profession, c.assigned_consultant, statusLabel, c.status]
+        .map(normalizeSearch)
+        .join(" ");
+      const matchesSearch = !s || searchable.includes(s);
       return matchesSearch && matchesFilter(c.status, activeFilter);
     });
 
@@ -282,48 +285,32 @@ const ClientList = () => {
   const countByStatus = (filter: FilterKey) =>
     filter === "all" ? clients.length : clients.filter((c) => matchesFilter(c.status, filter)).length;
 
+  const clearSearchAndFilters = () => {
+    setSearch("");
+    setActiveFilter("all");
+  };
+
   const handleDeleteConfirm = async ({ password }: { password: string; reason: string; confirm_text: string }) => {
-    if (!deleteTarget || !user?.email) return;
+    if (!deleteTarget) return;
     const target = deleteTarget;
     const targetName = target.profiles?.full_name ?? "Cliente";
 
-    setDeleteTarget(null);
-    setClients((prev) => prev.filter((c) => c.id !== target.id));
-
-    let cancelled = false;
-    let executed = false;
-
-    const doDelete = async () => {
-      if (cancelled || executed) return;
-      executed = true;
+    setDeletingClientId(target.id);
+    try {
       const { data, error } = await supabase.functions.invoke("admin-delete-client", {
         body: { client_id: target.id, password },
       });
       if (error || data?.error) {
         const message = data?.error ?? error?.message ?? "Não foi possível excluir o cliente.";
         toast({ title: "Erro ao excluir", description: message, variant: "destructive" });
-        await loadClients();
         return;
       }
-      sonnerToast.success("Cliente excluído", { description: `${targetName} foi removido.` });
+      sonnerToast.success("Cliente excluído", { description: `${targetName} foi removido permanentemente.` });
       await loadClients();
-    };
-
-    const timer = setTimeout(doDelete, 5000);
-
-    sonnerToast(`${targetName} será excluído`, {
-      description: "Você tem 5 segundos para desfazer.",
-      duration: 5000,
-      action: {
-        label: "Desfazer",
-        onClick: () => {
-          cancelled = true;
-          clearTimeout(timer);
-          loadClients();
-          sonnerToast.info("Exclusão cancelada", { description: `${targetName} foi mantido.` });
-        },
-      },
-    });
+      setDeleteTarget(null);
+    } finally {
+      setDeletingClientId(null);
+    }
   };
 
   const renderListCard = (client: ClientRow, i: number) => {
