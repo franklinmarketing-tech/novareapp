@@ -8,6 +8,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileAddSheet } from "./MobileAddSheet";
+import { mergeCustomOptions } from "@/lib/customOptions";
 
 const DIVIDA_CHIPS = [
   { value: "Cartão de crédito", label: "Cartão", emoji: "💳" },
@@ -45,6 +46,26 @@ export const StepDividas = ({ data, onChange }: Props) => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
+  const typeOptions = mergeCustomOptions([
+    { value: "Financiamento imobiliário", label: "Financiamento imobiliário" },
+    { value: "Financiamento de veículo", label: "Financiamento de veículo" },
+    { value: "Empréstimo pessoal", label: "Empréstimo pessoal" },
+    { value: "Empréstimo consignado", label: "Empréstimo consignado" },
+    { value: "Cartão de crédito", label: "Cartão de crédito" },
+    { value: "Cheque especial", label: "Cheque especial" },
+    { value: "Crédito estudantil", label: "Crédito estudantil" },
+    { value: "Parcelamento", label: "Parcelamento" },
+  ], items.map((item) => item.type));
+  const creditorOptions = mergeCustomOptions([
+    { value: "Banco do Brasil", label: "Banco do Brasil" },
+    { value: "Caixa Econômica", label: "Caixa Econômica" },
+    { value: "Itaú", label: "Itaú" },
+    { value: "Bradesco", label: "Bradesco" },
+    { value: "Santander", label: "Santander" },
+    { value: "Nubank", label: "Nubank" },
+    { value: "Inter", label: "Inter" },
+    { value: "BTG Pactual", label: "BTG Pactual" },
+  ], items.map((item) => item.creditor));
 
   const update = (index: number, field: keyof DebtItem, value: string) => {
     const next = [...items];
@@ -100,16 +121,7 @@ export const StepDividas = ({ data, onChange }: Props) => {
                 <SelectWithCustom
                   value={item.type}
                   onValueChange={(v) => update(i, "type", v)}
-                  options={[
-                    { value: "Financiamento imobiliário", label: "Financiamento imobiliário" },
-                    { value: "Financiamento de veículo", label: "Financiamento de veículo" },
-                    { value: "Empréstimo pessoal", label: "Empréstimo pessoal" },
-                    { value: "Empréstimo consignado", label: "Empréstimo consignado" },
-                    { value: "Cartão de crédito", label: "Cartão de crédito" },
-                    { value: "Cheque especial", label: "Cheque especial" },
-                    { value: "Crédito estudantil", label: "Crédito estudantil" },
-                    { value: "Parcelamento", label: "Parcelamento" },
-                  ]}
+                  options={typeOptions}
                   inputPlaceholder="Ex: Crédito rural, Antecipação..."
                 />
               </div>
@@ -118,16 +130,7 @@ export const StepDividas = ({ data, onChange }: Props) => {
                 <SelectWithCustom
                   value={item.creditor}
                   onValueChange={(v) => update(i, "creditor", v)}
-                  options={[
-                    { value: "Banco do Brasil", label: "Banco do Brasil" },
-                    { value: "Caixa Econômica", label: "Caixa Econômica" },
-                    { value: "Itaú", label: "Itaú" },
-                    { value: "Bradesco", label: "Bradesco" },
-                    { value: "Santander", label: "Santander" },
-                    { value: "Nubank", label: "Nubank" },
-                    { value: "Inter", label: "Inter" },
-                    { value: "BTG Pactual", label: "BTG Pactual" },
-                  ]}
+                  options={creditorOptions}
                   inputPlaceholder="Ex: Sicoob, Banco XP..."
                 />
               </div>
