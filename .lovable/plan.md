@@ -1,212 +1,147 @@
-## Melhorias recomendadas para a experiência de edição do Onboarding Admin
 
-A melhor melhoria aqui é transformar a edição em uma experiência mais guiada, com menos fricção e mais segurança para o consultor editar rapidamente sem se perder.
+## Plano para refinar o menu de edição do Onboarding Admin
 
-## O que eu melhoraria
+Vou aplicar as três melhorias diretamente em `src/pages/admin/ClientOnboarding.tsx`, mantendo o layout atual que já está bom, apenas deixando as informações mais claras.
 
-### 1. Trocar o modal atual por um painel de edição melhor
+## O que será alterado
 
-Hoje o usuário clica em `Editar` e abre uma janela. Eu melhoraria para um destes formatos:
+### 1. Mensagens orientativas quando a seção estiver vazia
 
-- Desktop: painel lateral grande ou modal fullscreen centralizado.
-- Mobile: tela/painel fullscreen.
-- Com rolagem confiável.
-- Cabeçalho fixo com o nome da seção.
-- Rodapé fixo com `Cancelar` e `Salvar`.
-- Total da seção visível enquanto edita.
-
-Exemplo:
+Hoje o resumo mostra contagens como:
 
 ```text
-Editar Despesas
-Total atual: R$ 6.218,00/mês
-
-[lista de despesas editável...]
-
-Cancelar                         Salvar alterações
+R$ 0,00/mês · 0 seguros
+R$ 0,00 · 0 objetivos
 ```
 
-### 2. Mostrar status visual de alteração
-
-Quando o usuário mexer em uma seção, mostrar algo como:
-
-- `Alterado`
-- `Não salvo`
-- ponto laranja ao lado do título
-- botão `Salvar` mais evidente
-
-Exemplo no menu:
-
-```text
-Despesas
-R$ 6.218,00/mês · Alterado
-```
-
-Isso evita o usuário sair achando que já salvou.
-
-### 3. Melhorar a lista principal com ações rápidas
-
-Na tela principal, além de `Editar`, eu melhoraria:
-
-- clicar na linha inteira para abrir/fechar detalhes;
-- botão `Editar` mais claro;
-- mostrar quantidade de itens cadastrados;
-- mostrar resumo mais inteligente.
-
-Exemplo:
+Vou substituir por mensagens mais úteis, por exemplo:
 
 ```text
 Seguros
-R$ 0,00/mês · 2 seguros
-Editar
+Nenhum seguro cadastrado · Adicionar seguro
+
+Objetivos
+Nenhum objetivo cadastrado · Adicionar objetivo
 ```
+
+Também aplicarei o mesmo padrão nas seções repetíveis:
+
+- Renda: `Nenhuma renda cadastrada · Adicionar renda`
+- Despesas: `Nenhuma despesa cadastrada · Adicionar despesa`
+- Dívidas: `Nenhuma dívida cadastrada · Adicionar dívida`
+- Patrimônio: `Nenhum ativo cadastrado · Adicionar ativo`
+- Seguros: `Nenhum seguro cadastrado · Adicionar seguro`
+- Objetivos: `Nenhum objetivo cadastrado · Adicionar objetivo`
+
+Quando houver itens cadastrados, mantém o resumo com total e quantidade.
+
+---
+
+### 2. Etiqueta visual `Alterado`
+
+Hoje existe apenas o ponto laranja e o texto `Alterado` junto do resumo.
+
+Vou transformar isso em uma etiqueta visual mais evidente:
 
 ```text
-Dívidas
-R$ 15.816,13 · 3 dívidas
-Editar
+Alterado
 ```
 
-### 4. Melhorar cada item dentro da edição
+Com estilo discreto, mas visível:
 
-Dentro de Renda, Despesas, Dívidas, Patrimônio, Seguros e Objetivos:
-
-- cada item vira um card mais limpo;
-- título do item mostra o nome preenchido;
-- valor principal aparece no topo do card;
-- botão de excluir fica mais visível;
-- ao excluir, confirmar quando o item já tem dados preenchidos;
-- novo item recém-adicionado recebe destaque visual.
+- fundo em tom laranja/accent suave;
+- texto em accent;
+- borda arredondada;
+- posicionada ao lado do nome da seção;
+- mantendo também o ponto laranja como reforço visual.
 
 Exemplo:
 
 ```text
-Seguro 1
-Vida · Porto Seguro                         R$ 120,00/mês
-[campos editáveis...]
-Excluir
+Despesas   Alterado
+R$ 6.218,00/mês · 4 despesas
 ```
 
-### 5. Adicionar salvamento mais seguro
+---
 
-Melhorar o fluxo para evitar perda de dados:
+### 3. Destacar o valor principal da seção
 
-- se fechar com alterações não salvas, mostrar confirmação;
-- se clicar fora do modal com alterações, perguntar antes;
-- mostrar `Salvando...`;
-- mostrar `Salvo com sucesso`;
-- em caso de erro, não fechar a edição.
+Hoje o resumo inteiro aparece com a mesma força visual.
 
-### 6. Melhorar personalizados nos selects
-
-Como você já pediu personalizados reutilizáveis, eu manteria isso e melhoraria a experiência:
-
-- personalizados aparecem com etiqueta `Personalizado`;
-- opção personalizada recém-criada aparece imediatamente;
-- botão `Personalizado` sempre no fim;
-- texto salvo aparece limpo, sem `custom:`;
-- ao digitar personalizado, permitir confirmar com Enter.
-
-Exemplo:
+Vou separar o resumo em duas partes:
 
 ```text
-Tipo
-Vida
-Auto
-Residencial
-teste        Personalizado
-+ Personalizado
+Renda
+R$ 12.008,00/mês
+4 fontes
 ```
 
+O valor principal ficará com:
 
+- fonte maior;
+- peso mais forte;
+- `tabular-nums` para valores alinhados;
+- cor mais forte.
 
-## Plano de implementação
+A informação secundária ficará menor e mais discreta:
 
-### Etapa 1 — Melhorar o editor
+- quantidade de itens;
+- chamada para adicionar quando vazio;
+- informações complementares.
 
-Alterar `src/pages/admin/ClientOnboarding.tsx` para:
+Exemplos:
 
-- melhorar o `DialogContent`;
-- deixar cabeçalho e rodapé fixos;
-- mostrar total/resumo da seção dentro do editor;
-- impedir fechamento acidental se houver alterações não salvas;
-- melhorar botões `Cancelar` e `Salvar`.
+```text
+Renda
+R$ 12.008,00/mês
+4 fontes
+```
 
-### Etapa 2 — Melhorar os cards editáveis
+```text
+Seguros
+Nenhum seguro cadastrado
+Adicionar seguro
+```
 
-Atualizar os componentes:
+```text
+Objetivos
+R$ 120.000,00
+2 objetivos
+```
 
-- `StepRenda.tsx`
-- `StepDespesas.tsx`
-- `StepDividas.tsx`
-- `StepPatrimonio.tsx`
-- `StepSeguros.tsx`
-- `StepObjetivos.tsx`
+---
 
-Para:
+## Ajuste técnico
 
-- mostrar título e valor resumido no topo de cada card;
-- deixar excluir mais claro;
-- destacar item novo;
-- manter botão de adicionar sempre fácil de acessar;
-- melhorar espaçamentos e leitura.
+Vou substituir o campo `summary` simples por uma estrutura mais rica por seção, por exemplo:
 
-### Etapa 3 — Melhorar a lista principal
+```ts
+{
+  title: "Seguros",
+  primarySummary: "R$ 320,00/mês",
+  secondarySummary: "2 seguros",
+  emptyPrimary: "Nenhum seguro cadastrado",
+  emptySecondary: "Adicionar seguro"
+}
+```
 
-Em `ClientOnboarding.tsx`:
+Assim o menu consegue renderizar:
 
-- mostrar quantidade de itens por seção;
-- mostrar status `Alterado` quando houver edição não salva;
-- melhorar layout do resumo abaixo do título;
-- deixar a linha mais clicável e intuitiva;
-- manter o botão `Editar` visível.
+- valor principal destacado;
+- texto secundário discreto;
+- estado vazio orientativo;
+- etiqueta `Alterado` separada do texto.
 
-### Etapa 4 — Melhorar segurança de salvamento
+## Arquivo que será alterado
 
-Adicionar:
-
-- confirmação ao tentar fechar com alterações;
-- tratamento visual de erro ao salvar;
-- não fechar automaticamente se o salvamento falhar;
-- toast mais claro de sucesso/erro.
-
-### Etapa 5 — Refinar personalizados
-
-Em `SelectWithCustom.tsx` e campos relacionados:
-
-- exibir personalizados reaproveitados com boa apresentação;
-- permitir confirmar personalizado com Enter;
-- manter opções personalizadas futuras funcionando em Seguros, Despesas, Dívidas, Renda, Patrimônio e Objetivos.
+- `src/pages/admin/ClientOnboarding.tsx`
 
 ## Resultado esperado
 
-Depois dessas melhorias, a edição ficará:
+Depois da alteração, o menu ficará mais fácil de ler:
 
-- mais clara;
-- mais rápida;
-- mais segura;
-- menos dependente de abrir/fechar modal pequeno;
-- com menos risco de perder alterações;
-- mais fácil para o consultor revisar todo o onboarding;
-- melhor em desktop e mobile.
-
-## Arquivos principais envolvidos
-
-- `src/pages/admin/ClientOnboarding.tsx`
-- `src/components/ui/select-with-custom.tsx`
-- `src/components/onboarding/StepRenda.tsx`
-- `src/components/onboarding/StepDespesas.tsx`
-- `src/components/onboarding/StepDividas.tsx`
-- `src/components/onboarding/StepPatrimonio.tsx`
-- `src/components/onboarding/StepSeguros.tsx`
-- `src/components/onboarding/StepObjetivos.tsx`
-
-## Minha recomendação
-
-Eu começaria por estas 3 melhorias primeiro:
-
-1. Editor maior com cabeçalho/rodapé fixos.
-2. Indicador de alterações não salvas.
-3. Cards editáveis com resumo no topo de cada item.
-
-Essas três já devem melhorar bastante a experiência sem mudar a estrutura principal do sistema.
+- seções vazias deixam claro o que falta preencher;
+- seções alteradas ficam mais evidentes antes de salvar;
+- valores financeiros principais aparecem com mais destaque;
+- quantidades e detalhes ficam visivelmente secundários;
+- a experiência atual será preservada, apenas refinada.
