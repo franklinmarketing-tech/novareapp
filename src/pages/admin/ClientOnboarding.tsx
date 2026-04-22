@@ -250,63 +250,43 @@ const ClientOnboarding = () => {
   const saveSection = async (section: number) => {
     if (!clientId) return;
     try {
+      const payloadBySection: Record<number, unknown> = {
+        0: identificacao,
+        1: rendas,
+        2: despesas,
+        3: dividas,
+        4: patrimonio,
+        5: seguros,
+        6: objetivos,
+        7: comportamental,
+      };
+
+      const { data, error } = await supabase.functions.invoke("save-onboarding-section", {
+        body: { clientId, section, payload: payloadBySection[section] },
+      });
+
+      if (error) throw error;
+      const committed = data?.committed;
+
       switch (section) {
-        case 0: {
-          const userIdRes = await supabase.from("clients").select("user_id").eq("id", clientId).single();
-          const userId = userIdRes.data?.user_id;
-          await supabase.from("clients").update({
-            cpf: identificacao.cpf || null, date_of_birth: identificacao.date_of_birth || null,
-            marital_status: (identificacao.marital_status as any) || null,
-            property_regime: (identificacao.property_regime as any) || null,
-            profession: identificacao.profession || null, company: identificacao.company || null,
-            years_in_profession: identificacao.years_in_profession ? parseInt(identificacao.years_in_profession) : null,
-            dependents_count: identificacao.dependents_count ? parseInt(identificacao.dependents_count) : 0,
-            dependents_ages: identificacao.dependents_ages || null,
-            city: identificacao.city || null, state: identificacao.state || null,
-          }).eq("id", clientId);
-          if (userId) await supabase.from("profiles").update({ full_name: identificacao.full_name }).eq("user_id", userId);
+        case 1:
+          setRendas((committed ?? []).map((r: any) => ({ id: r.id, description: r.description, amount: r.amount.toString(), frequency: r.frequency, is_primary: r.is_primary ?? false, stability: r.stability ?? "media" })));
           break;
-        }
-        case 1: {
-          await supabase.from("income").delete().eq("client_id", clientId);
-          const valid = rendas.filter((r) => r.description && r.amount);
-          if (valid.length > 0) await supabase.from("income").insert(valid.map((r) => ({ client_id: clientId, description: r.description, amount: parseFloat(r.amount) || 0, frequency: r.frequency as any, is_primary: r.is_primary, stability: r.stability as any })));
+        case 2:
+          setDespesas((committed ?? []).map((e: any) => ({ id: e.id, category: e.category, amount: e.amount.toString(), description: e.description ?? "" })));
           break;
-        }
-        case 2: {
-          await supabase.from("expenses").delete().eq("client_id", clientId);
-          const valid = despesas.filter((e) => e.amount && parseFloat(e.amount) > 0);
-          if (valid.length > 0) await supabase.from("expenses").insert(valid.map((e) => ({ client_id: clientId, category: e.category, amount: parseFloat(e.amount) || 0, description: e.description || null, is_fixed: true })));
+        case 3:
+          setDividas((committed ?? []).map((d: any) => ({ id: d.id, type: d.type, creditor: d.creditor ?? "", total_amount: d.total_amount.toString(), monthly_payment: d.monthly_payment?.toString() ?? "", interest_rate: d.interest_rate?.toString() ?? "", remaining_months: d.remaining_months?.toString() ?? "" })));
           break;
-        }
-        case 3: {
-          await supabase.from("debts").delete().eq("client_id", clientId);
-          const valid = dividas.filter((d) => d.type && d.total_amount);
-          if (valid.length > 0) await supabase.from("debts").insert(valid.map((d) => ({ client_id: clientId, type: d.type, creditor: d.creditor || null, total_amount: parseFloat(d.total_amount) || 0, monthly_payment: parseFloat(d.monthly_payment) || 0, interest_rate: parseFloat(d.interest_rate) || 0, remaining_months: parseInt(d.remaining_months) || 0 })));
+        case 4:
+          setPatrimonio((committed ?? []).map((a: any) => ({ id: a.id, type: a.type, description: a.description ?? "", estimated_value: a.estimated_value.toString() })));
           break;
-        }
-        case 4: {
-          await supabase.from("assets").delete().eq("client_id", clientId);
-          const valid = patrimonio.filter((a) => a.type && a.estimated_value);
-          if (valid.length > 0) await supabase.from("assets").insert(valid.map((a) => ({ client_id: clientId, type: a.type, description: a.description || null, estimated_value: parseFloat(a.estimated_value) || 0 })));
+        case 5:
+          setSeguros((committed ?? []).map((ins: any) => ({ id: ins.id, type: ins.type, provider: ins.provider ?? "", monthly_premium: ins.monthly_premium?.toString() ?? "", coverage_amount: ins.coverage_amount?.toString() ?? "" })));
           break;
-        }
-        case 5: {
-          await supabase.from("insurance").delete().eq("client_id", clientId);
-          const valid = seguros.filter((s) => s.type);
-          if (valid.length > 0) await supabase.from("insurance").insert(valid.map((s) => ({ client_id: clientId, type: s.type, provider: s.provider || null, monthly_premium: parseFloat(s.monthly_premium) || 0, coverage_amount: parseFloat(s.coverage_amount) || 0 })));
+        case 6:
+          setObjetivos((committed ?? []).map((g: any) => ({ id: g.id, description: g.description, target_amount: g.target_amount?.toString() ?? "", deadline: g.deadline ?? "", priority: g.priority ?? "media" })));
           break;
-        }
-        case 6: {
-          await supabase.from("goals").delete().eq("client_id", clientId);
-          const valid = objetivos.filter((g) => g.description);
-          if (valid.length > 0) await supabase.from("goals").insert(valid.map((g) => ({ client_id: clientId, description: g.description, target_amount: parseFloat(g.target_amount) || null, deadline: g.deadline || null, priority: g.priority || "media" })));
-          break;
-        }
-        case 7: {
-          await supabase.from("clients").update({ behavioral_profile: comportamental as any }).eq("id", clientId);
-          break;
-        }
       }
     } catch (err) {
       if (import.meta.env.DEV) console.error("Save error:", err);
