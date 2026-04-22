@@ -17,7 +17,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-subtle ring-offset-background transition-colors placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/15 focus:ring-offset-0 focus:border-ring/40 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-10 w-full min-w-0 items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-subtle ring-offset-background transition-colors placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/15 focus:ring-offset-0 focus:border-ring/40 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:min-w-0 [&>span]:truncate",
       className,
     )}
     {...props}
@@ -79,7 +79,7 @@ const SelectContent = React.forwardRef<
         className={cn(
           "p-1.5",
           position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
+            "max-w-[calc(100vw-1rem)] min-w-[min(var(--radix-select-trigger-width),calc(100vw-1rem))] w-[var(--radix-select-trigger-width)]",
         )}
       >
         {children}
@@ -105,7 +105,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent/60 focus:text-accent-foreground",
+      "relative flex w-full min-w-0 cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm leading-snug outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent/60 focus:text-accent-foreground [&>span:last-child]:min-w-0 [&>span:last-child]:break-words",
       className,
     )}
     {...props}

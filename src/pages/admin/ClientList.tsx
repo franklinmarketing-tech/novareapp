@@ -343,7 +343,7 @@ const ClientList = () => {
           )}
           onClick={() => navigate(`/admin/cliente/${client.slug}/onboarding`)}
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 sm:p-5 pl-5 sm:pl-6">
+          <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 p-4 sm:p-5 pl-5 sm:pl-6 min-w-0">
             <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
@@ -393,12 +393,12 @@ const ClientList = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:ml-4 flex-wrap sm:flex-nowrap justify-end">
-              <span className="text-xs text-muted-foreground font-medium hidden lg:inline">
+            <div className="flex items-center gap-2 xl:ml-4 flex-wrap xl:flex-nowrap justify-start xl:justify-end min-w-0">
+              <span className="text-xs text-muted-foreground font-medium hidden 2xl:inline truncate max-w-[140px]">
                 {client.assigned_consultant || "Sem consultor"}
               </span>
               <Badge variant={st.variant as any}>{st.label}</Badge>
-              <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 rounded-xl bg-muted/40 sm:bg-transparent p-0.5 sm:p-0">
+              <div className="flex items-center gap-1 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity duration-200 rounded-xl bg-muted/40 xl:bg-transparent p-0.5 xl:p-0">
                 <Button
                   size="icon"
                   variant="ghost"
@@ -424,7 +424,7 @@ const ClientList = () => {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-              <ChevronRight className="hidden sm:block h-5 w-5 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
+              <ChevronRight className="hidden xl:block h-5 w-5 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
             </div>
           </div>
         </Card3D>
@@ -597,7 +597,7 @@ const ClientList = () => {
       </motion.div>
 
       {/* Filter chips + view + sort */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 mb-4 min-w-0">
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1">
           {filterTabs.map((tab) => {
             const isActive = activeFilter === tab.key;
@@ -627,16 +627,16 @@ const ClientList = () => {
           })}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 rounded-xl gap-1.5 text-xs">
+              <Button variant="outline" size="sm" className="h-9 rounded-xl gap-1.5 text-xs max-w-[180px]">
                 <ArrowUpDown className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{sortLabels[sortBy]}</span>
+                <span className="hidden sm:inline truncate">{sortLabels[sortBy]}</span>
                 <span className="sm:hidden">Ordenar</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuContent align="end" className="w-44 max-w-[calc(100vw-1rem)]">
               <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {(Object.keys(sortLabels) as SortKey[]).map((key) => (
@@ -651,7 +651,7 @@ const ClientList = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="inline-flex items-center rounded-xl border border-border/60 bg-background p-0.5">
+          <div className="inline-flex items-center rounded-xl border border-border/60 bg-background p-0.5 shrink-0">
             <button
               onClick={() => setViewMode("list")}
               className={cn(
@@ -684,7 +684,7 @@ const ClientList = () => {
 
       {/* Search */}
       <div className="mb-3">
-        <div className="relative max-w-md">
+        <div className="relative max-w-md min-w-0">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
           <Input
             placeholder="Buscar por nome ou email..."
