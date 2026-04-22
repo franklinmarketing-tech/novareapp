@@ -95,11 +95,7 @@ export const StepDespesas = ({ data, onChange }: Props) => {
   };
 
   const remove = (i: number) => {
-    if (items.length <= 1) {
-      onChange([emptyExpense()]);
-      return;
-    }
-    onChange(items.filter((_, idx) => idx !== i));
+    onChange(items.length <= 1 ? [] : items.filter((_, idx) => idx !== i));
   };
 
   const getPercentage = (amount: string) => {
@@ -175,11 +171,9 @@ export const StepDespesas = ({ data, onChange }: Props) => {
                 </span>
                 <div className="flex items-center gap-2">
                   {pct > 0 && <span className="text-xs font-semibold text-primary tabular-nums">{pct}%</span>}
-                  {items.length > 1 && (
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
