@@ -38,6 +38,9 @@ const formatCurrency = (v: string | number) => {
   return `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 };
 
+const formatCurrencyTotal = (v: number) =>
+  `R$ ${(Number.isFinite(v) ? v : 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
 const formatDate = (d: string) => {
   if (!d) return "—";
   const [y, m, day] = d.split("-");
@@ -300,6 +303,9 @@ const ClientOnboarding = () => {
   const totalDespesas = despesas.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
   const totalPatrimonio = patrimonio.reduce((s, a) => s + (parseFloat(a.estimated_value) || 0), 0);
   const totalDividas = dividas.reduce((s, d) => s + (parseFloat(d.total_amount) || 0), 0);
+  const totalSegurosMensal = seguros.reduce((s, seguro) => s + (parseFloat(seguro.monthly_premium) || 0), 0);
+  const totalObjetivos = objetivos.reduce((s, objetivo) => s + (parseFloat(objetivo.target_amount) || 0), 0);
+  const perfilComportamental = computeProfile(comportamental);
 
   const financials: ClientFinancials | null = useMemo(() => {
     if (totalRenda === 0 && totalDespesas === 0 && totalPatrimonio === 0 && totalDividas === 0) return null;
