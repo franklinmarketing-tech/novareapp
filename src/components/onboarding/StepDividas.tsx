@@ -10,6 +10,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileAddSheet } from "./MobileAddSheet";
 import { mergeCustomOptions } from "@/lib/customOptions";
 
+const cleanValue = (value?: string) => value?.replace(/^custom:/, "").trim() || "";
+const formatMoney = (value?: string) => {
+  const amount = parseFloat(value || "");
+  return amount > 0 ? `R$ ${amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "Sem valor";
+};
+
 const DIVIDA_CHIPS = [
   { value: "Cartão de crédito", label: "Cartão", emoji: "💳" },
   { value: "Empréstimo pessoal", label: "Empréstimo", emoji: "💵" },
@@ -89,6 +95,9 @@ export const StepDividas = ({ data, onChange }: Props) => {
     onChange([novo, ...items.filter((d) => d.type || d.total_amount)]);
   };
   const remove = (i: number) => {
+    const item = items[i];
+    const hasData = Object.values(item).some((value) => cleanValue(String(value)).length > 0);
+    if (hasData && !window.confirm("Excluir esta dívida?")) return;
     onChange(items.length <= 1 ? [] : items.filter((_, idx) => idx !== i));
   };
 
@@ -106,10 +115,14 @@ export const StepDividas = ({ data, onChange }: Props) => {
       <div className="space-y-3">
         {items.map((item, i) => (
           <div key={item.id ?? i} data-item-id={item.id} className="p-5 rounded-2xl border border-border/60 bg-card space-y-4 shadow-soft hover:shadow-elevated hover:border-border transition-all duration-200">
-            <div className="flex items-center justify-between">
-              <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">Dívida {i + 1}</span>
-              <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
-                <Trash2 className="h-4 w-4" />
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">Dívida {i + 1}</span>
+                <p className="mt-1 truncate text-[0.9375rem] font-semibold text-foreground">{cleanValue(item.type) || "Nova dívida"}{cleanValue(item.creditor) ? ` · ${cleanValue(item.creditor)}` : ""}</p>
+                <p className="text-xs font-medium text-muted-foreground">{formatMoney(item.total_amount)} · Parcela {formatMoney(item.monthly_payment)}</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => remove(i)} className="shrink-0 gap-1 text-destructive hover:text-destructive hover:bg-destructive/8">
+                <Trash2 className="h-4 w-4" /> Excluir
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
