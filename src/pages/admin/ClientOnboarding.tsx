@@ -41,6 +41,8 @@ const formatCurrency = (v: string | number) => {
 const formatCurrencyTotal = (v: number) =>
   `R$ ${(Number.isFinite(v) ? v : 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
+const itemCountLabel = (count: number, singular: string, plural: string) => `${count} ${count === 1 ? singular : plural}`;
+
 const formatDate = (d: string) => {
   if (!d) return "—";
   const [y, m, day] = d.split("-");
@@ -174,7 +176,10 @@ const ClientOnboarding = () => {
   });
 
   const openEditDialog = (section: number) => setEditingDialog(section);
-  const closeEditDialog = () => setEditingDialog(null);
+  const closeEditDialog = () => {
+    if (editingDialog !== null && modifiedSections.has(editingDialog) && !window.confirm("Existem alterações não salvas. Deseja sair sem salvar?")) return;
+    setEditingDialog(null);
+  };
 
   const markModified = (section: number) => {
     setModifiedSections((prev) => new Set(prev).add(section));
@@ -281,7 +286,10 @@ const ClientOnboarding = () => {
           break;
         }
       }
-    } catch (err) { if (import.meta.env.DEV) console.error("Save error:", err); }
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Save error:", err);
+      throw err;
+    }
   };
 
   const handleSaveAll = async () => {
