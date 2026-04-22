@@ -100,25 +100,25 @@ export function CommandPalette() {
         <CommandGroup heading="Navegação">
           <CommandItem onSelect={() => go("/admin")}>
             <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>Dashboard</span>
+            <span className="truncate">Dashboard</span>
             <CommandShortcut>D</CommandShortcut>
           </CommandItem>
           <CommandItem onSelect={() => go("/admin/clientes")}>
             <Users className="mr-2 h-4 w-4" />
-            <span>Lista de clientes</span>
+            <span className="truncate">Lista de clientes</span>
           </CommandItem>
           <CommandItem onSelect={() => go("/admin/novo-cliente")}>
             <UserPlus className="mr-2 h-4 w-4" />
-            <span>Novo cliente</span>
+            <span className="truncate">Novo cliente</span>
             <CommandShortcut>N</CommandShortcut>
           </CommandItem>
           <CommandItem onSelect={() => go("/admin/financeiro")}>
             <Wallet className="mr-2 h-4 w-4" />
-            <span>Financeiro</span>
+            <span className="truncate">Financeiro</span>
           </CommandItem>
           <CommandItem onSelect={() => go("/admin/configuracoes")}>
             <Settings className="mr-2 h-4 w-4" />
-            <span>Configurações</span>
+            <span className="truncate">Configurações</span>
           </CommandItem>
         </CommandGroup>
 
@@ -133,7 +133,7 @@ export function CommandPalette() {
                   onSelect={() => go(`/admin/cliente/${c.slug}/onboarding`)}
                 >
                   <UserIcon className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col min-w-0">
+                  <div className="flex flex-col min-w-0 flex-1">
                     <span className="truncate text-sm">{c.full_name}</span>
                     <span className="truncate text-xs text-muted-foreground">{c.email}</span>
                   </div>

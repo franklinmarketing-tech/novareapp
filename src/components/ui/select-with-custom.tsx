@@ -61,7 +61,7 @@ export const SelectWithCustom = ({
           value={customText}
           onChange={(e) => handleCustomInput(e.target.value)}
           placeholder={inputPlaceholder}
-          className={`flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 px-0 h-auto text-[0.9375rem] placeholder:text-muted-foreground/50 ${triggerClassName}`}
+          className={`flex-1 min-w-0 border-0 bg-transparent shadow-none focus-visible:ring-0 px-0 h-auto text-[0.9375rem] placeholder:text-muted-foreground/50 ${triggerClassName}`}
           autoFocus
         />
         <button
@@ -83,7 +83,7 @@ export const SelectWithCustom = ({
       <SelectTrigger className={`border-border bg-background ${triggerClassName}`}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="max-w-[calc(100vw-1rem)]">
         {options.map((opt) => (
           <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
         ))}
