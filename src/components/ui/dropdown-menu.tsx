@@ -79,7 +79,7 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-lg px-2.5 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent/60 focus:text-accent-foreground",
+      "relative flex min-w-0 cursor-default select-none items-center rounded-lg px-2.5 py-1.5 text-sm leading-snug outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent/60 focus:text-accent-foreground [&>span]:min-w-0 [&>span]:break-words",
       inset && "pl-8",
       className,
     )}
@@ -95,7 +95,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent/60 focus:text-accent-foreground",
+      "relative flex min-w-0 cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm leading-snug outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent/60 focus:text-accent-foreground",
       className,
     )}
     checked={checked}
@@ -118,7 +118,7 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent/60 focus:text-accent-foreground",
+      "relative flex min-w-0 cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm leading-snug outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent/60 focus:text-accent-foreground",
       className,
     )}
     {...props}
