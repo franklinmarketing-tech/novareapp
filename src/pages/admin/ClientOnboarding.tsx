@@ -38,6 +38,9 @@ const formatCurrency = (v: string | number) => {
   return `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 };
 
+const formatCurrencyTotal = (v: number) =>
+  `R$ ${(Number.isFinite(v) ? v : 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
 const formatDate = (d: string) => {
   if (!d) return "—";
   const [y, m, day] = d.split("-");
@@ -300,6 +303,9 @@ const ClientOnboarding = () => {
   const totalDespesas = despesas.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
   const totalPatrimonio = patrimonio.reduce((s, a) => s + (parseFloat(a.estimated_value) || 0), 0);
   const totalDividas = dividas.reduce((s, d) => s + (parseFloat(d.total_amount) || 0), 0);
+  const totalSegurosMensal = seguros.reduce((s, seguro) => s + (parseFloat(seguro.monthly_premium) || 0), 0);
+  const totalObjetivos = objetivos.reduce((s, objetivo) => s + (parseFloat(objetivo.target_amount) || 0), 0);
+  const perfilComportamental = computeProfile(comportamental);
 
   const financials: ClientFinancials | null = useMemo(() => {
     if (totalRenda === 0 && totalDespesas === 0 && totalPatrimonio === 0 && totalDividas === 0) return null;
@@ -488,14 +494,14 @@ const ClientOnboarding = () => {
   const sectionIcons: LucideIcon[] = [User, Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain];
 
   const sections = [
-    { key: 0, title: "Identificação", readonly: renderIdentificacaoReadonly, edit: <StepIdentificacao data={identificacao} onChange={(d) => { setIdentificacao(d); markModified(0); }} /> },
-    { key: 1, title: "Renda", readonly: renderRendasReadonly, edit: <StepRenda data={rendas} onChange={(d) => { setRendas(d); markModified(1); }} /> },
-    { key: 2, title: "Despesas", readonly: renderDespesasReadonly, edit: <StepDespesas data={despesas} onChange={(d) => { setDespesas(d); markModified(2); }} /> },
-    { key: 3, title: "Dívidas", readonly: renderDividasReadonly, edit: <StepDividas data={dividas} onChange={(d) => { setDividas(d); markModified(3); }} /> },
-    { key: 4, title: "Patrimônio", readonly: renderPatrimonioReadonly, edit: <StepPatrimonio data={patrimonio} onChange={(d) => { setPatrimonio(d); markModified(4); }} /> },
-    { key: 5, title: "Seguros", readonly: renderSegurosReadonly, edit: <StepSeguros data={seguros} onChange={(d) => { setSeguros(d); markModified(5); }} /> },
-    { key: 6, title: "Objetivos", readonly: renderObjetivosReadonly, edit: <StepObjetivos data={objetivos} onChange={(d) => { setObjetivos(d); markModified(6); }} /> },
-    { key: 7, title: "Perfil Comportamental", readonly: renderComportamentalReadonly, edit: <div className="text-sm text-muted-foreground italic">Edição disponível no onboarding do cliente</div> },
+    { key: 0, title: "Identificação", summary: identificacao.full_name || "Não informado", readonly: renderIdentificacaoReadonly, edit: <StepIdentificacao data={identificacao} onChange={(d) => { setIdentificacao(d); markModified(0); }} /> },
+    { key: 1, title: "Renda", summary: `${formatCurrencyTotal(totalRenda)}/mês`, readonly: renderRendasReadonly, edit: <StepRenda data={rendas} onChange={(d) => { setRendas(d); markModified(1); }} /> },
+    { key: 2, title: "Despesas", summary: `${formatCurrencyTotal(totalDespesas)}/mês`, readonly: renderDespesasReadonly, edit: <StepDespesas data={despesas} onChange={(d) => { setDespesas(d); markModified(2); }} /> },
+    { key: 3, title: "Dívidas", summary: formatCurrencyTotal(totalDividas), readonly: renderDividasReadonly, edit: <StepDividas data={dividas} onChange={(d) => { setDividas(d); markModified(3); }} /> },
+    { key: 4, title: "Patrimônio", summary: formatCurrencyTotal(totalPatrimonio), readonly: renderPatrimonioReadonly, edit: <StepPatrimonio data={patrimonio} onChange={(d) => { setPatrimonio(d); markModified(4); }} /> },
+    { key: 5, title: "Seguros", summary: `${formatCurrencyTotal(totalSegurosMensal)}/mês`, readonly: renderSegurosReadonly, edit: <StepSeguros data={seguros} onChange={(d) => { setSeguros(d); markModified(5); }} /> },
+    { key: 6, title: "Objetivos", summary: formatCurrencyTotal(totalObjetivos), readonly: renderObjetivosReadonly, edit: <StepObjetivos data={objetivos} onChange={(d) => { setObjetivos(d); markModified(6); }} /> },
+    { key: 7, title: "Perfil Comportamental", summary: perfilComportamental, readonly: renderComportamentalReadonly, edit: <div className="text-sm text-muted-foreground italic">Edição disponível no onboarding do cliente</div> },
   ];
 
   return (
@@ -556,12 +562,15 @@ const ClientOnboarding = () => {
                     className={i < sections.length - 1 ? "border-b border-border/30" : "border-0"}
                   >
                     <AccordionTrigger className="hover:no-underline py-3.5 px-5 gap-3">
-                      <div className="flex items-center justify-between w-full pr-2">
-                        <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between w-full pr-2 gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
                             <Icon className={`h-6 w-6 ${config.text}`} />
                           </div>
-                          <span className="text-[0.8125rem] font-medium text-foreground">{s.title}</span>
+                          <div className="min-w-0 text-left">
+                            <span className="block text-[0.8125rem] font-medium text-foreground truncate">{s.title}</span>
+                            <span className="block text-[0.75rem] font-semibold text-muted-foreground tabular-nums truncate">{s.summary}</span>
+                          </div>
                         </div>
                         <EditButton onClick={() => openEditDialog(s.key)} />
                       </div>
