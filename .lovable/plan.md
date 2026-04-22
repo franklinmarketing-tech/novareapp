@@ -1,37 +1,78 @@
 
-Vou corrigir os dois problemas no editor do onboarding/admin:
+Vou implementar o salvamento/reaproveitamento dos personalizados na lista suspensa para escolhas futuras.
 
-1. Corrigir o scroll da janela de edição
-- Ajustar o `DialogContent` usado em `src/pages/admin/ClientOnboarding.tsx` para ter altura real limitada à tela (`max-h`/`h-[calc(...)]`) e estrutura flexível correta.
-- Trocar o miolo com `ScrollArea` para um container com rolagem vertical confiável (`overflow-y-auto`, `min-h-0`, `overscroll-contain`), garantindo que listas longas como Dívidas, Despesas, Renda e Patrimônio rolem dentro do modal.
-- Manter o cabeçalho e os botões `Cancelar/Salvar` fixos/visíveis no modal, enquanto apenas o formulário central rola.
-- Ajustar responsividade do modal para telas menores de desktop e mobile (`w-[calc(100vw-...)]`, padding menor no mobile), evitando conteúdo cortado.
+## Objetivo
 
-2. Fazer valores personalizados aparecerem corretamente depois
-- Padronizar a exibição de valores salvos com prefixo `custom:` no resumo/read-only do admin.
-- Criar uma função auxiliar para transformar:
-  - `custom:Minha despesa` em `Minha despesa`
-  - valores normais como `moradia` em seus labels amigáveis quando existirem
-  - valores desconhecidos em texto limpo, sem prefixo técnico
-- Aplicar essa limpeza principalmente em:
-  - Despesas
-  - Dívidas
-  - Renda
-  - Patrimônio
-  - Seguros
-  - Objetivos
-- Corrigir o fluxo do `MobileAddSheet` para Despesas: hoje ele salva a categoria personalizada como `custom:...` sem normalizar, diferente de Dívidas/Renda/Patrimônio. Vou ajustar para preservar corretamente o texto escolhido e exibir sem `custom:`.
+Quando o usuário digitar um valor em `Personalizado`, esse valor deve passar a aparecer como opção normal nos próximos dropdowns daquele mesmo campo.
 
-3. Melhorar a visualização dos cards no resumo
-- Ajustar os cards read-only com `min-w-0`, `break-words` e layout responsivo para textos longos não estourarem.
-- Evitar que nome de dívida, credor, despesa personalizada ou objetivo longo fique cortado ou invisível.
-- Melhorar a quebra entre descrição e valor em telas estreitas, usando coluna no mobile e linha no desktop.
+Exemplo em Seguros:
+1. Em `Tipo`, usuário escolhe `Personalizado` e digita `teste`.
+2. Ao adicionar outro seguro e abrir `Tipo`, a opção `teste` aparece junto com `Vida`, `Auto`, `Residencial`, etc.
+3. Em `Seguradora`, se digitar uma seguradora personalizada, ela também aparece nas próximas escolhas de `Seguradora`.
 
-4. Validar o salvamento
-- Conferir o `saveSection` para garantir que itens personalizados em Despesas/Dívidas/etc. sejam enviados ao Supabase com o texto correto.
-- Manter compatibilidade com dados já salvos que possuam `custom:` no banco, exibindo-os corretamente sem precisar migrar dados.
+## Como vou fazer
 
-Arquivos que pretendo alterar:
-- `src/pages/admin/ClientOnboarding.tsx`
+1. Criar utilitário para opções personalizadas
+- Criar uma função reutilizável para:
+  - remover `custom:` quando existir;
+  - limpar espaços extras;
+  - ignorar campos vazios;
+  - evitar opções duplicadas;
+  - comparar sem diferenciar maiúsculas/minúsculas;
+  - juntar opções padrão + opções personalizadas já usadas.
+
+2. Melhorar o componente `SelectWithCustom`
+- Ajustar para exibir corretamente valores personalizados já salvos.
+- Se o valor atual não estiver na lista padrão, ele poderá aparecer como opção selecionável.
+- Manter o botão `Personalizado` no final da lista.
+- Garantir que o texto apareça limpo, sem `custom:`.
+
+3. Aplicar primeiro em Seguros
+- Em `src/components/onboarding/StepSeguros.tsx`, aplicar a lógica em:
+  - `Tipo`
+  - `Seguradora`
+- O dropdown vai ler os valores já existentes em todos os seguros cadastrados e adicioná-los automaticamente à lista.
+
+4. Aplicar também nos principais campos com personalizado
+- Para manter o comportamento consistente, aplicar a mesma regra em:
+  - Despesas: `Categoria`
+  - Dívidas: `Tipo` e `Credor`
+  - Renda: `Descrição`, `Frequência` e `Estabilidade` quando personalizado for usado
+  - Patrimônio: `Tipo`
+  - Objetivos: `Descrição` e `Prioridade` quando personalizado for usado
+
+5. Compatibilidade com dados atuais
+- Dados antigos salvos como `custom:teste` continuarão funcionando.
+- Dados já salvos apenas como `teste` também serão reconhecidos.
+- Não será necessária migração no banco.
+
+## Resultado esperado
+
+Depois da alteração:
+
+- Personalizados digitados serão reaproveitados automaticamente.
+- Ao adicionar um novo item, os personalizados anteriores aparecerão no dropdown.
+- O resumo/admin continuará exibindo texto limpo.
+- O comportamento será igual em desktop e mobile.
+- O usuário não precisará digitar o mesmo personalizado várias vezes.
+
+## Arquivos que serão alterados
+
+- `src/components/ui/select-with-custom.tsx`
+- `src/components/onboarding/StepSeguros.tsx`
 - `src/components/onboarding/StepDespesas.tsx`
-- Possivelmente `src/components/ui/dialog.tsx` se for melhor corrigir o comportamento de rolagem de todos os diálogos do app de forma global.
+- `src/components/onboarding/StepDividas.tsx`
+- `src/components/onboarding/StepRenda.tsx`
+- `src/components/onboarding/StepPatrimonio.tsx`
+- `src/components/onboarding/StepObjetivos.tsx`
+
+## Validação
+
+Após implementar, vou validar:
+
+1. Criar seguro com `Tipo` personalizado.
+2. Criar seguro com `Seguradora` personalizada.
+3. Adicionar novo seguro.
+4. Confirmar que os dois personalizados aparecem nos dropdowns.
+5. Repetir o teste em Despesas, Dívidas, Renda, Patrimônio e Objetivos.
+6. Conferir que o app compila sem erros.
