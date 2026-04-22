@@ -116,7 +116,7 @@ const AdminClientLayout = () => {
             }}
           />
 
-          <div className="relative flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5">
+          <div className="relative flex flex-col xl:flex-row xl:items-center gap-4 p-4 sm:p-5">
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <div
                 className="relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
@@ -158,7 +158,7 @@ const AdminClientLayout = () => {
               </div>
             </div>
             <Select value={consultant || "__none__"} onValueChange={handleConsultantChange}>
-              <SelectTrigger className="h-9 w-full sm:w-auto sm:min-w-[170px] rounded-xl bg-primary text-primary-foreground border-primary hover:bg-primary/90 text-xs font-medium shadow-sm [&>svg]:text-primary-foreground">
+              <SelectTrigger className="h-9 w-full xl:w-auto xl:min-w-[170px] rounded-xl bg-primary text-primary-foreground border-primary hover:bg-primary/90 text-xs font-medium shadow-sm [&>svg]:text-primary-foreground">
                 <UserCheck className="h-4 w-4 mr-1.5 shrink-0" />
                 <SelectValue placeholder="Consultor" />
               </SelectTrigger>
@@ -175,7 +175,7 @@ const AdminClientLayout = () => {
         {/* Tabs — modern pill-style with bottom indicator */}
         <div className="relative mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
           <div className="border-b border-border/60">
-            <nav className="flex gap-1 overflow-x-auto scrollbar-none">
+            <nav className="flex gap-1 overflow-x-auto scrollbar-none overscroll-x-contain">
               {tabs.map((tab) => {
                 const isDisabled = disabled.includes(tab.path);
                 return (
@@ -202,7 +202,7 @@ const AdminClientLayout = () => {
                             isActive && !isDisabled && "scale-110"
                           )}
                         />
-                        <span>{tab.label}</span>
+                         <span className="truncate">{tab.label}</span>
                         {isActive && !isDisabled && (
                           <span className="absolute inset-x-2 -bottom-px h-0.5 bg-accent rounded-full" />
                         )}
