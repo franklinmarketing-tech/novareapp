@@ -110,8 +110,7 @@ export const StepRenda = ({ data, onChange }: Props) => {
     }
   };
   const remove = (i: number) => {
-    if (items.length <= 1) return;
-    onChange(items.filter((_, idx) => idx !== i));
+    onChange(items.length <= 1 ? [] : items.filter((_, idx) => idx !== i));
   };
 
   const primaryIndex = items.findIndex((r) => r.is_primary);
@@ -147,11 +146,9 @@ export const StepRenda = ({ data, onChange }: Props) => {
                 <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">
                   {isPrimary ? "Renda Principal (líquida)" : `Renda Adicional ${i}`}
                 </span>
-                {items.length > 1 && (
-                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 space-y-1.5">
