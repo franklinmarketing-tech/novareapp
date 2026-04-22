@@ -22,7 +22,6 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ClientFinancialSidebar, type ClientFinancials } from "@/components/parecer/ClientFinancialSidebar";
 import { SystemRecommendationsPanel, type SystemRecommendation, type RiskProfile } from "@/components/parecer/SystemRecommendations";
 import type { BehavioralProfile } from "@/components/onboarding/StepComportamental";
@@ -68,6 +67,37 @@ const regimeLabels: Record<string, string> = {
 const frequencyLabels: Record<string, string> = { mensal: "Mensal", anual: "Anual", eventual: "Eventual" };
 const stabilityLabels: Record<string, string> = { alta: "Alta", media: "Média", baixa: "Baixa" };
 const priorityLabels: Record<string, string> = { alta: "Alta", media: "Média", baixa: "Baixa" };
+
+const expenseLabels: Record<string, string> = {
+  moradia: "Moradia", educacao: "Educação", saude: "Saúde", transporte: "Transporte",
+  alimentacao: "Alimentação", lazer: "Lazer", vestuario: "Vestuário", pensao: "Pensão alimentícia",
+  doacoes: "Doações / Dízimo", assinaturas: "Assinaturas digitais", academia: "Academia",
+  pet: "Pet", empregada: "Empregada / Diarista", cuidador: "Cuidador / Babá", terapia: "Terapia",
+  cursos: "Cursos extras", outros: "Outros",
+};
+
+const cleanCustomValue = (value?: string | null) => {
+  const trimmed = value?.trim() ?? "";
+  return trimmed.startsWith("custom:") ? trimmed.slice(7).trim() : trimmed;
+};
+
+const humanizeValue = (value?: string | null, labels: Record<string, string> = {}) => {
+  const cleaned = cleanCustomValue(value);
+  if (!cleaned) return "";
+  return labels[cleaned] ?? cleaned.replace(/_/g, " ");
+};
+
+const ReadonlyItem = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div className={`bg-muted/40 rounded-xl p-4 min-w-0 ${className}`}>
+    {children}
+  </div>
+);
 
 const EditButton = ({
   onClick,
