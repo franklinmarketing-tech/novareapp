@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -91,7 +91,7 @@ const ReadonlyItem = ({
   children,
   className = "",
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) => (
   <div className={`bg-muted/40 rounded-xl p-4 min-w-0 ${className}`}>
