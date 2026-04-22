@@ -318,6 +318,7 @@ const ClientList = () => {
     const profile = client.profiles as any;
     const st = statusMap[client.status] ?? statusMap.onboarding_pendente;
     const initials = getInitials(profile?.full_name);
+    const isDeleting = deletingClientId === client.id;
     const since = client.created_at
       ? formatDistanceToNow(new Date(client.created_at), { locale: ptBR, addSuffix: false })
       : null;
@@ -395,6 +396,7 @@ const ClientList = () => {
                   variant="ghost"
                   className="h-8 w-8"
                   title="Editar cliente"
+                  aria-label={`Editar ${profile?.full_name || "cliente"}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/admin/cliente/${client.slug}/onboarding`);
@@ -407,12 +409,14 @@ const ClientList = () => {
                   variant="ghost"
                   className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                   title="Excluir cliente"
+                  aria-label={`Excluir ${profile?.full_name || "cliente"}`}
+                  disabled={isDeleting}
                   onClick={(e) => {
                     e.stopPropagation();
                     setDeleteTarget(client);
                   }}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                 </Button>
               </div>
               <ChevronRight className="hidden xl:block h-5 w-5 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
@@ -427,6 +431,7 @@ const ClientList = () => {
     const profile = client.profiles as any;
     const st = statusMap[client.status] ?? statusMap.onboarding_pendente;
     const initials = getInitials(profile?.full_name);
+    const isDeleting = deletingClientId === client.id;
     const since = client.created_at
       ? formatDistanceToNow(new Date(client.created_at), { locale: ptBR, addSuffix: false })
       : null;
@@ -496,6 +501,7 @@ const ClientList = () => {
                 size="sm"
                 variant="ghost"
                 className="text-xs h-8"
+                aria-label={`Editar ${profile?.full_name || "cliente"}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/admin/cliente/${client.slug}/onboarding`);
@@ -508,13 +514,15 @@ const ClientList = () => {
                 size="sm"
                 variant="ghost"
                 className="text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                aria-label={`Excluir ${profile?.full_name || "cliente"}`}
+                disabled={isDeleting}
                 onClick={(e) => {
                   e.stopPropagation();
                   setDeleteTarget(client);
                 }}
               >
-                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                Excluir
+                {isDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1.5" />}
+                {isDeleting ? "Excluindo" : "Excluir"}
               </Button>
               <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-accent group-hover:translate-x-0.5 transition-all ml-auto" />
             </div>
