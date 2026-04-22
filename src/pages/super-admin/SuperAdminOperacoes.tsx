@@ -8,10 +8,11 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Radio, Megaphone, Power, Trash2, Plus, AlertCircle, AlertTriangle, Eye, Database } from "lucide-react";
+import { Radio, Megaphone, Power, Trash2, Plus, AlertCircle, AlertTriangle, Eye, Database, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { PasswordConfirmDialog } from "@/components/super-admin/PasswordConfirmDialog";
+import { resetLocalPwaState } from "@/lib/pwaReset";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -73,6 +74,20 @@ const SuperAdminOperacoes = () => {
     load();
   };
 
+  const runPwaReset = async () => {
+    const token = `pwa-reset-${Date.now()}`;
+    const integrations = { ...(config.integrations ?? {}), pwa_reset_token: token };
+    const { error } = await supabase.from("app_global_config").update({ integrations }).eq("id", 1);
+
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Atualização PWA disparada", description: "Este dispositivo será recarregado e os demais atualizarão ao abrir ou no próximo ciclo." });
+    await resetLocalPwaState({ token, broadcastLocal: true });
+  };
+
   const runClear = async ({ password, reason, confirm_text }: any) => {
     const { data, error } = await supabase.functions.invoke("super-admin-clear-data", {
       body: { scope: clearScope, password, reason, confirm_text },
@@ -108,6 +123,18 @@ const SuperAdminOperacoes = () => {
 
       <div className="grid gap-6 max-w-4xl">
         {/* Kill-switches */}
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><RefreshCw className="h-4 w-4 text-destructive" />Atualização global PWA</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Força todos os dispositivos a baixarem a versão mais nova: limpa Service Worker, caches, IndexedDB, localStorage, sessionStorage e recarrega o app.
+            </p>
+            <Button variant="destructive" onClick={runPwaReset} className="w-full sm:w-auto">
+              <RefreshCw className="h-4 w-4 mr-2" />Reset total em todos
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Power className="h-4 w-4 text-rose-500" />Modos especiais</CardTitle></CardHeader>
           <CardContent className="space-y-4">

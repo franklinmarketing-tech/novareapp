@@ -13,6 +13,7 @@ import { ClientLayout } from "@/components/layouts/ClientLayout";
 import AdminClientLayout from "@/components/layouts/AdminClientLayout";
 import { SuperAdminLayout } from "@/components/layouts/SuperAdminLayout";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { PWAResetListener } from "@/components/PWAResetListener";
 
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
@@ -73,6 +74,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <PWAInstallPrompt />
+          <PWAResetListener />
           <BrowserRouter>
             <AuthProvider>
               <Routes>
