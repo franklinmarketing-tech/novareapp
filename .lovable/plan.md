@@ -1,78 +1,212 @@
+## Melhorias recomendadas para a experiência de edição do Onboarding Admin
 
-Vou implementar o salvamento/reaproveitamento dos personalizados na lista suspensa para escolhas futuras.
+A melhor melhoria aqui é transformar a edição em uma experiência mais guiada, com menos fricção e mais segurança para o consultor editar rapidamente sem se perder.
 
-## Objetivo
+## O que eu melhoraria
 
-Quando o usuário digitar um valor em `Personalizado`, esse valor deve passar a aparecer como opção normal nos próximos dropdowns daquele mesmo campo.
+### 1. Trocar o modal atual por um painel de edição melhor
 
-Exemplo em Seguros:
-1. Em `Tipo`, usuário escolhe `Personalizado` e digita `teste`.
-2. Ao adicionar outro seguro e abrir `Tipo`, a opção `teste` aparece junto com `Vida`, `Auto`, `Residencial`, etc.
-3. Em `Seguradora`, se digitar uma seguradora personalizada, ela também aparece nas próximas escolhas de `Seguradora`.
+Hoje o usuário clica em `Editar` e abre uma janela. Eu melhoraria para um destes formatos:
 
-## Como vou fazer
+- Desktop: painel lateral grande ou modal fullscreen centralizado.
+- Mobile: tela/painel fullscreen.
+- Com rolagem confiável.
+- Cabeçalho fixo com o nome da seção.
+- Rodapé fixo com `Cancelar` e `Salvar`.
+- Total da seção visível enquanto edita.
 
-1. Criar utilitário para opções personalizadas
-- Criar uma função reutilizável para:
-  - remover `custom:` quando existir;
-  - limpar espaços extras;
-  - ignorar campos vazios;
-  - evitar opções duplicadas;
-  - comparar sem diferenciar maiúsculas/minúsculas;
-  - juntar opções padrão + opções personalizadas já usadas.
+Exemplo:
 
-2. Melhorar o componente `SelectWithCustom`
-- Ajustar para exibir corretamente valores personalizados já salvos.
-- Se o valor atual não estiver na lista padrão, ele poderá aparecer como opção selecionável.
-- Manter o botão `Personalizado` no final da lista.
-- Garantir que o texto apareça limpo, sem `custom:`.
+```text
+Editar Despesas
+Total atual: R$ 6.218,00/mês
 
-3. Aplicar primeiro em Seguros
-- Em `src/components/onboarding/StepSeguros.tsx`, aplicar a lógica em:
-  - `Tipo`
-  - `Seguradora`
-- O dropdown vai ler os valores já existentes em todos os seguros cadastrados e adicioná-los automaticamente à lista.
+[lista de despesas editável...]
 
-4. Aplicar também nos principais campos com personalizado
-- Para manter o comportamento consistente, aplicar a mesma regra em:
-  - Despesas: `Categoria`
-  - Dívidas: `Tipo` e `Credor`
-  - Renda: `Descrição`, `Frequência` e `Estabilidade` quando personalizado for usado
-  - Patrimônio: `Tipo`
-  - Objetivos: `Descrição` e `Prioridade` quando personalizado for usado
+Cancelar                         Salvar alterações
+```
 
-5. Compatibilidade com dados atuais
-- Dados antigos salvos como `custom:teste` continuarão funcionando.
-- Dados já salvos apenas como `teste` também serão reconhecidos.
-- Não será necessária migração no banco.
+### 2. Mostrar status visual de alteração
+
+Quando o usuário mexer em uma seção, mostrar algo como:
+
+- `Alterado`
+- `Não salvo`
+- ponto laranja ao lado do título
+- botão `Salvar` mais evidente
+
+Exemplo no menu:
+
+```text
+Despesas
+R$ 6.218,00/mês · Alterado
+```
+
+Isso evita o usuário sair achando que já salvou.
+
+### 3. Melhorar a lista principal com ações rápidas
+
+Na tela principal, além de `Editar`, eu melhoraria:
+
+- clicar na linha inteira para abrir/fechar detalhes;
+- botão `Editar` mais claro;
+- mostrar quantidade de itens cadastrados;
+- mostrar resumo mais inteligente.
+
+Exemplo:
+
+```text
+Seguros
+R$ 0,00/mês · 2 seguros
+Editar
+```
+
+```text
+Dívidas
+R$ 15.816,13 · 3 dívidas
+Editar
+```
+
+### 4. Melhorar cada item dentro da edição
+
+Dentro de Renda, Despesas, Dívidas, Patrimônio, Seguros e Objetivos:
+
+- cada item vira um card mais limpo;
+- título do item mostra o nome preenchido;
+- valor principal aparece no topo do card;
+- botão de excluir fica mais visível;
+- ao excluir, confirmar quando o item já tem dados preenchidos;
+- novo item recém-adicionado recebe destaque visual.
+
+Exemplo:
+
+```text
+Seguro 1
+Vida · Porto Seguro                         R$ 120,00/mês
+[campos editáveis...]
+Excluir
+```
+
+### 5. Adicionar salvamento mais seguro
+
+Melhorar o fluxo para evitar perda de dados:
+
+- se fechar com alterações não salvas, mostrar confirmação;
+- se clicar fora do modal com alterações, perguntar antes;
+- mostrar `Salvando...`;
+- mostrar `Salvo com sucesso`;
+- em caso de erro, não fechar a edição.
+
+### 6. Melhorar personalizados nos selects
+
+Como você já pediu personalizados reutilizáveis, eu manteria isso e melhoraria a experiência:
+
+- personalizados aparecem com etiqueta `Personalizado`;
+- opção personalizada recém-criada aparece imediatamente;
+- botão `Personalizado` sempre no fim;
+- texto salvo aparece limpo, sem `custom:`;
+- ao digitar personalizado, permitir confirmar com Enter.
+
+Exemplo:
+
+```text
+Tipo
+Vida
+Auto
+Residencial
+teste        Personalizado
++ Personalizado
+```
+
+
+
+## Plano de implementação
+
+### Etapa 1 — Melhorar o editor
+
+Alterar `src/pages/admin/ClientOnboarding.tsx` para:
+
+- melhorar o `DialogContent`;
+- deixar cabeçalho e rodapé fixos;
+- mostrar total/resumo da seção dentro do editor;
+- impedir fechamento acidental se houver alterações não salvas;
+- melhorar botões `Cancelar` e `Salvar`.
+
+### Etapa 2 — Melhorar os cards editáveis
+
+Atualizar os componentes:
+
+- `StepRenda.tsx`
+- `StepDespesas.tsx`
+- `StepDividas.tsx`
+- `StepPatrimonio.tsx`
+- `StepSeguros.tsx`
+- `StepObjetivos.tsx`
+
+Para:
+
+- mostrar título e valor resumido no topo de cada card;
+- deixar excluir mais claro;
+- destacar item novo;
+- manter botão de adicionar sempre fácil de acessar;
+- melhorar espaçamentos e leitura.
+
+### Etapa 3 — Melhorar a lista principal
+
+Em `ClientOnboarding.tsx`:
+
+- mostrar quantidade de itens por seção;
+- mostrar status `Alterado` quando houver edição não salva;
+- melhorar layout do resumo abaixo do título;
+- deixar a linha mais clicável e intuitiva;
+- manter o botão `Editar` visível.
+
+### Etapa 4 — Melhorar segurança de salvamento
+
+Adicionar:
+
+- confirmação ao tentar fechar com alterações;
+- tratamento visual de erro ao salvar;
+- não fechar automaticamente se o salvamento falhar;
+- toast mais claro de sucesso/erro.
+
+### Etapa 5 — Refinar personalizados
+
+Em `SelectWithCustom.tsx` e campos relacionados:
+
+- exibir personalizados reaproveitados com boa apresentação;
+- permitir confirmar personalizado com Enter;
+- manter opções personalizadas futuras funcionando em Seguros, Despesas, Dívidas, Renda, Patrimônio e Objetivos.
 
 ## Resultado esperado
 
-Depois da alteração:
+Depois dessas melhorias, a edição ficará:
 
-- Personalizados digitados serão reaproveitados automaticamente.
-- Ao adicionar um novo item, os personalizados anteriores aparecerão no dropdown.
-- O resumo/admin continuará exibindo texto limpo.
-- O comportamento será igual em desktop e mobile.
-- O usuário não precisará digitar o mesmo personalizado várias vezes.
+- mais clara;
+- mais rápida;
+- mais segura;
+- menos dependente de abrir/fechar modal pequeno;
+- com menos risco de perder alterações;
+- mais fácil para o consultor revisar todo o onboarding;
+- melhor em desktop e mobile.
 
-## Arquivos que serão alterados
+## Arquivos principais envolvidos
 
+- `src/pages/admin/ClientOnboarding.tsx`
 - `src/components/ui/select-with-custom.tsx`
-- `src/components/onboarding/StepSeguros.tsx`
+- `src/components/onboarding/StepRenda.tsx`
 - `src/components/onboarding/StepDespesas.tsx`
 - `src/components/onboarding/StepDividas.tsx`
-- `src/components/onboarding/StepRenda.tsx`
 - `src/components/onboarding/StepPatrimonio.tsx`
+- `src/components/onboarding/StepSeguros.tsx`
 - `src/components/onboarding/StepObjetivos.tsx`
 
-## Validação
+## Minha recomendação
 
-Após implementar, vou validar:
+Eu começaria por estas 3 melhorias primeiro:
 
-1. Criar seguro com `Tipo` personalizado.
-2. Criar seguro com `Seguradora` personalizada.
-3. Adicionar novo seguro.
-4. Confirmar que os dois personalizados aparecem nos dropdowns.
-5. Repetir o teste em Despesas, Dívidas, Renda, Patrimônio e Objetivos.
-6. Conferir que o app compila sem erros.
+1. Editor maior com cabeçalho/rodapé fixos.
+2. Indicador de alterações não salvas.
+3. Cards editáveis com resumo no topo de cada item.
+
+Essas três já devem melhorar bastante a experiência sem mudar a estrutura principal do sistema.
