@@ -43,6 +43,28 @@ const formatCurrencyTotal = (v: number) =>
 
 const itemCountLabel = (count: number, singular: string, plural: string) => `${count} ${count === 1 ? singular : plural}`;
 
+const sectionSummary = ({
+  count,
+  total,
+  suffix = "",
+  singular,
+  plural,
+  emptyPrimary,
+  emptySecondary,
+}: {
+  count: number;
+  total: number;
+  suffix?: string;
+  singular: string;
+  plural: string;
+  emptyPrimary: string;
+  emptySecondary: string;
+}) => ({
+  primarySummary: count === 0 ? emptyPrimary : `${formatCurrencyTotal(total)}${suffix}`,
+  secondarySummary: count === 0 ? emptySecondary : itemCountLabel(count, singular, plural),
+  isEmpty: count === 0,
+});
+
 const formatDate = (d: string) => {
   if (!d) return "—";
   const [y, m, day] = d.split("-");
