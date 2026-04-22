@@ -40,11 +40,17 @@ DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayNam
 const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
->(({ className, ...props }, ref) => (
+>(({ className, style, ...props }, ref) => (
   <DropdownMenuPrimitive.SubContent
     ref={ref}
+    style={{
+      width: "min(max(var(--radix-dropdown-menu-trigger-width, 8rem), 12rem), var(--radix-dropdown-menu-content-available-width, calc(100vw - 1rem)))",
+      maxWidth: "min(var(--radix-dropdown-menu-content-available-width, calc(100vw - 1rem)), calc(100vw - 1rem))",
+      maxHeight: "min(var(--radix-dropdown-menu-content-available-height, 24rem), calc(100vh - 1rem))",
+      ...style,
+    }}
     className={cn(
-      "z-50 max-w-[calc(100vw-1rem)] min-w-[8rem] overflow-hidden rounded-2xl border border-border/60 bg-popover p-1.5 text-popover-foreground shadow-elevated data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-2xl border border-border/60 bg-popover p-1.5 text-popover-foreground shadow-elevated data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className,
     )}
     {...props}
@@ -55,13 +61,19 @@ DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayNam
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
+>(({ className, sideOffset = 4, style, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
     <DropdownMenuPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
+      style={{
+        width: "min(max(var(--radix-dropdown-menu-trigger-width, 8rem), 12rem), var(--radix-dropdown-menu-content-available-width, calc(100vw - 1rem)))",
+        maxWidth: "min(var(--radix-dropdown-menu-content-available-width, calc(100vw - 1rem)), calc(100vw - 1rem))",
+        maxHeight: "min(var(--radix-dropdown-menu-content-available-height, 24rem), calc(100vh - 1rem))",
+        ...style,
+      }}
       className={cn(
-        "z-50 max-w-[calc(100vw-1rem)] min-w-[8rem] overflow-hidden rounded-2xl border border-border/60 bg-popover p-1.5 text-popover-foreground shadow-elevated data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-2xl border border-border/60 bg-popover p-1.5 text-popover-foreground shadow-elevated data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         className,
       )}
       {...props}

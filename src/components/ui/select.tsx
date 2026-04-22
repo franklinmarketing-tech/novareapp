@@ -61,12 +61,18 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
+>(({ className, children, position = "popper", style, ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
+      style={{
+        width: "min(max(var(--radix-select-trigger-width, 8rem), 12rem), var(--radix-select-content-available-width, calc(100vw - 1rem)))",
+        maxWidth: "min(var(--radix-select-content-available-width, calc(100vw - 1rem)), calc(100vw - 1rem))",
+        maxHeight: "min(var(--radix-select-content-available-height, 24rem), calc(100vh - 1rem))",
+        ...style,
+      }}
       className={cn(
-        "relative z-50 max-h-[min(24rem,calc(100vh-2rem))] max-w-[calc(100vw-1rem)] min-w-[8rem] overflow-hidden rounded-2xl border border-border/60 bg-popover text-popover-foreground shadow-elevated data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "relative z-50 min-w-[8rem] overflow-hidden rounded-2xl border border-border/60 bg-popover text-popover-foreground shadow-elevated data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className,
@@ -79,7 +85,7 @@ const SelectContent = React.forwardRef<
         className={cn(
           "p-1.5",
           position === "popper" &&
-            "max-w-[calc(100vw-1rem)] min-w-[min(var(--radix-select-trigger-width),calc(100vw-1rem))] w-[var(--radix-select-trigger-width)]",
+            "w-full min-w-0 max-w-full",
         )}
       >
         {children}
