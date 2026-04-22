@@ -22,6 +22,7 @@ import {
   ArrowUpDown,
   MapPin,
   Briefcase,
+  Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -560,8 +561,8 @@ const ClientList = () => {
             value={kpis.tracking}
             hint={kpis.total ? `${Math.round((kpis.tracking / kpis.total) * 100)}% do total` : "—"}
             icon={TrendingUp}
-            tint="bg-emerald-500/10"
-            iconColor="text-emerald-600 dark:text-emerald-400"
+            tint="bg-success/10"
+            iconColor="text-success"
           />
         </motion.div>
         <motion.div variants={fadeUp} custom={2}>
@@ -570,8 +571,8 @@ const ClientList = () => {
             value={kpis.pending}
             hint={kpis.pending > 0 ? "Aguardando preenchimento" : "Todos em dia"}
             icon={Clock}
-            tint="bg-amber-500/10"
-            iconColor="text-amber-600 dark:text-amber-400"
+            tint="bg-warning/10"
+            iconColor="text-warning"
           />
         </motion.div>
         <motion.div variants={fadeUp} custom={3}>
@@ -580,8 +581,8 @@ const ClientList = () => {
             value={kpis.newThisMonth}
             hint={kpis.newThisMonth === 0 ? "Nenhum ainda" : "Cadastrados no mês"}
             icon={Sparkles}
-            tint="bg-blue-500/10"
-            iconColor="text-blue-600 dark:text-blue-400"
+            tint="bg-primary/10"
+            iconColor="text-primary"
           />
         </motion.div>
       </motion.div>
