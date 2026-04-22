@@ -229,7 +229,7 @@ export const AdminLayout = ({ children }: Props) => {
               <ChevronRight className="h-4 w-4 text-sidebar-foreground/40 shrink-0" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" side="right" className="w-56">
+          <DropdownMenuContent align="end" side="right" sideOffset={8} className="w-56 max-w-[calc(100vw-1rem)]">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium truncate">{profile?.full_name || "Administrador"}</p>
@@ -407,7 +407,7 @@ export const AdminLayout = ({ children }: Props) => {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-[260px] bg-sidebar flex-col fixed inset-y-0 z-30 border-r border-sidebar-border/20">
+      <aside className="hidden lg:flex lg:w-[232px] xl:w-[260px] bg-sidebar flex-col fixed inset-y-0 z-30 border-r border-sidebar-border/20">
         {sidebarContent}
       </aside>
 
@@ -437,7 +437,7 @@ export const AdminLayout = ({ children }: Props) => {
       )}
 
       {/* Main content */}
-      <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 min-h-screen">
+      <main className="flex-1 lg:ml-[232px] xl:ml-[260px] pt-14 lg:pt-0 min-h-screen min-w-0">
         {/* Breadcrumb header */}
         <div className="sticky top-0 z-20 bg-background/85 backdrop-blur-md border-b border-border/60">
           <div className="flex items-center h-12 px-4 lg:px-8 gap-3">
@@ -471,7 +471,7 @@ export const AdminLayout = ({ children }: Props) => {
           </div>
         </div>
 
-        <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
+        <div className="p-4 sm:p-6 xl:p-8 max-w-[1600px] mx-auto w-full min-w-0">{children}</div>
       </main>
 
       {/* Global ⌘K palette (admin only) */}
