@@ -69,8 +69,7 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
     onChange([novo, ...items.filter((a) => a.type || a.estimated_value)]);
   };
   const remove = (i: number) => {
-    if (items.length <= 1) return;
-    onChange(items.filter((_, idx) => idx !== i));
+    onChange(items.length <= 1 ? [] : items.filter((_, idx) => idx !== i));
   };
 
   return (
@@ -99,11 +98,9 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
             >
               <div className="flex items-center justify-between">
                 <span className="font-body text-[0.6875rem] font-semibold text-muted-foreground/85 uppercase tracking-[0.12em]">Ativo {i + 1}</span>
-                {items.length > 1 && (
-                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 h-8 w-8">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
