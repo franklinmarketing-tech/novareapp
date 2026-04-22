@@ -588,8 +588,13 @@ const ClientOnboarding = () => {
                             <Icon className={`h-6 w-6 ${config.text}`} />
                           </div>
                           <div className="min-w-0 text-left">
-                            <span className="block text-[0.8125rem] font-medium text-foreground truncate">{s.title}</span>
-                            <span className="block text-[0.75rem] font-semibold text-muted-foreground tabular-nums truncate">{s.summary}</span>
+                            <span className="flex items-center gap-2 text-[0.8125rem] font-medium text-foreground truncate">
+                              {modifiedSections.has(s.key) && <span className="h-2 w-2 rounded-full bg-accent shrink-0" />}
+                              <span className="truncate">{s.title}</span>
+                            </span>
+                            <span className="block text-[0.75rem] font-semibold text-muted-foreground tabular-nums truncate">
+                              {s.summary}{modifiedSections.has(s.key) ? " · Alterado" : ""}
+                            </span>
                           </div>
                         </div>
                         <EditButton onClick={() => openEditDialog(s.key)} />
