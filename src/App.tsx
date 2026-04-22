@@ -12,6 +12,7 @@ import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { ClientLayout } from "@/components/layouts/ClientLayout";
 import AdminClientLayout from "@/components/layouts/AdminClientLayout";
 import { SuperAdminLayout } from "@/components/layouts/SuperAdminLayout";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
@@ -71,6 +72,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <PWAInstallPrompt />
           <BrowserRouter>
             <AuthProvider>
               <Routes>
