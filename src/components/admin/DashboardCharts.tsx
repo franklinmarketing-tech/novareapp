@@ -205,7 +205,7 @@ const DashboardCharts = ({
       {/* ── Hero: Globo Patrimonial 3D ── */}
       <WealthSphere3D selectedMonth={selectedMonth} selectedYear={selectedYear} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
       {/* ── Wealth evolution ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -213,9 +213,9 @@ const DashboardCharts = ({
         transition={{ duration: 0.4 }}
       >
         <Card3D glowColor="rgba(52,211,153,0.10)">
-          <div className="p-6">
+          <div className="p-4 sm:p-5 xl:p-6 min-w-0">
             {/* Header */}
-            <div className="flex items-start justify-between mb-5">
+            <div className="flex items-start justify-between gap-3 mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center">
                   <TrendingUp className="h-5 w-5 text-success" />
@@ -242,7 +242,7 @@ const DashboardCharts = ({
 
             {/* Big value + delta */}
             <div className="flex items-baseline gap-2 mb-1">
-              <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">
+              <p className="text-2xl xl:text-3xl font-bold text-foreground tracking-tight tabular-nums break-words">
                 {loading ? "—" : fmtBRLShort(lastValue)}
               </p>
               {wealthSeries.length > 0 && firstValue !== 0 && (
@@ -333,9 +333,9 @@ const DashboardCharts = ({
         transition={{ duration: 0.4, delay: 0.05 }}
       >
         <Card3D glowColor="rgba(251,146,60,0.08)">
-          <div className="p-6">
+          <div className="p-4 sm:p-5 xl:p-6 min-w-0">
             {/* Header */}
-            <div className="flex items-start justify-between mb-5">
+            <div className="flex items-start justify-between gap-3 mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
                   <ShieldAlert className="h-5 w-5 text-accent" />

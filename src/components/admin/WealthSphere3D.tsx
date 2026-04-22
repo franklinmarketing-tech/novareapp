@@ -11,12 +11,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const MONTHS_PT = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const MONTHS_PT_FULL = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-const RISK_COLORS_HEX: Record<string, string> = {
-  A: "#10b981", // success / emerald
-  B: "#3b82f6", // primary / blue
-  C: "#f59e0b", // accent / amber
-  D: "#f97316", // warning / orange
-  E: "#ef4444", // destructive / red
+const RISK_COLORS_HSL: Record<string, string> = {
+  A: "hsl(var(--success))",
+  B: "hsl(var(--primary))",
+  C: "hsl(var(--accent))",
+  D: "hsl(var(--warning))",
+  E: "hsl(var(--destructive))",
 };
 
 const fmtBRLShort = (v: number) => {
@@ -50,7 +50,7 @@ const CentralSphere = ({ trend, scale }: { trend: number; scale: number }) => {
     }
   });
 
-  const color = trend > 0 ? "#10b981" : trend < 0 ? "#ef4444" : "#3b82f6";
+  const color = trend > 0 ? "hsl(var(--success))" : trend < 0 ? "hsl(var(--destructive))" : "hsl(var(--primary))";
 
   return (
     <mesh ref={meshRef}>
@@ -93,8 +93,8 @@ const WealthRing = ({ series }: { series: WealthMonth[] }) => {
           <mesh key={i} position={[x, 0, z]} rotation={[0, -angle, 0]}>
             <boxGeometry args={[0.18, height, 0.18]} />
             <meshStandardMaterial
-              color={isPositive ? "#10b981" : "#ef4444"}
-              emissive={isPositive ? "#10b981" : "#ef4444"}
+              color={isPositive ? "hsl(var(--success))" : "hsl(var(--destructive))"}
+              emissive={isPositive ? "hsl(var(--success))" : "hsl(var(--destructive))"}
               emissiveIntensity={0.4}
               metalness={0.7}
               roughness={0.3}
@@ -105,7 +105,7 @@ const WealthRing = ({ series }: { series: WealthMonth[] }) => {
       {/* Ring base */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[radius, 0.015, 16, 100]} />
-        <meshBasicMaterial color="#3b82f6" transparent opacity={0.3} />
+        <meshBasicMaterial color="hsl(var(--primary))" transparent opacity={0.3} />
       </mesh>
     </group>
   );
@@ -158,8 +158,8 @@ const ClientParticles = ({ clients }: { clients: ClientParticle[] }) => {
         >
           <sphereGeometry args={[p.size, 16, 16]} />
           <meshStandardMaterial
-            color={RISK_COLORS_HEX[p.client.risk] || "#3b82f6"}
-            emissive={RISK_COLORS_HEX[p.client.risk] || "#3b82f6"}
+            color={RISK_COLORS_HSL[p.client.risk] || "hsl(var(--primary))"}
+            emissive={RISK_COLORS_HSL[p.client.risk] || "hsl(var(--primary))"}
             emissiveIntensity={0.6}
           />
         </mesh>
@@ -209,7 +209,7 @@ const Scene = ({
     <>
       <ambientLight intensity={0.4} />
       <pointLight position={[10, 10, 10]} intensity={1.2} />
-      <pointLight position={[-10, -10, -5]} intensity={0.6} color="#3b82f6" />
+      <pointLight position={[-10, -10, -5]} intensity={0.6} color="hsl(var(--primary))" />
       <Stars radius={50} depth={30} count={800} factor={2} fade speed={0.5} />
       <CentralSphere trend={trend} scale={scale} />
       {series.length > 0 && <WealthRing series={series} />}
