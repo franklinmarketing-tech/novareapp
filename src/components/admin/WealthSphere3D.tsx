@@ -415,8 +415,8 @@ const WealthSphere3D = ({
       <Card3D glowColor="rgba(59,130,246,0.15)">
         <div className="relative overflow-hidden rounded-[inherit]">
           {/* Header */}
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 p-6 pb-2">
-            <div className="flex items-center gap-3">
+          <div className="relative z-10 flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3 p-4 sm:p-5 xl:p-6 pb-2">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Globe2 className="h-5 w-5 text-primary" />
               </div>
@@ -430,9 +430,9 @@ const WealthSphere3D = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap xl:justify-end min-w-0">
               {/* Period selector — local to the sphere */}
-              <div className="flex items-center gap-1 bg-muted/60 rounded-xl p-1">
+              <div className="flex items-center gap-1 bg-muted/60 rounded-xl p-1 max-w-full overflow-x-auto scrollbar-none">
                 <button
                   onClick={goPrev}
                   className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-background transition-colors"
@@ -447,7 +447,7 @@ const WealthSphere3D = ({
                     setIsCustom(true);
                     setLocalMonth(Number(e.target.value));
                   }}
-                  className="h-7 px-2 rounded-lg bg-transparent text-xs font-semibold text-foreground border-0 focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
+                  className="h-7 max-w-[112px] xl:max-w-none px-2 rounded-lg bg-transparent text-xs font-semibold text-foreground border-0 focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
                   aria-label="Selecionar mês"
                 >
                   {MONTHS_PT_FULL.map((name, idx) => (
@@ -502,7 +502,7 @@ const WealthSphere3D = ({
           </div>
 
           {/* Canvas + HUD */}
-          <div className="relative h-[380px] w-full">
+          <div className="relative h-[320px] xl:h-[380px] w-full overflow-hidden">
             {/* Background gradient */}
             <div
               className="absolute inset-0 pointer-events-none"
@@ -514,15 +514,15 @@ const WealthSphere3D = ({
 
             {/* HUD overlay */}
             <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 pointer-events-none">
-              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-3 py-2">
+              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-2.5 sm:px-3 py-2">
                 <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Sob gestão</p>
-                <p className="text-lg font-bold text-foreground tabular-nums leading-tight">
+                <p className="text-base sm:text-lg font-bold text-foreground tabular-nums leading-tight">
                   {loading ? "—" : fmtBRLShort(lastValue)}
                 </p>
               </div>
             </div>
             <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 pointer-events-none">
-              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-3 py-2 text-right">
+              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-2.5 sm:px-3 py-2 text-right">
                 <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center justify-end gap-1">
                   <Users className="h-2.5 w-2.5" /> Clientes
                 </p>
@@ -532,7 +532,7 @@ const WealthSphere3D = ({
               </div>
             </div>
             <div className="absolute bottom-4 left-4 z-10 pointer-events-none">
-              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-3 py-2">
+              <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/50 px-2.5 sm:px-3 py-2">
                 <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Carteira saudável</p>
                 <p className="text-lg font-bold text-success tabular-nums leading-tight">
                   {healthyPct}%
@@ -548,7 +548,7 @@ const WealthSphere3D = ({
                   >
                     <span
                       className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: RISK_COLORS_HEX[r] }}
+                      style={{ backgroundColor: RISK_COLORS_HSL[r] }}
                     />
                     <span className="text-[9px] font-semibold text-muted-foreground">{r}</span>
                   </div>
