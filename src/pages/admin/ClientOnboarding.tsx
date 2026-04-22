@@ -43,6 +43,28 @@ const formatCurrencyTotal = (v: number) =>
 
 const itemCountLabel = (count: number, singular: string, plural: string) => `${count} ${count === 1 ? singular : plural}`;
 
+const sectionSummary = ({
+  count,
+  total,
+  suffix = "",
+  singular,
+  plural,
+  emptyPrimary,
+  emptySecondary,
+}: {
+  count: number;
+  total: number;
+  suffix?: string;
+  singular: string;
+  plural: string;
+  emptyPrimary: string;
+  emptySecondary: string;
+}) => ({
+  primarySummary: count === 0 ? emptyPrimary : `${formatCurrencyTotal(total)}${suffix}`,
+  secondarySummary: count === 0 ? emptySecondary : itemCountLabel(count, singular, plural),
+  isEmpty: count === 0,
+});
+
 const formatDate = (d: string) => {
   if (!d) return "—";
   const [y, m, day] = d.split("-");
@@ -502,14 +524,14 @@ const ClientOnboarding = () => {
   const sectionIcons: LucideIcon[] = [User, Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain];
 
   const sections = [
-    { key: 0, title: "Identificação", summary: identificacao.full_name || "Não informado", readonly: renderIdentificacaoReadonly, edit: <StepIdentificacao data={identificacao} onChange={(d) => { setIdentificacao(d); markModified(0); }} /> },
-    { key: 1, title: "Renda", summary: `${formatCurrencyTotal(totalRenda)}/mês · ${itemCountLabel(rendas.length, "fonte", "fontes")}`, readonly: renderRendasReadonly, edit: <StepRenda data={rendas} onChange={(d) => { setRendas(d); markModified(1); }} /> },
-    { key: 2, title: "Despesas", summary: `${formatCurrencyTotal(totalDespesas)}/mês · ${itemCountLabel(despesas.length, "despesa", "despesas")}`, readonly: renderDespesasReadonly, edit: <StepDespesas data={despesas} onChange={(d) => { setDespesas(d); markModified(2); }} /> },
-    { key: 3, title: "Dívidas", summary: `${formatCurrencyTotal(totalDividas)} · ${itemCountLabel(dividas.length, "dívida", "dívidas")}`, readonly: renderDividasReadonly, edit: <StepDividas data={dividas} onChange={(d) => { setDividas(d); markModified(3); }} /> },
-    { key: 4, title: "Patrimônio", summary: `${formatCurrencyTotal(totalPatrimonio)} · ${itemCountLabel(patrimonio.length, "ativo", "ativos")}`, readonly: renderPatrimonioReadonly, edit: <StepPatrimonio data={patrimonio} onChange={(d) => { setPatrimonio(d); markModified(4); }} /> },
-    { key: 5, title: "Seguros", summary: `${formatCurrencyTotal(totalSegurosMensal)}/mês · ${itemCountLabel(seguros.length, "seguro", "seguros")}`, readonly: renderSegurosReadonly, edit: <StepSeguros data={seguros} onChange={(d) => { setSeguros(d); markModified(5); }} /> },
-    { key: 6, title: "Objetivos", summary: `${formatCurrencyTotal(totalObjetivos)} · ${itemCountLabel(objetivos.length, "objetivo", "objetivos")}`, readonly: renderObjetivosReadonly, edit: <StepObjetivos data={objetivos} onChange={(d) => { setObjetivos(d); markModified(6); }} /> },
-    { key: 7, title: "Perfil Comportamental", summary: perfilComportamental, readonly: renderComportamentalReadonly, edit: <div className="text-sm text-muted-foreground italic">Edição disponível no onboarding do cliente</div> },
+    { key: 0, title: "Identificação", primarySummary: identificacao.full_name || "Não informado", secondarySummary: identificacao.full_name ? "Dados cadastrais" : "Completar identificação", isEmpty: !identificacao.full_name, readonly: renderIdentificacaoReadonly, edit: <StepIdentificacao data={identificacao} onChange={(d) => { setIdentificacao(d); markModified(0); }} /> },
+    { key: 1, title: "Renda", ...sectionSummary({ count: rendas.length, total: totalRenda, suffix: "/mês", singular: "fonte", plural: "fontes", emptyPrimary: "Nenhuma renda cadastrada", emptySecondary: "Adicionar renda" }), readonly: renderRendasReadonly, edit: <StepRenda data={rendas} onChange={(d) => { setRendas(d); markModified(1); }} /> },
+    { key: 2, title: "Despesas", ...sectionSummary({ count: despesas.length, total: totalDespesas, suffix: "/mês", singular: "despesa", plural: "despesas", emptyPrimary: "Nenhuma despesa cadastrada", emptySecondary: "Adicionar despesa" }), readonly: renderDespesasReadonly, edit: <StepDespesas data={despesas} onChange={(d) => { setDespesas(d); markModified(2); }} /> },
+    { key: 3, title: "Dívidas", ...sectionSummary({ count: dividas.length, total: totalDividas, singular: "dívida", plural: "dívidas", emptyPrimary: "Nenhuma dívida cadastrada", emptySecondary: "Adicionar dívida" }), readonly: renderDividasReadonly, edit: <StepDividas data={dividas} onChange={(d) => { setDividas(d); markModified(3); }} /> },
+    { key: 4, title: "Patrimônio", ...sectionSummary({ count: patrimonio.length, total: totalPatrimonio, singular: "ativo", plural: "ativos", emptyPrimary: "Nenhum ativo cadastrado", emptySecondary: "Adicionar ativo" }), readonly: renderPatrimonioReadonly, edit: <StepPatrimonio data={patrimonio} onChange={(d) => { setPatrimonio(d); markModified(4); }} /> },
+    { key: 5, title: "Seguros", ...sectionSummary({ count: seguros.length, total: totalSegurosMensal, suffix: "/mês", singular: "seguro", plural: "seguros", emptyPrimary: "Nenhum seguro cadastrado", emptySecondary: "Adicionar seguro" }), readonly: renderSegurosReadonly, edit: <StepSeguros data={seguros} onChange={(d) => { setSeguros(d); markModified(5); }} /> },
+    { key: 6, title: "Objetivos", ...sectionSummary({ count: objetivos.length, total: totalObjetivos, singular: "objetivo", plural: "objetivos", emptyPrimary: "Nenhum objetivo cadastrado", emptySecondary: "Adicionar objetivo" }), readonly: renderObjetivosReadonly, edit: <StepObjetivos data={objetivos} onChange={(d) => { setObjetivos(d); markModified(6); }} /> },
+    { key: 7, title: "Perfil Comportamental", primarySummary: perfilComportamental, secondarySummary: "Perfil calculado", isEmpty: false, readonly: renderComportamentalReadonly, edit: <div className="text-sm text-muted-foreground italic">Edição disponível no onboarding do cliente</div> },
   ];
 
   return (
@@ -525,7 +547,7 @@ const ClientOnboarding = () => {
                   <span className="min-w-0">
                     <span className="block">Editar {sections[editingDialog].title}</span>
                     <span className="mt-1 block text-xs font-semibold text-muted-foreground tabular-nums">
-                      {sections[editingDialog].summary}{modifiedSections.has(editingDialog) ? " · Não salvo" : ""}
+                      {sections[editingDialog].primarySummary}{sections[editingDialog].secondarySummary ? ` · ${sections[editingDialog].secondarySummary}` : ""}{modifiedSections.has(editingDialog) ? " · Não salvo" : ""}
                     </span>
                   </span>
                 </>
@@ -591,9 +613,17 @@ const ClientOnboarding = () => {
                             <span className="flex items-center gap-2 text-[0.8125rem] font-medium text-foreground truncate">
                               {modifiedSections.has(s.key) && <span className="h-2 w-2 rounded-full bg-accent shrink-0" />}
                               <span className="truncate">{s.title}</span>
+                              {modifiedSections.has(s.key) && (
+                                <span className="shrink-0 rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wide text-accent">
+                                  Alterado
+                                </span>
+                              )}
                             </span>
-                            <span className="block text-[0.75rem] font-semibold text-muted-foreground tabular-nums truncate">
-                              {s.summary}{modifiedSections.has(s.key) ? " · Alterado" : ""}
+                            <span className={`mt-0.5 block truncate tabular-nums ${s.isEmpty ? "text-[0.75rem] font-semibold text-muted-foreground" : "text-[0.9375rem] font-semibold text-foreground"}`}>
+                              {s.primarySummary}
+                            </span>
+                            <span className="block truncate text-[0.71875rem] font-medium text-muted-foreground/75">
+                              {s.secondarySummary}
                             </span>
                           </div>
                         </div>
