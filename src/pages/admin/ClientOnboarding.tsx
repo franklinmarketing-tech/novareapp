@@ -547,7 +547,7 @@ const ClientOnboarding = () => {
                   <span className="min-w-0">
                     <span className="block">Editar {sections[editingDialog].title}</span>
                     <span className="mt-1 block text-xs font-semibold text-muted-foreground tabular-nums">
-                      {sections[editingDialog].summary}{modifiedSections.has(editingDialog) ? " · Não salvo" : ""}
+                      {sections[editingDialog].primarySummary}{sections[editingDialog].secondarySummary ? ` · ${sections[editingDialog].secondarySummary}` : ""}{modifiedSections.has(editingDialog) ? " · Não salvo" : ""}
                     </span>
                   </span>
                 </>
@@ -613,9 +613,17 @@ const ClientOnboarding = () => {
                             <span className="flex items-center gap-2 text-[0.8125rem] font-medium text-foreground truncate">
                               {modifiedSections.has(s.key) && <span className="h-2 w-2 rounded-full bg-accent shrink-0" />}
                               <span className="truncate">{s.title}</span>
+                              {modifiedSections.has(s.key) && (
+                                <span className="shrink-0 rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wide text-accent">
+                                  Alterado
+                                </span>
+                              )}
                             </span>
-                            <span className="block text-[0.75rem] font-semibold text-muted-foreground tabular-nums truncate">
-                              {s.summary}{modifiedSections.has(s.key) ? " · Alterado" : ""}
+                            <span className={`mt-0.5 block truncate tabular-nums ${s.isEmpty ? "text-[0.75rem] font-semibold text-muted-foreground" : "text-[0.9375rem] font-semibold text-foreground"}`}>
+                              {s.primarySummary}
+                            </span>
+                            <span className="block truncate text-[0.71875rem] font-medium text-muted-foreground/75">
+                              {s.secondarySummary}
                             </span>
                           </div>
                         </div>
