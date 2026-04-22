@@ -6,7 +6,7 @@ import { normalizeCustomValue, mergeCustomOptions } from "@/lib/customOptions";
 interface SelectWithCustomProps {
   value: string;
   onValueChange: (value: string) => void;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; custom?: boolean }[];
   placeholder?: string;
   className?: string;
   triggerClassName?: string;
@@ -50,6 +50,13 @@ export const SelectWithCustom = ({
     onValueChange(`custom:${text}`);
   };
 
+  const commitCustomInput = () => {
+    const clean = normalizedValue.trim();
+    if (!clean) return;
+    setShowCustomInput(false);
+    onValueChange(clean);
+  };
+
   if (showCustomInput) {
     return (
       <div
@@ -63,6 +70,13 @@ export const SelectWithCustom = ({
         <Input
           value={customText}
           onChange={(e) => handleCustomInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commitCustomInput();
+            }
+          }}
+          onBlur={commitCustomInput}
           placeholder={inputPlaceholder}
           className={`flex-1 min-w-0 border-0 bg-transparent shadow-none focus-visible:ring-0 px-0 h-auto text-[0.9375rem] placeholder:text-muted-foreground/50 ${triggerClassName}`}
           autoFocus
@@ -88,7 +102,12 @@ export const SelectWithCustom = ({
       </SelectTrigger>
       <SelectContent className="max-w-[calc(100vw-1rem)]">
         {safeOptions.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+          <SelectItem key={opt.value} value={opt.value}>
+            <span className="flex w-full items-center justify-between gap-3">
+              <span>{opt.label}</span>
+              {opt.custom && <span className="text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Personalizado</span>}
+            </span>
+          </SelectItem>
         ))}
         <SelectItem value="__custom__" className="text-primary font-medium border-t mt-1 pt-1">
           ✏️ Personalizado
