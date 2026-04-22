@@ -8,6 +8,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileAddSheet } from "./MobileAddSheet";
+import { mergeCustomOptions } from "@/lib/customOptions";
 
 const CATEGORY_OPTIONS = [
   { value: "moradia", label: "Moradia (aluguel, condomínio, IPTU, contas)" },
@@ -67,6 +68,7 @@ export const StepDespesas = ({ data, onChange }: Props) => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
+  const categoryOptions = mergeCustomOptions(CATEGORY_OPTIONS, items.map((item) => item.category));
 
   const totalValue = items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
@@ -186,7 +188,7 @@ export const StepDespesas = ({ data, onChange }: Props) => {
                   <SelectWithCustom
                     value={item.category}
                     onValueChange={(v) => update(i, "category", v)}
-                    options={CATEGORY_OPTIONS}
+                    options={categoryOptions}
                     inputPlaceholder="Ex: Hobby, Clube..."
                   />
                 </div>

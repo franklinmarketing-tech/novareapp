@@ -9,6 +9,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileAddSheet } from "./MobileAddSheet";
+import { mergeCustomOptions } from "@/lib/customOptions";
 
 const RENDA_CHIPS = [
   { value: "Salário CLT (líquido)", label: "Salário CLT", emoji: "💼" },
@@ -47,6 +48,34 @@ export const StepRenda = ({ data, onChange }: Props) => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
+  const primaryDescriptionOptions = mergeCustomOptions([
+    { value: "Salário CLT (líquido)", label: "Salário CLT (líquido)" },
+    { value: "Pró-labore", label: "Pró-labore" },
+    { value: "Autônomo", label: "Autônomo" },
+    { value: "Servidor público", label: "Servidor público" },
+    { value: "Aposentadoria", label: "Aposentadoria" },
+    { value: "Pensão", label: "Pensão" },
+  ], items.filter((item) => item.is_primary).map((item) => item.description));
+  const additionalDescriptionOptions = mergeCustomOptions([
+    { value: "Aluguel recebido", label: "Aluguel recebido" },
+    { value: "Comissão", label: "Comissão" },
+    { value: "Bônus / PLR", label: "Bônus / PLR" },
+    { value: "Freelance", label: "Freelance" },
+    { value: "Renda de investimentos", label: "Renda de investimentos" },
+    { value: "Dividendos", label: "Dividendos" },
+    { value: "Pensão alimentícia", label: "Pensão alimentícia" },
+    { value: "Renda extra eventual", label: "Renda extra eventual" },
+  ], items.filter((item) => !item.is_primary).map((item) => item.description));
+  const frequencyOptions = mergeCustomOptions([
+    { value: "mensal", label: "Mensal" },
+    { value: "anual", label: "Anual" },
+    { value: "eventual", label: "Eventual" },
+  ], items.map((item) => item.frequency));
+  const stabilityOptions = mergeCustomOptions([
+    { value: "alta", label: "Alta" },
+    { value: "media", label: "Média" },
+    { value: "baixa", label: "Baixa" },
+  ], items.map((item) => item.stability));
 
   const update = (index: number, field: keyof IncomeItem, value: any) => {
     const next = [...items];
@@ -130,27 +159,7 @@ export const StepRenda = ({ data, onChange }: Props) => {
                   <SelectWithCustom
                     value={item.description}
                     onValueChange={(v) => update(i, "description", v)}
-                    options={
-                      isPrimary
-                        ? [
-                            { value: "Salário CLT (líquido)", label: "Salário CLT (líquido)" },
-                            { value: "Pró-labore", label: "Pró-labore" },
-                            { value: "Autônomo", label: "Autônomo" },
-                            { value: "Servidor público", label: "Servidor público" },
-                            { value: "Aposentadoria", label: "Aposentadoria" },
-                            { value: "Pensão", label: "Pensão" },
-                          ]
-                        : [
-                            { value: "Aluguel recebido", label: "Aluguel recebido" },
-                            { value: "Comissão", label: "Comissão" },
-                            { value: "Bônus / PLR", label: "Bônus / PLR" },
-                            { value: "Freelance", label: "Freelance" },
-                            { value: "Renda de investimentos", label: "Renda de investimentos" },
-                            { value: "Dividendos", label: "Dividendos" },
-                            { value: "Pensão alimentícia", label: "Pensão alimentícia" },
-                            { value: "Renda extra eventual", label: "Renda extra eventual" },
-                          ]
-                    }
+                    options={isPrimary ? primaryDescriptionOptions : additionalDescriptionOptions}
                     inputPlaceholder={isPrimary ? "Ex: Sócio de empresa..." : "Ex: Royalties, Mesada..."}
                   />
                 </div>
@@ -163,11 +172,7 @@ export const StepRenda = ({ data, onChange }: Props) => {
                   <SelectWithCustom
                     value={item.frequency}
                     onValueChange={(v) => update(i, "frequency", v)}
-                    options={[
-                      { value: "mensal", label: "Mensal" },
-                      { value: "anual", label: "Anual" },
-                      { value: "eventual", label: "Eventual" },
-                    ]}
+                    options={frequencyOptions}
                     inputPlaceholder="Ex: Trimestral, Semestral..."
                   />
                 </div>
@@ -176,11 +181,7 @@ export const StepRenda = ({ data, onChange }: Props) => {
                   <SelectWithCustom
                     value={item.stability}
                     onValueChange={(v) => update(i, "stability", v)}
-                    options={[
-                      { value: "alta", label: "Alta" },
-                      { value: "media", label: "Média" },
-                      { value: "baixa", label: "Baixa" },
-                    ]}
+                    options={stabilityOptions}
                     inputPlaceholder="Ex: Variável por comissão"
                   />
                 </div>

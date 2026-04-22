@@ -6,6 +6,7 @@ import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
+import { mergeCustomOptions } from "@/lib/customOptions";
 
 export interface GoalItem {
   id?: string;
@@ -26,6 +27,22 @@ export const StepObjetivos = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyGoal()];
   const [focusId, setFocusId] = useState<string | null>(null);
   useFocusOnAdd(focusId, () => setFocusId(null));
+  const descriptionOptions = mergeCustomOptions([
+    { value: "Reserva de emergência", label: "Reserva de emergência" },
+    { value: "Aposentadoria", label: "Aposentadoria" },
+    { value: "Comprar imóvel", label: "Comprar imóvel" },
+    { value: "Comprar veículo", label: "Comprar veículo" },
+    { value: "Educação dos filhos", label: "Educação dos filhos" },
+    { value: "Viagem", label: "Viagem" },
+    { value: "Quitar dívidas", label: "Quitar dívidas" },
+    { value: "Investir / multiplicar patrimônio", label: "Investir / multiplicar patrimônio" },
+    { value: "Abrir negócio próprio", label: "Abrir negócio próprio" },
+  ], items.map((item) => item.description));
+  const priorityOptions = mergeCustomOptions([
+    { value: "alta", label: "Alta" },
+    { value: "media", label: "Média" },
+    { value: "baixa", label: "Baixa" },
+  ], items.map((item) => item.priority));
 
   const update = (index: number, field: keyof GoalItem, value: string) => {
     const next = [...items];
@@ -71,17 +88,7 @@ export const StepObjetivos = ({ data, onChange }: Props) => {
                 <SelectWithCustom
                   value={item.description}
                   onValueChange={(v) => update(i, "description", v)}
-                  options={[
-                    { value: "Reserva de emergência", label: "Reserva de emergência" },
-                    { value: "Aposentadoria", label: "Aposentadoria" },
-                    { value: "Comprar imóvel", label: "Comprar imóvel" },
-                    { value: "Comprar veículo", label: "Comprar veículo" },
-                    { value: "Educação dos filhos", label: "Educação dos filhos" },
-                    { value: "Viagem", label: "Viagem" },
-                    { value: "Quitar dívidas", label: "Quitar dívidas" },
-                    { value: "Investir / multiplicar patrimônio", label: "Investir / multiplicar patrimônio" },
-                    { value: "Abrir negócio próprio", label: "Abrir negócio próprio" },
-                  ]}
+                  options={descriptionOptions}
                   inputPlaceholder="Ex: Casamento, Intercâmbio..."
                 />
               </div>
@@ -98,11 +105,7 @@ export const StepObjetivos = ({ data, onChange }: Props) => {
                 <SelectWithCustom
                   value={item.priority}
                   onValueChange={(v) => update(i, "priority", v)}
-                  options={[
-                    { value: "alta", label: "Alta" },
-                    { value: "media", label: "Média" },
-                    { value: "baixa", label: "Baixa" },
-                  ]}
+                  options={priorityOptions}
                 />
               </div>
             </div>

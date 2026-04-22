@@ -5,6 +5,7 @@ import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
+import { mergeCustomOptions } from "@/lib/customOptions";
 
 export interface InsuranceItem {
   id?: string;
@@ -25,6 +26,25 @@ export const StepSeguros = ({ data, onChange }: Props) => {
   const items = data.length > 0 ? data : [emptyInsurance()];
   const [focusId, setFocusId] = useState<string | null>(null);
   useFocusOnAdd(focusId, () => setFocusId(null));
+  const typeOptions = mergeCustomOptions([
+    { value: "Vida", label: "Vida" },
+    { value: "Auto", label: "Auto" },
+    { value: "Residencial", label: "Residencial" },
+    { value: "Saúde", label: "Saúde" },
+    { value: "Invalidez", label: "Invalidez" },
+    { value: "Viagem", label: "Viagem" },
+    { value: "Empresarial", label: "Empresarial" },
+  ], items.map((item) => item.type));
+  const providerOptions = mergeCustomOptions([
+    { value: "Porto Seguro", label: "Porto Seguro" },
+    { value: "Bradesco Seguros", label: "Bradesco Seguros" },
+    { value: "SulAmérica", label: "SulAmérica" },
+    { value: "Allianz", label: "Allianz" },
+    { value: "Mapfre", label: "Mapfre" },
+    { value: "Tokio Marine", label: "Tokio Marine" },
+    { value: "Liberty", label: "Liberty" },
+    { value: "HDI", label: "HDI" },
+  ], items.map((item) => item.provider));
 
   const update = (index: number, field: keyof InsuranceItem, value: string) => {
     const next = [...items];
@@ -70,15 +90,7 @@ export const StepSeguros = ({ data, onChange }: Props) => {
                 <SelectWithCustom
                   value={item.type}
                   onValueChange={(v) => update(i, "type", v)}
-                  options={[
-                    { value: "Vida", label: "Vida" },
-                    { value: "Auto", label: "Auto" },
-                    { value: "Residencial", label: "Residencial" },
-                    { value: "Saúde", label: "Saúde" },
-                    { value: "Invalidez", label: "Invalidez" },
-                    { value: "Viagem", label: "Viagem" },
-                    { value: "Empresarial", label: "Empresarial" },
-                  ]}
+                  options={typeOptions}
                   inputPlaceholder="Ex: Pet, Equipamentos..."
                 />
               </div>
@@ -87,16 +99,7 @@ export const StepSeguros = ({ data, onChange }: Props) => {
                 <SelectWithCustom
                   value={item.provider}
                   onValueChange={(v) => update(i, "provider", v)}
-                  options={[
-                    { value: "Porto Seguro", label: "Porto Seguro" },
-                    { value: "Bradesco Seguros", label: "Bradesco Seguros" },
-                    { value: "SulAmérica", label: "SulAmérica" },
-                    { value: "Allianz", label: "Allianz" },
-                    { value: "Mapfre", label: "Mapfre" },
-                    { value: "Tokio Marine", label: "Tokio Marine" },
-                    { value: "Liberty", label: "Liberty" },
-                    { value: "HDI", label: "HDI" },
-                  ]}
+                  options={providerOptions}
                   inputPlaceholder="Ex: Azos, Youse..."
                 />
               </div>

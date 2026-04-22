@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { normalizeCustomValue, mergeCustomOptions } from "@/lib/customOptions";
 
 interface SelectWithCustomProps {
   value: string;
@@ -15,7 +16,7 @@ interface SelectWithCustomProps {
 /**
  * A Select dropdown that includes a "Personalizado" option.
  * When selected, it shows an inline text input for custom values.
- * The custom value is stored with a "custom:" prefix internally.
+ * The custom value is stored with a "custom:" prefix while editing.
  */
 export const SelectWithCustom = ({
   value,
@@ -26,8 +27,10 @@ export const SelectWithCustom = ({
   inputPlaceholder = "Digite aqui...",
 }: SelectWithCustomProps) => {
   const isCustom = !!value?.startsWith("custom:");
+  const normalizedValue = normalizeCustomValue(value);
+  const safeOptions = mergeCustomOptions(options, [value]);
   const [showCustomInput, setShowCustomInput] = useState(isCustom);
-  const customText = isCustom ? value.slice(7) : "";
+  const customText = isCustom ? normalizedValue : "";
 
   useEffect(() => {
     setShowCustomInput(!!value?.startsWith("custom:"));
@@ -79,12 +82,12 @@ export const SelectWithCustom = ({
   }
 
   return (
-    <Select value={value} onValueChange={handleSelectChange}>
+    <Select value={isCustom ? normalizedValue : value} onValueChange={handleSelectChange}>
       <SelectTrigger className={`border-border bg-background ${triggerClassName}`}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent className="max-w-[calc(100vw-1rem)]">
-        {options.map((opt) => (
+        {safeOptions.map((opt) => (
           <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
         ))}
         <SelectItem value="__custom__" className="text-primary font-medium border-t mt-1 pt-1">

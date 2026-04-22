@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useFocusOnAdd } from "@/hooks/useFocusOnAdd";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileAddSheet } from "./MobileAddSheet";
+import { mergeCustomOptions } from "@/lib/customOptions";
 
 const PATRIMONIO_CHIPS = [
   { value: "Imóvel", label: "Imóvel", emoji: "🏠" },
@@ -39,6 +40,12 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const isMobile = useIsMobile();
   useFocusOnAdd(focusId, () => setFocusId(null));
+  const typeOptions = mergeCustomOptions([
+    { value: "Imóvel", label: "Imóvel" },
+    { value: "Veículo", label: "Veículo" },
+    { value: "Investimento", label: "Investimento" },
+    { value: "Outros", label: "Outros" },
+  ], items.map((item) => item.type));
 
   const update = (index: number, field: keyof AssetItem, value: string) => {
     const next = [...items];
@@ -104,12 +111,7 @@ export const StepPatrimonio = ({ data, onChange }: Props) => {
                   <SelectWithCustom
                     value={item.type}
                     onValueChange={(v) => update(i, "type", v)}
-                    options={[
-                      { value: "Imóvel", label: "Imóvel" },
-                      { value: "Veículo", label: "Veículo" },
-                      { value: "Investimento", label: "Investimento" },
-                      { value: "Outros", label: "Outros" },
-                    ]}
+                    options={typeOptions}
                     inputPlaceholder="Ex: Criptomoedas, Joias..."
                   />
                 </div>
