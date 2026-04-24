@@ -437,7 +437,7 @@ const YieldGuide = () => {
                   transition={{ delay: 0.1 + i * 0.05, duration: 0.4 }}
                   whileHover={{ y: -2 }}
                   whileTap={{ y: 0, scale: 0.97 }}
-                  className={`relative group px-3 xl:px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-200 ${
+                  className={`relative group px-2.5 lg:px-3.5 py-2 rounded-xl text-[13px] lg:text-sm font-semibold transition-colors duration-200 whitespace-nowrap ${
                     isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
