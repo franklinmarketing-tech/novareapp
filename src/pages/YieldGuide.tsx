@@ -1534,14 +1534,14 @@ const YieldGuide = () => {
                           full: undefined,
                           sub: result ? `IR ${formatCompactBRL(result.patrimonioNum - result.patrimonioLiquidoNum)}` : "—",
                           icon: Receipt,
-                          tone: "warning" as const,
+                          tone: "neutral" as const,
                         },
                       ].map((k) => {
                         const Icon = k.icon;
                         const toneClasses = {
                           info: { ring: "border-accent/40", icon: "text-accent", bg: "bg-accent/15", value: "text-accent", label: "text-accent" },
                           success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
-                          warning: { ring: "border-warning/30", icon: "text-warning", bg: "bg-warning/15", value: "text-warning", label: "text-warning" },
+                          neutral: { ring: "border-white/10", icon: "text-accent/80", bg: "bg-white/[0.04]", value: "text-white/85", label: "text-white/60" },
                         }[k.tone];
                         return (
                           <motion.div
