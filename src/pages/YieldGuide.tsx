@@ -1365,28 +1365,28 @@ const YieldGuide = () => {
                       </motion.p>
 
                       {result ? (
-                        <div className="mt-3 pt-3 border-t border-white/[0.06] flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                        <div className="mt-4 pt-4 border-t border-white/[0.08] flex flex-wrap items-center gap-x-5 gap-y-2">
                           <div className="min-w-0">
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Anual</p>
-                            <p className="text-sm font-bold text-accent/90 tabular-nums truncate" title={result.rendaAnualLiquida}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Anual</p>
+                            <p className="text-base md:text-lg font-extrabold text-success tabular-nums truncate" title={result.rendaAnualLiquida}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum * 12)}
                             </p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Bruta/mês</p>
-                            <p className="text-sm font-bold text-white/70 tabular-nums truncate" title={result.rendaMensal}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-info font-bold">Bruta/mês</p>
+                            <p className="text-base md:text-lg font-extrabold text-info tabular-nums truncate" title={result.rendaMensal}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
                             </p>
                           </div>
-                          <div className="min-w-0 ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08]">
-                            <Percent className="h-3 w-3 text-white/50" />
-                            <span className="text-[10px] font-bold text-white/70 tabular-nums">
+                          <div className="min-w-0 ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/30">
+                            <Percent className="h-3.5 w-3.5 text-accent" />
+                            <span className="text-xs md:text-sm font-extrabold text-accent tabular-nums">
                               {result.taxaMensalEfetiva.toFixed(2)}% a.m.
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-[11px] text-white/25 mt-2">Simule para ver sua renda passiva</p>
+                        <p className="text-sm text-white/40 mt-3 font-medium">Simule para ver sua renda passiva</p>
                       )}
                     </motion.div>
 
