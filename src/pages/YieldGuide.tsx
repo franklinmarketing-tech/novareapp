@@ -957,13 +957,13 @@ const YieldGuide = () => {
                       }}
                       className={`group relative rounded-2xl p-3 md:p-4 text-left transition-all duration-300 border backdrop-blur-md ${
                         isSelected
-                          ? "border-accent/60 bg-accent/[0.08] shadow-[0_8px_24px_-8px_hsl(var(--accent)/0.5),inset_0_1px_0_hsl(0_0%_100%/0.08)] -translate-y-0.5"
-                          : "border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.06] hover:border-white/15"
+                          ? "border-accent ring-2 ring-accent/30 bg-accent/[0.10] shadow-[0_8px_24px_-8px_hsl(var(--accent)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.08)] -translate-y-0.5"
+                          : "border-white/10 bg-white/[0.04] hover:bg-white/[0.06] hover:border-white/25 hover:scale-[1.01]"
                       }`}
                     >
                       {isSelected ? (
                         <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]">
-                          <Check className="h-3 w-3" strokeWidth={3} />
+                          <Check className="h-4 w-4" strokeWidth={3} />
                         </span>
                       ) : (
                         <span className="absolute top-2 right-2 w-5 h-5 rounded-full border border-white/20 bg-white/[0.04] group-hover:border-white/40 transition-colors" />
@@ -977,7 +977,7 @@ const YieldGuide = () => {
                         <span className={`text-xs md:text-sm font-bold ${isSelected ? "text-white" : "text-white/80"}`}>{f.title}</span>
                       </div>
                       <div className="flex items-baseline gap-1">
-                        <span className={`text-lg md:text-xl font-black ${isSelected ? "text-accent" : "text-white"}`}>{f.rate}</span>
+                        <span className="text-lg md:text-xl font-black text-accent">{f.rate}</span>
                         {!f.rate.includes("IPCA") && <span className="text-[10px] text-white/40">a.a.</span>}
                       </div>
                       <p className="hidden md:block text-[10px] text-white/40 mt-1 truncate">{f.rateLabel}</p>
