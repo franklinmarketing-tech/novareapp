@@ -5,10 +5,18 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, ArrowRight, RefreshCw, Eye, EyeOff } from "lucide-react";
+import { UserPlus, ArrowRight, RefreshCw, Eye, EyeOff, ClipboardList, UserCircle2, Mail, Copy, Check } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function generatePassword(): string {
   const lower = "abcdefghijkmnpqrstuvwxyz";
@@ -31,6 +39,26 @@ const NewClient = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Estado do diálogo pós-cadastro
+  const [postCreate, setPostCreate] = useState<{
+    open: boolean;
+    slug: string | null;
+    email: string;
+    password: string;
+    name: string;
+  }>({ open: false, slug: null, email: "", password: "", name: "" });
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 1500);
+    } catch {
+      toast({ title: "Não foi possível copiar", variant: "destructive" });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
@@ -52,7 +80,7 @@ const NewClient = () => {
       toast({
         title: data?.alreadyExisted ? "Cliente já existia" : "Cliente cadastrado!",
         description: data?.alreadyExisted
-          ? `Continuando o onboarding de ${email}.`
+          ? `Senha redefinida e e-mail reenviado para ${email}.`
           : `E-mail com credenciais enviado para ${email}.`,
       });
 
@@ -61,7 +89,15 @@ const NewClient = () => {
         const { data: client } = await supabase.from("clients").select("slug").eq("id", clientId).maybeSingle();
         finalSlug = client?.slug;
       }
-      navigate(finalSlug ? `/admin/cliente/${finalSlug}/onboarding` : "/admin/clientes");
+
+      // Abre diálogo com as opções de onboarding
+      setPostCreate({
+        open: true,
+        slug: finalSlug ?? null,
+        email,
+        password,
+        name,
+      });
     } catch (error: any) {
       toast({
         title: "Erro ao cadastrar cliente",
@@ -179,6 +215,139 @@ const NewClient = () => {
           </Button>
         </form>
       </motion.div>
+
+      {/* Diálogo pós-cadastro: como conduzir o onboarding */}
+      <Dialog
+        open={postCreate.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPostCreate((p) => ({ ...p, open: false }));
+            navigate("/admin/clientes");
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-display">
+              Cliente cadastrado! Como deseja preencher o onboarding?
+            </DialogTitle>
+            <DialogDescription>
+              {postCreate.name} foi criado com sucesso. Você pode preencher os dados agora ou deixar para o cliente.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            {/* Opção 1 — Painel admin */}
+            <button
+              type="button"
+              onClick={() => {
+                setPostCreate((p) => ({ ...p, open: false }));
+                navigate(
+                  postCreate.slug
+                    ? `/admin/cliente/${postCreate.slug}/onboarding`
+                    : "/admin/clientes"
+                );
+              }}
+              className="w-full text-left rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-accent/50 transition-all p-4 flex gap-3 items-start group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
+                <ClipboardList className="h-5 w-5 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-foreground">Preencher pelo painel do consultor</div>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Use o formulário compacto de admin para cadastrar todos os dados de uma vez.
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground mt-3 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
+            </button>
+
+            {/* Opção 2 — Onboarding guiado do cliente */}
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="flex gap-3 items-start">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <UserCircle2 className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-foreground">Usar o onboarding guiado do cliente</div>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Abra uma janela anônima e entre com as credenciais abaixo para preencher passo a passo, como o cliente veria.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2 pt-1">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-muted-foreground w-14 shrink-0">Email</span>
+                  <code className="flex-1 truncate font-mono bg-muted/60 px-2 py-1 rounded">{postCreate.email}</code>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0"
+                    onClick={() => copyToClipboard(postCreate.email, "email")}
+                  >
+                    {copiedField === "email" ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-muted-foreground w-14 shrink-0">Senha</span>
+                  <code className="flex-1 truncate font-mono bg-muted/60 px-2 py-1 rounded">{postCreate.password}</code>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0"
+                    onClick={() => copyToClipboard(postCreate.password, "password")}
+                  >
+                    {copiedField === "password" ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  copyToClipboard(`${postCreate.email} / ${postCreate.password}`, "both");
+                  window.open(`${window.location.origin}/login`, "_blank", "noopener");
+                }}
+              >
+                Copiar credenciais e abrir login em nova aba
+              </Button>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Dica: use uma janela anônima para não deslogar sua conta de consultor.
+              </p>
+            </div>
+
+            {/* Opção 3 — apenas enviar e fechar */}
+            <button
+              type="button"
+              onClick={() => {
+                setPostCreate((p) => ({ ...p, open: false }));
+                navigate("/admin/clientes");
+              }}
+              className="w-full text-left rounded-xl border border-border/60 bg-transparent hover:bg-muted/30 transition-all p-4 flex gap-3 items-start group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                <Mail className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-foreground">Deixar o cliente preencher</div>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  As credenciais já foram enviadas por e-mail. Voltar para a lista de clientes.
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground mt-3 group-hover:translate-x-0.5 transition-all" />
+            </button>
+          </div>
+
+          <DialogFooter className="text-[11px] text-muted-foreground sm:justify-start">
+            Você pode acessar o onboarding do consultor a qualquer momento pela ficha do cliente.
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageTransition>
   );
 };
