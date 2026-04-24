@@ -1934,29 +1934,7 @@ const YieldGuide = () => {
                         </motion.button>
                       </div>
 
-                      {/* Botão Baixar PDF do rendimento mensal */}
-                      <motion.button
-                        onClick={() => generateRendimentoPDF(result, {
-                          idadeAtual: sim.idadeAtual,
-                          idadeAposent: sim.idadeAposent,
-                          patrimonioAtual: sim.patrimonioAtual,
-                          aporte: sim.aporte,
-                          rendaDesejada: sim.rendaDesejada,
-                          rentabilidadeAnual: rentAnual,
-                        })}
-                        whileHover={{ y: -2, scale: 1.02 }}
-                        whileTap={{ y: 0, scale: 0.98 }}
-                        className="relative z-10 inline-flex items-center justify-center gap-2 px-5 md:px-6 py-2.5 rounded-xl font-bold text-xs md:text-sm whitespace-nowrap transition-all w-full group"
-                        style={{
-                          background: "linear-gradient(180deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.03))",
-                          border: "1px solid hsl(var(--accent) / 0.4)",
-                          color: "hsl(var(--accent))",
-                          boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.08)",
-                        }}
-                      >
-                        <FileDown className="h-4 w-4" />
-                        <span>Ver rendimento mensal em PDF</span>
-                      </motion.button>
+                      {/* PDF agora fica em destaque abaixo da Meta de Renda */}
                     </div>
                   </div>
 
