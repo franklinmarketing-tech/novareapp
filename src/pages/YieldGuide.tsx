@@ -885,27 +885,23 @@ const YieldGuide = () => {
       {/* ── SIMULATOR ───────────────────────────── */}
       <section
         id="simulador"
-        className="py-6 md:py-10 relative overflow-hidden"
-        style={{
-          background:
-            "radial-gradient(120% 70% at 50% 0%, hsl(var(--primary) / 0.45), transparent 60%), linear-gradient(180deg, hsl(220 37% 13%), hsl(220 37% 9%))",
-        }}
+        className="py-6 md:py-10 relative overflow-hidden bg-background"
       >
-        {/* Background orbs */}
+        {/* Background orbs sutis (no tom da marca, baixa opacidade) */}
         <motion.div
           className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px]"
-          style={{ background: "hsl(var(--accent) / 0.08)" }}
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          style={{ background: "hsl(var(--accent) / 0.06)" }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.4, 0.25] }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px]"
-          style={{ background: "hsl(var(--primary) / 0.4)" }}
-          animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.5, 0.3] }}
+          style={{ background: "hsl(var(--primary) / 0.08)" }}
+          animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.35, 0.2] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 5 }}
         />
         {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-4 md:space-y-5">
