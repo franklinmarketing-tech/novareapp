@@ -1180,8 +1180,8 @@ const YieldGuide = () => {
                             </p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-[hsl(210_100%_65%)] font-bold">Bruta/mês</p>
-                            <p className="text-base md:text-lg font-extrabold text-[hsl(210_100%_65%)] tabular-nums truncate" title={result.rendaMensal}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-[hsl(16_80%_62%)] font-bold">Bruta/mês</p>
+                            <p className="text-base md:text-lg font-extrabold text-[hsl(16_80%_62%)] tabular-nums truncate" title={result.rendaMensal}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
                             </p>
                           </div>
