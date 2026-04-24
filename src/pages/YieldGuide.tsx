@@ -978,16 +978,13 @@ const YieldGuide = () => {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={2} className="calc-dark">
-              <div
-                className="rounded-3xl overflow-hidden shadow-elevated"
-                style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))" }}
-              >
+            <motion.div variants={fadeUp} custom={2}>
+              <div className="calc-card-light rounded-3xl overflow-hidden">
                 <div className="grid lg:grid-cols-2 lg:items-stretch">
-                  {/* Simulator form — glassmorphism dark card */}
-                  <div className="p-5 md:p-7 relative flex flex-col" style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))" }}>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 rounded-l-3xl border border-border/40 pointer-events-none" />
+                  {/* Simulator form — light premium card */}
+                  <div className="p-5 md:p-7 relative flex flex-col bg-transparent">
+                    {/* Subtle inner divider on desktop split */}
+                    <div className="hidden lg:block absolute top-6 bottom-6 right-0 w-px bg-gradient-to-b from-transparent via-border to-transparent pointer-events-none" />
                     <motion.div
                       className="absolute -top-20 -left-20 w-60 h-60 rounded-full blur-[100px]"
                       style={{ background: "hsl(220 50% 40% / 0.08)" }}
