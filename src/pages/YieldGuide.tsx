@@ -720,8 +720,9 @@ const YieldGuide = () => {
                             <input
                               type="text"
                               inputMode="decimal"
+                              placeholder="ex: 12"
                               value={
-                                Number.isFinite(sim.rentabilidade)
+                                sim.rentabilidade
                                   ? sim.rentabilidade.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
                                   : ""
                               }
@@ -731,7 +732,7 @@ const YieldGuide = () => {
                                 const n = parseFloat(raw);
                                 setSim({ ...sim, rentabilidade: Number.isFinite(n) ? n : 0 });
                               }}
-                              className="w-full h-12 rounded-xl px-4 pr-24 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/20"
+                              className="w-full h-12 rounded-xl px-4 pr-24 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
                             />
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
                               <button
