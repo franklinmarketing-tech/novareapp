@@ -80,13 +80,8 @@ const KpiCard3D = React.forwardRef<HTMLDivElement, KpiCard3DProps>(
           className="relative rounded-2xl overflow-hidden h-full"
           style={{
             background: `linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.96) 100%)`,
-            border: `1px solid ${tone.ring}`,
-            boxShadow: [
-              `0 1px 0 hsl(var(--foreground) / 0.04) inset`,
-              `0 -2px 6px ${tone.glow} inset`,
-              `0 12px 32px -10px ${tone.glow}`,
-              `0 4px 12px -4px hsl(var(--foreground) / 0.08)`,
-            ].join(", "),
+            border: `1px solid hsl(var(--border))`,
+            boxShadow: "none",
             transformStyle: "preserve-3d",
             transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
             transition: "transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
