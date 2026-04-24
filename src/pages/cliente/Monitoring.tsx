@@ -139,6 +139,8 @@ const Monitoring = () => {
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [openSnapshotId, setOpenSnapshotId] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
+  const [clientName, setClientName] = useState("");
 
   useEffect(() => {
     const load = async () => {
