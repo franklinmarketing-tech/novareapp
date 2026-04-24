@@ -1324,14 +1324,14 @@ const YieldGuide = () => {
                           whileHover={{ y: -2, scale: 1.02 }}
                           whileTap={{ y: 0, scale: 0.98 }}
                           animate={{ boxShadow: [
-                            "0 10px 24px -8px hsl(217 91% 60% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
-                            "0 14px 30px -6px hsl(217 91% 60% / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
-                            "0 10px 24px -8px hsl(217 91% 60% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                            "0 10px 24px -8px hsl(16 65% 50% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                            "0 14px 30px -6px hsl(16 65% 50% / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
+                            "0 10px 24px -8px hsl(16 65% 50% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
                           ] }}
                           transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
                           className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group"
                           style={{
-                            background: "linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 48%))",
+                            background: "linear-gradient(135deg, hsl(16 70% 55%), hsl(16 65% 45%))",
                             color: "white",
                             border: "1px solid hsl(0 0% 100% / 0.2)",
                           }}
@@ -1362,7 +1362,7 @@ const YieldGuide = () => {
                     />
                     <motion.div
                       className="pointer-events-none absolute -bottom-24 -left-16 w-56 h-56 rounded-full blur-[100px]"
-                      style={{ background: "hsl(220 80% 50% / 0.12)" }}
+                      style={{ background: "hsl(16 65% 50% / 0.12)" }}
                       animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.45, 0.25] }}
                       transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                     />
@@ -1600,7 +1600,7 @@ const YieldGuide = () => {
                   />
                   <motion.div
                     className="pointer-events-none absolute -bottom-12 -left-12 w-40 h-40 rounded-full blur-[70px]"
-                    style={{ background: "hsl(220 70% 40% / 0.3)" }}
+                    style={{ background: "hsl(16 65% 50% / 0.3)" }}
                     animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.6, 0.3] }}
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                   />
@@ -2591,7 +2591,7 @@ const YieldGuide = () => {
             />
             <motion.div
               className="pointer-events-none absolute bottom-1/4 right-1/4 w-[380px] h-[380px] rounded-full blur-[130px]"
-              style={{ background: "hsl(220 80% 50% / 0.3)" }}
+              style={{ background: "hsl(16 65% 50% / 0.3)" }}
               animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.6, 0.3] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             />
