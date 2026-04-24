@@ -1180,8 +1180,8 @@ const YieldGuide = () => {
                             </p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-primary font-bold">Bruta/mês</p>
-                            <p className="text-base md:text-lg font-extrabold text-primary tabular-nums truncate" title={result.rendaMensal}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-[hsl(210_100%_65%)] font-bold">Bruta/mês</p>
+                            <p className="text-base md:text-lg font-extrabold text-[hsl(210_100%_65%)] tabular-nums truncate" title={result.rendaMensal}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
                             </p>
                           </div>
@@ -1500,7 +1500,7 @@ const YieldGuide = () => {
                       {result && (
                         <div className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-primary font-bold">Período</p>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-[hsl(210_100%_65%)] font-bold">Período</p>
                             <p className="text-lg md:text-xl font-extrabold text-white mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-white/60 font-bold">anos</span></p>
                             <p className="text-xs text-white/50 mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
