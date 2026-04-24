@@ -1767,7 +1767,7 @@ const YieldGuide = () => {
                         {steps.map((s) => (
                           <Tooltip key={s.num}>
                             <TooltipTrigger asChild>
-                              <div className="group relative p-4 md:p-5 rounded-2xl bg-white/[0.03] border border-border/40 hover:border-accent/30 hover:bg-white/[0.05] transition-all duration-200 cursor-help min-w-0">
+                              <div className="group relative p-4 md:p-5 rounded-2xl bg-card border border-border/40 hover:border-accent/30 hover:bg-muted/40 transition-all duration-200 cursor-help min-w-0 shadow-soft">
                                 <div className="flex items-center justify-between mb-3">
                                   <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-accent/15 text-accent text-xs font-bold">
                                     {s.num}
@@ -1958,7 +1958,7 @@ const YieldGuide = () => {
                           return (
                             <TableRow
                               key={row.year}
-                              className={`border-border/40 hover:bg-white/[0.03] ${isLast ? "bg-accent/[0.06]" : ""}`}
+                              className={`border-border/40 hover:bg-muted/40 ${isLast ? "bg-accent/[0.06]" : ""}`}
                             >
                               <TableCell className="text-xs text-foreground/80 font-medium py-2.5">
                                 {row.age}
@@ -2603,7 +2603,7 @@ const YieldGuide = () => {
               style={{
                 background:
                   "linear-gradient(160deg, hsl(var(--card) / 0.95), hsl(var(--muted) / 0.95))",
-                border: "1px solid hsl(0 0% 100% / 0.08)",
+                border: "1px solid hsl(var(--border))",
                 boxShadow:
                   "0 30px 80px -20px hsl(var(--accent) / 0.4), 0 0 0 1px hsl(var(--accent) / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
               }}
@@ -2632,7 +2632,7 @@ const YieldGuide = () => {
                 />
                 {/* Logo */}
                 <motion.img
-                  src={logoBranca}
+                  src={logoPreta}
                   alt="Novare"
                   className="relative z-10 w-24 h-auto"
                   animate={{ scale: [1, 1.05, 1] }}
@@ -2646,7 +2646,7 @@ const YieldGuide = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-2xl md:text-3xl font-black mb-2 bg-gradient-to-r from-white via-white to-accent/80 bg-clip-text text-transparent"
+                className="text-2xl md:text-3xl font-black mb-2 bg-gradient-to-r from-foreground via-foreground to-accent/80 bg-clip-text text-transparent"
               >
                 Calculando sua aposentadoria
               </motion.h3>
