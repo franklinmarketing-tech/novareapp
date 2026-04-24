@@ -747,7 +747,7 @@ const YieldGuide = () => {
 
             {/* Submenu de escolha rápida de taxa */}
             <motion.div variants={fadeUp} custom={1} className="max-w-4xl mx-auto w-full">
-              <div className="flex items-center justify-center gap-2 mb-3">
+              <div className="flex items-center justify-center gap-2 mb-2">
                 <span className="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold">Escolha uma taxa de referência</span>
               </div>
               <div className="grid grid-cols-3 gap-2 md:gap-3">
