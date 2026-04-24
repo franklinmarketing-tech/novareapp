@@ -343,6 +343,26 @@ const YieldGuide = () => {
   const [resultFaixa, setResultFaixa] = useState<typeof bentoFeatures[number] | null>(null);
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("");
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+      // detectar seção ativa
+      const sections = navLinks.map((l) => l.href.replace("#", ""));
+      const offset = window.scrollY + 120;
+      let current = "";
+      for (const id of sections) {
+        const el = document.getElementById(id);
+        if (el && el.offsetTop <= offset) current = id;
+      }
+      setActiveSection(current);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const rentAnual = rentPeriodo === "mensal"
     ? (Math.pow(1 + sim.rentabilidade / 100, 12) - 1) * 100
