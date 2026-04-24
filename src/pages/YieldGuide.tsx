@@ -34,7 +34,7 @@ const founders = [
     shortBio: "Consultor Wealth de Investimentos",
     linkedin: "https://www.linkedin.com/in/jeffersonfreitas",
     highlights: [
-      { icon: Briefcase, text: "Ex-Santander (Especialista Van Gogh / Select) e XP Inc." },
+      { icon: Briefcase, text: "Santander (Especialista Van Gogh / Select) e XP Inc." },
       { icon: TrendingUp, text: "+R$ 40 milhões em captação líquida em um único ano" },
       { icon: GraduationCap, text: "MBA PAAP CNEP-I · Aprovado CNPI (Conteúdo Brasileiro)" },
       { icon: Shield, text: "13 anos de voluntariado em Tesouraria na CCB" },
