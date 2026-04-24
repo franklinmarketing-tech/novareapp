@@ -1000,6 +1000,167 @@ const YieldGuide = () => {
               </div>
             </motion.div>
 
+            {/* ── DETALHAMENTO DO CÁLCULO DO IR ───── */}
+            {result && result.totalInvestidoNum > 0 && (() => {
+              const baseCalculo = Math.max(0, result.patrimonioNum - result.totalInvestidoNum); // ganho bruto
+              const valorIR = baseCalculo * (result.aliquotaIR / 100);
+              const fmtFull = (v: number) =>
+                v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              const aliquotaTabela = [
+                { faixa: "Até 180 dias", aliq: 22.5 },
+                { faixa: "181 a 360 dias", aliq: 20 },
+                { faixa: "361 a 720 dias", aliq: 17.5 },
+                { faixa: "Acima de 720 dias", aliq: 15 },
+              ];
+              const steps = [
+                {
+                  num: 1,
+                  label: "Base de cálculo (ganho bruto)",
+                  formula: "Patrimônio bruto − Total investido",
+                  detail: `${formatCompactBRL(result.patrimonioNum)} − ${formatCompactBRL(result.totalInvestidoNum)}`,
+                  value: formatCompactBRL(baseCalculo),
+                  fullValue: fmtFull(baseCalculo),
+                  tooltip: "O Imposto de Renda incide APENAS sobre o lucro (rendimento), nunca sobre o que você aportou. A base de cálculo é a diferença entre o patrimônio acumulado e o total que você investiu ao longo do tempo.",
+                  color: "text-white",
+                },
+                {
+                  num: 2,
+                  label: "Alíquota aplicada",
+                  formula: `Tabela regressiva · ${result.anosAcumulo} anos de aplicação`,
+                  detail: result.anosAcumulo > 2 ? "Acima de 720 dias = menor alíquota" : "Resgate em prazo curto = alíquota maior",
+                  value: `${result.aliquotaIR}%`,
+                  fullValue: `${result.aliquotaIR}% sobre o ganho`,
+                  tooltip: "A tabela regressiva do IR premia quem investe por mais tempo: até 180 dias paga 22,5%, entre 181-360 dias paga 20%, 361-720 dias paga 17,5%, e acima de 720 dias paga apenas 15% — a menor alíquota possível em renda fixa.",
+                  color: "text-warning",
+                },
+                {
+                  num: 3,
+                  label: "Imposto devido (descontado)",
+                  formula: `Base × Alíquota`,
+                  detail: `${formatCompactBRL(baseCalculo)} × ${result.aliquotaIR}%`,
+                  value: formatCompactBRL(valorIR),
+                  fullValue: fmtFull(valorIR),
+                  tooltip: "Este é o valor que será retido pelo governo no momento do resgate. Ele sai automaticamente do seu rendimento — você recebe líquido na conta. Em fundos com come-cotas, parte é antecipada semestralmente.",
+                  color: "text-accent",
+                },
+                {
+                  num: 4,
+                  label: "Patrimônio líquido (o que você recebe)",
+                  formula: "Patrimônio bruto − IR devido",
+                  detail: `${formatCompactBRL(result.patrimonioNum)} − ${formatCompactBRL(valorIR)}`,
+                  value: formatCompactBRL(result.patrimonioLiquidoNum),
+                  fullValue: fmtFull(result.patrimonioLiquidoNum),
+                  tooltip: "Este é o valor final que efetivamente cai na sua conta após o desconto do Imposto de Renda no resgate. É o valor real disponível para você usar ou reinvestir.",
+                  color: "text-success",
+                },
+              ];
+              return (
+                <TooltipProvider delayDuration={200}>
+                  <motion.div
+                    variants={fadeUp}
+                    custom={1.5}
+                    className="rounded-3xl overflow-hidden border border-white/[0.06] shadow-[0_15px_40px_-15px_rgba(0,0,0,0.6)]"
+                    style={{ background: "linear-gradient(160deg, hsl(220 40% 13%), hsl(220 45% 8%))" }}
+                  >
+                    <div className="p-6 md:p-8">
+                      <div className="flex items-start gap-4 mb-6">
+                        <div className="w-11 h-11 rounded-xl bg-warning/15 shadow-[0_0_15px_hsl(var(--warning)/0.15)] flex items-center justify-center shrink-0">
+                          <Receipt className="h-6 w-6 text-warning" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg md:text-xl font-bold text-white tracking-tight">
+                            Como o Imposto de Renda foi calculado
+                          </h3>
+                          <p className="text-sm text-white/50 mt-0.5">
+                            Passo a passo do desconto sobre seus rendimentos · passe o mouse em cada item para entender
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Steps */}
+                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        {steps.map((s) => (
+                          <Tooltip key={s.num}>
+                            <TooltipTrigger asChild>
+                              <div className="group relative p-4 md:p-5 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-accent/30 hover:bg-white/[0.05] transition-all duration-200 cursor-help min-w-0">
+                                <div className="flex items-center justify-between mb-3">
+                                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-accent/15 text-accent text-xs font-bold">
+                                    {s.num}
+                                  </span>
+                                  <Info className="h-3.5 w-3.5 text-white/30 group-hover:text-accent transition-colors" />
+                                </div>
+                                <p className="text-[11px] uppercase tracking-wider text-white/40 font-semibold leading-tight mb-1.5">
+                                  {s.label}
+                                </p>
+                                <p className={`text-xl md:text-2xl font-bold tracking-tight tabular-nums break-words ${s.color}`} title={s.fullValue}>
+                                  {s.value}
+                                </p>
+                                <div className="mt-2 pt-2 border-t border-white/[0.04] space-y-0.5">
+                                  <p className="text-[10px] text-white/40 font-medium">{s.formula}</p>
+                                  <p className="text-[10px] text-white/30 truncate" title={s.detail}>{s.detail}</p>
+                                </div>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+                              {s.tooltip}
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+
+                      {/* Tabela regressiva auxiliar */}
+                      <div className="mt-6 pt-5 border-t border-white/[0.06]">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Percent className="h-4 w-4 text-white/40" />
+                          <p className="text-xs uppercase tracking-wider text-white/40 font-semibold">
+                            Tabela regressiva do IR (Renda Fixa)
+                          </p>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3.5 w-3.5 text-white/30 hover:text-accent cursor-help transition-colors" />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+                              Quanto mais tempo você mantém o investimento, menor a alíquota de IR. É um incentivo do governo ao investimento de longo prazo.
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                          {aliquotaTabela.map((t) => {
+                            const isCurrent = t.aliq === result.aliquotaIR;
+                            return (
+                              <div
+                                key={t.faixa}
+                                className={`p-3 rounded-xl border transition-all ${
+                                  isCurrent
+                                    ? "bg-accent/15 border-accent/40 shadow-[0_0_20px_-5px_hsl(var(--accent)/0.4)]"
+                                    : "bg-white/[0.02] border-white/[0.06]"
+                                }`}
+                              >
+                                <p className={`text-[10px] uppercase tracking-wider font-semibold ${isCurrent ? "text-accent" : "text-white/40"}`}>
+                                  {t.faixa}
+                                </p>
+                                <p className={`text-lg font-bold tabular-nums mt-0.5 ${isCurrent ? "text-accent" : "text-white/60"}`}>
+                                  {t.aliq.toString().replace(".", ",")}%
+                                </p>
+                                {isCurrent && (
+                                  <p className="text-[9px] text-accent/80 font-semibold mt-0.5 uppercase tracking-wider">
+                                    ✓ Sua alíquota
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <p className="text-[10px] text-white/30 mt-3 leading-relaxed">
+                          * Aplicável a investimentos como CDB, LCI/LCA (estes isentos), Tesouro Direto, debêntures e fundos de renda fixa. Ações e fundos imobiliários têm regras próprias.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </TooltipProvider>
+              );
+            })()}
+
             {/* ── EVOLUÇÃO: Gráfico + Tabela ───────── */}
             {result && result.timeline.length > 1 && (
               <motion.div
