@@ -1348,8 +1348,8 @@ const YieldGuide = () => {
                           <Wallet className="h-5 w-5 text-white/80" strokeWidth={2.5} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[10px] uppercase tracking-[0.15em] text-white/60 font-bold">Renda Mensal Passiva</p>
-                          <p className="text-[10px] text-white/40 mt-0.5">sem consumir o principal</p>
+                          <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-white font-extrabold">Renda Mensal Passiva</p>
+                          <p className="text-xs md:text-sm text-white/60 mt-1 font-medium">sem consumir o principal</p>
                         </div>
                       </div>
 
