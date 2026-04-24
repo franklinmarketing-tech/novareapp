@@ -1020,7 +1020,7 @@ const YieldGuide = () => {
                           const hasPrefix = f.kind === "brl";
                           return (
                             <div key={f.key} className="space-y-1.5">
-                              <label className="text-xs font-semibold text-white/50 leading-tight block">{f.label}</label>
+                              <label className="text-xs font-semibold text-white/85 leading-tight block">{f.label}</label>
                               <div className="relative">
                                 {hasPrefix && (
                                   <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${numVal ? "text-accent" : "text-white/40"}`}>R$</span>
@@ -1040,7 +1040,7 @@ const YieldGuide = () => {
                                       setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
                                     }
                                   }}
-                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30`}
+                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30`}
                                 />
                                 <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-white/25"}`}>{f.hint}</span>
                               </div>
@@ -1050,7 +1050,7 @@ const YieldGuide = () => {
 
                         {/* Taxa de juros */}
                         <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-white/50 leading-tight block">Taxa de juros dos seus investimentos</label>
+                          <label className="text-xs font-semibold text-white/85 leading-tight block">Taxa de juros dos seus investimentos</label>
                           <div className="relative">
                             {/* Prefixo % à esquerda */}
                             <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rentabilidade ? "text-accent" : "text-white/40"}`}>%</span>
@@ -1073,7 +1073,7 @@ const YieldGuide = () => {
                                 // edição manual desfaz a faixa pré-selecionada
                                 setSelectedFaixa(null);
                               }}
-                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
+                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
                             />
                             {/* Toggle % mês / % ano à direita */}
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
