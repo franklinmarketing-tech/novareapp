@@ -1324,17 +1324,13 @@ const YieldGuide = () => {
                           whileHover={{ y: -2, scale: 1.02 }}
                           whileTap={{ y: 0, scale: 0.98 }}
                           animate={{ boxShadow: [
-                            "0 10px 24px -8px hsl(16 65% 50% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
-                            "0 14px 30px -6px hsl(16 65% 50% / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
-                            "0 10px 24px -8px hsl(16 65% 50% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                            "0 10px 24px -8px hsl(var(--accent) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                            "0 14px 30px -6px hsl(var(--accent) / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
+                            "0 10px 24px -8px hsl(var(--accent) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
                           ] }}
                           transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
-                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group"
-                          style={{
-                            background: "linear-gradient(135deg, hsl(16 70% 55%), hsl(16 65% 45%))",
-                            color: "white",
-                            border: "1px solid hsl(0 0% 100% / 0.2)",
-                          }}
+                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group bg-accent text-accent-foreground border border-accent/40"
+                          style={{}}
                         >
                           <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent" />
                           <FileDown className="relative z-10 h-4 w-4" />
