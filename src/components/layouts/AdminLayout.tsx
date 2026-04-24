@@ -87,6 +87,7 @@ const staticSegments: Record<string, string> = {
   relatorio: "Relatório",
   workspace: "Workspace",
   ajuda: "Ajuda & Manual",
+  "leads-newsletter": "Leads Newsletter",
 };
 
 interface Props {
