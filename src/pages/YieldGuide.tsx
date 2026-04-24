@@ -1716,8 +1716,7 @@ const YieldGuide = () => {
                   <motion.div
                     variants={fadeUp}
                     custom={1.5}
-                    className="calc-dark rounded-3xl overflow-hidden border border-border/40 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.6)]"
-                    style={{ background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))" }}
+                    className="calc-card-light rounded-3xl overflow-hidden"
                   >
                     <div className="p-6 md:p-8">
                       <div className="flex items-start gap-4 mb-6">
