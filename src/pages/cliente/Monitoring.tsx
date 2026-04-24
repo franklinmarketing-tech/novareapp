@@ -269,6 +269,11 @@ const Monitoring = () => {
         </div>
       )}
 
+      {/* ── Fechamentos Mensais ── */}
+      {clientId && (
+        <MonthlyClosings clientId={clientId} clientName={clientName} isAdmin={false} />
+      )}
+
       {/* ── Goal Progress — 3D Cards ── */}
       {goals.length > 0 && (
         <div className="space-y-3">
