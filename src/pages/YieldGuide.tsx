@@ -17,7 +17,6 @@ import {
   ResponsiveContainer, Legend, ReferenceLine,
 } from "recharts";
 import logoPreta from "@/assets/logo-preta.png";
-import logoBranca from "@/assets/logo-branca.png";
 import jeffersonImg from "@/assets/jefferson.png";
 import leonardoImg from "@/assets/leonardo.png";
 import newsletterHero from "@/assets/newsletter-hero.jpg";
