@@ -345,6 +345,7 @@ const YieldGuide = () => {
   const [mobileNav, setMobileNav] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
+  const [isSimulating, setIsSimulating] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
@@ -390,9 +391,15 @@ const YieldGuide = () => {
     : sim.rentabilidade;
 
   const handleSimulate = () => {
-    setResult(simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual));
-    // Congela a faixa escolhida no momento da simulação
-    setResultFaixa(selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null);
+    setIsSimulating(true);
+    // calcula imediatamente, mas mantém o loader visível por 4s para criar expectativa
+    const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual);
+    const faixa = selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null;
+    window.setTimeout(() => {
+      setResult(r);
+      setResultFaixa(faixa);
+      setIsSimulating(false);
+    }, 4000);
   };
 
   const scrollTo = (id: string) => {
@@ -1066,7 +1073,8 @@ const YieldGuide = () => {
                     {/* 3D Button */}
                     <button
                       onClick={handleSimulate}
-                      className="group relative z-10 w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground px-8 py-3.5 rounded-2xl font-semibold text-base shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 mt-5"
+                      disabled={isSimulating}
+                      className="group relative z-10 w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground px-8 py-3.5 rounded-2xl font-semibold text-base shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 mt-5 disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
                     >
                       <BarChart3 className="h-6 w-6" />
                       Simular Aposentadoria
@@ -2457,6 +2465,166 @@ const YieldGuide = () => {
           </p>
         </div>
       </footer>
+
+      {/* ── LOADING OVERLAY: Simulação em andamento ────────────── */}
+      <AnimatePresence>
+        {isSimulating && (
+          <motion.div
+            key="sim-loader"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center px-6"
+            style={{
+              background:
+                "radial-gradient(80% 60% at 50% 50%, hsl(220 50% 12% / 0.85), hsl(220 60% 5% / 0.95))",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+            }}
+          >
+            {/* Orbs de fundo animadas */}
+            <motion.div
+              className="pointer-events-none absolute top-1/4 left-1/4 w-[420px] h-[420px] rounded-full blur-[140px]"
+              style={{ background: "hsl(var(--accent) / 0.25)" }}
+              animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div
+              className="pointer-events-none absolute bottom-1/4 right-1/4 w-[380px] h-[380px] rounded-full blur-[130px]"
+              style={{ background: "hsl(220 80% 50% / 0.3)" }}
+              animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            />
+
+            <motion.div
+              initial={{ scale: 0.85, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-md rounded-3xl p-8 md:p-10 text-center"
+              style={{
+                background:
+                  "linear-gradient(160deg, hsl(220 35% 14% / 0.9), hsl(220 45% 8% / 0.9))",
+                border: "1px solid hsl(0 0% 100% / 0.08)",
+                boxShadow:
+                  "0 30px 80px -20px hsl(var(--accent) / 0.4), 0 0 0 1px hsl(var(--accent) / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+              }}
+            >
+              {/* Logo Novare com halos pulsantes */}
+              <div className="relative mx-auto mb-6 w-40 h-40 flex items-center justify-center">
+                {/* Anéis orbitais animados */}
+                <motion.span
+                  className="absolute inset-0 rounded-full border-2 border-accent/30"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  style={{ borderRightColor: "transparent", borderBottomColor: "transparent" }}
+                />
+                <motion.span
+                  className="absolute inset-3 rounded-full border-2 border-accent/40"
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  style={{ borderLeftColor: "transparent", borderTopColor: "transparent" }}
+                />
+                {/* Halo pulsante */}
+                <motion.span
+                  className="absolute inset-6 rounded-full"
+                  style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.4), transparent 70%)" }}
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                />
+                {/* Logo */}
+                <motion.img
+                  src={logoBranca}
+                  alt="Novare"
+                  className="relative z-10 w-24 h-auto"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ filter: "drop-shadow(0 0 20px hsl(var(--accent) / 0.6))" }}
+                />
+              </div>
+
+              {/* Título com gradiente */}
+              <motion.h3
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-2xl md:text-3xl font-black mb-2 bg-gradient-to-r from-white via-white to-accent/80 bg-clip-text text-transparent"
+              >
+                Calculando sua aposentadoria
+              </motion.h3>
+
+              {/* Subtítulo dinâmico */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-sm text-white/60 mb-6"
+              >
+                Nossa inteligência financeira está montando seu cenário…
+              </motion.p>
+
+              {/* Barra de progresso animada */}
+              <div className="relative h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden mb-5">
+                <motion.div
+                  className="absolute inset-y-0 left-0 rounded-full"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, hsl(var(--accent)), hsl(var(--accent) / 0.6))",
+                    boxShadow: "0 0 12px hsl(var(--accent) / 0.7)",
+                  }}
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 4, ease: "easeInOut" }}
+                />
+                {/* Shimmer */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                  animate={{ x: ["-100%", "200%"] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                />
+              </div>
+
+              {/* Etapas animadas */}
+              <div className="space-y-2 text-left">
+                {[
+                  { label: "Analisando seu perfil de investidor", delay: 0 },
+                  { label: "Projetando juros compostos", delay: 1.0 },
+                  { label: "Calculando IR e renda líquida", delay: 2.2 },
+                  { label: "Finalizando relatório", delay: 3.2 },
+                ].map((step, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.15, duration: 0.4 }}
+                    className="flex items-center gap-2.5 text-xs text-white/70"
+                  >
+                    <motion.span
+                      className="w-1.5 h-1.5 rounded-full bg-accent shrink-0"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{
+                        duration: 1.2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: step.delay,
+                      }}
+                    />
+                    <span>{step.label}</span>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Selo */}
+              <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold">
+                <span className="w-1 h-1 rounded-full bg-accent" />
+                Powered by Novare
+                <span className="w-1 h-1 rounded-full bg-accent" />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
