@@ -5,6 +5,7 @@ import {
   Phone, MessageCircle, BarChart3, Wallet, PiggyBank, Lock,
   Percent, Calendar, DollarSign, ArrowUpRight, Landmark, Menu, X,
   Users, Award, Briefcase, GraduationCap, Linkedin, Info, Receipt,
+  FileDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
