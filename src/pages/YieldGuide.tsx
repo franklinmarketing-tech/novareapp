@@ -1097,6 +1097,219 @@ const YieldGuide = () => {
                       </span>
                     </button>
 
+                    {/* === Renda Mensal Passiva (destaque ACCENT) === */}
+                    <motion.div
+                      className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/30"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.04) 55%, transparent), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))",
+                        boxShadow:
+                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                      }}
+                      whileHover={{ y: -2 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div
+                          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-accent/30"
+                          style={{
+                            background: "linear-gradient(135deg, hsl(var(--accent) / 0.25), hsl(var(--accent) / 0.05))",
+                            boxShadow: "0 8px 20px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
+                          }}
+                        >
+                          <Wallet className="h-5 w-5 text-accent" strokeWidth={2.5} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-accent font-extrabold">Renda Mensal Passiva</p>
+                          <p className="text-xs md:text-sm text-white/60 mt-1 font-medium">sem consumir o principal</p>
+                        </div>
+                      </div>
+
+                      <motion.p
+                        className="text-3xl md:text-[2.25rem] leading-[1.05] font-black text-accent tracking-tight tabular-nums break-words"
+                        key={result?.rendaMensalLiquidaNum}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.1 }}
+                        title={result?.rendaMensalLiquida}
+                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.3)" }}
+                      >
+                        {result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "—"}
+                      </motion.p>
+
+                      {result ? (
+                        <div className="mt-4 pt-4 border-t border-accent/15 flex flex-wrap items-center gap-x-5 gap-y-2">
+                          <div className="min-w-0">
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Anual líq.</p>
+                            <p className="text-base md:text-lg font-extrabold text-success tabular-nums truncate" title={result.rendaAnualLiquida}>
+                              {formatCompactBRL(result.rendaMensalLiquidaNum * 12)}
+                            </p>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-primary font-bold">Bruta/mês</p>
+                            <p className="text-base md:text-lg font-extrabold text-primary tabular-nums truncate" title={result.rendaMensal}>
+                              {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
+                            </p>
+                          </div>
+                          <div className="min-w-0 ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/15 border border-warning/30">
+                            <Percent className="h-3.5 w-3.5 text-warning" />
+                            <span className="text-xs md:text-sm font-extrabold text-warning tabular-nums">
+                              {result.taxaMensalEfetiva.toFixed(2)}% a.m.
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-white/40 mt-3 font-medium">Simule para ver sua renda passiva</p>
+                      )}
+                    </motion.div>
+
+                    {/* === Meta atingida — destaque com glow === */}
+                    <motion.div
+                      className={`relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border transition-all duration-500 ${
+                        result
+                          ? result.atingeMeta
+                            ? "border-success/40"
+                            : "border-warning/40"
+                          : "border-white/[0.08]"
+                      }`}
+                      style={{
+                        background: result
+                          ? result.atingeMeta
+                            ? "linear-gradient(135deg, hsl(var(--success) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))"
+                            : "linear-gradient(135deg, hsl(var(--warning) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))"
+                          : "linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))",
+                        boxShadow: result
+                          ? result.atingeMeta
+                            ? "0 20px 50px -20px hsl(var(--success) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)"
+                            : "0 20px 50px -20px hsl(var(--warning) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)"
+                          : "0 20px 50px -25px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                      }}
+                      whileHover={{ y: -2 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div
+                          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border"
+                          style={{
+                            background: result
+                              ? result.atingeMeta
+                                ? "linear-gradient(135deg, hsl(var(--success) / 0.3), hsl(var(--success) / 0.05))"
+                                : "linear-gradient(135deg, hsl(var(--warning) / 0.3), hsl(var(--warning) / 0.05))"
+                              : "linear-gradient(135deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.02))",
+                            borderColor: result
+                              ? result.atingeMeta
+                                ? "hsl(var(--success) / 0.35)"
+                                : "hsl(var(--warning) / 0.35)"
+                              : "hsl(0 0% 100% / 0.1)",
+                            boxShadow: result
+                              ? result.atingeMeta
+                                ? "0 8px 20px -8px hsl(var(--success) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)"
+                                : "0 8px 20px -8px hsl(var(--warning) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)"
+                              : "inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                          }}
+                        >
+                          <Target
+                            className={`h-5 w-5 ${result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/40"}`}
+                            strokeWidth={2.5}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] uppercase tracking-[0.15em] text-white/60 font-bold">Meta de Renda</p>
+                          <p className="text-[10px] text-white/40 mt-0.5">
+                            {result?.rendaDesejadaNum ? `Alvo: ${formatCompactBRL(result.rendaDesejadaNum)}/mês` : "Defina sua meta"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <motion.p
+                        className={`text-xl md:text-2xl font-black tracking-tight ${
+                          result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/30"
+                        }`}
+                        key={result ? String(result.atingeMeta) : "empty"}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.2 }}
+                      >
+                        {result ? (result.atingeMeta ? "✓ Meta atingida!" : "Ajuste aportes ou prazo") : "Simule primeiro"}
+                      </motion.p>
+
+                      {result && result.rendaDesejadaNum > 0 && (
+                        <div className="mt-4 space-y-2">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-white/50 truncate pr-2 tabular-nums">
+                              {formatCompactBRL(result.rendaMensalLiquidaNum)} <span className="text-white/30">de</span>{" "}
+                              {formatCompactBRL(result.rendaDesejadaNum)}
+                            </span>
+                            <span
+                              className={`font-black tabular-nums shrink-0 text-base ${
+                                result.atingeMeta ? "text-success" : "text-warning"
+                              }`}
+                            >
+                              {result.rendaVsDesejada >= 1000
+                                ? `${(result.rendaVsDesejada / 100).toFixed(0)}×`
+                                : `${result.rendaVsDesejada.toFixed(0)}%`}
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden border border-white/[0.04]">
+                            <motion.div
+                              className="h-full rounded-full relative overflow-hidden"
+                              style={{
+                                background: result.atingeMeta
+                                  ? "linear-gradient(90deg, hsl(var(--success)), hsl(var(--success) / 0.7))"
+                                  : "linear-gradient(90deg, hsl(var(--warning)), hsl(var(--warning) / 0.7))",
+                                boxShadow: result.atingeMeta
+                                  ? "0 0 12px hsl(var(--success) / 0.6)"
+                                  : "0 0 12px hsl(var(--warning) / 0.6)",
+                              }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(100, result.rendaVsDesejada)}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                            >
+                              {/* shimmer */}
+                              <motion.div
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                                animate={{ x: ["-100%", "200%"] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                              />
+                            </motion.div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Botão destaque: Ver rendimento mensal em PDF (logo abaixo da Meta de Renda) */}
+                      {result && (
+                        <motion.button
+                          onClick={() => generateRendimentoPDF(result, {
+                            idadeAtual: sim.idadeAtual,
+                            idadeAposent: sim.idadeAposent,
+                            patrimonioAtual: sim.patrimonioAtual,
+                            aporte: sim.aporte,
+                            rendaDesejada: sim.rendaDesejada,
+                            rentabilidadeAnual: rentAnual,
+                          })}
+                          whileHover={{ y: -2, scale: 1.02 }}
+                          whileTap={{ y: 0, scale: 0.98 }}
+                          animate={{ boxShadow: [
+                            "0 10px 24px -8px hsl(217 91% 60% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                            "0 14px 30px -6px hsl(217 91% 60% / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
+                            "0 10px 24px -8px hsl(217 91% 60% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                          ] }}
+                          transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
+                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group"
+                          style={{
+                            background: "linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 48%))",
+                            color: "white",
+                            border: "1px solid hsl(0 0% 100% / 0.2)",
+                          }}
+                        >
+                          <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                          <FileDown className="relative z-10 h-4 w-4" />
+                          <span className="relative z-10">Ver rendimento mensal em PDF</span>
+                        </motion.button>
+                      )}
+                    </motion.div>
+
+
                   </div>
 
                   {/* Results panel — modern floating cards */}
@@ -1326,217 +1539,6 @@ const YieldGuide = () => {
                       })}
                     </div>
 
-                    {/* === Renda Mensal Passiva (destaque ACCENT) === */}
-                    <motion.div
-                      className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/30"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.04) 55%, transparent), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))",
-                        boxShadow:
-                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
-                      }}
-                      whileHover={{ y: -2 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div
-                          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-accent/30"
-                          style={{
-                            background: "linear-gradient(135deg, hsl(var(--accent) / 0.25), hsl(var(--accent) / 0.05))",
-                            boxShadow: "0 8px 20px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
-                          }}
-                        >
-                          <Wallet className="h-5 w-5 text-accent" strokeWidth={2.5} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-accent font-extrabold">Renda Mensal Passiva</p>
-                          <p className="text-xs md:text-sm text-white/60 mt-1 font-medium">sem consumir o principal</p>
-                        </div>
-                      </div>
-
-                      <motion.p
-                        className="text-3xl md:text-[2.25rem] leading-[1.05] font-black text-accent tracking-tight tabular-nums break-words"
-                        key={result?.rendaMensalLiquidaNum}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.1 }}
-                        title={result?.rendaMensalLiquida}
-                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.3)" }}
-                      >
-                        {result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "—"}
-                      </motion.p>
-
-                      {result ? (
-                        <div className="mt-4 pt-4 border-t border-accent/15 flex flex-wrap items-center gap-x-5 gap-y-2">
-                          <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Anual líq.</p>
-                            <p className="text-base md:text-lg font-extrabold text-success tabular-nums truncate" title={result.rendaAnualLiquida}>
-                              {formatCompactBRL(result.rendaMensalLiquidaNum * 12)}
-                            </p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-primary font-bold">Bruta/mês</p>
-                            <p className="text-base md:text-lg font-extrabold text-primary tabular-nums truncate" title={result.rendaMensal}>
-                              {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
-                            </p>
-                          </div>
-                          <div className="min-w-0 ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/15 border border-warning/30">
-                            <Percent className="h-3.5 w-3.5 text-warning" />
-                            <span className="text-xs md:text-sm font-extrabold text-warning tabular-nums">
-                              {result.taxaMensalEfetiva.toFixed(2)}% a.m.
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-white/40 mt-3 font-medium">Simule para ver sua renda passiva</p>
-                      )}
-                    </motion.div>
-
-                    {/* === Meta atingida — destaque com glow === */}
-                    <motion.div
-                      className={`relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border transition-all duration-500 ${
-                        result
-                          ? result.atingeMeta
-                            ? "border-success/40"
-                            : "border-warning/40"
-                          : "border-white/[0.08]"
-                      }`}
-                      style={{
-                        background: result
-                          ? result.atingeMeta
-                            ? "linear-gradient(135deg, hsl(var(--success) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))"
-                            : "linear-gradient(135deg, hsl(var(--warning) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))"
-                          : "linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))",
-                        boxShadow: result
-                          ? result.atingeMeta
-                            ? "0 20px 50px -20px hsl(var(--success) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)"
-                            : "0 20px 50px -20px hsl(var(--warning) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)"
-                          : "0 20px 50px -25px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
-                      }}
-                      whileHover={{ y: -2 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div
-                          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border"
-                          style={{
-                            background: result
-                              ? result.atingeMeta
-                                ? "linear-gradient(135deg, hsl(var(--success) / 0.3), hsl(var(--success) / 0.05))"
-                                : "linear-gradient(135deg, hsl(var(--warning) / 0.3), hsl(var(--warning) / 0.05))"
-                              : "linear-gradient(135deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.02))",
-                            borderColor: result
-                              ? result.atingeMeta
-                                ? "hsl(var(--success) / 0.35)"
-                                : "hsl(var(--warning) / 0.35)"
-                              : "hsl(0 0% 100% / 0.1)",
-                            boxShadow: result
-                              ? result.atingeMeta
-                                ? "0 8px 20px -8px hsl(var(--success) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)"
-                                : "0 8px 20px -8px hsl(var(--warning) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)"
-                              : "inset 0 1px 0 hsl(0 0% 100% / 0.1)",
-                          }}
-                        >
-                          <Target
-                            className={`h-5 w-5 ${result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/40"}`}
-                            strokeWidth={2.5}
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[10px] uppercase tracking-[0.15em] text-white/60 font-bold">Meta de Renda</p>
-                          <p className="text-[10px] text-white/40 mt-0.5">
-                            {result?.rendaDesejadaNum ? `Alvo: ${formatCompactBRL(result.rendaDesejadaNum)}/mês` : "Defina sua meta"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <motion.p
-                        className={`text-xl md:text-2xl font-black tracking-tight ${
-                          result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/30"
-                        }`}
-                        key={result ? String(result.atingeMeta) : "empty"}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.2 }}
-                      >
-                        {result ? (result.atingeMeta ? "✓ Meta atingida!" : "Ajuste aportes ou prazo") : "Simule primeiro"}
-                      </motion.p>
-
-                      {result && result.rendaDesejadaNum > 0 && (
-                        <div className="mt-4 space-y-2">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-white/50 truncate pr-2 tabular-nums">
-                              {formatCompactBRL(result.rendaMensalLiquidaNum)} <span className="text-white/30">de</span>{" "}
-                              {formatCompactBRL(result.rendaDesejadaNum)}
-                            </span>
-                            <span
-                              className={`font-black tabular-nums shrink-0 text-base ${
-                                result.atingeMeta ? "text-success" : "text-warning"
-                              }`}
-                            >
-                              {result.rendaVsDesejada >= 1000
-                                ? `${(result.rendaVsDesejada / 100).toFixed(0)}×`
-                                : `${result.rendaVsDesejada.toFixed(0)}%`}
-                            </span>
-                          </div>
-                          <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden border border-white/[0.04]">
-                            <motion.div
-                              className="h-full rounded-full relative overflow-hidden"
-                              style={{
-                                background: result.atingeMeta
-                                  ? "linear-gradient(90deg, hsl(var(--success)), hsl(var(--success) / 0.7))"
-                                  : "linear-gradient(90deg, hsl(var(--warning)), hsl(var(--warning) / 0.7))",
-                                boxShadow: result.atingeMeta
-                                  ? "0 0 12px hsl(var(--success) / 0.6)"
-                                  : "0 0 12px hsl(var(--warning) / 0.6)",
-                              }}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${Math.min(100, result.rendaVsDesejada)}%` }}
-                              transition={{ duration: 1, ease: "easeOut" }}
-                            >
-                              {/* shimmer */}
-                              <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                                animate={{ x: ["-100%", "200%"] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                              />
-                            </motion.div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Botão destaque: Ver rendimento mensal em PDF (logo abaixo da Meta de Renda) */}
-                      {result && (
-                        <motion.button
-                          onClick={() => generateRendimentoPDF(result, {
-                            idadeAtual: sim.idadeAtual,
-                            idadeAposent: sim.idadeAposent,
-                            patrimonioAtual: sim.patrimonioAtual,
-                            aporte: sim.aporte,
-                            rendaDesejada: sim.rendaDesejada,
-                            rentabilidadeAnual: rentAnual,
-                          })}
-                          whileHover={{ y: -2, scale: 1.02 }}
-                          whileTap={{ y: 0, scale: 0.98 }}
-                          animate={{ boxShadow: [
-                            "0 10px 24px -8px hsl(217 91% 60% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
-                            "0 14px 30px -6px hsl(217 91% 60% / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
-                            "0 10px 24px -8px hsl(217 91% 60% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
-                          ] }}
-                          transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
-                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group"
-                          style={{
-                            background: "linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 48%))",
-                            color: "white",
-                            border: "1px solid hsl(0 0% 100% / 0.2)",
-                          }}
-                        >
-                          <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                          <FileDown className="relative z-10 h-4 w-4" />
-                          <span className="relative z-10">Ver rendimento mensal em PDF</span>
-                        </motion.button>
-                      )}
-                    </motion.div>
                   </div>
                 </div>
               </div>
