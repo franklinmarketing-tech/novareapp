@@ -300,7 +300,7 @@ const ScrollingPills = ({ onPillClick }: { onPillClick: (target: string) => void
 
 /* ── page component ────────────────────────────── */
 const YieldGuide = () => {
-  const [sim, setSim] = useState({ idadeAtual: 30, idadeAposent: 60, patrimonioAtual: 10000, aporte: 2000, rendaDesejada: 15000, rentabilidade: 12 });
+  const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: 0 });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
   const [result, setResult] = useState<SimResult | null>(null);
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
