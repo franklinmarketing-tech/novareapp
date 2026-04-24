@@ -2619,9 +2619,9 @@ const YieldGuide = () => {
               <div className="space-y-2 text-left">
                 {[
                   { label: "Analisando seu perfil de investidor", delay: 0 },
-                  { label: "Projetando juros compostos", delay: 1.5 },
-                  { label: "Calculando IR e renda líquida", delay: 3.0 },
-                  { label: "Finalizando relatório", delay: 4.5 },
+                  { label: "Projetando juros compostos", delay: 1.2 },
+                  { label: "Calculando IR e renda líquida", delay: 2.5 },
+                  { label: "Finalizando relatório", delay: 3.8 },
                 ].map((step, i) => (
                   <motion.div
                     key={i}
