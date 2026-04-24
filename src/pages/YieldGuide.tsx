@@ -23,6 +23,7 @@ import leonardoImg from "@/assets/leonardo.png";
 import newsletterHero from "@/assets/newsletter-hero.jpg";
 import { SEO } from "@/components/SEO";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateRendimentoPDF } from "@/lib/generateRendimentoPDF";
 
 /* ── founder data ──────────────────────────────── */
 const founders = [
