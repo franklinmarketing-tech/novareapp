@@ -1276,7 +1276,7 @@ const YieldGuide = () => {
                           full: result?.totalInvestido,
                           sub: "Aportes somados",
                           icon: PiggyBank,
-                          tone: "neutral" as const,
+                          tone: "info" as const,
                         },
                         {
                           label: "Ganho líq.",
@@ -1284,7 +1284,7 @@ const YieldGuide = () => {
                           full: result?.ganhoLiquido,
                           sub: result ? `Bruto ${formatCompactBRL(result.patrimonioNum - result.totalInvestidoNum)}` : "—",
                           icon: TrendingUp,
-                          tone: "accent" as const,
+                          tone: "success" as const,
                         },
                         {
                           label: "Imposto",
@@ -1297,29 +1297,29 @@ const YieldGuide = () => {
                       ].map((k) => {
                         const Icon = k.icon;
                         const toneClasses = {
-                          neutral: { ring: "border-white/[0.08]", icon: "text-white/60", bg: "bg-white/[0.06]", value: "text-white" },
-                          accent: { ring: "border-accent/25", icon: "text-accent", bg: "bg-accent/15", value: "text-accent" },
-                          warning: { ring: "border-warning/20", icon: "text-warning", bg: "bg-warning/15", value: "text-warning" },
+                          info: { ring: "border-info/30", icon: "text-info", bg: "bg-info/15", value: "text-info", label: "text-info" },
+                          success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
+                          warning: { ring: "border-warning/30", icon: "text-warning", bg: "bg-warning/15", value: "text-warning", label: "text-warning" },
                         }[k.tone];
                         return (
                           <motion.div
                             key={k.label}
-                            className={`relative rounded-2xl p-3.5 border ${toneClasses.ring} overflow-hidden min-w-0`}
+                            className={`relative rounded-2xl p-4 md:p-5 border ${toneClasses.ring} overflow-hidden min-w-0`}
                             style={{
                               background: "linear-gradient(160deg, hsl(220 35% 13%), hsl(220 40% 9%))",
                               boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.04)",
                             }}
-                            whileHover={{ y: -2, scale: 1.01 }}
+                            whileHover={{ y: -2, scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 300, damping: 22 }}
                           >
-                            <div className={`w-7 h-7 rounded-lg ${toneClasses.bg} flex items-center justify-center mb-2`}>
-                              <Icon className={`h-3.5 w-3.5 ${toneClasses.icon}`} strokeWidth={2.5} />
+                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl ${toneClasses.bg} flex items-center justify-center mb-2.5`}>
+                              <Icon className={`h-4 w-4 md:h-5 md:w-5 ${toneClasses.icon}`} strokeWidth={2.5} />
                             </div>
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold mb-1 truncate">{k.label}</p>
-                            <p className={`text-base md:text-lg font-bold ${toneClasses.value} tracking-tight tabular-nums break-words`} title={k.full}>
+                            <p className={`text-[11px] md:text-xs uppercase tracking-wider ${toneClasses.label} font-extrabold mb-1.5 truncate`}>{k.label}</p>
+                            <p className={`text-lg md:text-2xl font-black ${toneClasses.value} tracking-tight tabular-nums break-words`} title={k.full}>
                               {k.value}
                             </p>
-                            <p className="text-[9px] text-white/30 mt-0.5 truncate">{k.sub}</p>
+                            <p className="text-[11px] md:text-xs text-white/60 mt-1 truncate font-medium">{k.sub}</p>
                           </motion.div>
                         );
                       })}
