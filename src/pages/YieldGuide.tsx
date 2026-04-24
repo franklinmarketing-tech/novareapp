@@ -376,7 +376,12 @@ const YieldGuide = () => {
 
   const scrollTo = (id: string) => {
     setMobileNav(false);
-    document.querySelector(id)?.scrollIntoView({ behavior: "smooth" });
+    const el = document.querySelector(id) as HTMLElement | null;
+    if (!el) return;
+    // offset = altura do header fixo (h-20 = 80px / h-16 quando rolado = 64px) + folga
+    const headerH = window.scrollY > 20 ? 64 : 80;
+    const top = el.getBoundingClientRect().top + window.scrollY - headerH - 16;
+    window.scrollTo({ top, behavior: "smooth" });
   };
 
   const whatsappUrl = "https://api.whatsapp.com/send/?phone=5519983402827&text=Li+o+conteúdo+da+Novare+e+gostaria+de+falar+com+um+consultor";
