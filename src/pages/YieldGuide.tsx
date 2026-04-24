@@ -1835,7 +1835,7 @@ const YieldGuide = () => {
                     </div>
                     <div className="flex items-center gap-3 text-[11px]">
                       <span className="flex items-center gap-1.5 text-muted-foreground">
-                        <span className="w-2.5 h-2.5 rounded-full bg-white/30" /> Investido
+                        <span className="w-2.5 h-2.5 rounded-full bg-primary/40" /> Investido
                       </span>
                       <span className="flex items-center gap-1.5 text-muted-foreground">
                         <span className="w-2.5 h-2.5 rounded-full bg-accent" /> Patrimônio líquido
