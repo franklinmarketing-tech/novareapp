@@ -335,10 +335,11 @@ const ScrollingPills = ({ onPillClick }: { onPillClick: (target: string) => void
 
 /* ── page component ────────────────────────────── */
 const YieldGuide = () => {
-  const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: 0 });
+  const _preFaixa = bentoFeatures.find((b) => b.title === "Prefixado") ?? bentoFeatures[0];
+  const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: _preFaixa.rentAnual });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
   const [result, setResult] = useState<SimResult | null>(null);
-  const [selectedFaixa, setSelectedFaixa] = useState<string | null>(null);
+  const [selectedFaixa, setSelectedFaixa] = useState<string | null>(_preFaixa.title);
   const [resultFaixa, setResultFaixa] = useState<typeof bentoFeatures[number] | null>(null);
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
@@ -768,10 +769,12 @@ const YieldGuide = () => {
                           : "border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.06] hover:border-white/15"
                       }`}
                     >
-                      {isSelected && (
+                      {isSelected ? (
                         <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]">
                           <Check className="h-3 w-3" strokeWidth={3} />
                         </span>
+                      ) : (
+                        <span className="absolute top-2 right-2 w-5 h-5 rounded-full border border-white/20 bg-white/[0.04] group-hover:border-white/40 transition-colors" />
                       )}
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
