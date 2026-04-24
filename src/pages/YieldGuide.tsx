@@ -24,6 +24,9 @@ import newsletterHero from "@/assets/newsletter-hero.jpg";
 import { SEO } from "@/components/SEO";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateRendimentoPDF } from "@/lib/generateRendimentoPDF";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { z } from "zod";
 
 /* ── founder data ──────────────────────────────── */
 const founders = [
