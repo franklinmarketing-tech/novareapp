@@ -101,6 +101,108 @@ const MonthlyClosings = ({ clientId, clientName, isAdmin }: Props) => {
     [closings]
   );
 
+  const buildSnapshot = async () => {
+    const [incRes, expRes, debRes, assRes, insRes, goalsRes, planRes] = await Promise.all([
+      supabase.from("income").select("*").eq("client_id", clientId),
+      supabase.from("expenses").select("*").eq("client_id", clientId),
+      supabase.from("debts").select("*").eq("client_id", clientId),
+      supabase.from("assets").select("*").eq("client_id", clientId),
+      supabase.from("insurance").select("*").eq("client_id", clientId),
+      supabase.from("goals").select("*").eq("client_id", clientId),
+      supabase.from("action_plans").select("id").eq("client_id", clientId).maybeSingle(),
+    ]);
+
+    const income = incRes.data || [];
+    const expenses = expRes.data || [];
+    const debts = debRes.data || [];
+    const assets = assRes.data || [];
+    const insurance = insRes.data || [];
+    const goals = goalsRes.data || [];
+
+    const totalIncome = income.reduce((s, r: any) => {
+      const a = Number(r.amount) || 0;
+      return s + (r.frequency === "anual" ? a / 12 : a);
+    }, 0);
+    const totalExpenses = expenses.reduce((s, r: any) => s + (Number(r.amount) || 0), 0);
+    const totalAssets = assets.reduce((s, r: any) => s + (Number(r.estimated_value) || 0), 0);
+    const totalDebts = debts.reduce((s, r: any) => s + (Number(r.total_amount) || 0), 0);
+    const monthlyDebtPayments = debts.reduce((s, r: any) => s + (Number(r.monthly_payment) || 0), 0);
+    const netCashFlow = totalIncome - totalExpenses - monthlyDebtPayments;
+    const savingsRate = totalIncome > 0 ? (netCashFlow / totalIncome) * 100 : 0;
+    const emergencyMonths = totalExpenses > 0 ? totalAssets / totalExpenses : 0;
+    const netWorth = totalAssets - totalDebts;
+
+    let actionItems: any[] = [];
+    let planPct = 0;
+    if (planRes.data) {
+      const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id);
+      actionItems = items || [];
+      if (actionItems.length > 0) {
+        planPct = Math.round((actionItems.filter((i) => i.status === "concluido").length / actionItems.length) * 100);
+      }
+    }
+
+    const parentItems = actionItems.filter((a) => !a.parent_id);
+    const goalsSnapshot = goals.map((g: any) => {
+      const t = parentItems.filter((a) => a.goal_id === g.id);
+      const done = t.filter((a) => a.status === "concluido").length;
+      return {
+        id: g.id,
+        description: g.description,
+        priority: g.priority,
+        target_amount: g.target_amount,
+        deadline: g.deadline,
+        tasksDone: done,
+        tasksTotal: t.length,
+        pct: t.length > 0 ? Math.round((done / t.length) * 100) : 0,
+      };
+    });
+
+    return {
+      totals: {
+        total_income: totalIncome,
+        total_expenses: totalExpenses,
+        total_assets: totalAssets,
+        total_debts: totalDebts,
+        monthly_debt_payments: monthlyDebtPayments,
+        net_worth: netWorth,
+        savings_rate: savingsRate,
+        emergency_reserve_months: emergencyMonths,
+        plan_completion_pct: planPct,
+      },
+      income, expenses, debts, assets, insurance,
+      goalsSnapshot, actionItems,
+    };
+  };
+
+  const handleRefreshClose = async (existing: MonthlyClosing) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Sessão inválida.");
+      const snap = await buildSnapshot();
+      const { error } = await supabase.from("monthly_closings").update({
+        status: "fechado",
+        ...snap.totals,
+        income_snapshot: snap.income,
+        expenses_snapshot: snap.expenses,
+        debts_snapshot: snap.debts,
+        assets_snapshot: snap.assets,
+        insurance_snapshot: snap.insurance,
+        goals_snapshot: snap.goalsSnapshot,
+        action_plan_snapshot: snap.actionItems,
+        closed_at: new Date().toISOString(),
+        closed_by: user.id,
+        reopened_at: null,
+        reopened_by: null,
+      }).eq("id", existing.id);
+      if (error) throw error;
+      toast({ title: "Mês fechado novamente", description: "Snapshot atualizado com os dados atuais." });
+      await load();
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message || "Falha ao refechar", variant: "destructive" });
+    }
+  };
+
   const handleClose = async () => {
     setClosing(true);
     try {
