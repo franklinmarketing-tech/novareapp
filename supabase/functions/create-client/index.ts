@@ -100,27 +100,55 @@ Deno.serve(async (req) => {
         }
         userId = existingUser.id;
 
-        const { data: existingClient } = await adminClient
+        // IMPORTANTE: redefine a senha para a nova senha informada pelo consultor
+        // e garante que o e-mail está confirmado, para que o cliente consiga logar.
+        const { error: updateErr } = await adminClient.auth.admin.updateUserById(userId, {
+          password,
+          email_confirm: true,
+          user_metadata: { full_name: name.trim() },
+        });
+        if (updateErr) {
+          return new Response(JSON.stringify({ error: `Falha ao redefinir senha: ${updateErr.message}` }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        let { data: existingClient } = await adminClient
           .from("clients")
           .select("id, slug")
           .eq("user_id", userId)
-          .single();
+          .maybeSingle();
 
-        if (existingClient) {
-          return new Response(
-            JSON.stringify({ clientId: existingClient.id, slug: existingClient.slug, userId, alreadyExisted: true }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+        if (!existingClient) {
+          const { data: newClient } = await adminClient
+            .from("clients")
+            .insert({ user_id: userId })
+            .select("id, slug")
+            .single();
+          existingClient = newClient as any;
         }
 
-        const { data: newClient } = await adminClient
-          .from("clients")
-          .insert({ user_id: userId })
-          .select("id, slug")
-          .single();
+        // Reenvia e-mail de boas-vindas com a nova senha
+        try {
+          await adminClient.functions.invoke("send-client-email", {
+            body: {
+              to: email.trim(),
+              templateName: "welcome-with-password",
+              templateData: {
+                clientName: name.trim(),
+                email: email.trim(),
+                password,
+              },
+            },
+            headers: { Authorization: authHeader },
+          });
+        } catch (emailErr) {
+          console.error("Falha ao reenviar e-mail de boas-vindas:", emailErr);
+        }
 
         return new Response(
-          JSON.stringify({ clientId: newClient?.id, slug: newClient?.slug, userId, alreadyExisted: true }),
+          JSON.stringify({ clientId: existingClient?.id, slug: existingClient?.slug, userId, alreadyExisted: true, passwordReset: true }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
