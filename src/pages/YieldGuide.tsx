@@ -1197,12 +1197,12 @@ const YieldGuide = () => {
                               ? result.atingeMeta
                                 ? "linear-gradient(135deg, hsl(var(--success) / 0.3), hsl(var(--success) / 0.05))"
                                 : "linear-gradient(135deg, hsl(var(--warning) / 0.3), hsl(var(--warning) / 0.05))"
-                              : "linear-gradient(135deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.02))",
+                              : "linear-gradient(135deg, hsl(220 22% 96%), hsl(220 22% 92%))",
                             borderColor: result
                               ? result.atingeMeta
                                 ? "hsl(var(--success) / 0.35)"
                                 : "hsl(var(--warning) / 0.35)"
-                              : "hsl(0 0% 100% / 0.1)",
+                              : "hsl(220 13% 88%)",
                             boxShadow: result
                               ? result.atingeMeta
                                 ? "0 8px 20px -8px hsl(var(--success) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)"
