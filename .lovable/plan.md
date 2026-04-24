@@ -1,195 +1,122 @@
+# Melhorias na Calculadora de Investimentos
 
-## Plano de varredura e melhorias gerais na aba Clientes
-
-Vou revisar e ajustar a aba `Clientes` sem alterar a estrutura principal do sistema: sem mudar rotas, banco de dados, fluxo de navegação, layout base ou permissões. O foco será correção fina, segurança operacional, usabilidade e consistência visual.
-
-## Escopo principal
-
-Arquivo principal:
-
-- `src/pages/admin/ClientList.tsx`
-
-Arquivos auxiliares somente se necessário:
-
-- `src/components/layouts/AdminLayout.tsx`
-- componentes UI já existentes, sem criar nova estrutura
-
-## Melhorias e correções propostas
-
-### 1. Corrigir carregamento e tratamento de erro
-
-Hoje a busca de clientes ignora alguns erros silenciosamente. Vou melhorar para:
-
-- tratar erro ao carregar `clients`;
-- tratar erro ao carregar `profiles`;
-- evitar tela vazia enganosa quando houver falha;
-- mostrar toast claro em caso de erro;
-- garantir que `loading` sempre finalize corretamente;
-- evitar consultas desnecessárias quando não houver clientes.
-
-Resultado esperado:
-
-```text
-Não foi possível carregar os clientes.
-Tente novamente em instantes.
-```
-
-Sem quebrar o layout atual.
+Após analisar a tela atual, identifiquei **8 melhorias** organizadas por impacto. Cada uma é independente — você pode aprovar todas ou só algumas.
 
 ---
 
-### 2. Melhorar busca sem mudar a tela
+## 1. Hierarquia tipográfica dos labels (alta prioridade)
 
-A busca atual considera principalmente nome e e-mail. Vou ampliar a busca para também encontrar por:
+**Problema:** Labels dos inputs ("Qual sua idade hoje?", "Quanto consegue investir por mês?") estão em `text-white/50` — muito apagados, parecem desabilitados. O olho não sabe onde focar.
 
-- cidade;
-- profissão;
-- consultor responsável;
-- status textual.
+**Solução:**
 
-Exemplo:
-
-```text
-Buscar "médico" encontra clientes com profissão Médico
-Buscar "São Paulo" encontra clientes daquela cidade
-Buscar "pendente" encontra clientes em onboarding pendente
-```
-
-Isso melhora a aba sem adicionar novos filtros ou mudar estrutura.
+- Labels principais: `text-white/85 font-semibold` (legível mas não compete com o valor)
+- Mantém mini-hint abaixo em `text-white/40` quando necessário
+- Aumenta peso da pergunta para `font-semibold` (atual é regular)
 
 ---
 
-### 3. Refinar status dos clientes
+## 2. Cards de seleção de taxa (Prefixado / Pós-fixado / IPCA+)
 
-Vou revisar o mapa de status para deixar mais claro:
+**Problema:** O card selecionado (Prefixado) tem borda/glow terracota muito sutil. Já o IPCA+ usa "IPCA + 7%" em branco enquanto os outros mostram o valor em terracota — falta consistência.
 
-- `onboarding_pendente` → `Pendente Onboarding`
-- `em_diagnostico` → `Em Diagnóstico`
-- `em_acompanhamento` → `Acompanhamento`
+**Solução:**
 
-Hoje `em_diagnostico` aparece como `Acompanhamento`, o que pode confundir.
-
-Também manterei as cores atuais:
-
-- amarelo para pendente;
-- verde/positivo para acompanhamento;
-- tom intermediário para diagnóstico, se compatível com os badges existentes.
+- Padronizar todos os 3 valores no mesmo destaque terracota (`text-accent`)
+- Card selecionado: borda `border-accent` (sólida, não `/40`) + ring `ring-2 ring-accent/30` para destaque inequívoco
+- Card não-selecionado: `border-white/10` com hover `border-white/25` (estado intermediário claro)
+- Check mark do selecionado: aumentar de 14px para 16px
 
 ---
 
-### 4. Melhorar a exclusão sem afetar segurança
+## 3. Botão "Simular Aposentadoria" — peso visual
 
-A exclusão já usa confirmação de senha e Edge Function. Vou apenas deixar a experiência mais segura:
+**Problema:** O botão está bom, mas a seta dentro de um quadradinho compete visualmente com o ícone do gráfico.
 
-- não remover visualmente o cliente antes da confirmação real do Supabase;
-- mostrar estado de processamento durante a exclusão;
-- manter toast de sucesso somente depois do commit;
-- se houver erro, manter o cliente na lista;
-- preservar a confirmação por senha e texto `EXCLUIR`.
+**Solução:**
 
-Isso evita a sensação de que o cliente foi excluído quando a operação ainda pode falhar.
+- Remover o "container" da seta — apenas `<ArrowRight>` simples ao lado direito
+- Aumentar gap interno para respirar
+- Animar a seta com `translate-x-1` no hover (microinteração sutil)
 
 ---
 
-### 5. Revisar seed automático de clientes demo
+## 4. Painel de resultados — diferenciação dos KPIs
 
-Existe uma chamada automática para `seed-all-demo-clients` dentro da aba Clientes quando alguns clientes demo não existem ou estão incompletos.
+**Problema:** Os 3 mini-KPIs no canto inferior direito (Investido / Ganho líq. / Imposto) usam 3 cores diferentes (terracota, verde, amarelo), mas o "Imposto" em `text-warning` (amarelo) vibra demais — parece um aviso de erro, não uma informação neutra.
 
-Vou revisar esse comportamento porque pode ser perigoso em ambiente real. A correção segura será:
+**Solução:**
 
-- impedir que a aba Clientes crie clientes demo automaticamente em uso normal;
-- manter a lista apenas como leitura/gestão dos clientes existentes;
-- se o projeto ainda precisar de seed demo, deixar isso restrito a fluxo explícito de teste, não ao simples acesso da aba.
-
-Essa mudança não altera estrutura, apenas evita criação automática inesperada.
+- "Imposto" muda de `text-warning` (amarelo vibrante) para `text-white/80` (neutro) com apenas o ícone em terracota suave
+- Mantém apenas **Ganho líq.** em verde (a única métrica que realmente é "positiva")
+- Investido continua terracota (cor da marca = ação do usuário)
 
 ---
 
-### 6. Melhorar estados vazios e sem resultado
+## 5. Card "Patrimônio Bruto" — desperdício de espaço
 
-Vou refinar as mensagens para ficarem mais úteis:
+**Problema:** O card grande mostra "R$ 0" gigante no centro, com muito espaço vazio quando o usuário não simulou ainda. Período / Líquido após IR ficam empurrados para baixo sem hierarquia clara.
 
-Quando não houver nenhum cliente:
+**Solução:**
 
-```text
-Sua jornada começa aqui
-Cadastre seu primeiro cliente...
-```
-
-Quando houver clientes, mas o filtro/busca não encontrar:
-
-```text
-Nenhum resultado encontrado
-Limpar busca e filtros
-```
-
-Também vou adicionar ação rápida para limpar busca/filtros quando aplicável.
+- Adicionar badge sutil "aguardando simulação" no estado vazio (em vez de só "R$ 0")
+- Reduzir tamanho do número de `text-[2.5rem]` para `text-[2rem]` — sobra espaço para os subvalores
+- Período e Líquido após IR ganham ícones pequenos (Calendar / Receipt) à esquerda dos labels
 
 ---
 
-### 7. Melhorar responsividade e legibilidade
+## 6. Estado focus dos inputs
 
-Sem redesenhar a tela, vou ajustar detalhes de responsividade:
+**Problema:** Foco atual usa `focus:ring-1 ring-accent/20` — quase invisível. Usuário não percebe qual campo está ativo ao navegar com Tab.
 
-- evitar textos cortados de forma ruim em telas menores;
-- manter ações `Editar` e `Excluir` acessíveis no mobile;
-- revisar espaçamentos dos cards em lista e grade;
-- melhorar alinhamento dos badges;
-- manter os KPIs e filtros estáveis no viewport atual.
+**Solução:**
 
----
-
-### 8. Melhorar acessibilidade dos botões
-
-Vou revisar:
-
-- `aria-label` nos botões de editar/excluir;
-- títulos dos botões;
-- foco de teclado;
-- botões de visualização lista/grade com indicação adequada;
-- área clicável do card sem conflito com botões internos.
+- `focus:ring-2 focus:ring-accent/50` (mais grosso e visível)
+- Adicionar `focus:border-accent` (borda sólida no foco)
+- Mantém transição suave já existente
 
 ---
 
-### 9. Revisar consistência visual
+## 7. Estados hover/disabled padronizados
 
-Vou manter o estilo atual, apenas polindo:
+**Problema:** Botão "Simular" tem disabled bem definido, mas botões secundários (toggle % mês/ano, cards de taxa) não têm feedback de hover claro.
 
-- pesos de fonte;
-- truncamento de nome/e-mail;
-- badges;
-- estados hover;
-- ícones;
-- alinhamento entre lista e grade.
+**Solução:**
 
-Sem alterar identidade visual ou estrutura de navegação.
+- Toggle % mês/ano: hover do botão inativo → `bg-white/[0.04]` (background sutil)
+- Cards de taxa não-selecionados: `hover:bg-white/[0.03]` + `hover:scale-[1.01]`
+- Botão "Ver rendimento mensal em PDF": adicionar `disabled:opacity-50 disabled:cursor-not-allowed` quando não houver resultado
 
-## Validação após implementar
+---
 
-Depois da implementação, vou validar:
+## 8. Card "Próximo Passo" / CTA final — refinamento
 
-1. Acessar `/admin/clientes`.
-2. Confirmar carregamento correto da lista.
-3. Testar busca por nome.
-4. Testar busca por e-mail.
-5. Testar busca por cidade/profissão/consultor.
-6. Testar filtros `Todos`, `Pendente` e `Acompanhamento`.
-7. Testar ordenação por recentes, nome e status.
-8. Alternar entre lista e grade.
-9. Conferir estados vazios e sem resultado.
-10. Testar fluxo de exclusão com cancelamento e erro.
-11. Conferir se nenhum cliente demo é criado automaticamente.
-12. Verificar console para erros visíveis.
-13. Confirmar que a estrutura de rotas e banco não foi alterada.
+**Problema:** O bloco "Pronto para sair do papel?" tem o mesmo peso visual dos cards de KPI acima. Como é o CTA principal, deveria se destacar mais.
 
-## Resultado esperado
+**Solução:**
 
-A aba Clientes ficará:
+- Adicionar gradient de fundo sutil terracota: `linear-gradient(135deg, hsl(var(--accent)/0.08), transparent)`
+- Borda superior em terracota: `border-t-2 border-accent/30`
+- Ícone do telefone ao lado dos badges "Gratuito · Sem compromisso · Resposta em até 1h" para reforçar urgência
+- Botão "Falar com especialista": adicionar pulso sutil no shadow (já existe no botão PDF)
 
-- mais confiável;
-- mais clara;
-- com busca mais útil;
-- com exclusão mais segura;
-- sem criação automática inesperada de clientes demo;
-- mais consistente em desktop e mobile;
-- sem mudanças estruturais no sistema.
+---
+
+## Resumo técnico
+
+**Arquivo único afetado:** `src/pages/YieldGuide.tsx`
+
+**Tokens usados (sem cores arbitrárias):**
+
+- `text-accent` / `bg-accent` / `border-accent` (terracota da marca)
+- `text-white/85`, `/70`, `/60`, `/40` (escala neutra sobre fundo escuro)
+- `text-success` (apenas no "Ganho líq.")
+- Removido: `text-warning` no "Imposto" (vibrava demais)
+
+**Sem mudança estrutural:** apenas ajustes de classes Tailwind nos elementos existentes. Nenhuma lógica de cálculo, nenhum componente novo, nenhuma migração.
+
+**Estimativa:** ~30-40 linhas alteradas em 8 trechos do arquivo.
+
+---
+
+Quer que eu aplique **todas as 8 melhorias** ou prefere selecionar apenas algumas? Se for par
