@@ -267,7 +267,7 @@ const MyData = () => {
         case 2: {
           await supabase.from("expenses").delete().eq("client_id", clientId);
           const valid = despesas.filter((e) => e.amount && parseFloat(e.amount) > 0);
-          if (valid.length > 0) await supabase.from("expenses").insert(valid.map((e) => ({ client_id: clientId, category: e.category, amount: parseFloat(e.amount) || 0, description: e.description || null, is_fixed: true })));
+          if (valid.length > 0) await supabase.from("expenses").insert(valid.map((e) => ({ client_id: clientId, category: e.category, amount: parseFloat(e.amount) || 0, description: e.description || null, is_fixed: e.is_fixed ?? true, due_day: e.is_fixed && e.due_day ? Math.min(31, Math.max(1, parseInt(e.due_day, 10))) : null })));
           break;
         }
         case 3: {
