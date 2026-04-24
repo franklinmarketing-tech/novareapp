@@ -589,18 +589,36 @@ const YieldGuide = () => {
             <div className="grid md:grid-cols-3 gap-4">
               {bentoFeatures.map((f, i) => {
                 const isHero = f.variant === "hero";
+                const isSelected = selectedFaixa === f.title;
                 return (
                   <motion.div key={f.title} variants={fadeUp} custom={i + 1} className={f.span}>
                     <Card
-                      className={`h-full rounded-2xl border-border/40 overflow-hidden relative group transition-all duration-500 cursor-pointer hover:shadow-elevated ${
+                      className={`h-full rounded-2xl overflow-hidden relative group transition-all duration-500 cursor-pointer ${
+                        isSelected
+                          ? "border-2 border-accent shadow-[0_20px_50px_-15px_hsl(var(--accent)/0.5)] -translate-y-1 ring-4 ring-accent/15"
+                          : "border border-border/40 hover:shadow-elevated"
+                      } ${
                         isHero ? "bg-primary text-primary-foreground shadow-lg" : "bg-card text-foreground shadow-subtle hover:-translate-y-1"
                       }`}
                       onClick={() => {
                         setSim(prev => ({ ...prev, rentabilidade: f.rentAnual }));
                         setRentPeriodo("anual");
+                        setSelectedFaixa(f.title);
                         scrollTo("#simulador");
                       }}
                     >
+                      {/* Selected badge */}
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.8, y: -8 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          className="absolute top-3 right-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-wider shadow-[0_4px_12px_-2px_hsl(var(--accent)/0.6)]"
+                        >
+                          <Check className="h-3 w-3" strokeWidth={3} />
+                          Selecionado
+                        </motion.div>
+                      )}
+
                       {/* Animated background decoration */}
                       {isHero && (
                         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -629,9 +647,9 @@ const YieldGuide = () => {
                       <CardContent className="p-7 md:p-8 flex flex-col justify-between h-full relative z-10">
                         <div>
                           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 ${
-                            isHero ? "bg-primary-foreground/10" : "bg-muted"
+                            isSelected ? "bg-accent/20 ring-2 ring-accent/30" : isHero ? "bg-primary-foreground/10" : "bg-muted"
                           }`}>
-                            <f.icon className={`h-6 w-6 ${isHero ? "" : "text-foreground"}`} />
+                            <f.icon className={`h-6 w-6 ${isSelected ? "text-accent" : isHero ? "" : "text-foreground"}`} />
                           </div>
                           <h3 className="text-xl md:text-2xl font-bold tracking-tight mb-3">{f.title}</h3>
                           <p className={`text-sm leading-relaxed ${isHero ? "opacity-70" : "text-muted-foreground"}`}>
@@ -654,8 +672,11 @@ const YieldGuide = () => {
                             {!f.rate.includes("IPCA") && <span className={`text-sm ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>}
                           </div>
                           <p className={`text-xs mt-1 ${isHero ? "opacity-50" : "text-muted-foreground"}`}>{f.rateLabel}</p>
-                          <p className={`text-[11px] mt-2 font-medium flex items-center gap-1 ${isHero ? "opacity-50" : "text-accent"}`}>
-                            Simular com esta taxa <ArrowRight className="h-6 w-6" />
+                          <p className={`text-[11px] mt-2 font-semibold flex items-center gap-1 ${
+                            isSelected ? "text-accent" : isHero ? "opacity-50" : "text-accent"
+                          }`}>
+                            {isSelected ? "✓ Taxa aplicada no simulador" : "Simular com esta taxa"}
+                            {!isSelected && <ArrowRight className="h-4 w-4" />}
                           </p>
                         </div>
                       </CardContent>
