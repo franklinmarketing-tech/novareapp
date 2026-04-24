@@ -486,7 +486,7 @@ const YieldGuide = () => {
               <span className="relative z-10">Fale conosco</span>
               <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </motion.button>
-            <button className="lg:hidden text-foreground p-2 rounded-lg hover:bg-muted/60 transition-colors" onClick={() => setMobileNav(!mobileNav)} aria-label="Abrir menu">
+            <button className="md:hidden text-foreground p-2 rounded-lg hover:bg-muted/60 transition-colors" onClick={() => setMobileNav(!mobileNav)} aria-label="Abrir menu">
               {mobileNav ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
