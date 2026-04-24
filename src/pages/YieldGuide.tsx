@@ -906,6 +906,83 @@ const YieldGuide = () => {
                       transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                     />
 
+                    {/* === Badge da faixa escolhida — reflete a escolha do cliente === */}
+                    {result && resultFaixa && (() => {
+                      const FaixaIcon = resultFaixa.icon;
+                      return (
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                          className="relative z-10 rounded-2xl p-3.5 border border-accent/30 overflow-hidden"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, hsl(var(--accent) / 0.18), hsl(var(--accent) / 0.04) 60%, transparent), linear-gradient(180deg, hsl(var(--primary) / 0.6), hsl(var(--primary) / 0.4))",
+                            boxShadow:
+                              "0 12px 30px -12px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                          }}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-accent/30"
+                              style={{
+                                background: "linear-gradient(135deg, hsl(var(--accent) / 0.3), hsl(var(--accent) / 0.05))",
+                                boxShadow: "0 6px 16px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
+                              }}
+                            >
+                              <FaixaIcon className="h-5 w-5 text-accent" strokeWidth={2.5} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-[9px] uppercase tracking-[0.15em] text-accent/90 font-bold">
+                                  Sua escolha
+                                </p>
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-accent/20 text-accent text-[9px] font-bold uppercase tracking-wider">
+                                  <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                                  Aplicada
+                                </span>
+                              </div>
+                              <p className="text-base md:text-lg font-bold text-white tracking-tight leading-tight mt-0.5">
+                                {resultFaixa.title}{" "}
+                                <span className="text-accent font-black tabular-nums">{resultFaixa.rate}</span>
+                                {!resultFaixa.rate.includes("IPCA") && <span className="text-white/40 text-xs font-medium ml-1">a.a.</span>}
+                              </p>
+                              <p className="text-[11px] text-white/60 leading-snug mt-1 line-clamp-2">
+                                {resultFaixa.desc}
+                              </p>
+                              <p className="text-[10px] text-white/40 mt-1">{resultFaixa.rateLabel}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })()}
+
+                    {/* Fallback: cliente usou taxa custom */}
+                    {result && !resultFaixa && sim.rentabilidade > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="relative z-10 rounded-2xl p-3 border border-white/10 flex items-center gap-3"
+                        style={{
+                          background: "linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(var(--primary) / 0.3))",
+                          boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.08)",
+                        }}
+                      >
+                        <div className="w-9 h-9 rounded-lg bg-white/[0.08] flex items-center justify-center shrink-0">
+                          <Percent className="h-4 w-4 text-white/70" strokeWidth={2.5} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[9px] uppercase tracking-[0.15em] text-white/60 font-bold">Taxa personalizada</p>
+                          <p className="text-sm font-bold text-white tracking-tight tabular-nums mt-0.5">
+                            {sim.rentabilidade.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% {rentPeriodo === "mensal" ? "a.m." : "a.a."}
+                            <span className="text-white/40 text-[11px] font-medium ml-2">
+                              · {rentAnual.toFixed(2)}% ao ano
+                            </span>
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+
                     {/* === HERO CARD: Patrimônio Bruto === */}
                     <motion.div
                       className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/20 group"
