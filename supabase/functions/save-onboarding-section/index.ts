@@ -112,7 +112,19 @@ Deno.serve(async (req) => {
       const valid = items.filter((e) => isRecord(e) && toNumber(e.amount) > 0);
       if (valid.length === 0) committed = [];
       else {
-        const { data, error } = await admin.from("expenses").insert(valid.map((e) => ({ client_id: clientId, category: String(e.category || "outros"), amount: toNumber(e.amount), description: e.description ? String(e.description) : null, is_fixed: true }))).select("*");
+        const { data, error } = await admin.from("expenses").insert(valid.map((e) => {
+          const isFixed = e.is_fixed === undefined ? true : Boolean(e.is_fixed);
+          const dueDayRaw = toInt(e.due_day, 0);
+          const dueDay = isFixed && dueDayRaw >= 1 && dueDayRaw <= 31 ? dueDayRaw : null;
+          return {
+            client_id: clientId,
+            category: String(e.category || "outros"),
+            amount: toNumber(e.amount),
+            description: e.description ? String(e.description) : null,
+            is_fixed: isFixed,
+            due_day: dueDay,
+          };
+        })).select("*");
         if (error) throw error;
         committed = data ?? [];
       }

@@ -1,0 +1,1 @@
+ALTER TABLE public.expenses ADD COLUMN IF NOT EXISTS due_day smallint CHECK (due_day IS NULL OR (due_day >= 1 AND due_day <= 31));
