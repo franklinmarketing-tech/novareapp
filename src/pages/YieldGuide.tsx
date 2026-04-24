@@ -690,29 +690,60 @@ const YieldGuide = () => {
       </section>
 
       {/* ── SIMULATOR ───────────────────────────── */}
-      <section id="simulador" className="py-16 md:py-24 relative overflow-hidden" style={{ background: "linear-gradient(160deg, hsl(220 40% 11%), hsl(220 45% 7%))" }}>
+      <section
+        id="simulador"
+        className="py-20 md:py-28 relative overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(120% 70% at 50% 0%, hsl(var(--primary) / 0.45), transparent 60%), linear-gradient(180deg, hsl(215 55% 12%), hsl(220 50% 7%))",
+        }}
+      >
         {/* Background orbs */}
         <motion.div
           className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px]"
-          style={{ background: "hsl(var(--accent) / 0.05)" }}
+          style={{ background: "hsl(var(--accent) / 0.08)" }}
           animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px]"
-          style={{ background: "hsl(220 60% 40% / 0.08)" }}
-          animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.4, 0.2] }}
+          style={{ background: "hsl(var(--primary) / 0.4)" }}
+          animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 5 }}
         />
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
-            <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
-              <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Simulador</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-                Projete sua renda no longo prazo
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-12">
+            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-6">
+              {/* Logo Novare */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl border border-white/10 backdrop-blur-md"
+                style={{
+                  background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02))",
+                  boxShadow: "0 8px 24px -8px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.08)",
+                }}
+              >
+                <img src={logoBranca} alt="Novare" className="h-7 md:h-8 w-auto" />
+                <span className="h-5 w-px bg-white/15" />
+                <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">Simulador</span>
+              </motion.div>
+
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
+                Projete sua renda
+                <br />
+                <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/60 bg-clip-text text-transparent">
+                  no longo prazo
+                </span>
               </h2>
-              <p className="text-white/50 text-base">Use nosso simulador gratuito para planejar sua aposentadoria.</p>
+              <p className="text-white/60 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+                Use nosso simulador gratuito para planejar sua aposentadoria com precisão profissional.
+              </p>
             </motion.div>
 
             <motion.div variants={fadeUp} custom={1}>
