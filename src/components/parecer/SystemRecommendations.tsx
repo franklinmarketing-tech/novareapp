@@ -175,46 +175,76 @@ export const SystemRecommendationsPanel = ({ clientId, riskProfile }: Props) => 
     const eff = getEffective(rec);
 
     try {
-      // Find matching goal by description
+      // 1) Resolver objetivo: usar goal_description da IA OU derivar da própria recomendação
+      const desiredGoalText = (rec.goal_description?.trim()) ||
+        eff.objective?.trim() ||
+        `${areaLabels[rec.area]}: ${eff.description.slice(0, 80)}`;
+
       let goalId: string | null = null;
-      if (rec.goal_description) {
-        const { data: goalsData } = await supabase
-          .from("goals")
-          .select("id, description")
-          .eq("client_id", clientId);
-        if (goalsData) {
-          const match = goalsData.find(g =>
-            g.description.toLowerCase().includes(rec.goal_description!.toLowerCase()) ||
-            rec.goal_description!.toLowerCase().includes(g.description.toLowerCase())
-          );
-          if (match) goalId = match.id;
-        }
+
+      const { data: goalsData } = await supabase
+        .from("goals")
+        .select("id, description")
+        .eq("client_id", clientId);
+
+      if (goalsData && goalsData.length > 0) {
+        const needle = desiredGoalText.toLowerCase();
+        const match = goalsData.find((g) => {
+          const hay = (g.description || "").toLowerCase();
+          return hay.includes(needle) || needle.includes(hay);
+        });
+        if (match) goalId = match.id;
       }
 
+      // 2) Se não houver objetivo correspondente, cria um automaticamente
+      if (!goalId) {
+        const { data: newGoal, error: goalErr } = await supabase
+          .from("goals")
+          .insert({
+            client_id: clientId,
+            description: desiredGoalText,
+            target_amount: eff.financial_impact > 0 ? eff.financial_impact : null,
+            priority: rec.severity === "alta" ? "alta" : rec.severity === "baixa" ? "baixa" : "media",
+          })
+          .select("id")
+          .single();
+        if (goalErr) throw goalErr;
+        goalId = newGoal?.id ?? null;
+      }
+
+      // 3) Garantir plano de ação
       let { data: plan } = await supabase
         .from("action_plans")
         .select("id")
         .eq("client_id", clientId)
         .maybeSingle();
       if (!plan) {
-        const { data: newPlan } = await supabase
+        const { data: newPlan, error: planErr } = await supabase
           .from("action_plans")
           .insert({ client_id: clientId })
           .select("id")
           .single();
+        if (planErr) throw planErr;
         plan = newPlan;
       }
       if (!plan) throw new Error("Falha ao criar plano");
 
-      const { data: parentItem } = await supabase.from("action_items").insert({
-        action_plan_id: plan.id,
-        area: rec.area as any,
-        description: eff.description,
-        objective: eff.objective,
-        financial_impact: eff.financial_impact,
-        goal_id: goalId,
-      }).select("id").single();
+      // 4) Inserir item pai
+      const { data: parentItem, error: parentErr } = await supabase
+        .from("action_items")
+        .insert({
+          action_plan_id: plan.id,
+          area: rec.area as any,
+          description: eff.description,
+          objective: eff.objective,
+          financial_impact: eff.financial_impact,
+          goal_id: goalId,
+        })
+        .select("id")
+        .single();
+      if (parentErr) throw parentErr;
 
+      // 5) Subtarefas
       if (parentItem && rec.subtasks.length > 0) {
         const subtaskRows = rec.subtasks.map((st) => ({
           action_plan_id: plan!.id,
@@ -224,13 +254,24 @@ export const SystemRecommendationsPanel = ({ clientId, riskProfile }: Props) => 
           parent_id: parentItem.id,
           goal_id: goalId,
         }));
-        await supabase.from("action_items").insert(subtaskRows);
+        const { error: subErr } = await supabase.from("action_items").insert(subtaskRows);
+        if (subErr) throw subErr;
       }
 
-      setAppliedIds(prev => new Set(prev).add(rec.id));
-      toast({ title: "Ação aplicada ao plano!", description: rec.subtasks.length > 0 ? `${rec.subtasks.length} subtarefas incluídas.` : undefined });
-    } catch {
-      toast({ title: "Erro ao aplicar ação", variant: "destructive" });
+      setAppliedIds((prev) => new Set(prev).add(rec.id));
+      toast({
+        title: "Ação aplicada ao plano!",
+        description: rec.subtasks.length > 0
+          ? `Objetivo vinculado e ${rec.subtasks.length} subtarefas incluídas.`
+          : "Objetivo vinculado ao plano de ação.",
+      });
+    } catch (err: any) {
+      if (import.meta.env.DEV) console.error("applyAction error:", err);
+      toast({
+        title: "Erro ao aplicar ação",
+        description: err?.message || "Tente novamente.",
+        variant: "destructive",
+      });
     }
     setApplyingId(null);
   };
