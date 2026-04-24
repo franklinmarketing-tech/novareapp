@@ -469,13 +469,13 @@ const YieldGuide = () => {
             })}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.button
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ y: 0, scale: 0.98 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
               onClick={() => window.open(whatsappUrl, "_blank")}
-              className="hidden sm:inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-5 py-2.5 font-semibold text-sm relative overflow-hidden group"
+              className="hidden sm:inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-4 sm:px-5 py-2 sm:py-2.5 font-semibold text-xs sm:text-sm relative overflow-hidden group whitespace-nowrap"
               style={{
                 boxShadow:
                   "0 6px 18px -4px hsl(var(--accent) / 0.5), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -2px 0 hsl(var(--accent) / 0.4)",
@@ -486,7 +486,7 @@ const YieldGuide = () => {
               <span className="relative z-10">Fale conosco</span>
               <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </motion.button>
-            <button className="md:hidden text-foreground p-2 rounded-lg hover:bg-muted/60 transition-colors" onClick={() => setMobileNav(!mobileNav)}>
+            <button className="lg:hidden text-foreground p-2 rounded-lg hover:bg-muted/60 transition-colors" onClick={() => setMobileNav(!mobileNav)} aria-label="Abrir menu">
               {mobileNav ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
