@@ -50,7 +50,7 @@ const founders = [
     shortBio: "Consultor Wealth de Investimentos",
     linkedin: "https://www.linkedin.com/in/leonardofreitasdeoliveira",
     highlights: [
-      { icon: Briefcase, text: "Ex-líder Triple AAA no Santander · Wave Capital (BTG)" },
+      { icon: Briefcase, text: "Líder Triple AAA no Santander · Wave Capital (BTG)" },
       { icon: Users, text: "Liderou +20 profissionais na região de Limeira" },
       { icon: Award, text: "Quadrante A1+ recorrente — referência em assessoria" },
       { icon: GraduationCap, text: "Bacharel em Administração · ANCORD" },
