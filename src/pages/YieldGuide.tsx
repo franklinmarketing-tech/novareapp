@@ -1180,8 +1180,8 @@ const YieldGuide = () => {
                             </p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-[hsl(16_80%_62%)] font-bold">Bruta/mês</p>
-                            <p className="text-base md:text-lg font-extrabold text-[hsl(16_80%_62%)] tabular-nums truncate" title={result.rendaMensal}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-accent font-bold">Bruta/mês</p>
+                            <p className="text-base md:text-lg font-extrabold text-accent tabular-nums truncate" title={result.rendaMensal}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
                             </p>
                           </div>
@@ -1324,17 +1324,13 @@ const YieldGuide = () => {
                           whileHover={{ y: -2, scale: 1.02 }}
                           whileTap={{ y: 0, scale: 0.98 }}
                           animate={{ boxShadow: [
-                            "0 10px 24px -8px hsl(16 65% 50% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
-                            "0 14px 30px -6px hsl(16 65% 50% / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
-                            "0 10px 24px -8px hsl(16 65% 50% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                            "0 10px 24px -8px hsl(var(--accent) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                            "0 14px 30px -6px hsl(var(--accent) / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
+                            "0 10px 24px -8px hsl(var(--accent) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
                           ] }}
                           transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
-                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group"
-                          style={{
-                            background: "linear-gradient(135deg, hsl(16 70% 55%), hsl(16 65% 45%))",
-                            color: "white",
-                            border: "1px solid hsl(0 0% 100% / 0.2)",
-                          }}
+                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group bg-accent text-accent-foreground border border-accent/40"
+                          style={{}}
                         >
                           <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent" />
                           <FileDown className="relative z-10 h-4 w-4" />
@@ -1362,7 +1358,7 @@ const YieldGuide = () => {
                     />
                     <motion.div
                       className="pointer-events-none absolute -bottom-24 -left-16 w-56 h-56 rounded-full blur-[100px]"
-                      style={{ background: "hsl(16 65% 50% / 0.12)" }}
+                      style={{ background: "hsl(var(--accent) / 0.12)" }}
                       animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.45, 0.25] }}
                       transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                     />
@@ -1500,7 +1496,7 @@ const YieldGuide = () => {
                       {result && (
                         <div className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-[hsl(16_80%_62%)] font-bold">Período</p>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-accent font-bold">Período</p>
                             <p className="text-lg md:text-xl font-extrabold text-white mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-white/60 font-bold">anos</span></p>
                             <p className="text-xs text-white/50 mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
@@ -1545,7 +1541,7 @@ const YieldGuide = () => {
                       ].map((k) => {
                         const Icon = k.icon;
                         const toneClasses = {
-                          info: { ring: "border-[hsl(16_80%_55%)]/40", icon: "text-[hsl(16_80%_62%)]", bg: "bg-[hsl(16_80%_55%)]/15", value: "text-[hsl(16_80%_62%)]", label: "text-[hsl(16_80%_62%)]" },
+                          info: { ring: "border-accent/40", icon: "text-accent", bg: "bg-accent/15", value: "text-accent", label: "text-accent" },
                           success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
                           warning: { ring: "border-warning/30", icon: "text-warning", bg: "bg-warning/15", value: "text-warning", label: "text-warning" },
                         }[k.tone];
@@ -1600,7 +1596,7 @@ const YieldGuide = () => {
                   />
                   <motion.div
                     className="pointer-events-none absolute -bottom-12 -left-12 w-40 h-40 rounded-full blur-[70px]"
-                    style={{ background: "hsl(16 65% 50% / 0.3)" }}
+                    style={{ background: "hsl(var(--accent) / 0.3)" }}
                     animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.6, 0.3] }}
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                   />
@@ -2591,7 +2587,7 @@ const YieldGuide = () => {
             />
             <motion.div
               className="pointer-events-none absolute bottom-1/4 right-1/4 w-[380px] h-[380px] rounded-full blur-[130px]"
-              style={{ background: "hsl(16 65% 50% / 0.3)" }}
+              style={{ background: "hsl(var(--accent) / 0.3)" }}
               animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.6, 0.3] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             />
