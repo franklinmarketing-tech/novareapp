@@ -957,13 +957,13 @@ const YieldGuide = () => {
                       }}
                       className={`group relative rounded-2xl p-3 md:p-4 text-left transition-all duration-300 border backdrop-blur-md ${
                         isSelected
-                          ? "border-accent/60 bg-accent/[0.08] shadow-[0_8px_24px_-8px_hsl(var(--accent)/0.5),inset_0_1px_0_hsl(0_0%_100%/0.08)] -translate-y-0.5"
-                          : "border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.06] hover:border-white/15"
+                          ? "border-accent ring-2 ring-accent/30 bg-accent/[0.10] shadow-[0_8px_24px_-8px_hsl(var(--accent)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.08)] -translate-y-0.5"
+                          : "border-white/10 bg-white/[0.04] hover:bg-white/[0.06] hover:border-white/25 hover:scale-[1.01]"
                       }`}
                     >
                       {isSelected ? (
                         <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]">
-                          <Check className="h-3 w-3" strokeWidth={3} />
+                          <Check className="h-4 w-4" strokeWidth={3} />
                         </span>
                       ) : (
                         <span className="absolute top-2 right-2 w-5 h-5 rounded-full border border-white/20 bg-white/[0.04] group-hover:border-white/40 transition-colors" />
@@ -977,7 +977,7 @@ const YieldGuide = () => {
                         <span className={`text-xs md:text-sm font-bold ${isSelected ? "text-white" : "text-white/80"}`}>{f.title}</span>
                       </div>
                       <div className="flex items-baseline gap-1">
-                        <span className={`text-lg md:text-xl font-black ${isSelected ? "text-accent" : "text-white"}`}>{f.rate}</span>
+                        <span className="text-lg md:text-xl font-black text-accent">{f.rate}</span>
                         {!f.rate.includes("IPCA") && <span className="text-[10px] text-white/40">a.a.</span>}
                       </div>
                       <p className="hidden md:block text-[10px] text-white/40 mt-1 truncate">{f.rateLabel}</p>
@@ -1020,7 +1020,7 @@ const YieldGuide = () => {
                           const hasPrefix = f.kind === "brl";
                           return (
                             <div key={f.key} className="space-y-1.5">
-                              <label className="text-xs font-semibold text-white/50 leading-tight block">{f.label}</label>
+                              <label className="text-xs font-semibold text-white/85 leading-tight block">{f.label}</label>
                               <div className="relative">
                                 {hasPrefix && (
                                   <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${numVal ? "text-accent" : "text-white/40"}`}>R$</span>
@@ -1040,7 +1040,7 @@ const YieldGuide = () => {
                                       setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
                                     }
                                   }}
-                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30`}
+                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30`}
                                 />
                                 <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-white/25"}`}>{f.hint}</span>
                               </div>
@@ -1050,7 +1050,7 @@ const YieldGuide = () => {
 
                         {/* Taxa de juros */}
                         <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-white/50 leading-tight block">Taxa de juros dos seus investimentos</label>
+                          <label className="text-xs font-semibold text-white/85 leading-tight block">Taxa de juros dos seus investimentos</label>
                           <div className="relative">
                             {/* Prefixo % à esquerda */}
                             <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rentabilidade ? "text-accent" : "text-white/40"}`}>%</span>
@@ -1073,7 +1073,7 @@ const YieldGuide = () => {
                                 // edição manual desfaz a faixa pré-selecionada
                                 setSelectedFaixa(null);
                               }}
-                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
+                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
                             />
                             {/* Toggle % mês / % ano à direita */}
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
@@ -1086,7 +1086,7 @@ const YieldGuide = () => {
                                   }
                                   setRentPeriodo("mensal");
                                 }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/50 hover:text-white/70"}`}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/60 hover:text-white hover:bg-white/[0.04]"}`}
                               >
                                 % mês
                               </button>
@@ -1099,7 +1099,7 @@ const YieldGuide = () => {
                                   }
                                   setRentPeriodo("anual");
                                 }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/50 hover:text-white/70"}`}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/60 hover:text-white hover:bg-white/[0.04]"}`}
                               >
                                 % ano
                               </button>
@@ -1124,11 +1124,9 @@ const YieldGuide = () => {
                       disabled={isSimulating}
                       className="group relative z-10 w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground px-8 py-3.5 rounded-2xl font-semibold text-base shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 mt-5 disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
                     >
-                      <BarChart3 className="h-6 w-6" />
+                      <BarChart3 className="h-5 w-5" />
                       Simular Aposentadoria
-                      <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-accent-foreground/20 group-hover:bg-accent-foreground/30 transition-colors">
-                        <ArrowRight className="h-6 w-6" />
-                      </span>
+                      <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
                     </button>
 
                     {/* === Renda Mensal Passiva (destaque ACCENT) === */}
@@ -1329,12 +1327,13 @@ const YieldGuide = () => {
                             "0 10px 24px -8px hsl(var(--accent) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
                           ] }}
                           transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
-                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group bg-accent text-accent-foreground border border-accent/40"
+                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group bg-accent text-accent-foreground border border-accent/40 cursor-pointer"
                           style={{}}
                         >
                           <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent" />
                           <FileDown className="relative z-10 h-4 w-4" />
                           <span className="relative z-10">Ver rendimento mensal em PDF</span>
+                          <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                         </motion.button>
                       )}
                     </motion.div>
@@ -1482,7 +1481,7 @@ const YieldGuide = () => {
                       </div>
 
                       <motion.p
-                        className="text-3xl md:text-[2.5rem] leading-[1.05] font-black text-white tracking-tight tabular-nums break-words"
+                        className="text-3xl md:text-[2rem] leading-[1.05] font-black text-white tracking-tight tabular-nums break-words"
                         key={result?.patrimonioNum}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1493,15 +1492,23 @@ const YieldGuide = () => {
                         {result ? formatCompactBRL(result.patrimonioNum) : "—"}
                       </motion.p>
 
+                      {!result && (
+                        <p className="text-xs text-white/40 mt-2 font-medium italic">aguardando simulação</p>
+                      )}
+
                       {result && (
                         <div className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-accent font-bold">Período</p>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-accent font-bold inline-flex items-center gap-1.5">
+                              <Calendar className="h-3 w-3" /> Período
+                            </p>
                             <p className="text-lg md:text-xl font-extrabold text-white mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-white/60 font-bold">anos</span></p>
                             <p className="text-xs text-white/50 mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Líquido após IR</p>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold inline-flex items-center gap-1.5">
+                              <Receipt className="h-3 w-3" /> Líquido após IR
+                            </p>
                             <p className="text-lg md:text-xl font-extrabold text-success mt-1 tabular-nums truncate" title={result.patrimonioLiquido}>
                               {formatCompactBRL(result.patrimonioLiquidoNum)}
                             </p>
@@ -1536,14 +1543,14 @@ const YieldGuide = () => {
                           full: undefined,
                           sub: result ? `IR ${formatCompactBRL(result.patrimonioNum - result.patrimonioLiquidoNum)}` : "—",
                           icon: Receipt,
-                          tone: "warning" as const,
+                          tone: "neutral" as const,
                         },
                       ].map((k) => {
                         const Icon = k.icon;
                         const toneClasses = {
                           info: { ring: "border-accent/40", icon: "text-accent", bg: "bg-accent/15", value: "text-accent", label: "text-accent" },
                           success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
-                          warning: { ring: "border-warning/30", icon: "text-warning", bg: "bg-warning/15", value: "text-warning", label: "text-warning" },
+                          neutral: { ring: "border-white/10", icon: "text-accent/80", bg: "bg-white/[0.04]", value: "text-white/85", label: "text-white/60" },
                         }[k.tone];
                         return (
                           <motion.div
@@ -1578,13 +1585,15 @@ const YieldGuide = () => {
                 className="relative z-10"
               >
                 <div
-                  className="relative rounded-2xl p-4 md:p-5 overflow-hidden"
+                  className="relative rounded-2xl p-4 md:p-5 overflow-hidden border-t-2 border-accent/40"
                   style={{
                     background:
                       "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(220 37% 19%), hsl(220 37% 14%))",
-                    border: "1px solid hsl(var(--accent) / 0.25)",
+                    borderLeft: "1px solid hsl(var(--accent) / 0.25)",
+                    borderRight: "1px solid hsl(var(--accent) / 0.25)",
+                    borderBottom: "1px solid hsl(var(--accent) / 0.25)",
                     boxShadow:
-                      "0 16px 40px -15px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                      "0 16px 40px -15px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
                   }}
                 >
                   {/* Orbs animados de fundo */}
@@ -1659,7 +1668,7 @@ const YieldGuide = () => {
                   </div>
 
                   {/* Selos de confiança */}
-                  <div className="relative z-10 mt-3 pt-3 border-t border-white/[0.08] flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-white/50">
+                  <div className="relative z-10 mt-3 pt-3 border-t border-white/[0.08] flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-white/65 font-medium">
                     <span className="inline-flex items-center gap-1.5">
                       <Shield className="h-3 w-3 text-accent" />
                       Gratuito
@@ -1669,7 +1678,7 @@ const YieldGuide = () => {
                       Sem compromisso
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <TrendingUp className="h-3 w-3 text-accent" />
+                      <Phone className="h-3 w-3 text-accent" />
                       Resposta em até 1h útil
                     </span>
                   </div>
