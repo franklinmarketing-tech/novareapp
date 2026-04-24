@@ -147,7 +147,9 @@ const Monitoring = () => {
       if (!user) return;
       const { data: client } = await supabase.from("clients").select("id").eq("user_id", user.id).single();
       if (!client) { setLoading(false); return; }
-
+      setClientId(client.id);
+      const { data: prof } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+      if (prof?.full_name) setClientName(prof.full_name);
       const [snapRes, goalsRes, planRes] = await Promise.all([
         supabase.from("monitoring_snapshots").select("*").eq("client_id", client.id).order("snapshot_date", { ascending: true }),
         supabase.from("goals").select("*").eq("client_id", client.id),
