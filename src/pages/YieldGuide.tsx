@@ -751,6 +751,35 @@ const YieldGuide = () => {
                         <div className="space-y-1.5">
                           <label className="text-xs font-semibold text-white/50 leading-tight block">Taxa de juros dos seus investimentos</label>
                           <div className="relative">
+                            {/* Toggle % mês / % ano em DESTAQUE como prefixo à esquerda */}
+                            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (rentPeriodo === "anual" && sim.rentabilidade) {
+                                    const mensal = (Math.pow(1 + sim.rentabilidade / 100, 1/12) - 1) * 100;
+                                    setSim({ ...sim, rentabilidade: Number(mensal.toFixed(2)) });
+                                  }
+                                  setRentPeriodo("mensal");
+                                }}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/50 hover:text-white/70"}`}
+                              >
+                                % mês
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (rentPeriodo === "mensal" && sim.rentabilidade) {
+                                    const anual = (Math.pow(1 + sim.rentabilidade / 100, 12) - 1) * 100;
+                                    setSim({ ...sim, rentabilidade: Number(anual.toFixed(1)) });
+                                  }
+                                  setRentPeriodo("anual");
+                                }}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/50 hover:text-white/70"}`}
+                              >
+                                % ano
+                              </button>
+                            </div>
                             <input
                               type="text"
                               inputMode="decimal"
@@ -761,41 +790,16 @@ const YieldGuide = () => {
                                   : ""
                               }
                               onChange={(e) => {
-                                // aceita dígitos, vírgula e ponto; converte vírgula -> ponto
                                 const raw = e.target.value.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
                                 const n = parseFloat(raw);
-                                setSim({ ...sim, rentabilidade: Number.isFinite(n) ? n : 0 });
+                                // limite máximo defensivo: taxas absurdas viram patrimônio infinito
+                                const max = rentPeriodo === "mensal" ? 50 : 200;
+                                const clamped = Number.isFinite(n) ? Math.min(n, max) : 0;
+                                setSim({ ...sim, rentabilidade: clamped });
                               }}
-                              className="w-full h-12 rounded-xl px-4 pr-24 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
+                              className="w-full h-12 rounded-xl pl-[7.5rem] pr-10 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
                             />
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (rentPeriodo === "anual") {
-                                    const mensal = (Math.pow(1 + sim.rentabilidade / 100, 1/12) - 1) * 100;
-                                    setSim({ ...sim, rentabilidade: Number(mensal.toFixed(2)) });
-                                  }
-                                  setRentPeriodo("mensal");
-                                }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground" : "text-white/40 hover:text-white/60"}`}
-                              >
-                                % mês
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (rentPeriodo === "mensal") {
-                                    const anual = (Math.pow(1 + sim.rentabilidade / 100, 12) - 1) * 100;
-                                    setSim({ ...sim, rentabilidade: Number(anual.toFixed(1)) });
-                                  }
-                                  setRentPeriodo("anual");
-                                }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground" : "text-white/40 hover:text-white/60"}`}
-                              >
-                                % ano
-                              </button>
-                            </div>
+                            <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rentabilidade ? "text-accent" : "text-white/25"}`}>%</span>
                           </div>
                           <p className="text-[10px] text-white/30">
                             {rentPeriodo === "mensal"
