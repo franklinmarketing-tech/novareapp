@@ -1086,7 +1086,7 @@ const YieldGuide = () => {
                                   }
                                   setRentPeriodo("mensal");
                                 }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/50 hover:text-white/70"}`}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/60 hover:text-white hover:bg-white/[0.04]"}`}
                               >
                                 % mês
                               </button>
@@ -1099,7 +1099,7 @@ const YieldGuide = () => {
                                   }
                                   setRentPeriodo("anual");
                                 }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/50 hover:text-white/70"}`}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/60 hover:text-white hover:bg-white/[0.04]"}`}
                               >
                                 % ano
                               </button>
