@@ -978,16 +978,13 @@ const YieldGuide = () => {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={2} className="calc-dark">
-              <div
-                className="rounded-3xl overflow-hidden shadow-elevated"
-                style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))" }}
-              >
+            <motion.div variants={fadeUp} custom={2}>
+              <div className="calc-card-light rounded-3xl overflow-hidden">
                 <div className="grid lg:grid-cols-2 lg:items-stretch">
-                  {/* Simulator form — glassmorphism dark card */}
-                  <div className="p-5 md:p-7 relative flex flex-col" style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))" }}>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 rounded-l-3xl border border-border/40 pointer-events-none" />
+                  {/* Simulator form — light premium card */}
+                  <div className="p-5 md:p-7 relative flex flex-col bg-transparent">
+                    {/* Subtle inner divider on desktop split */}
+                    <div className="hidden lg:block absolute top-6 bottom-6 right-0 w-px bg-gradient-to-b from-transparent via-border to-transparent pointer-events-none" />
                     <motion.div
                       className="absolute -top-20 -left-20 w-60 h-60 rounded-full blur-[100px]"
                       style={{ background: "hsl(220 50% 40% / 0.08)" }}
@@ -1031,7 +1028,7 @@ const YieldGuide = () => {
                                       setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
                                     }
                                   }}
-                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-foreground bg-muted/60 border border-border/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-muted/70 outline-none transition-all duration-200 placeholder:text-muted-foreground/60`}
+                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-foreground bg-[hsl(220_22%_97%)] border border-[hsl(220_15%_88%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.06),0_1px_0_hsl(0_0%_100%)] focus:border-accent focus:ring-2 focus:ring-accent/30 focus:bg-white outline-none transition-all duration-200 placeholder:text-muted-foreground/60`}
                                 />
                                 <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-muted-foreground/50"}`}>{f.hint}</span>
                               </div>
@@ -1064,10 +1061,10 @@ const YieldGuide = () => {
                                 // edição manual desfaz a faixa pré-selecionada
                                 setSelectedFaixa(null);
                               }}
-                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-foreground bg-muted/60 border border-border/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-muted/70 outline-none transition-all duration-200 placeholder:text-muted-foreground/60"
+                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-foreground bg-[hsl(220_22%_97%)] border border-[hsl(220_15%_88%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.06),0_1px_0_hsl(0_0%_100%)] focus:border-accent focus:ring-2 focus:ring-accent/30 focus:bg-white outline-none transition-all duration-200 placeholder:text-muted-foreground/60"
                             />
                             {/* Toggle % mês / % ano à direita */}
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-muted/60 rounded-lg overflow-hidden border border-border/40">
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-[hsl(220_22%_97%)] rounded-lg overflow-hidden border border-[hsl(220_15%_88%)]">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -1120,15 +1117,9 @@ const YieldGuide = () => {
                       <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
                     </button>
 
-                    {/* === Renda Mensal Passiva (destaque ACCENT) === */}
+                    {/* === Renda Mensal Passiva (HERO escuro com glow laranja) === */}
                     <motion.div
-                      className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/30"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.04) 55%, transparent), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))",
-                        boxShadow:
-                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
-                      }}
+                      className="calc-dark calc-card-dark calc-glow-accent relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden"
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
@@ -1186,27 +1177,15 @@ const YieldGuide = () => {
                       )}
                     </motion.div>
 
-                    {/* === Meta atingida — destaque com glow === */}
+                    {/* === Meta atingida — branco premium com tinta success/warning === */}
                     <motion.div
-                      className={`relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border transition-all duration-500 ${
+                      className={`calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden transition-all duration-500 ${
                         result
                           ? result.atingeMeta
-                            ? "border-success/40"
-                            : "border-warning/40"
-                          : "border-border/40"
+                            ? "ring-1 ring-success/30"
+                            : "ring-1 ring-warning/30"
+                          : ""
                       }`}
-                      style={{
-                        background: result
-                          ? result.atingeMeta
-                            ? "linear-gradient(135deg, hsl(var(--success) / 0.18), transparent 60%), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))"
-                            : "linear-gradient(135deg, hsl(var(--warning) / 0.18), transparent 60%), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))"
-                          : "linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))",
-                        boxShadow: result
-                          ? result.atingeMeta
-                            ? "0 20px 50px -20px hsl(var(--success) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.5)"
-                            : "0 20px 50px -20px hsl(var(--warning) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.5)"
-                          : "0 20px 50px -25px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
-                      }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
@@ -1218,12 +1197,12 @@ const YieldGuide = () => {
                               ? result.atingeMeta
                                 ? "linear-gradient(135deg, hsl(var(--success) / 0.3), hsl(var(--success) / 0.05))"
                                 : "linear-gradient(135deg, hsl(var(--warning) / 0.3), hsl(var(--warning) / 0.05))"
-                              : "linear-gradient(135deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.02))",
+                              : "linear-gradient(135deg, hsl(220 22% 96%), hsl(220 22% 92%))",
                             borderColor: result
                               ? result.atingeMeta
                                 ? "hsl(var(--success) / 0.35)"
                                 : "hsl(var(--warning) / 0.35)"
-                              : "hsl(0 0% 100% / 0.1)",
+                              : "hsl(220 13% 88%)",
                             boxShadow: result
                               ? result.atingeMeta
                                 ? "0 8px 20px -8px hsl(var(--success) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)"
@@ -1332,12 +1311,12 @@ const YieldGuide = () => {
 
                   </div>
 
-                  {/* Results panel — modern floating cards */}
+                  {/* Results panel — superfície clara com tinta azul/laranja */}
                   <div
-                    className="flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden"
+                    className="flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden border-t lg:border-t-0 lg:border-l border-border/60"
                     style={{
                       background:
-                        "radial-gradient(120% 80% at 100% 0%, hsl(var(--accent) / 0.08), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(var(--primary) / 0.10), transparent 60%), linear-gradient(160deg, hsl(var(--muted)), hsl(var(--secondary)))",
+                        "radial-gradient(120% 80% at 100% 0%, hsl(16 65% 50% / 0.05), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(215 50% 23% / 0.05), transparent 60%), linear-gradient(160deg, hsl(220 30% 99%), hsl(220 25% 97%))",
                     }}
                   >
                     {/* Floating ambient orbs */}
@@ -1430,20 +1409,14 @@ const YieldGuide = () => {
                       </motion.div>
                     )}
 
-                    {/* === HERO CARD: Patrimônio Bruto === */}
+                    {/* === Patrimônio Bruto — branco premium com tinta accent === */}
                     <motion.div
-                      className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/20 group"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, hsl(var(--accent) / 0.12), hsl(var(--accent) / 0.04) 50%, transparent), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))",
-                        boxShadow:
-                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.5), inset 0 0 0 1px hsl(0 0% 100% / 0.02)",
-                      }}
+                      className="calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden ring-1 ring-accent/15 group"
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
                       {/* shine sweep on hover */}
-                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-accent/[0.05] to-transparent pointer-events-none" />
 
                       <div className="relative flex items-start justify-between gap-3 mb-4">
                         <div className="flex items-center gap-3 min-w-0">
@@ -1743,8 +1716,7 @@ const YieldGuide = () => {
                   <motion.div
                     variants={fadeUp}
                     custom={1.5}
-                    className="calc-dark rounded-3xl overflow-hidden border border-border/40 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.6)]"
-                    style={{ background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))" }}
+                    className="calc-card-light rounded-3xl overflow-hidden"
                   >
                     <div className="p-6 md:p-8">
                       <div className="flex items-start gap-4 mb-6">
@@ -1854,8 +1826,7 @@ const YieldGuide = () => {
               >
                 {/* Gráfico */}
                 <div
-                  className="calc-dark lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                  style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))", border: "1px solid hsl(var(--border))" }}
+                  className="calc-card-light lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                     <div>
@@ -1864,7 +1835,7 @@ const YieldGuide = () => {
                     </div>
                     <div className="flex items-center gap-3 text-[11px]">
                       <span className="flex items-center gap-1.5 text-muted-foreground">
-                        <span className="w-2.5 h-2.5 rounded-full bg-white/30" /> Investido
+                        <span className="w-2.5 h-2.5 rounded-full bg-primary/40" /> Investido
                       </span>
                       <span className="flex items-center gap-1.5 text-muted-foreground">
                         <span className="w-2.5 h-2.5 rounded-full bg-accent" /> Patrimônio líquido
@@ -1880,24 +1851,24 @@ const YieldGuide = () => {
                             <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.02} />
                           </linearGradient>
                           <linearGradient id="gradInv" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="rgba(255,255,255,0.35)" stopOpacity={0.35} />
-                            <stop offset="100%" stopColor="rgba(255,255,255,0.05)" stopOpacity={0.02} />
+                            <stop offset="0%" stopColor="hsl(215 50% 23%)" stopOpacity={0.30} />
+                            <stop offset="100%" stopColor="hsl(215 50% 23%)" stopOpacity={0.02} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 6" stroke="rgba(255,255,255,0.06)" />
+                        <CartesianGrid strokeDasharray="3 6" stroke="hsl(220 13% 88%)" />
                         <XAxis
                           dataKey="age"
-                          tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }}
+                          tick={{ fill: "hsl(220 9% 38%)", fontSize: 11 }}
                           tickLine={false}
-                          axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+                          axisLine={{ stroke: "hsl(220 13% 88%)" }}
                           tickFormatter={(v) => `${v} anos`}
                           interval="preserveStartEnd"
                           minTickGap={24}
                         />
                         <YAxis
-                          tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }}
+                          tick={{ fill: "hsl(220 9% 38%)", fontSize: 11 }}
                           tickLine={false}
-                          axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+                          axisLine={{ stroke: "hsl(220 13% 88%)" }}
                           tickFormatter={(v: number) => {
                             if (v >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(1)}M`;
                             if (v >= 1_000) return `R$ ${Math.round(v / 1_000)}k`;
@@ -1907,11 +1878,12 @@ const YieldGuide = () => {
                         />
                         <RTooltip
                           contentStyle={{
-                            background: "hsl(var(--card))",
-                            border: "1px solid rgba(255,255,255,0.08)",
+                            background: "hsl(0 0% 100%)",
+                            border: "1px solid hsl(220 13% 88%)",
                             borderRadius: 12,
-                            color: "white",
+                            color: "hsl(220 20% 12%)",
                             fontSize: 12,
+                            boxShadow: "0 12px 32px -12px hsl(215 50% 23% / 0.18)",
                           }}
                           labelFormatter={(label, payload) => {
                             const p = payload?.[0]?.payload as YearPoint | undefined;
@@ -1922,7 +1894,7 @@ const YieldGuide = () => {
                             name === "net" ? "Patrimônio líquido" : name === "invested" ? "Total investido" : "Bruto",
                           ]}
                         />
-                        <Area type="monotone" dataKey="invested" stroke="rgba(255,255,255,0.55)" strokeWidth={2} fill="url(#gradInv)" />
+                        <Area type="monotone" dataKey="invested" stroke="hsl(215 50% 23%)" strokeWidth={2} fill="url(#gradInv)" />
                         <Area type="monotone" dataKey="net" stroke="hsl(var(--accent))" strokeWidth={2.5} fill="url(#gradNet)" />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -1934,8 +1906,7 @@ const YieldGuide = () => {
 
                 {/* Tabela */}
                 <div
-                  className="calc-dark lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                  style={{ background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))", border: "1px solid hsl(var(--border))" }}
+                  className="calc-card-light lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
                 >
                   <div className="mb-5">
                     <p className="text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1">Tabela ano a ano</p>

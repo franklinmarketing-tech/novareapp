@@ -244,27 +244,93 @@
     @apply bg-card border border-border/70 rounded-2xl shadow-elevated;
   }
 
-  /* === Calculadora — escopo de cor escura padrão (azul-marinho Novare) ===
-     Sobrescreve tokens semânticos apenas dentro do simulador para que todos
-     os bg-card, bg-muted, text-foreground etc. fiquem no azul escuro,
-     sem precisar reescrever cada componente. */
+  /* ═══════════════════════════════════════════════════════════════
+     CALCULADORA — SISTEMA DE CORES NOVARE (branco / azul / laranja / preto)
+     Padrão: Misto contrastado · 3D sutil · Laranja pontual
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* --- Escopo escuro: usado APENAS em cards de destaque (hero/CTA) --- */
   .calc-dark {
-    /* NÃO sobrescreve --background — a seção mantém o fundo claro do site.
-       Apenas os tokens de superfície (cards, muted, borders) ficam escuros,
-       então qualquer bg-card / hsl(var(--card)) dentro do escopo herda a cor
-       azul-marinho Novare automaticamente. */
-    --foreground: 220 14% 95%;
-    --card: 218 38% 20%;
-    --card-foreground: 220 14% 95%;
-    --popover: 218 38% 20%;
-    --popover-foreground: 220 14% 95%;
-    --muted: 218 32% 26%;
-    --muted-foreground: 220 14% 78%;
-    --secondary: 218 32% 26%;
-    --secondary-foreground: 220 14% 95%;
-    --border: 218 28% 32%;
-    --input: 218 28% 32%;
-    --ring: 210 75% 62%;
+    --foreground: 0 0% 100%;
+    --card: 215 50% 16%;
+    --card-foreground: 0 0% 100%;
+    --popover: 215 50% 16%;
+    --popover-foreground: 0 0% 100%;
+    --muted: 215 40% 22%;
+    --muted-foreground: 215 20% 78%;
+    --secondary: 215 40% 22%;
+    --secondary-foreground: 0 0% 100%;
+    --border: 215 30% 28%;
+    --input: 215 30% 28%;
+    --ring: 16 65% 55%;
+  }
+
+  /* --- Card branco premium 3D sutil ---
+     Usado nos cards principais (form, IR, gráfico, tabela). */
+  .calc-card-light {
+    background:
+      linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 30% 99%) 100%);
+    border: 1px solid hsl(220 18% 92%);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100%) inset,
+      0 1px 2px hsl(215 50% 23% / 0.04),
+      0 4px 12px -4px hsl(215 50% 23% / 0.08),
+      0 16px 40px -20px hsl(215 50% 23% / 0.12);
+  }
+  .calc-card-light:hover {
+    box-shadow:
+      0 1px 0 hsl(0 0% 100%) inset,
+      0 1px 2px hsl(215 50% 23% / 0.05),
+      0 6px 18px -4px hsl(215 50% 23% / 0.10),
+      0 24px 56px -22px hsl(215 50% 23% / 0.18);
+  }
+
+  /* --- Card escuro hero 3D sutil ---
+     Usado APENAS em "Renda Mensal Passiva" e CTA "Fale com especialista". */
+  .calc-card-dark {
+    background:
+      linear-gradient(180deg, hsl(215 50% 18%) 0%, hsl(215 55% 13%) 100%);
+    border: 1px solid hsl(215 35% 26%);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.08) inset,
+      0 0 0 1px hsl(0 0% 0% / 0.2) inset,
+      0 8px 20px -8px hsl(215 60% 8% / 0.5),
+      0 24px 60px -24px hsl(215 60% 8% / 0.6);
+  }
+  .calc-card-dark:hover {
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.10) inset,
+      0 0 0 1px hsl(0 0% 0% / 0.2) inset,
+      0 12px 28px -8px hsl(215 60% 8% / 0.55),
+      0 32px 80px -28px hsl(215 60% 8% / 0.7);
+  }
+
+  /* --- Glow accent laranja (uso pontual em hero card) --- */
+  .calc-glow-accent {
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.10) inset,
+      0 0 0 1px hsl(16 65% 50% / 0.25) inset,
+      0 0 24px hsl(16 65% 50% / 0.18),
+      0 8px 20px -8px hsl(215 60% 8% / 0.5),
+      0 24px 60px -24px hsl(16 65% 50% / 0.25);
+  }
+
+  /* --- Sub-superfície dentro de card branco (campos input, mini-cards) --- */
+  .calc-surface-inset {
+    background: linear-gradient(180deg, hsl(220 20% 97%) 0%, hsl(220 22% 95%) 100%);
+    border: 1px solid hsl(220 15% 90%);
+    box-shadow:
+      0 1px 2px hsl(215 50% 23% / 0.03) inset,
+      0 1px 0 hsl(0 0% 100%);
+  }
+
+  /* --- Sub-superfície dentro de card escuro --- */
+  .calc-surface-inset-dark {
+    background: linear-gradient(180deg, hsl(215 45% 14%) 0%, hsl(215 50% 11%) 100%);
+    border: 1px solid hsl(215 30% 22%);
+    box-shadow:
+      0 1px 2px hsl(0 0% 0% / 0.3) inset,
+      0 1px 0 hsl(0 0% 100% / 0.04);
   }
 
   /* Vertical stack helpers */
