@@ -473,7 +473,7 @@ const YieldGuide = () => {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "backdrop-blur-2xl border-b border-white/40"
+            ? "backdrop-blur-2xl border-b border-border"
             : "backdrop-blur-xl border-b border-border/30"
         }`}
         style={{
@@ -914,7 +914,7 @@ const YieldGuide = () => {
                 transition={{ duration: 0.5 }}
                 className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border border-border/60 backdrop-blur-md bg-card shadow-soft"
               >
-                <img src={logoBranca} alt="Novare" className="h-6 md:h-7 w-auto invert-[0.85] brightness-0" />
+                <img src={logoPreta} alt="Novare" className="h-6 md:h-7 w-auto" />
                 <span className="h-4 w-px bg-border" />
                 <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">Simulador</span>
               </motion.div>
@@ -950,7 +950,7 @@ const YieldGuide = () => {
                       className={`group relative rounded-2xl p-3 md:p-4 text-left transition-all duration-300 border backdrop-blur-md ${
                         isSelected
                           ? "border-accent ring-2 ring-accent/30 bg-accent/[0.10] shadow-[0_8px_24px_-8px_hsl(var(--accent)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.08)] -translate-y-0.5"
-                          : "border-white/10 bg-white/[0.04] hover:bg-white/[0.06] hover:border-white/25 hover:scale-[1.01]"
+                          : "border-border/60 bg-muted/40 hover:bg-muted/60 hover:border-border hover:scale-[1.01]"
                       }`}
                     >
                       {isSelected ? (
@@ -958,21 +958,21 @@ const YieldGuide = () => {
                           <Check className="h-4 w-4" strokeWidth={3} />
                         </span>
                       ) : (
-                        <span className="absolute top-2 right-2 w-5 h-5 rounded-full border border-white/20 bg-white/[0.04] group-hover:border-white/40 transition-colors" />
+                        <span className="absolute top-2 right-2 w-5 h-5 rounded-full border border-border bg-muted/40 group-hover:border-border transition-colors" />
                       )}
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          isSelected ? "bg-accent/20 ring-1 ring-accent/40" : "bg-white/[0.06]"
+                          isSelected ? "bg-accent/20 ring-1 ring-accent/40" : "bg-muted/60"
                         }`}>
-                          <f.icon className={`h-4 w-4 ${isSelected ? "text-accent" : "text-white/70"}`} />
+                          <f.icon className={`h-4 w-4 ${isSelected ? "text-accent" : "text-foreground/80"}`} />
                         </div>
-                        <span className={`text-xs md:text-sm font-bold ${isSelected ? "text-white" : "text-white/80"}`}>{f.title}</span>
+                        <span className={`text-xs md:text-sm font-bold ${isSelected ? "text-foreground" : "text-foreground"}`}>{f.title}</span>
                       </div>
                       <div className="flex items-baseline gap-1">
                         <span className="text-lg md:text-xl font-black text-accent">{f.rate}</span>
-                        {!f.rate.includes("IPCA") && <span className="text-[10px] text-white/40">a.a.</span>}
+                        {!f.rate.includes("IPCA") && <span className="text-[10px] text-muted-foreground/80">a.a.</span>}
                       </div>
-                      <p className="hidden md:block text-[10px] text-white/40 mt-1 truncate">{f.rateLabel}</p>
+                      <p className="hidden md:block text-[10px] text-muted-foreground/80 mt-1 truncate">{f.rateLabel}</p>
                     </button>
                   );
                 })}
@@ -981,14 +981,14 @@ const YieldGuide = () => {
 
             <motion.div variants={fadeUp} custom={2}>
               <div
-                className="rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]"
-                style={{ background: "linear-gradient(145deg, hsl(220 37% 18%), hsl(220 37% 14%))" }}
+                className="rounded-3xl overflow-hidden shadow-elevated"
+                style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))" }}
               >
                 <div className="grid lg:grid-cols-2 lg:items-stretch">
                   {/* Simulator form — glassmorphism dark card */}
-                  <div className="p-5 md:p-7 relative flex flex-col" style={{ background: "linear-gradient(145deg, hsl(220 37% 18%), hsl(220 37% 14%))" }}>
+                  <div className="p-5 md:p-7 relative flex flex-col" style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))" }}>
                     {/* Subtle inner glow */}
-                    <div className="absolute inset-0 rounded-l-3xl border border-white/[0.06] pointer-events-none" />
+                    <div className="absolute inset-0 rounded-l-3xl border border-border/40 pointer-events-none" />
                     <motion.div
                       className="absolute -top-20 -left-20 w-60 h-60 rounded-full blur-[100px]"
                       style={{ background: "hsl(220 50% 40% / 0.08)" }}
@@ -1012,10 +1012,10 @@ const YieldGuide = () => {
                           const hasPrefix = f.kind === "brl";
                           return (
                             <div key={f.key} className="space-y-1.5">
-                              <label className="text-xs font-semibold text-white/85 leading-tight block">{f.label}</label>
+                              <label className="text-xs font-semibold text-foreground leading-tight block">{f.label}</label>
                               <div className="relative">
                                 {hasPrefix && (
-                                  <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${numVal ? "text-accent" : "text-white/40"}`}>R$</span>
+                                  <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${numVal ? "text-accent" : "text-muted-foreground/80"}`}>R$</span>
                                 )}
                                 <input
                                   type="text"
@@ -1032,9 +1032,9 @@ const YieldGuide = () => {
                                       setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
                                     }
                                   }}
-                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30`}
+                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-foreground bg-muted/60 border border-border/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-muted/70 outline-none transition-all duration-200 placeholder:text-muted-foreground/60`}
                                 />
-                                <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-white/25"}`}>{f.hint}</span>
+                                <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-muted-foreground/50"}`}>{f.hint}</span>
                               </div>
                             </div>
                           );
@@ -1042,10 +1042,10 @@ const YieldGuide = () => {
 
                         {/* Taxa de juros */}
                         <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-white/85 leading-tight block">Taxa de juros dos seus investimentos</label>
+                          <label className="text-xs font-semibold text-foreground leading-tight block">Taxa de juros dos seus investimentos</label>
                           <div className="relative">
                             {/* Prefixo % à esquerda */}
-                            <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rentabilidade ? "text-accent" : "text-white/40"}`}>%</span>
+                            <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rentabilidade ? "text-accent" : "text-muted-foreground/80"}`}>%</span>
                             <input
                               type="text"
                               inputMode="decimal"
@@ -1065,10 +1065,10 @@ const YieldGuide = () => {
                                 // edição manual desfaz a faixa pré-selecionada
                                 setSelectedFaixa(null);
                               }}
-                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
+                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-foreground bg-muted/60 border border-border/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-muted/70 outline-none transition-all duration-200 placeholder:text-muted-foreground/60"
                             />
                             {/* Toggle % mês / % ano à direita */}
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-muted/60 rounded-lg overflow-hidden border border-border/40">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -1078,7 +1078,7 @@ const YieldGuide = () => {
                                   }
                                   setRentPeriodo("mensal");
                                 }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/60 hover:text-white hover:bg-white/[0.04]"}`}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
                               >
                                 % mês
                               </button>
@@ -1091,13 +1091,13 @@ const YieldGuide = () => {
                                   }
                                   setRentPeriodo("anual");
                                 }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/60 hover:text-white hover:bg-white/[0.04]"}`}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
                               >
                                 % ano
                               </button>
                             </div>
                           </div>
-                          <p className="text-[10px] text-white/30">
+                          <p className="text-[10px] text-muted-foreground/60">
                             {rentPeriodo === "mensal"
                               ? `≈ ${rentAnual.toFixed(1)}% ao ano`
                               : `≈ ${((Math.pow(1 + sim.rentabilidade / 100, 1/12) - 1) * 100).toFixed(2)}% ao mês`
@@ -1106,7 +1106,7 @@ const YieldGuide = () => {
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-white/70 leading-relaxed">
+                      <p className="text-sm text-foreground/80 leading-relaxed">
                         * Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
                       </p>
                     </div>
@@ -1126,9 +1126,9 @@ const YieldGuide = () => {
                       className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/30"
                       style={{
                         background:
-                          "linear-gradient(135deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.04) 55%, transparent), linear-gradient(180deg, hsl(220 37% 18%), hsl(220 37% 14%))",
+                          "linear-gradient(135deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.04) 55%, transparent), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))",
                         boxShadow:
-                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
                       }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 300, damping: 22 }}
@@ -1138,14 +1138,14 @@ const YieldGuide = () => {
                           className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-accent/30"
                           style={{
                             background: "linear-gradient(135deg, hsl(var(--accent) / 0.25), hsl(var(--accent) / 0.05))",
-                            boxShadow: "0 8px 20px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
+                            boxShadow: "0 8px 20px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)",
                           }}
                         >
                           <Wallet className="h-5 w-5 text-accent" strokeWidth={2.5} />
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-accent font-extrabold">Renda Mensal Passiva</p>
-                          <p className="text-xs md:text-sm text-white/60 mt-1 font-medium">sem consumir o principal</p>
+                          <p className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">sem consumir o principal</p>
                         </div>
                       </div>
 
@@ -1183,7 +1183,7 @@ const YieldGuide = () => {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-white/40 mt-3 font-medium">Simule para ver sua renda passiva</p>
+                        <p className="text-sm text-muted-foreground/80 mt-3 font-medium">Simule para ver sua renda passiva</p>
                       )}
                     </motion.div>
 
@@ -1194,19 +1194,19 @@ const YieldGuide = () => {
                           ? result.atingeMeta
                             ? "border-success/40"
                             : "border-warning/40"
-                          : "border-white/[0.08]"
+                          : "border-border/40"
                       }`}
                       style={{
                         background: result
                           ? result.atingeMeta
-                            ? "linear-gradient(135deg, hsl(var(--success) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 37% 18%), hsl(220 37% 14%))"
-                            : "linear-gradient(135deg, hsl(var(--warning) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 37% 18%), hsl(220 37% 14%))"
-                          : "linear-gradient(180deg, hsl(220 37% 18%), hsl(220 37% 14%))",
+                            ? "linear-gradient(135deg, hsl(var(--success) / 0.18), transparent 60%), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))"
+                            : "linear-gradient(135deg, hsl(var(--warning) / 0.18), transparent 60%), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))"
+                          : "linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))",
                         boxShadow: result
                           ? result.atingeMeta
-                            ? "0 20px 50px -20px hsl(var(--success) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)"
-                            : "0 20px 50px -20px hsl(var(--warning) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)"
-                          : "0 20px 50px -25px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                            ? "0 20px 50px -20px hsl(var(--success) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.5)"
+                            : "0 20px 50px -20px hsl(var(--warning) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.5)"
+                          : "0 20px 50px -25px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
                       }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 300, damping: 22 }}
@@ -1227,19 +1227,19 @@ const YieldGuide = () => {
                               : "hsl(0 0% 100% / 0.1)",
                             boxShadow: result
                               ? result.atingeMeta
-                                ? "0 8px 20px -8px hsl(var(--success) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)"
-                                : "0 8px 20px -8px hsl(var(--warning) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)"
-                              : "inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                                ? "0 8px 20px -8px hsl(var(--success) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)"
+                                : "0 8px 20px -8px hsl(var(--warning) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)"
+                              : "inset 0 1px 0 hsl(0 0% 100% / 0.6)",
                           }}
                         >
                           <Target
-                            className={`h-5 w-5 ${result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/40"}`}
+                            className={`h-5 w-5 ${result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-muted-foreground/80"}`}
                             strokeWidth={2.5}
                           />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[10px] uppercase tracking-[0.15em] text-white/60 font-bold">Meta de Renda</p>
-                          <p className="text-[10px] text-white/40 mt-0.5">
+                          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-bold">Meta de Renda</p>
+                          <p className="text-[10px] text-muted-foreground/80 mt-0.5">
                             {result?.rendaDesejadaNum ? `Alvo: ${formatCompactBRL(result.rendaDesejadaNum)}/mês` : "Defina sua meta"}
                           </p>
                         </div>
@@ -1247,7 +1247,7 @@ const YieldGuide = () => {
 
                       <motion.p
                         className={`text-xl md:text-2xl font-black tracking-tight ${
-                          result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/30"
+                          result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-muted-foreground/60"
                         }`}
                         key={result ? String(result.atingeMeta) : "empty"}
                         initial={{ opacity: 0, y: 8 }}
@@ -1260,8 +1260,8 @@ const YieldGuide = () => {
                       {result && result.rendaDesejadaNum > 0 && (
                         <div className="mt-4 space-y-2">
                           <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-white/50 truncate pr-2 tabular-nums">
-                              {formatCompactBRL(result.rendaMensalLiquidaNum)} <span className="text-white/30">de</span>{" "}
+                            <span className="text-muted-foreground truncate pr-2 tabular-nums">
+                              {formatCompactBRL(result.rendaMensalLiquidaNum)} <span className="text-muted-foreground/60">de</span>{" "}
                               {formatCompactBRL(result.rendaDesejadaNum)}
                             </span>
                             <span
@@ -1274,7 +1274,7 @@ const YieldGuide = () => {
                                 : `${result.rendaVsDesejada.toFixed(0)}%`}
                             </span>
                           </div>
-                          <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden border border-white/[0.04]">
+                          <div className="h-2 w-full rounded-full bg-muted/60 overflow-hidden border border-border/40">
                             <motion.div
                               className="h-full rounded-full relative overflow-hidden"
                               style={{
@@ -1338,7 +1338,7 @@ const YieldGuide = () => {
                     className="flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden"
                     style={{
                       background:
-                        "radial-gradient(120% 80% at 100% 0%, hsl(var(--accent) / 0.08), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(220 70% 30% / 0.15), transparent 60%), linear-gradient(160deg, hsl(220 37% 14%), hsl(220 37% 10%))",
+                        "radial-gradient(120% 80% at 100% 0%, hsl(var(--accent) / 0.08), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(var(--primary) / 0.10), transparent 60%), linear-gradient(160deg, hsl(var(--muted)), hsl(var(--secondary)))",
                     }}
                   >
                     {/* Floating ambient orbs */}
@@ -1367,7 +1367,7 @@ const YieldGuide = () => {
                             background:
                               "linear-gradient(135deg, hsl(var(--accent) / 0.18), hsl(var(--accent) / 0.04) 60%, transparent), linear-gradient(180deg, hsl(var(--primary) / 0.6), hsl(var(--primary) / 0.4))",
                             boxShadow:
-                              "0 12px 30px -12px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                              "0 12px 30px -12px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.6)",
                           }}
                         >
                           <div className="flex items-start gap-3">
@@ -1375,7 +1375,7 @@ const YieldGuide = () => {
                               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-accent/30"
                               style={{
                                 background: "linear-gradient(135deg, hsl(var(--accent) / 0.3), hsl(var(--accent) / 0.05))",
-                                boxShadow: "0 6px 16px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
+                                boxShadow: "0 6px 16px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)",
                               }}
                             >
                               <FaixaIcon className="h-5 w-5 text-accent" strokeWidth={2.5} />
@@ -1390,15 +1390,15 @@ const YieldGuide = () => {
                                   Aplicada
                                 </span>
                               </div>
-                              <p className="text-base md:text-lg font-bold text-white tracking-tight leading-tight mt-0.5">
+                              <p className="text-base md:text-lg font-bold text-foreground tracking-tight leading-tight mt-0.5">
                                 {resultFaixa.title}{" "}
                                 <span className="text-accent font-black tabular-nums">{resultFaixa.rate}</span>
-                                {!resultFaixa.rate.includes("IPCA") && <span className="text-white/40 text-xs font-medium ml-1">a.a.</span>}
+                                {!resultFaixa.rate.includes("IPCA") && <span className="text-muted-foreground/80 text-xs font-medium ml-1">a.a.</span>}
                               </p>
-                              <p className="text-[11px] text-white/60 leading-snug mt-1 line-clamp-2">
+                              <p className="text-[11px] text-muted-foreground leading-snug mt-1 line-clamp-2">
                                 {resultFaixa.desc}
                               </p>
-                              <p className="text-[10px] text-white/40 mt-1">{resultFaixa.rateLabel}</p>
+                              <p className="text-[10px] text-muted-foreground/80 mt-1">{resultFaixa.rateLabel}</p>
                             </div>
                           </div>
                         </motion.div>
@@ -1410,20 +1410,20 @@ const YieldGuide = () => {
                       <motion.div
                         initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="relative z-10 rounded-2xl p-3 border border-white/10 flex items-center gap-3"
+                        className="relative z-10 rounded-2xl p-3 border border-border/60 flex items-center gap-3"
                         style={{
                           background: "linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(var(--primary) / 0.3))",
-                          boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.08)",
+                          boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.5)",
                         }}
                       >
-                        <div className="w-9 h-9 rounded-lg bg-white/[0.08] flex items-center justify-center shrink-0">
-                          <Percent className="h-4 w-4 text-white/70" strokeWidth={2.5} />
+                        <div className="w-9 h-9 rounded-lg bg-muted/70 flex items-center justify-center shrink-0">
+                          <Percent className="h-4 w-4 text-foreground/80" strokeWidth={2.5} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[9px] uppercase tracking-[0.15em] text-white/60 font-bold">Taxa personalizada</p>
-                          <p className="text-sm font-bold text-white tracking-tight tabular-nums mt-0.5">
+                          <p className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground font-bold">Taxa personalizada</p>
+                          <p className="text-sm font-bold text-foreground tracking-tight tabular-nums mt-0.5">
                             {sim.rentabilidade.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% {rentPeriodo === "mensal" ? "a.m." : "a.a."}
-                            <span className="text-white/40 text-[11px] font-medium ml-2">
+                            <span className="text-muted-foreground/80 text-[11px] font-medium ml-2">
                               · {rentAnual.toFixed(2)}% ao ano
                             </span>
                           </p>
@@ -1436,9 +1436,9 @@ const YieldGuide = () => {
                       className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/20 group"
                       style={{
                         background:
-                          "linear-gradient(135deg, hsl(var(--accent) / 0.12), hsl(var(--accent) / 0.04) 50%, transparent), linear-gradient(180deg, hsl(220 37% 19%), hsl(220 37% 14%))",
+                          "linear-gradient(135deg, hsl(var(--accent) / 0.12), hsl(var(--accent) / 0.04) 50%, transparent), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))",
                         boxShadow:
-                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06), inset 0 0 0 1px hsl(0 0% 100% / 0.02)",
+                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.5), inset 0 0 0 1px hsl(0 0% 100% / 0.02)",
                       }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 300, damping: 22 }}
@@ -1452,14 +1452,14 @@ const YieldGuide = () => {
                             className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-accent/30"
                             style={{
                               background: "linear-gradient(135deg, hsl(var(--accent) / 0.25), hsl(var(--accent) / 0.05))",
-                              boxShadow: "0 8px 20px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
+                              boxShadow: "0 8px 20px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)",
                             }}
                           >
                             <DollarSign className="h-5 w-5 text-accent" strokeWidth={2.5} />
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-accent font-extrabold">Patrimônio Bruto</p>
-                            <p className="text-xs md:text-sm text-white/60 mt-1 font-medium">acumulado ao final</p>
+                            <p className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">acumulado ao final</p>
                           </div>
                         </div>
                         {result && (
@@ -1473,7 +1473,7 @@ const YieldGuide = () => {
                       </div>
 
                       <motion.p
-                        className="text-3xl md:text-[2rem] leading-[1.05] font-black text-white tracking-tight tabular-nums break-words"
+                        className="text-3xl md:text-[2rem] leading-[1.05] font-black text-foreground tracking-tight tabular-nums break-words"
                         key={result?.patrimonioNum}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1485,17 +1485,17 @@ const YieldGuide = () => {
                       </motion.p>
 
                       {!result && (
-                        <p className="text-xs text-white/40 mt-2 font-medium italic">aguardando simulação</p>
+                        <p className="text-xs text-muted-foreground/80 mt-2 font-medium italic">aguardando simulação</p>
                       )}
 
                       {result && (
-                        <div className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-4">
+                        <div className="mt-4 pt-4 border-t border-border/40 grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-[11px] md:text-xs uppercase tracking-wider text-novare-blue-bright font-bold inline-flex items-center gap-1.5">
                               <Calendar className="h-3 w-3" /> Período
                             </p>
-                            <p className="text-lg md:text-xl font-extrabold text-white mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-white/60 font-bold">anos</span></p>
-                            <p className="text-xs text-white/50 mt-0.5">{result.mesesAcumulo} meses</p>
+                            <p className="text-lg md:text-xl font-extrabold text-foreground mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-muted-foreground font-bold">anos</span></p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
                           <div className="min-w-0">
                             <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold inline-flex items-center gap-1.5">
@@ -1504,7 +1504,7 @@ const YieldGuide = () => {
                             <p className="text-lg md:text-xl font-extrabold text-success mt-1 tabular-nums truncate" title={result.patrimonioLiquido}>
                               {formatCompactBRL(result.patrimonioLiquidoNum)}
                             </p>
-                            <p className="text-xs text-white/50 mt-0.5">IR de {result.aliquotaIR}%</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">IR de {result.aliquotaIR}%</p>
                           </div>
                         </div>
                       )}
@@ -1543,15 +1543,15 @@ const YieldGuide = () => {
                           info: { ring: "border-accent/40", icon: "text-accent", bg: "bg-accent/15", value: "text-accent", label: "text-accent" },
                           blue: { ring: "border-novare-blue-bright/35", icon: "text-novare-blue-bright", bg: "bg-novare-blue-bright/15", value: "text-novare-blue-bright", label: "text-novare-blue-bright" },
                           success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
-                          neutral: { ring: "border-white/10", icon: "text-accent/80", bg: "bg-white/[0.04]", value: "text-white/85", label: "text-white/60" },
+                          neutral: { ring: "border-border/60", icon: "text-accent/80", bg: "bg-muted/40", value: "text-foreground", label: "text-muted-foreground" },
                         }[k.tone];
                         return (
                           <motion.div
                             key={k.label}
                             className={`relative rounded-2xl p-4 md:p-5 border ${toneClasses.ring} overflow-hidden min-w-0`}
                             style={{
-                              background: "linear-gradient(160deg, hsl(220 37% 18%), hsl(220 37% 14%))",
-                              boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.04)",
+                              background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))",
+                              boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
                             }}
                             whileHover={{ y: -2, scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 300, damping: 22 }}
@@ -1563,7 +1563,7 @@ const YieldGuide = () => {
                             <p className={`text-lg md:text-2xl font-black ${toneClasses.value} tracking-tight tabular-nums break-words`} title={k.full}>
                               {k.value}
                             </p>
-                            <p className="text-[11px] md:text-xs text-white/60 mt-1 truncate font-medium">{k.sub}</p>
+                            <p className="text-[11px] md:text-xs text-muted-foreground mt-1 truncate font-medium">{k.sub}</p>
                           </motion.div>
                         );
                       })}
@@ -1581,12 +1581,12 @@ const YieldGuide = () => {
                   className="relative rounded-2xl p-4 md:p-5 overflow-hidden border-t-2 border-accent/40"
                   style={{
                     background:
-                      "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(220 37% 19%), hsl(220 37% 14%))",
+                      "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))",
                     borderLeft: "1px solid hsl(var(--accent) / 0.25)",
                     borderRight: "1px solid hsl(var(--accent) / 0.25)",
                     borderBottom: "1px solid hsl(var(--accent) / 0.25)",
                     boxShadow:
-                      "0 16px 40px -15px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                      "0 16px 40px -15px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
                   }}
                 >
                   {/* Orbs animados de fundo */}
@@ -1615,12 +1615,12 @@ const YieldGuide = () => {
                           Próximo passo
                         </span>
                       </div>
-                      <h3 className="text-base md:text-lg font-black text-white leading-tight">
+                      <h3 className="text-base md:text-lg font-black text-foreground leading-tight">
                         {result.atingeMeta
                           ? "Pronto para sair do papel?"
                           : "Quer ajustar essa estratégia?"}
                       </h3>
-                      <p className="text-xs text-white/60 leading-snug">
+                      <p className="text-xs text-muted-foreground leading-snug">
                         Um especialista <span className="text-accent font-semibold">Novare</span> analisa seu perfil e monta uma carteira personalizada — sem custo e sem compromisso.
                       </p>
                     </div>
@@ -1661,7 +1661,7 @@ const YieldGuide = () => {
                   </div>
 
                   {/* Selos de confiança */}
-                  <div className="relative z-10 mt-3 pt-3 border-t border-white/[0.08] flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-white/65 font-medium">
+                  <div className="relative z-10 mt-3 pt-3 border-t border-border/40 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-foreground/65 font-medium">
                     <span className="inline-flex items-center gap-1.5">
                       <Shield className="h-3 w-3 text-accent" />
                       Gratuito
@@ -1706,7 +1706,7 @@ const YieldGuide = () => {
                   value: formatCompactBRL(baseCalculo),
                   fullValue: fmtFull(baseCalculo),
                   tooltip: "O Imposto de Renda incide APENAS sobre o lucro (rendimento), nunca sobre o que você aportou. A base de cálculo é a diferença entre o patrimônio acumulado e o total que você investiu ao longo do tempo.",
-                  color: "text-white",
+                  color: "text-foreground",
                 },
                 {
                   num: 2,
@@ -1744,8 +1744,8 @@ const YieldGuide = () => {
                   <motion.div
                     variants={fadeUp}
                     custom={1.5}
-                    className="rounded-3xl overflow-hidden border border-white/[0.06] shadow-[0_15px_40px_-15px_rgba(0,0,0,0.6)]"
-                    style={{ background: "linear-gradient(160deg, hsl(220 37% 17%), hsl(220 37% 12%))" }}
+                    className="rounded-3xl overflow-hidden border border-border/40 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.6)]"
+                    style={{ background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))" }}
                   >
                     <div className="p-6 md:p-8">
                       <div className="flex items-start gap-4 mb-6">
@@ -1753,10 +1753,10 @@ const YieldGuide = () => {
                           <Receipt className="h-6 w-6 text-warning" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg md:text-xl font-bold text-white tracking-tight">
+                          <h3 className="text-lg md:text-xl font-bold text-foreground tracking-tight">
                             Como o Imposto de Renda foi calculado
                           </h3>
-                          <p className="text-sm text-white/50 mt-0.5">
+                          <p className="text-sm text-muted-foreground mt-0.5">
                             Passo a passo do desconto sobre seus rendimentos · passe o mouse em cada item para entender
                           </p>
                         </div>
@@ -1767,22 +1767,22 @@ const YieldGuide = () => {
                         {steps.map((s) => (
                           <Tooltip key={s.num}>
                             <TooltipTrigger asChild>
-                              <div className="group relative p-4 md:p-5 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-accent/30 hover:bg-white/[0.05] transition-all duration-200 cursor-help min-w-0">
+                              <div className="group relative p-4 md:p-5 rounded-2xl bg-white/[0.03] border border-border/40 hover:border-accent/30 hover:bg-white/[0.05] transition-all duration-200 cursor-help min-w-0">
                                 <div className="flex items-center justify-between mb-3">
                                   <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-accent/15 text-accent text-xs font-bold">
                                     {s.num}
                                   </span>
-                                  <Info className="h-3.5 w-3.5 text-white/30 group-hover:text-accent transition-colors" />
+                                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 group-hover:text-accent transition-colors" />
                                 </div>
-                                <p className="text-[11px] uppercase tracking-wider text-white/40 font-semibold leading-tight mb-1.5">
+                                <p className="text-[11px] uppercase tracking-wider text-muted-foreground/80 font-semibold leading-tight mb-1.5">
                                   {s.label}
                                 </p>
                                 <p className={`text-xl md:text-2xl font-bold tracking-tight tabular-nums break-words ${s.color}`} title={s.fullValue}>
                                   {s.value}
                                 </p>
-                                <div className="mt-2 pt-2 border-t border-white/[0.04] space-y-0.5">
-                                  <p className="text-[10px] text-white/40 font-medium">{s.formula}</p>
-                                  <p className="text-[10px] text-white/30 truncate" title={s.detail}>{s.detail}</p>
+                                <div className="mt-2 pt-2 border-t border-border/40 space-y-0.5">
+                                  <p className="text-[10px] text-muted-foreground/80 font-medium">{s.formula}</p>
+                                  <p className="text-[10px] text-muted-foreground/60 truncate" title={s.detail}>{s.detail}</p>
                                 </div>
                               </div>
                             </TooltipTrigger>
@@ -1794,15 +1794,15 @@ const YieldGuide = () => {
                       </div>
 
                       {/* Tabela regressiva auxiliar */}
-                      <div className="mt-6 pt-5 border-t border-white/[0.06]">
+                      <div className="mt-6 pt-5 border-t border-border/40">
                         <div className="flex items-center gap-2 mb-3">
-                          <Percent className="h-4 w-4 text-white/40" />
-                          <p className="text-xs uppercase tracking-wider text-white/40 font-semibold">
+                          <Percent className="h-4 w-4 text-muted-foreground/80" />
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground/80 font-semibold">
                             Tabela regressiva do IR (Renda Fixa)
                           </p>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Info className="h-3.5 w-3.5 text-white/30 hover:text-accent cursor-help transition-colors" />
+                              <Info className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-accent cursor-help transition-colors" />
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
                               Quanto mais tempo você mantém o investimento, menor a alíquota de IR. É um incentivo do governo ao investimento de longo prazo.
@@ -1818,13 +1818,13 @@ const YieldGuide = () => {
                                 className={`p-3 rounded-xl border transition-all ${
                                   isCurrent
                                     ? "bg-accent/15 border-accent/40 shadow-[0_0_20px_-5px_hsl(var(--accent)/0.4)]"
-                                    : "bg-white/[0.02] border-white/[0.06]"
+                                    : "bg-muted/20 border-border/40"
                                 }`}
                               >
-                                <p className={`text-[10px] uppercase tracking-wider font-semibold ${isCurrent ? "text-accent" : "text-white/40"}`}>
+                                <p className={`text-[10px] uppercase tracking-wider font-semibold ${isCurrent ? "text-accent" : "text-muted-foreground/80"}`}>
                                   {t.faixa}
                                 </p>
-                                <p className={`text-lg font-bold tabular-nums mt-0.5 ${isCurrent ? "text-accent" : "text-white/60"}`}>
+                                <p className={`text-lg font-bold tabular-nums mt-0.5 ${isCurrent ? "text-accent" : "text-muted-foreground"}`}>
                                   {t.aliq.toString().replace(".", ",")}%
                                 </p>
                                 {isCurrent && (
@@ -1836,7 +1836,7 @@ const YieldGuide = () => {
                             );
                           })}
                         </div>
-                        <p className="text-[10px] text-white/30 mt-3 leading-relaxed">
+                        <p className="text-[10px] text-muted-foreground/60 mt-3 leading-relaxed">
                           * Aplicável a investimentos como CDB, LCI/LCA (estes isentos), Tesouro Direto, debêntures e fundos de renda fixa. Ações e fundos imobiliários têm regras próprias.
                         </p>
                       </div>
@@ -1856,18 +1856,18 @@ const YieldGuide = () => {
                 {/* Gráfico */}
                 <div
                   className="lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                  style={{ background: "linear-gradient(145deg, hsl(220 37% 18%), hsl(220 37% 14%))", border: "1px solid rgba(255,255,255,0.06)" }}
+                  style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))", border: "1px solid hsl(var(--border))" }}
                 >
                   <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                     <div>
                       <p className="text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1">Evolução do patrimônio</p>
-                      <h3 className="text-xl font-bold text-white tracking-tight">Como seu dinheiro cresce</h3>
+                      <h3 className="text-xl font-bold text-foreground tracking-tight">Como seu dinheiro cresce</h3>
                     </div>
                     <div className="flex items-center gap-3 text-[11px]">
-                      <span className="flex items-center gap-1.5 text-white/60">
+                      <span className="flex items-center gap-1.5 text-muted-foreground">
                         <span className="w-2.5 h-2.5 rounded-full bg-white/30" /> Investido
                       </span>
-                      <span className="flex items-center gap-1.5 text-white/60">
+                      <span className="flex items-center gap-1.5 text-muted-foreground">
                         <span className="w-2.5 h-2.5 rounded-full bg-accent" /> Patrimônio líquido
                       </span>
                     </div>
@@ -1908,7 +1908,7 @@ const YieldGuide = () => {
                         />
                         <RTooltip
                           contentStyle={{
-                            background: "hsl(220 37% 14%)",
+                            background: "hsl(var(--card))",
                             border: "1px solid rgba(255,255,255,0.08)",
                             borderRadius: 12,
                             color: "white",
@@ -1928,7 +1928,7 @@ const YieldGuide = () => {
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
-                  <p className="text-[11px] text-white/35 mt-3 leading-relaxed">
+                  <p className="text-[11px] text-foreground/35 mt-3 leading-relaxed">
                     A área dourada representa o efeito dos juros compostos: tudo acima da linha branca é ganho gerado pelos seus investimentos.
                   </p>
                 </div>
@@ -1936,19 +1936,19 @@ const YieldGuide = () => {
                 {/* Tabela */}
                 <div
                   className="lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                  style={{ background: "linear-gradient(160deg, hsl(220 37% 18%), hsl(220 37% 14%))", border: "1px solid rgba(255,255,255,0.06)" }}
+                  style={{ background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))", border: "1px solid hsl(var(--border))" }}
                 >
                   <div className="mb-5">
                     <p className="text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1">Tabela ano a ano</p>
-                    <h3 className="text-xl font-bold text-white tracking-tight">Acompanhe o crescimento</h3>
+                    <h3 className="text-xl font-bold text-foreground tracking-tight">Acompanhe o crescimento</h3>
                   </div>
                   <div className="max-h-[340px] overflow-y-auto pr-1 -mr-1 sidebar-scroll">
                     <Table>
-                      <TableHeader className="sticky top-0 z-10" style={{ background: "hsl(220 37% 16%)" }}>
-                        <TableRow className="border-white/[0.06] hover:bg-transparent">
-                          <TableHead className="text-[10px] uppercase tracking-wider text-white/40 font-semibold h-9">Idade</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider text-white/40 font-semibold text-right h-9">Investido</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider text-white/40 font-semibold text-right h-9">Patrimônio</TableHead>
+                      <TableHeader className="sticky top-0 z-10" style={{ background: "hsl(var(--muted))" }}>
+                        <TableRow className="border-border/40 hover:bg-transparent">
+                          <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold h-9">Idade</TableHead>
+                          <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold text-right h-9">Investido</TableHead>
+                          <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold text-right h-9">Patrimônio</TableHead>
                           <TableHead className="text-[10px] uppercase tracking-wider text-accent font-semibold text-right h-9">Ganho</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -1958,16 +1958,16 @@ const YieldGuide = () => {
                           return (
                             <TableRow
                               key={row.year}
-                              className={`border-white/[0.04] hover:bg-white/[0.03] ${isLast ? "bg-accent/[0.06]" : ""}`}
+                              className={`border-border/40 hover:bg-white/[0.03] ${isLast ? "bg-accent/[0.06]" : ""}`}
                             >
-                              <TableCell className="text-xs text-white/70 font-medium py-2.5">
+                              <TableCell className="text-xs text-foreground/80 font-medium py-2.5">
                                 {row.age}
-                                <span className="text-white/30 ml-1 text-[10px]">(ano {row.year})</span>
+                                <span className="text-muted-foreground/60 ml-1 text-[10px]">(ano {row.year})</span>
                               </TableCell>
-                              <TableCell className="text-xs text-white/55 text-right tabular-nums py-2.5">
+                              <TableCell className="text-xs text-foreground/55 text-right tabular-nums py-2.5">
                                 {row.invested.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
                               </TableCell>
-                              <TableCell className={`text-xs font-semibold text-right tabular-nums py-2.5 ${isLast ? "text-white" : "text-white/85"}`}>
+                              <TableCell className={`text-xs font-semibold text-right tabular-nums py-2.5 ${isLast ? "text-foreground" : "text-foreground"}`}>
                                 {row.net.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
                               </TableCell>
                               <TableCell className="text-xs text-accent font-semibold text-right tabular-nums py-2.5">
@@ -1980,7 +1980,7 @@ const YieldGuide = () => {
                       </TableBody>
                     </Table>
                   </div>
-                  <p className="text-[11px] text-white/35 mt-2 leading-relaxed">
+                  <p className="text-[11px] text-foreground/35 mt-2 leading-relaxed">
                     Patrimônio líquido estimado após IR (tabela regressiva). Ano 0 = hoje.
                   </p>
                 </div>
@@ -2575,7 +2575,7 @@ const YieldGuide = () => {
             className="fixed inset-0 z-[100] flex items-center justify-center px-6"
             style={{
               background:
-                "radial-gradient(80% 60% at 50% 50%, hsl(220 37% 14% / 0.9), hsl(220 37% 9% / 0.95))",
+                "radial-gradient(80% 60% at 50% 50%, hsl(var(--card) / 0.95), hsl(var(--muted) / 0.98))",
               backdropFilter: "blur(12px)",
               WebkitBackdropFilter: "blur(12px)",
             }}
@@ -2602,10 +2602,10 @@ const YieldGuide = () => {
               className="relative w-full max-w-md rounded-3xl p-8 md:p-10 text-center"
               style={{
                 background:
-                  "linear-gradient(160deg, hsl(220 37% 18% / 0.92), hsl(220 37% 13% / 0.92))",
+                  "linear-gradient(160deg, hsl(var(--card) / 0.95), hsl(var(--muted) / 0.95))",
                 border: "1px solid hsl(0 0% 100% / 0.08)",
                 boxShadow:
-                  "0 30px 80px -20px hsl(var(--accent) / 0.4), 0 0 0 1px hsl(var(--accent) / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                  "0 30px 80px -20px hsl(var(--accent) / 0.4), 0 0 0 1px hsl(var(--accent) / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
               }}
             >
               {/* Logo Novare com halos pulsantes */}
@@ -2656,14 +2656,14 @@ const YieldGuide = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="text-sm text-white/60 mb-4"
+                className="text-sm text-muted-foreground mb-4"
               >
                 Nossa inteligência financeira está montando seu cenário…
               </motion.p>
 
               {/* Contador regressivo */}
               <div className="flex items-center justify-center gap-2 mb-5">
-                <span className="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground/80 font-semibold">
                   Pronto em
                 </span>
                 <motion.div
@@ -2675,7 +2675,7 @@ const YieldGuide = () => {
                   style={{
                     background: "linear-gradient(180deg, hsl(var(--accent) / 0.15), hsl(var(--accent) / 0.05))",
                     border: "1px solid hsl(var(--accent) / 0.35)",
-                    boxShadow: "0 0 18px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                    boxShadow: "0 0 18px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.6)",
                   }}
                 >
                   {simCountdown}s
@@ -2683,7 +2683,7 @@ const YieldGuide = () => {
               </div>
 
               {/* Barra de progresso animada */}
-              <div className="relative h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden mb-5">
+              <div className="relative h-1.5 w-full rounded-full bg-muted/60 overflow-hidden mb-5">
                 <motion.div
                   className="absolute inset-y-0 left-0 rounded-full"
                   style={{
@@ -2716,7 +2716,7 @@ const YieldGuide = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 + i * 0.15, duration: 0.4 }}
-                    className="flex items-center gap-2.5 text-xs text-white/70"
+                    className="flex items-center gap-2.5 text-xs text-foreground/80"
                   >
                     <motion.span
                       className="w-1.5 h-1.5 rounded-full bg-accent shrink-0"
@@ -2734,7 +2734,7 @@ const YieldGuide = () => {
               </div>
 
               {/* Selo */}
-              <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold">
+              <div className="mt-6 pt-5 border-t border-border/40 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80 font-semibold">
                 <span className="w-1 h-1 rounded-full bg-accent" />
                 Powered by Novare
                 <span className="w-1 h-1 rounded-full bg-accent" />
