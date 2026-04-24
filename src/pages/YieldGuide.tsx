@@ -1100,7 +1100,7 @@ const YieldGuide = () => {
 
                   {/* Results panel — modern floating cards */}
                   <div
-                    className="lg:col-span-2 flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden"
+                    className="flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden"
                     style={{
                       background:
                         "radial-gradient(120% 80% at 100% 0%, hsl(var(--accent) / 0.08), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(220 70% 30% / 0.15), transparent 60%), linear-gradient(160deg, hsl(220 40% 11%), hsl(220 50% 7%))",
