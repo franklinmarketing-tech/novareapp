@@ -1250,18 +1250,18 @@ const YieldGuide = () => {
                       </motion.p>
 
                       {result && (
-                        <div className="mt-3 pt-3 border-t border-white/[0.06] grid grid-cols-2 gap-3">
+                        <div className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Período</p>
-                            <p className="text-sm font-bold text-white/90 mt-0.5 tabular-nums">{result.anosAcumulo} anos</p>
-                            <p className="text-[10px] text-white/30">{result.mesesAcumulo} meses</p>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-info font-bold">Período</p>
+                            <p className="text-lg md:text-xl font-extrabold text-white mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-white/60 font-bold">anos</span></p>
+                            <p className="text-xs text-white/50 mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Líquido após IR</p>
-                            <p className="text-sm font-bold text-accent mt-0.5 tabular-nums truncate" title={result.patrimonioLiquido}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Líquido após IR</p>
+                            <p className="text-lg md:text-xl font-extrabold text-success mt-1 tabular-nums truncate" title={result.patrimonioLiquido}>
                               {formatCompactBRL(result.patrimonioLiquidoNum)}
                             </p>
-                            <p className="text-[10px] text-white/30">IR de {result.aliquotaIR}%</p>
+                            <p className="text-xs text-white/50 mt-0.5">IR de {result.aliquotaIR}%</p>
                           </div>
                         </div>
                       )}
