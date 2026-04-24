@@ -1699,7 +1699,7 @@ const YieldGuide = () => {
               <CardContent className="p-0">
                 <div className="grid lg:grid-cols-2">
                   {/* Left */}
-                  <motion.div variants={fadeUp} custom={0} className="p-8 md:p-12 space-y-6 flex flex-col justify-center">
+                  <motion.div variants={fadeUp} custom={0} className="p-6 md:p-10 space-y-4 flex flex-col justify-center">
                     <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Consultoria Novare</span>
                     <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-[1.15]">
                       Conte com um especialista para investir melhor
