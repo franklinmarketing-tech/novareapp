@@ -2494,16 +2494,31 @@ const YieldGuide = () => {
 
                       <div className="space-y-3">
                         <Input
+                          type="email"
+                          inputMode="email"
+                          autoComplete="email"
                           placeholder="Seu melhor e-mail"
+                          value={newsletterEmail}
+                          onChange={(e) => setNewsletterEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !newsletterLoading) handleNewsletterSubmit();
+                          }}
+                          disabled={newsletterLoading || newsletterDone}
+                          maxLength={255}
                           className="h-13 rounded-2xl px-5 border-border/60 bg-muted/30 focus:bg-background transition-colors text-base"
                         />
                         <button
-                          className="group relative w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground font-semibold text-base px-8 py-4 rounded-2xl shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                          type="button"
+                          onClick={handleNewsletterSubmit}
+                          disabled={newsletterLoading || newsletterDone}
+                          className="group relative w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground font-semibold text-base px-8 py-4 rounded-2xl shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                         >
-                          Quero receber
-                          <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-accent-foreground/20 group-hover:bg-accent-foreground/30 transition-colors">
-                            <ArrowRight className="h-6 w-6" />
-                          </span>
+                          {newsletterDone ? "Inscrição confirmada ✓" : newsletterLoading ? "Enviando..." : "Quero receber"}
+                          {!newsletterDone && (
+                            <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-accent-foreground/20 group-hover:bg-accent-foreground/30 transition-colors">
+                              <ArrowRight className="h-6 w-6" />
+                            </span>
+                          )}
                         </button>
                       </div>
 
