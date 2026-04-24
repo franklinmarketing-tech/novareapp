@@ -671,36 +671,65 @@ const YieldGuide = () => {
 
                     <div className="relative z-10 space-y-6">
                       <div className="grid sm:grid-cols-2 gap-x-6 gap-y-5">
-                        {[
-                          { label: "Qual sua idade hoje?", key: "idadeAtual", hint: "anos" },
-                          { label: "Com que idade quer parar de trabalhar?", key: "idadeAposent", hint: "anos" },
-                          { label: "Quanto já tem guardado/investido?", key: "patrimonioAtual", hint: "R$" },
-                          { label: "Quanto consegue investir por mês?", key: "aporte", hint: "R$" },
-                          { label: "Qual renda mensal deseja no futuro?", key: "rendaDesejada", hint: "R$" },
-                        ].map((f) => (
-                          <div key={f.key} className="space-y-1.5">
-                            <label className="text-xs font-semibold text-white/50 leading-tight block">{f.label}</label>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                value={(sim as any)[f.key]}
-                                onChange={(e) => setSim({ ...sim, [f.key]: Number(e.target.value) })}
-                                className="w-full h-12 rounded-xl px-4 pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/20"
-                              />
-                              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-white/25 font-medium">{f.hint}</span>
+                        {([
+                          { label: "Qual sua idade hoje?", key: "idadeAtual", hint: "anos", kind: "int" as const },
+                          { label: "Com que idade quer parar de trabalhar?", key: "idadeAposent", hint: "anos", kind: "int" as const },
+                          { label: "Quanto já tem guardado/investido?", key: "patrimonioAtual", hint: "R$", kind: "brl" as const },
+                          { label: "Quanto consegue investir por mês?", key: "aporte", hint: "R$", kind: "brl" as const },
+                          { label: "Qual renda mensal deseja no futuro?", key: "rendaDesejada", hint: "R$", kind: "brl" as const },
+                        ]).map((f) => {
+                          const numVal = (sim as any)[f.key] as number;
+                          const display = f.kind === "brl"
+                            ? (numVal ? numVal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "")
+                            : (numVal ? String(numVal) : "");
+                          const hasPrefix = f.kind === "brl";
+                          return (
+                            <div key={f.key} className="space-y-1.5">
+                              <label className="text-xs font-semibold text-white/50 leading-tight block">{f.label}</label>
+                              <div className="relative">
+                                {hasPrefix && (
+                                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-white/40 font-medium">R$</span>
+                                )}
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={display}
+                                  onChange={(e) => {
+                                    if (f.kind === "brl") {
+                                      const digits = e.target.value.replace(/\D/g, "");
+                                      const cents = digits ? parseInt(digits, 10) : 0;
+                                      setSim({ ...sim, [f.key]: cents / 100 });
+                                    } else {
+                                      const digits = e.target.value.replace(/\D/g, "");
+                                      setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
+                                    }
+                                  }}
+                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/20`}
+                                />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-white/25 font-medium">{f.hint}</span>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
 
                         {/* Taxa de juros */}
                         <div className="space-y-1.5">
                           <label className="text-xs font-semibold text-white/50 leading-tight block">Taxa de juros dos seus investimentos</label>
                           <div className="relative">
                             <input
-                              type="number"
-                              step="0.1"
-                              value={sim.rentabilidade}
-                              onChange={(e) => setSim({ ...sim, rentabilidade: Number(e.target.value) })}
+                              type="text"
+                              inputMode="decimal"
+                              value={
+                                Number.isFinite(sim.rentabilidade)
+                                  ? sim.rentabilidade.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+                                  : ""
+                              }
+                              onChange={(e) => {
+                                // aceita dígitos, vírgula e ponto; converte vírgula -> ponto
+                                const raw = e.target.value.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
+                                const n = parseFloat(raw);
+                                setSim({ ...sim, rentabilidade: Number.isFinite(n) ? n : 0 });
+                              }}
                               className="w-full h-12 rounded-xl px-4 pr-24 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/20"
                             />
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
