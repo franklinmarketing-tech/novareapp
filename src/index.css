@@ -265,54 +265,81 @@
     --ring: 16 65% 55%;
   }
 
-  /* --- Card branco premium 3D sutil ---
+  /* --- Card branco premium 3D profundo ---
+     Borda fina + sombras multi-camada para sensação de elevação.
      Usado nos cards principais (form, IR, gráfico, tabela). */
   .calc-card-light {
     background:
       linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 30% 99%) 100%);
-    border: 1px solid hsl(220 18% 92%);
+    border: 1px solid hsl(220 20% 90%);
     box-shadow:
+      /* highlight superior fino (borda iluminada) */
       0 1px 0 hsl(0 0% 100%) inset,
-      0 1px 2px hsl(215 50% 23% / 0.04),
-      0 4px 12px -4px hsl(215 50% 23% / 0.08),
-      0 16px 40px -20px hsl(215 50% 23% / 0.12);
+      /* hairline ring externa para definir contorno */
+      0 0 0 1px hsl(215 30% 88% / 0.5),
+      /* sombra de contato curta */
+      0 2px 4px hsl(215 50% 23% / 0.06),
+      /* sombra média */
+      0 8px 16px -6px hsl(215 50% 23% / 0.10),
+      /* sombra ambiente longa (suspensão) */
+      0 24px 48px -16px hsl(215 50% 23% / 0.18),
+      /* halo externo extra-profundo */
+      0 40px 80px -32px hsl(215 60% 15% / 0.22);
   }
   .calc-card-light:hover {
+    transform: translateY(-2px);
     box-shadow:
       0 1px 0 hsl(0 0% 100%) inset,
-      0 1px 2px hsl(215 50% 23% / 0.05),
-      0 6px 18px -4px hsl(215 50% 23% / 0.10),
-      0 24px 56px -22px hsl(215 50% 23% / 0.18);
+      0 0 0 1px hsl(215 35% 82% / 0.6),
+      0 4px 8px hsl(215 50% 23% / 0.08),
+      0 14px 28px -8px hsl(215 50% 23% / 0.14),
+      0 32px 64px -18px hsl(215 50% 23% / 0.24),
+      0 56px 112px -36px hsl(215 60% 15% / 0.28);
   }
 
-  /* --- Card escuro hero 3D sutil ---
+  /* --- Card escuro hero 3D profundo ---
      Usado APENAS em "Renda Mensal Passiva" e CTA "Fale com especialista". */
   .calc-card-dark {
     background:
       linear-gradient(180deg, hsl(215 50% 18%) 0%, hsl(215 55% 13%) 100%);
-    border: 1px solid hsl(215 35% 26%);
+    border: 1px solid hsl(215 35% 30%);
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.08) inset,
-      0 0 0 1px hsl(0 0% 0% / 0.2) inset,
-      0 8px 20px -8px hsl(215 60% 8% / 0.5),
-      0 24px 60px -24px hsl(215 60% 8% / 0.6);
+      /* highlight branco fino no topo */
+      0 1px 0 hsl(0 0% 100% / 0.12) inset,
+      /* contorno escuro para selar a borda */
+      0 0 0 1px hsl(0 0% 0% / 0.25) inset,
+      /* sombra de contato */
+      0 2px 4px hsl(215 60% 5% / 0.4),
+      /* sombra média */
+      0 12px 24px -8px hsl(215 60% 5% / 0.55),
+      /* sombra ambiente longa */
+      0 32px 64px -20px hsl(215 60% 5% / 0.65),
+      /* halo profundo (suspensão dramática) */
+      0 56px 112px -32px hsl(215 70% 4% / 0.7);
   }
   .calc-card-dark:hover {
+    transform: translateY(-2px);
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.10) inset,
-      0 0 0 1px hsl(0 0% 0% / 0.2) inset,
-      0 12px 28px -8px hsl(215 60% 8% / 0.55),
-      0 32px 80px -28px hsl(215 60% 8% / 0.7);
+      0 1px 0 hsl(0 0% 100% / 0.14) inset,
+      0 0 0 1px hsl(0 0% 0% / 0.25) inset,
+      0 4px 8px hsl(215 60% 5% / 0.45),
+      0 18px 36px -8px hsl(215 60% 5% / 0.6),
+      0 44px 88px -22px hsl(215 60% 5% / 0.72),
+      0 72px 144px -36px hsl(215 70% 4% / 0.78);
   }
 
-  /* --- Glow accent laranja (uso pontual em hero card) --- */
+  /* --- Glow accent laranja (uso pontual em hero card) ---
+     Aro laranja vívido + halo quente profundo. */
   .calc-glow-accent {
+    border-color: hsl(16 75% 55% / 0.45);
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.10) inset,
-      0 0 0 1px hsl(16 65% 50% / 0.25) inset,
-      0 0 24px hsl(16 65% 50% / 0.18),
-      0 8px 20px -8px hsl(215 60% 8% / 0.5),
-      0 24px 60px -24px hsl(16 65% 50% / 0.25);
+      0 1px 0 hsl(0 0% 100% / 0.14) inset,
+      0 0 0 1px hsl(16 75% 55% / 0.35) inset,
+      0 0 32px hsl(16 75% 55% / 0.28),
+      0 2px 4px hsl(215 60% 5% / 0.4),
+      0 12px 28px -8px hsl(215 60% 5% / 0.55),
+      0 32px 64px -16px hsl(16 70% 45% / 0.35),
+      0 56px 112px -28px hsl(16 70% 40% / 0.4);
   }
 
   /* --- Sub-superfície dentro de card branco (campos input, mini-cards) --- */
