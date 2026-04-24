@@ -35,6 +35,7 @@ import AdminParecer from "@/pages/admin/AdminParecer";
 import AdminObjetivos from "@/pages/admin/AdminObjetivos";
 import AdminWorkspace from "@/pages/admin/AdminWorkspace";
 import AdminAjuda from "@/pages/admin/AdminAjuda";
+import AdminLeadsNewsletter from "@/pages/AdminLeadsNewsletter";
 import ClientDashboard from "@/pages/cliente/ClientDashboard";
 import ClientOnboardingPage from "@/pages/cliente/ClientOnboarding";
 
