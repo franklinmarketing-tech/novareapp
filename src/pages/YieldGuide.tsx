@@ -692,7 +692,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR ───────────────────────────── */}
       <section
         id="simulador"
-        className="py-20 md:py-28 relative overflow-hidden"
+        className="py-10 md:py-16 relative overflow-hidden"
         style={{
           background:
             "radial-gradient(120% 70% at 50% 0%, hsl(var(--primary) / 0.45), transparent 60%), linear-gradient(180deg, hsl(215 55% 12%), hsl(220 50% 7%))",
@@ -715,8 +715,8 @@ const YieldGuide = () => {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-12">
-            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-6">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6 md:space-y-8">
+            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-4">
               {/* Logo Novare */}
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -734,19 +734,66 @@ const YieldGuide = () => {
                 <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">Simulador</span>
               </motion.div>
 
-              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.05]">
                 Projete sua renda
                 <br />
                 <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/60 bg-clip-text text-transparent">
                   no longo prazo
                 </span>
               </h2>
-              <p className="text-white/60 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+              <p className="text-white/60 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
                 Use nosso simulador gratuito para planejar sua aposentadoria com precisão profissional.
               </p>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={1}>
+            {/* Submenu de escolha rápida de taxa */}
+            <motion.div variants={fadeUp} custom={1} className="max-w-4xl mx-auto w-full">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold">Escolha uma taxa de referência</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 md:gap-3">
+                {bentoFeatures.map((f) => {
+                  const isSelected = selectedFaixa === f.title;
+                  return (
+                    <button
+                      key={f.title}
+                      type="button"
+                      onClick={() => {
+                        setSim((prev) => ({ ...prev, rentabilidade: f.rentAnual }));
+                        setRentPeriodo("anual");
+                        setSelectedFaixa(f.title);
+                      }}
+                      className={`group relative rounded-2xl p-3 md:p-4 text-left transition-all duration-300 border backdrop-blur-md ${
+                        isSelected
+                          ? "border-accent/60 bg-accent/[0.08] shadow-[0_8px_24px_-8px_hsl(var(--accent)/0.5),inset_0_1px_0_hsl(0_0%_100%/0.08)] -translate-y-0.5"
+                          : "border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.06] hover:border-white/15"
+                      }`}
+                    >
+                      {isSelected && (
+                        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]">
+                          <Check className="h-3 w-3" strokeWidth={3} />
+                        </span>
+                      )}
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          isSelected ? "bg-accent/20 ring-1 ring-accent/40" : "bg-white/[0.06]"
+                        }`}>
+                          <f.icon className={`h-4 w-4 ${isSelected ? "text-accent" : "text-white/70"}`} />
+                        </div>
+                        <span className={`text-xs md:text-sm font-bold ${isSelected ? "text-white" : "text-white/80"}`}>{f.title}</span>
+                      </div>
+                      <div className="flex items-baseline gap-1">
+                        <span className={`text-lg md:text-xl font-black ${isSelected ? "text-accent" : "text-white"}`}>{f.rate}</span>
+                        {!f.rate.includes("IPCA") && <span className="text-[10px] text-white/40">a.a.</span>}
+                      </div>
+                      <p className="hidden md:block text-[10px] text-white/40 mt-1 truncate">{f.rateLabel}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+
+            <motion.div variants={fadeUp} custom={2}>
               <div className="rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]">
                 <div className="grid lg:grid-cols-5">
                   {/* Simulator form — glassmorphism dark card */}
