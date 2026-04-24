@@ -829,106 +829,186 @@ const YieldGuide = () => {
                     </button>
                   </div>
 
-                  {/* Results panel */}
-                  <div className="lg:col-span-2 flex flex-col min-w-0" style={{ background: "linear-gradient(160deg, hsl(220 40% 14%), hsl(220 45% 9%))" }}>
-                    {/* Patrimônio card */}
-                    <div className="flex-1 p-6 md:p-8 flex flex-col justify-center relative overflow-hidden border-b border-white/[0.06] min-w-0">
-                      <motion.div
-                        className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-accent/10 blur-3xl"
-                        animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-                        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                      />
-                      <div className="relative z-10 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-accent/15 shadow-[0_0_15px_hsl(var(--accent)/0.15)] flex items-center justify-center mb-3">
-                          <DollarSign className="h-6 w-6 text-accent" />
+                  {/* Results panel — modern floating cards */}
+                  <div
+                    className="lg:col-span-2 flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden"
+                    style={{
+                      background:
+                        "radial-gradient(120% 80% at 100% 0%, hsl(var(--accent) / 0.08), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(220 70% 30% / 0.15), transparent 60%), linear-gradient(160deg, hsl(220 40% 11%), hsl(220 50% 7%))",
+                    }}
+                  >
+                    {/* Floating ambient orbs */}
+                    <motion.div
+                      className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 rounded-full bg-accent/15 blur-[100px]"
+                      animate={{ scale: [1, 1.25, 1], opacity: [0.3, 0.55, 0.3] }}
+                      transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <motion.div
+                      className="pointer-events-none absolute -bottom-24 -left-16 w-56 h-56 rounded-full blur-[100px]"
+                      style={{ background: "hsl(220 80% 50% / 0.12)" }}
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.45, 0.25] }}
+                      transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                    />
+
+                    {/* === HERO CARD: Patrimônio Bruto === */}
+                    <motion.div
+                      className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/20 group"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, hsl(var(--accent) / 0.12), hsl(var(--accent) / 0.04) 50%, transparent), linear-gradient(180deg, hsl(220 35% 14%), hsl(220 40% 10%))",
+                        boxShadow:
+                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06), inset 0 0 0 1px hsl(0 0% 100% / 0.02)",
+                      }}
+                      whileHover={{ y: -2 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                    >
+                      {/* shine sweep on hover */}
+                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+
+                      <div className="relative flex items-start justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-accent/30"
+                            style={{
+                              background: "linear-gradient(135deg, hsl(var(--accent) / 0.25), hsl(var(--accent) / 0.05))",
+                              boxShadow: "0 8px 20px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
+                            }}
+                          >
+                            <DollarSign className="h-5 w-5 text-accent" strokeWidth={2.5} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] uppercase tracking-[0.15em] text-accent/80 font-bold">Patrimônio Bruto</p>
+                            <p className="text-[10px] text-white/40 mt-0.5">acumulado ao final</p>
+                          </div>
                         </div>
-                        <p className="text-xs uppercase tracking-wider text-white/40 font-semibold mb-1">Patrimônio Bruto</p>
-                        <motion.p
-                          className="text-3xl md:text-4xl font-bold text-white tracking-tight tabular-nums break-words"
-                          key={result?.patrimonioNum}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.4 }}
-                          title={result?.patrimonio}
-                        >
-                          {result ? formatCompactBRL(result.patrimonioNum) : "—"}
-                        </motion.p>
                         {result && (
-                          <div className="mt-1 space-y-0.5">
-                            <p className="text-xs text-white/30">em {result.anosAcumulo} anos · {result.mesesAcumulo} meses de acumulação</p>
-                            <p className="text-xs text-accent/80 font-medium truncate" title={result.patrimonioLiquido}>
-                              Líquido após IR ({result.aliquotaIR}%): {formatCompactBRL(result.patrimonioLiquidoNum)}
-                            </p>
-                            {result.multiploInvestido > 0 && Number.isFinite(result.multiploInvestido) && (
-                              <p className="text-[11px] text-white/40">
-                                Seu dinheiro multiplicou <span className="text-accent font-semibold">{result.multiploInvestido.toFixed(1)}×</span>
-                              </p>
-                            )}
+                          <div className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/15 border border-accent/25">
+                            <TrendingUp className="h-3 w-3 text-accent" />
+                            <span className="text-[10px] font-bold text-accent tabular-nums">
+                              {Number.isFinite(result.multiploInvestido) ? `${result.multiploInvestido.toFixed(1)}×` : "—"}
+                            </span>
                           </div>
                         )}
                       </div>
-                    </div>
 
-                    {/* Total investido vs Ganhos */}
-                    <div className="grid grid-cols-3 border-b border-white/[0.06]">
-                      <div className="p-4 md:p-5 border-r border-white/[0.06] min-w-0">
-                        <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold mb-1">Você investiu</p>
-                        <motion.p
-                          className="text-base font-bold text-white/70 tracking-tight tabular-nums break-words"
-                          key={result?.totalInvestidoNum}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          title={result?.totalInvestido}
-                        >
-                          {result ? formatCompactBRL(result.totalInvestidoNum) : "—"}
-                        </motion.p>
-                        {result && (
-                          <p className="text-[10px] text-white/30 mt-0.5">Aportes mensais somados</p>
-                        )}
-                      </div>
-                      <div className="p-4 md:p-5 border-r border-white/[0.06] min-w-0">
-                        <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold mb-1">Ganho Líquido</p>
-                        <motion.p
-                          className="text-base font-bold text-accent tracking-tight tabular-nums break-words"
-                          key={result?.ganhoLiquidoNum}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          title={result?.ganhoLiquido}
-                        >
-                          {result ? formatCompactBRL(result.ganhoLiquidoNum) : "—"}
-                        </motion.p>
-                        {result && (
-                          <p className="text-[10px] text-white/30 mt-0.5 truncate" title={result.ganhoBruto}>
-                            Bruto: {formatCompactBRL(result.patrimonioNum - result.totalInvestidoNum)}
-                          </p>
-                        )}
-                      </div>
-                      <div className="p-4 md:p-5 min-w-0">
-                        <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold mb-1">Alíquota IR</p>
-                        <motion.p
-                          className="text-base font-bold text-white/70 tracking-tight tabular-nums"
-                          key={result?.aliquotaIR}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                        >
-                          {result ? `${result.aliquotaIR}%` : "—"}
-                        </motion.p>
-                        {result && (
-                          <p className="text-[10px] text-white/30 mt-0.5 truncate" title={result.irDevido}>
-                            IR: {formatCompactBRL(result.patrimonioNum - result.patrimonioLiquidoNum)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Renda mensal */}
-                    <div className="flex-1 p-6 md:p-8 flex flex-col justify-center bg-white/[0.02] border-b border-white/[0.06] min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center mb-3">
-                        <Wallet className="h-6 w-6 text-white/50" />
-                      </div>
-                      <p className="text-xs uppercase tracking-wider text-white/40 font-semibold mb-1">Renda Mensal Passiva</p>
                       <motion.p
-                        className="text-3xl md:text-4xl font-bold text-white tracking-tight tabular-nums break-words"
+                        className="text-3xl md:text-[2.5rem] leading-[1.05] font-black text-white tracking-tight tabular-nums break-words"
+                        key={result?.patrimonioNum}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                        title={result?.patrimonio}
+                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.25)" }}
+                      >
+                        {result ? formatCompactBRL(result.patrimonioNum) : "—"}
+                      </motion.p>
+
+                      {result && (
+                        <div className="mt-3 pt-3 border-t border-white/[0.06] grid grid-cols-2 gap-3">
+                          <div>
+                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Período</p>
+                            <p className="text-sm font-bold text-white/90 mt-0.5 tabular-nums">{result.anosAcumulo} anos</p>
+                            <p className="text-[10px] text-white/30">{result.mesesAcumulo} meses</p>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Líquido após IR</p>
+                            <p className="text-sm font-bold text-accent mt-0.5 tabular-nums truncate" title={result.patrimonioLiquido}>
+                              {formatCompactBRL(result.patrimonioLiquidoNum)}
+                            </p>
+                            <p className="text-[10px] text-white/30">IR de {result.aliquotaIR}%</p>
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+
+                    {/* === Mini KPIs grid === */}
+                    <div className="relative z-10 grid grid-cols-3 gap-3">
+                      {[
+                        {
+                          label: "Investido",
+                          value: result ? formatCompactBRL(result.totalInvestidoNum) : "—",
+                          full: result?.totalInvestido,
+                          sub: "Aportes somados",
+                          icon: PiggyBank,
+                          tone: "neutral" as const,
+                        },
+                        {
+                          label: "Ganho líq.",
+                          value: result ? formatCompactBRL(result.ganhoLiquidoNum) : "—",
+                          full: result?.ganhoLiquido,
+                          sub: result ? `Bruto ${formatCompactBRL(result.patrimonioNum - result.totalInvestidoNum)}` : "—",
+                          icon: TrendingUp,
+                          tone: "accent" as const,
+                        },
+                        {
+                          label: "Imposto",
+                          value: result ? `${result.aliquotaIR}%` : "—",
+                          full: undefined,
+                          sub: result ? `IR ${formatCompactBRL(result.patrimonioNum - result.patrimonioLiquidoNum)}` : "—",
+                          icon: Receipt,
+                          tone: "warning" as const,
+                        },
+                      ].map((k) => {
+                        const Icon = k.icon;
+                        const toneClasses = {
+                          neutral: { ring: "border-white/[0.08]", icon: "text-white/60", bg: "bg-white/[0.06]", value: "text-white" },
+                          accent: { ring: "border-accent/25", icon: "text-accent", bg: "bg-accent/15", value: "text-accent" },
+                          warning: { ring: "border-warning/20", icon: "text-warning", bg: "bg-warning/15", value: "text-warning" },
+                        }[k.tone];
+                        return (
+                          <motion.div
+                            key={k.label}
+                            className={`relative rounded-2xl p-3.5 border ${toneClasses.ring} overflow-hidden min-w-0`}
+                            style={{
+                              background: "linear-gradient(160deg, hsl(220 35% 13%), hsl(220 40% 9%))",
+                              boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.04)",
+                            }}
+                            whileHover={{ y: -2, scale: 1.01 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                          >
+                            <div className={`w-7 h-7 rounded-lg ${toneClasses.bg} flex items-center justify-center mb-2`}>
+                              <Icon className={`h-3.5 w-3.5 ${toneClasses.icon}`} strokeWidth={2.5} />
+                            </div>
+                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold mb-1 truncate">{k.label}</p>
+                            <p className={`text-base md:text-lg font-bold ${toneClasses.value} tracking-tight tabular-nums break-words`} title={k.full}>
+                              {k.value}
+                            </p>
+                            <p className="text-[9px] text-white/30 mt-0.5 truncate">{k.sub}</p>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {/* === Renda Mensal Passiva === */}
+                    <motion.div
+                      className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-white/[0.08]"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, hsl(220 80% 30% / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))",
+                        boxShadow:
+                          "0 20px 50px -25px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                      }}
+                      whileHover={{ y: -2 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div
+                          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-white/[0.1]"
+                          style={{
+                            background: "linear-gradient(135deg, hsl(0 0% 100% / 0.12), hsl(0 0% 100% / 0.02))",
+                            boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.15)",
+                          }}
+                        >
+                          <Wallet className="h-5 w-5 text-white/80" strokeWidth={2.5} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] uppercase tracking-[0.15em] text-white/60 font-bold">Renda Mensal Passiva</p>
+                          <p className="text-[10px] text-white/40 mt-0.5">sem consumir o principal</p>
+                        </div>
+                      </div>
+
+                      <motion.p
+                        className="text-3xl md:text-[2.25rem] leading-[1.05] font-black text-white tracking-tight tabular-nums break-words"
                         key={result?.rendaMensalLiquidaNum}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -937,64 +1017,146 @@ const YieldGuide = () => {
                       >
                         {result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "—"}
                       </motion.p>
-                      {result && (
-                        <div className="mt-1.5 space-y-0.5">
-                          <p className="text-[11px] text-white/40 truncate" title={result.rendaMensal}>
-                            Bruta: {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))} · líquida após IR de {result.aliquotaIR}%
-                          </p>
-                          <p className="text-[11px] text-white/40 truncate" title={result.rendaAnualLiquida}>
-                            Equivale a <span className="text-accent/80 font-semibold">{formatCompactBRL(result.rendaMensalLiquidaNum * 12)}</span> por ano
-                          </p>
-                          <p className="text-[10px] text-white/30">
-                            Taxa efetiva: {result.taxaMensalEfetiva.toFixed(2)}% ao mês · sem consumir o principal
+
+                      {result ? (
+                        <div className="mt-3 pt-3 border-t border-white/[0.06] flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <div className="min-w-0">
+                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Anual</p>
+                            <p className="text-sm font-bold text-accent/90 tabular-nums truncate" title={result.rendaAnualLiquida}>
+                              {formatCompactBRL(result.rendaMensalLiquidaNum * 12)}
+                            </p>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Bruta/mês</p>
+                            <p className="text-sm font-bold text-white/70 tabular-nums truncate" title={result.rendaMensal}>
+                              {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
+                            </p>
+                          </div>
+                          <div className="min-w-0 ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08]">
+                            <Percent className="h-3 w-3 text-white/50" />
+                            <span className="text-[10px] font-bold text-white/70 tabular-nums">
+                              {result.taxaMensalEfetiva.toFixed(2)}% a.m.
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-white/25 mt-2">Simule para ver sua renda passiva</p>
+                      )}
+                    </motion.div>
+
+                    {/* === Meta atingida — destaque com glow === */}
+                    <motion.div
+                      className={`relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border transition-all duration-500 ${
+                        result
+                          ? result.atingeMeta
+                            ? "border-success/40"
+                            : "border-warning/40"
+                          : "border-white/[0.08]"
+                      }`}
+                      style={{
+                        background: result
+                          ? result.atingeMeta
+                            ? "linear-gradient(135deg, hsl(var(--success) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))"
+                            : "linear-gradient(135deg, hsl(var(--warning) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))"
+                          : "linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))",
+                        boxShadow: result
+                          ? result.atingeMeta
+                            ? "0 20px 50px -20px hsl(var(--success) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)"
+                            : "0 20px 50px -20px hsl(var(--warning) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)"
+                          : "0 20px 50px -25px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                      }}
+                      whileHover={{ y: -2 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div
+                          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border"
+                          style={{
+                            background: result
+                              ? result.atingeMeta
+                                ? "linear-gradient(135deg, hsl(var(--success) / 0.3), hsl(var(--success) / 0.05))"
+                                : "linear-gradient(135deg, hsl(var(--warning) / 0.3), hsl(var(--warning) / 0.05))"
+                              : "linear-gradient(135deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.02))",
+                            borderColor: result
+                              ? result.atingeMeta
+                                ? "hsl(var(--success) / 0.35)"
+                                : "hsl(var(--warning) / 0.35)"
+                              : "hsl(0 0% 100% / 0.1)",
+                            boxShadow: result
+                              ? result.atingeMeta
+                                ? "0 8px 20px -8px hsl(var(--success) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)"
+                                : "0 8px 20px -8px hsl(var(--warning) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)"
+                              : "inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                          }}
+                        >
+                          <Target
+                            className={`h-5 w-5 ${result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/40"}`}
+                            strokeWidth={2.5}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] uppercase tracking-[0.15em] text-white/60 font-bold">Meta de Renda</p>
+                          <p className="text-[10px] text-white/40 mt-0.5">
+                            {result?.rendaDesejadaNum ? `Alvo: ${formatCompactBRL(result.rendaDesejadaNum)}/mês` : "Defina sua meta"}
                           </p>
                         </div>
-                      )}
-                      {!result && (
-                        <p className="text-[11px] text-white/25 mt-1">Sem consumir o patrimônio principal</p>
-                      )}
-                    </div>
-
-                    {/* Meta atingida */}
-                    <div className={`p-6 md:p-8 flex flex-col justify-center transition-colors duration-500 min-w-0 ${
-                      result ? (result.atingeMeta ? "bg-success/[0.08]" : "bg-warning/[0.08]") : "bg-white/[0.01]"
-                    }`}>
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-                        result ? (result.atingeMeta ? "bg-success/15 shadow-[0_0_15px_hsl(var(--success)/0.15)]" : "bg-warning/15") : "bg-white/[0.06]"
-                      }`}>
-                        <Target className={`h-6 w-6 ${result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/40"}`} />
                       </div>
-                      <p className="text-xs uppercase tracking-wider text-white/40 font-semibold mb-1">Meta de Renda Atingida?</p>
+
                       <motion.p
-                        className={`text-2xl font-bold tracking-tight ${result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/30"}`}
+                        className={`text-xl md:text-2xl font-black tracking-tight ${
+                          result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-white/30"
+                        }`}
                         key={result ? String(result.atingeMeta) : "empty"}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.2 }}
                       >
-                        {result ? (result.atingeMeta ? "✓ Sim! Parabéns!" : "Ajuste aportes ou prazo") : "Simule primeiro"}
+                        {result ? (result.atingeMeta ? "✓ Meta atingida!" : "Ajuste aportes ou prazo") : "Simule primeiro"}
                       </motion.p>
+
                       {result && result.rendaDesejadaNum > 0 && (
-                        <div className="mt-3 space-y-1.5">
+                        <div className="mt-4 space-y-2">
                           <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-white/50 truncate pr-2">
-                              {formatCompactBRL(result.rendaMensalLiquidaNum)} / {formatCompactBRL(result.rendaDesejadaNum)}
+                            <span className="text-white/50 truncate pr-2 tabular-nums">
+                              {formatCompactBRL(result.rendaMensalLiquidaNum)} <span className="text-white/30">de</span>{" "}
+                              {formatCompactBRL(result.rendaDesejadaNum)}
                             </span>
-                            <span className={`font-bold tabular-nums shrink-0 ${result.atingeMeta ? "text-success" : "text-warning"}`}>
-                              {result.rendaVsDesejada >= 1000 ? `${(result.rendaVsDesejada / 100).toFixed(0)}×` : `${result.rendaVsDesejada.toFixed(0)}%`}
+                            <span
+                              className={`font-black tabular-nums shrink-0 text-base ${
+                                result.atingeMeta ? "text-success" : "text-warning"
+                              }`}
+                            >
+                              {result.rendaVsDesejada >= 1000
+                                ? `${(result.rendaVsDesejada / 100).toFixed(0)}×`
+                                : `${result.rendaVsDesejada.toFixed(0)}%`}
                             </span>
                           </div>
-                          <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                          <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden border border-white/[0.04]">
                             <motion.div
-                              className={`h-full rounded-full ${result.atingeMeta ? "bg-success" : "bg-warning"}`}
+                              className="h-full rounded-full relative overflow-hidden"
+                              style={{
+                                background: result.atingeMeta
+                                  ? "linear-gradient(90deg, hsl(var(--success)), hsl(var(--success) / 0.7))"
+                                  : "linear-gradient(90deg, hsl(var(--warning)), hsl(var(--warning) / 0.7))",
+                                boxShadow: result.atingeMeta
+                                  ? "0 0 12px hsl(var(--success) / 0.6)"
+                                  : "0 0 12px hsl(var(--warning) / 0.6)",
+                              }}
                               initial={{ width: 0 }}
                               animate={{ width: `${Math.min(100, result.rendaVsDesejada)}%` }}
-                              transition={{ duration: 0.8, ease: "easeOut" }}
-                            />
+                              transition={{ duration: 1, ease: "easeOut" }}
+                            >
+                              {/* shimmer */}
+                              <motion.div
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                                animate={{ x: ["-100%", "200%"] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                              />
+                            </motion.div>
                           </div>
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   </div>
                 </div>
               </div>
