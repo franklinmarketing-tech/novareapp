@@ -1177,27 +1177,15 @@ const YieldGuide = () => {
                       )}
                     </motion.div>
 
-                    {/* === Meta atingida — destaque com glow === */}
+                    {/* === Meta atingida — branco premium com tinta success/warning === */}
                     <motion.div
-                      className={`relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border transition-all duration-500 ${
+                      className={`calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden transition-all duration-500 ${
                         result
                           ? result.atingeMeta
-                            ? "border-success/40"
-                            : "border-warning/40"
-                          : "border-border/40"
+                            ? "ring-1 ring-success/30"
+                            : "ring-1 ring-warning/30"
+                          : ""
                       }`}
-                      style={{
-                        background: result
-                          ? result.atingeMeta
-                            ? "linear-gradient(135deg, hsl(var(--success) / 0.18), transparent 60%), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))"
-                            : "linear-gradient(135deg, hsl(var(--warning) / 0.18), transparent 60%), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))"
-                          : "linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))",
-                        boxShadow: result
-                          ? result.atingeMeta
-                            ? "0 20px 50px -20px hsl(var(--success) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.5)"
-                            : "0 20px 50px -20px hsl(var(--warning) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.5)"
-                          : "0 20px 50px -25px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
-                      }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
