@@ -769,10 +769,12 @@ const YieldGuide = () => {
                           : "border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.06] hover:border-white/15"
                       }`}
                     >
-                      {isSelected && (
+                      {isSelected ? (
                         <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]">
                           <Check className="h-3 w-3" strokeWidth={3} />
                         </span>
+                      ) : (
+                        <span className="absolute top-2 right-2 w-5 h-5 rounded-full border border-white/20 bg-white/[0.04] group-hover:border-white/40 transition-colors" />
                       )}
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
