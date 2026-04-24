@@ -391,9 +391,15 @@ const YieldGuide = () => {
     : sim.rentabilidade;
 
   const handleSimulate = () => {
-    setResult(simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual));
-    // Congela a faixa escolhida no momento da simulação
-    setResultFaixa(selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null);
+    setIsSimulating(true);
+    // calcula imediatamente, mas mantém o loader visível por 4s para criar expectativa
+    const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual);
+    const faixa = selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null;
+    window.setTimeout(() => {
+      setResult(r);
+      setResultFaixa(faixa);
+      setIsSimulating(false);
+    }, 4000);
   };
 
   const scrollTo = (id: string) => {
