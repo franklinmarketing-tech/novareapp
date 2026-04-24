@@ -293,7 +293,7 @@ const Login = () => {
                 transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
                 <div className="text-center mb-8">
-                  <h1 className="text-2xl font-display font-semibold tracking-tight text-foreground">
+                  <h1 className="text-2xl font-body font-semibold tracking-tight text-foreground">
                     {mode === "login"
                       ? "Consultoria Financeira"
                       : mode === "signup"
