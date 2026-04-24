@@ -1861,39 +1861,66 @@ const YieldGuide = () => {
                       </p>
                     </div>
 
-                    {/* Botão pulsante 3D */}
-                    <div className="relative shrink-0">
-                      {/* Halos pulsantes */}
-                      <motion.span
-                        className="absolute inset-0 rounded-xl bg-accent"
-                        animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-                      />
-                      <motion.span
-                        className="absolute inset-0 rounded-xl bg-accent"
-                        animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
-                      />
+                    {/* Botões de ação */}
+                    <div className="relative shrink-0 flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto">
+                      {/* Botão Falar com especialista (pulsante 3D) */}
+                      <div className="relative">
+                        {/* Halos pulsantes */}
+                        <motion.span
+                          className="absolute inset-0 rounded-xl bg-accent"
+                          animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                        />
+                        <motion.span
+                          className="absolute inset-0 rounded-xl bg-accent"
+                          animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
+                        />
+                        <motion.button
+                          onClick={() => window.open(whatsappUrl, "_blank")}
+                          whileHover={{ y: -3, scale: 1.03 }}
+                          whileTap={{ y: 0, scale: 0.98 }}
+                          animate={{ scale: [1, 1.04, 1] }}
+                          transition={{
+                            scale: { duration: 1.6, repeat: Infinity, ease: "easeInOut" },
+                            y: { type: "spring", stiffness: 400, damping: 15 },
+                          }}
+                          className="relative z-10 inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-5 md:px-6 py-3 rounded-xl font-bold text-sm md:text-base overflow-hidden group whitespace-nowrap w-full"
+                          style={{
+                            boxShadow:
+                              "0 10px 26px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -3px 0 hsl(var(--accent) / 0.5)",
+                          }}
+                        >
+                          {/* Shine sweep */}
+                          <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                          <MessageCircle className="relative z-10 h-4 w-4 md:h-5 md:w-5" />
+                          <span className="relative z-10">Falar com especialista</span>
+                          <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                        </motion.button>
+                      </div>
+
+                      {/* Botão Baixar PDF do rendimento mensal */}
                       <motion.button
-                        onClick={() => window.open(whatsappUrl, "_blank")}
-                        whileHover={{ y: -3, scale: 1.03 }}
+                        onClick={() => generateRendimentoPDF(result, {
+                          idadeAtual: sim.idadeAtual,
+                          idadeAposent: sim.idadeAposent,
+                          patrimonioAtual: sim.patrimonioAtual,
+                          aporte: sim.aporte,
+                          rendaDesejada: sim.rendaDesejada,
+                          rentabilidadeAnual: rentAnual,
+                        })}
+                        whileHover={{ y: -2, scale: 1.02 }}
                         whileTap={{ y: 0, scale: 0.98 }}
-                        animate={{ scale: [1, 1.04, 1] }}
-                        transition={{
-                          scale: { duration: 1.6, repeat: Infinity, ease: "easeInOut" },
-                          y: { type: "spring", stiffness: 400, damping: 15 },
-                        }}
-                        className="relative z-10 inline-flex items-center gap-2 bg-accent text-accent-foreground px-5 md:px-6 py-3 rounded-xl font-bold text-sm md:text-base overflow-hidden group whitespace-nowrap"
+                        className="relative z-10 inline-flex items-center justify-center gap-2 px-5 md:px-6 py-2.5 rounded-xl font-bold text-xs md:text-sm whitespace-nowrap transition-all w-full group"
                         style={{
-                          boxShadow:
-                            "0 10px 26px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -3px 0 hsl(var(--accent) / 0.5)",
+                          background: "linear-gradient(180deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.03))",
+                          border: "1px solid hsl(var(--accent) / 0.4)",
+                          color: "hsl(var(--accent))",
+                          boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.08)",
                         }}
                       >
-                        {/* Shine sweep */}
-                        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                        <MessageCircle className="relative z-10 h-4 w-4 md:h-5 md:w-5" />
-                        <span className="relative z-10">Falar com especialista</span>
-                        <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                        <FileDown className="h-4 w-4" />
+                        <span>Ver rendimento mensal em PDF</span>
                       </motion.button>
                     </div>
                   </div>
