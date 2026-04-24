@@ -1789,7 +1789,7 @@ const YieldGuide = () => {
                       </TableBody>
                     </Table>
                   </div>
-                  <p className="text-[11px] text-white/35 mt-4 leading-relaxed">
+                  <p className="text-[11px] text-white/35 mt-2 leading-relaxed">
                     Patrimônio líquido estimado após IR (tabela regressiva). Ano 0 = hoje.
                   </p>
                 </div>
