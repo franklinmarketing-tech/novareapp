@@ -1667,7 +1667,7 @@ const YieldGuide = () => {
                   </div>
 
                   {/* Selos de confiança */}
-                  <div className="relative z-10 mt-3 pt-3 border-t border-white/[0.08] flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-white/50">
+                  <div className="relative z-10 mt-3 pt-3 border-t border-white/[0.08] flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-white/65 font-medium">
                     <span className="inline-flex items-center gap-1.5">
                       <Shield className="h-3 w-3 text-accent" />
                       Gratuito
@@ -1677,7 +1677,7 @@ const YieldGuide = () => {
                       Sem compromisso
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <TrendingUp className="h-3 w-3 text-accent" />
+                      <Phone className="h-3 w-3 text-accent" />
                       Resposta em até 1h útil
                     </span>
                   </div>
