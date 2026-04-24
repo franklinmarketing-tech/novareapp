@@ -338,6 +338,8 @@ const YieldGuide = () => {
   const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: 0 });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
   const [result, setResult] = useState<SimResult | null>(null);
+  const [selectedFaixa, setSelectedFaixa] = useState<string | null>(null);
+  const [resultFaixa, setResultFaixa] = useState<typeof bentoFeatures[number] | null>(null);
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
 
@@ -347,6 +349,8 @@ const YieldGuide = () => {
 
   const handleSimulate = () => {
     setResult(simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual));
+    // Congela a faixa escolhida no momento da simulação
+    setResultFaixa(selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null);
   };
 
   const scrollTo = (id: string) => {
@@ -585,18 +589,36 @@ const YieldGuide = () => {
             <div className="grid md:grid-cols-3 gap-4">
               {bentoFeatures.map((f, i) => {
                 const isHero = f.variant === "hero";
+                const isSelected = selectedFaixa === f.title;
                 return (
                   <motion.div key={f.title} variants={fadeUp} custom={i + 1} className={f.span}>
                     <Card
-                      className={`h-full rounded-2xl border-border/40 overflow-hidden relative group transition-all duration-500 cursor-pointer hover:shadow-elevated ${
+                      className={`h-full rounded-2xl overflow-hidden relative group transition-all duration-500 cursor-pointer ${
+                        isSelected
+                          ? "border-2 border-accent shadow-[0_20px_50px_-15px_hsl(var(--accent)/0.5)] -translate-y-1 ring-4 ring-accent/15"
+                          : "border border-border/40 hover:shadow-elevated"
+                      } ${
                         isHero ? "bg-primary text-primary-foreground shadow-lg" : "bg-card text-foreground shadow-subtle hover:-translate-y-1"
                       }`}
                       onClick={() => {
                         setSim(prev => ({ ...prev, rentabilidade: f.rentAnual }));
                         setRentPeriodo("anual");
+                        setSelectedFaixa(f.title);
                         scrollTo("#simulador");
                       }}
                     >
+                      {/* Selected badge */}
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.8, y: -8 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          className="absolute top-3 right-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-wider shadow-[0_4px_12px_-2px_hsl(var(--accent)/0.6)]"
+                        >
+                          <Check className="h-3 w-3" strokeWidth={3} />
+                          Selecionado
+                        </motion.div>
+                      )}
+
                       {/* Animated background decoration */}
                       {isHero && (
                         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -625,9 +647,9 @@ const YieldGuide = () => {
                       <CardContent className="p-7 md:p-8 flex flex-col justify-between h-full relative z-10">
                         <div>
                           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 ${
-                            isHero ? "bg-primary-foreground/10" : "bg-muted"
+                            isSelected ? "bg-accent/20 ring-2 ring-accent/30" : isHero ? "bg-primary-foreground/10" : "bg-muted"
                           }`}>
-                            <f.icon className={`h-6 w-6 ${isHero ? "" : "text-foreground"}`} />
+                            <f.icon className={`h-6 w-6 ${isSelected ? "text-accent" : isHero ? "" : "text-foreground"}`} />
                           </div>
                           <h3 className="text-xl md:text-2xl font-bold tracking-tight mb-3">{f.title}</h3>
                           <p className={`text-sm leading-relaxed ${isHero ? "opacity-70" : "text-muted-foreground"}`}>
@@ -650,8 +672,11 @@ const YieldGuide = () => {
                             {!f.rate.includes("IPCA") && <span className={`text-sm ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>}
                           </div>
                           <p className={`text-xs mt-1 ${isHero ? "opacity-50" : "text-muted-foreground"}`}>{f.rateLabel}</p>
-                          <p className={`text-[11px] mt-2 font-medium flex items-center gap-1 ${isHero ? "opacity-50" : "text-accent"}`}>
-                            Simular com esta taxa <ArrowRight className="h-6 w-6" />
+                          <p className={`text-[11px] mt-2 font-semibold flex items-center gap-1 ${
+                            isSelected ? "text-accent" : isHero ? "opacity-50" : "text-accent"
+                          }`}>
+                            {isSelected ? "✓ Taxa aplicada no simulador" : "Simular com esta taxa"}
+                            {!isSelected && <ArrowRight className="h-4 w-4" />}
                           </p>
                         </div>
                       </CardContent>
@@ -665,29 +690,60 @@ const YieldGuide = () => {
       </section>
 
       {/* ── SIMULATOR ───────────────────────────── */}
-      <section id="simulador" className="py-16 md:py-24 relative overflow-hidden" style={{ background: "linear-gradient(160deg, hsl(220 40% 11%), hsl(220 45% 7%))" }}>
+      <section
+        id="simulador"
+        className="py-20 md:py-28 relative overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(120% 70% at 50% 0%, hsl(var(--primary) / 0.45), transparent 60%), linear-gradient(180deg, hsl(215 55% 12%), hsl(220 50% 7%))",
+        }}
+      >
         {/* Background orbs */}
         <motion.div
           className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px]"
-          style={{ background: "hsl(var(--accent) / 0.05)" }}
+          style={{ background: "hsl(var(--accent) / 0.08)" }}
           animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px]"
-          style={{ background: "hsl(220 60% 40% / 0.08)" }}
-          animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.4, 0.2] }}
+          style={{ background: "hsl(var(--primary) / 0.4)" }}
+          animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 5 }}
         />
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
-            <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
-              <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Simulador</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-                Projete sua renda no longo prazo
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-12">
+            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-6">
+              {/* Logo Novare */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl border border-white/10 backdrop-blur-md"
+                style={{
+                  background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02))",
+                  boxShadow: "0 8px 24px -8px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.08)",
+                }}
+              >
+                <img src={logoBranca} alt="Novare" className="h-7 md:h-8 w-auto" />
+                <span className="h-5 w-px bg-white/15" />
+                <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">Simulador</span>
+              </motion.div>
+
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
+                Projete sua renda
+                <br />
+                <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/60 bg-clip-text text-transparent">
+                  no longo prazo
+                </span>
               </h2>
-              <p className="text-white/50 text-base">Use nosso simulador gratuito para planejar sua aposentadoria.</p>
+              <p className="text-white/60 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+                Use nosso simulador gratuito para planejar sua aposentadoria com precisão profissional.
+              </p>
             </motion.div>
 
             <motion.div variants={fadeUp} custom={1}>
@@ -770,6 +826,8 @@ const YieldGuide = () => {
                                 const max = rentPeriodo === "mensal" ? 50 : 200;
                                 const clamped = Number.isFinite(n) ? Math.min(n, max) : 0;
                                 setSim({ ...sim, rentabilidade: clamped });
+                                // edição manual desfaz a faixa pré-selecionada
+                                setSelectedFaixa(null);
                               }}
                               className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
                             />
@@ -849,6 +907,83 @@ const YieldGuide = () => {
                       animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.45, 0.25] }}
                       transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                     />
+
+                    {/* === Badge da faixa escolhida — reflete a escolha do cliente === */}
+                    {result && resultFaixa && (() => {
+                      const FaixaIcon = resultFaixa.icon;
+                      return (
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                          className="relative z-10 rounded-2xl p-3.5 border border-accent/30 overflow-hidden"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, hsl(var(--accent) / 0.18), hsl(var(--accent) / 0.04) 60%, transparent), linear-gradient(180deg, hsl(var(--primary) / 0.6), hsl(var(--primary) / 0.4))",
+                            boxShadow:
+                              "0 12px 30px -12px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                          }}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-accent/30"
+                              style={{
+                                background: "linear-gradient(135deg, hsl(var(--accent) / 0.3), hsl(var(--accent) / 0.05))",
+                                boxShadow: "0 6px 16px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
+                              }}
+                            >
+                              <FaixaIcon className="h-5 w-5 text-accent" strokeWidth={2.5} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-[9px] uppercase tracking-[0.15em] text-accent/90 font-bold">
+                                  Sua escolha
+                                </p>
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-accent/20 text-accent text-[9px] font-bold uppercase tracking-wider">
+                                  <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                                  Aplicada
+                                </span>
+                              </div>
+                              <p className="text-base md:text-lg font-bold text-white tracking-tight leading-tight mt-0.5">
+                                {resultFaixa.title}{" "}
+                                <span className="text-accent font-black tabular-nums">{resultFaixa.rate}</span>
+                                {!resultFaixa.rate.includes("IPCA") && <span className="text-white/40 text-xs font-medium ml-1">a.a.</span>}
+                              </p>
+                              <p className="text-[11px] text-white/60 leading-snug mt-1 line-clamp-2">
+                                {resultFaixa.desc}
+                              </p>
+                              <p className="text-[10px] text-white/40 mt-1">{resultFaixa.rateLabel}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })()}
+
+                    {/* Fallback: cliente usou taxa custom */}
+                    {result && !resultFaixa && sim.rentabilidade > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="relative z-10 rounded-2xl p-3 border border-white/10 flex items-center gap-3"
+                        style={{
+                          background: "linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(var(--primary) / 0.3))",
+                          boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.08)",
+                        }}
+                      >
+                        <div className="w-9 h-9 rounded-lg bg-white/[0.08] flex items-center justify-center shrink-0">
+                          <Percent className="h-4 w-4 text-white/70" strokeWidth={2.5} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[9px] uppercase tracking-[0.15em] text-white/60 font-bold">Taxa personalizada</p>
+                          <p className="text-sm font-bold text-white tracking-tight tabular-nums mt-0.5">
+                            {sim.rentabilidade.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% {rentPeriodo === "mensal" ? "a.m." : "a.a."}
+                            <span className="text-white/40 text-[11px] font-medium ml-2">
+                              · {rentAnual.toFixed(2)}% ao ano
+                            </span>
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
 
                     {/* === HERO CARD: Patrimônio Bruto === */}
                     <motion.div
