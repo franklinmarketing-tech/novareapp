@@ -958,9 +958,9 @@ const YieldGuide = () => {
                 className="rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]"
                 style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 40% 11%))" }}
               >
-                <div className="grid lg:grid-cols-2 lg:items-stretch">
+                <div className="grid lg:grid-cols-2 lg:items-start">
                   {/* Simulator form — glassmorphism dark card */}
-                  <div className="p-5 md:p-7 relative flex flex-col" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
+                  <div className="p-5 md:p-7 relative flex flex-col lg:sticky lg:top-4" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
                     {/* Subtle inner glow */}
                     <div className="absolute inset-0 rounded-l-3xl border border-white/[0.06] pointer-events-none" />
                     <motion.div
@@ -1097,155 +1097,6 @@ const YieldGuide = () => {
                       </span>
                     </button>
 
-                    {/* === Resumo da simulação — espelha os cards de resultado para preencher a coluna === */}
-                    <div className="relative z-10 mt-5 flex-1 flex flex-col gap-3">
-                      {/* Hero: Patrimônio Bruto */}
-                      <motion.div
-                        className="rounded-2xl p-4 border border-accent/25 overflow-hidden"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, hsl(var(--accent) / 0.12), hsl(var(--accent) / 0.04) 50%, transparent), linear-gradient(180deg, hsl(220 35% 14%), hsl(220 40% 10%))",
-                          boxShadow:
-                            "0 14px 35px -18px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.05)",
-                        }}
-                        whileHover={{ y: -2 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-accent/30"
-                            style={{
-                              background: "linear-gradient(135deg, hsl(var(--accent) / 0.25), hsl(var(--accent) / 0.05))",
-                              boxShadow: "0 6px 16px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
-                            }}
-                          >
-                            <DollarSign className="h-5 w-5 text-accent" strokeWidth={2.5} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[11px] uppercase tracking-[0.15em] text-accent font-extrabold">Patrimônio Bruto</p>
-                            <p className="text-[11px] text-white/55 mt-0.5 font-medium">acumulado ao final</p>
-                          </div>
-                        </div>
-                        <p
-                          className="text-2xl md:text-3xl font-black text-white tracking-tight tabular-nums break-words"
-                          title={result?.patrimonio}
-                          style={{ textShadow: "0 2px 18px hsl(var(--accent) / 0.25)" }}
-                        >
-                          {result ? formatCompactBRL(result.patrimonioNum) : "—"}
-                        </p>
-                        {result && (
-                          <p className="text-[11px] text-success font-bold mt-1 tabular-nums">
-                            Líq.: {formatCompactBRL(result.patrimonioLiquidoNum)} <span className="text-white/40 font-medium">· IR {result.aliquotaIR}%</span>
-                          </p>
-                        )}
-                      </motion.div>
-
-                      {/* Mini KPIs */}
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          {
-                            label: "Investido",
-                            value: result ? formatCompactBRL(result.totalInvestidoNum) : "—",
-                            sub: "Aportes",
-                            icon: PiggyBank,
-                            tone: "info" as const,
-                            full: result?.totalInvestido,
-                          },
-                          {
-                            label: "Ganho líq.",
-                            value: result ? formatCompactBRL(result.ganhoLiquidoNum) : "—",
-                            sub: "após IR",
-                            icon: TrendingUp,
-                            tone: "success" as const,
-                            full: result?.ganhoLiquido,
-                          },
-                          {
-                            label: "Imposto",
-                            value: result ? `${result.aliquotaIR}%` : "—",
-                            sub: result ? `IR ${formatCompactBRL(result.patrimonioNum - result.patrimonioLiquidoNum)}` : "—",
-                            icon: Receipt,
-                            tone: "warning" as const,
-                            full: undefined,
-                          },
-                        ].map((k) => {
-                          const Icon = k.icon;
-                          const t = {
-                            info: { ring: "border-primary/30", icon: "text-primary", bg: "bg-primary/15", value: "text-primary", label: "text-primary" },
-                            success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
-                            warning: { ring: "border-warning/30", icon: "text-warning", bg: "bg-warning/15", value: "text-warning", label: "text-warning" },
-                          }[k.tone];
-                          return (
-                            <motion.div
-                              key={k.label}
-                              className={`rounded-xl p-3 border ${t.ring} min-w-0`}
-                              style={{
-                                background: "linear-gradient(160deg, hsl(220 35% 13%), hsl(220 40% 9%))",
-                                boxShadow: "0 8px 20px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.04)",
-                              }}
-                              whileHover={{ y: -2 }}
-                              transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                            >
-                              <div className={`w-8 h-8 rounded-lg ${t.bg} flex items-center justify-center mb-2`}>
-                                <Icon className={`h-4 w-4 ${t.icon}`} strokeWidth={2.5} />
-                              </div>
-                              <p className={`text-[10px] uppercase tracking-wider ${t.label} font-extrabold truncate`}>{k.label}</p>
-                              <p className={`text-base md:text-lg font-black ${t.value} tracking-tight tabular-nums break-words mt-0.5`} title={k.full}>
-                                {k.value}
-                              </p>
-                              <p className="text-[10px] text-white/55 mt-0.5 truncate font-medium">{k.sub}</p>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Renda Mensal Passiva — destaque accent */}
-                      <motion.div
-                        className="rounded-2xl p-4 border border-accent/30 flex-1 flex flex-col justify-center"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.04) 55%, transparent), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))",
-                          boxShadow:
-                            "0 14px 35px -18px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
-                        }}
-                        whileHover={{ y: -2 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-accent/30"
-                            style={{
-                              background: "linear-gradient(135deg, hsl(var(--accent) / 0.25), hsl(var(--accent) / 0.05))",
-                              boxShadow: "0 6px 16px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15)",
-                            }}
-                          >
-                            <Wallet className="h-5 w-5 text-accent" strokeWidth={2.5} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[11px] uppercase tracking-[0.15em] text-accent font-extrabold">Renda Mensal Passiva</p>
-                            <p className="text-[11px] text-white/55 mt-0.5 font-medium">sem consumir o principal</p>
-                          </div>
-                        </div>
-                        <p
-                          className="text-2xl md:text-3xl font-black text-accent tracking-tight tabular-nums break-words"
-                          title={result?.rendaMensalLiquida}
-                          style={{ textShadow: "0 2px 18px hsl(var(--accent) / 0.3)" }}
-                        >
-                          {result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "—"}
-                        </p>
-                        {result ? (
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                            <p className="text-[11px] text-success font-bold tabular-nums">
-                              Anual: <span className="font-black">{formatCompactBRL(result.rendaMensalLiquidaNum * 12)}</span>
-                            </p>
-                            <p className="text-[11px] text-warning font-bold tabular-nums">
-                              {result.taxaMensalEfetiva.toFixed(2)}% a.m.
-                            </p>
-                          </div>
-                        ) : (
-                          <p className="text-[11px] text-white/40 mt-1 font-medium">Simule para ver sua renda passiva</p>
-                        )}
-                      </motion.div>
-                    </div>
                   </div>
 
                   {/* Results panel — modern floating cards */}
