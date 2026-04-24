@@ -82,7 +82,7 @@ export const StepDespesas = ({ data, onChange }: Props) => {
 
   const totalValue = items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
-  const update = (index: number, field: keyof ExpenseItem, value: string) => {
+  const update = <K extends keyof ExpenseItem>(index: number, field: K, value: ExpenseItem[K]) => {
     const next = [...items];
     next[index] = { ...next[index], [field]: value };
     onChange(next);
