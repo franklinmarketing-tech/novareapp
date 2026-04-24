@@ -188,7 +188,7 @@ export const StepDespesas = ({ data, onChange }: Props) => {
                   <Trash2 className="h-4 w-4" /> Excluir
                 </Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>Categoria</Label>
                   <SelectWithCustom
@@ -203,6 +203,55 @@ export const StepDespesas = ({ data, onChange }: Props) => {
                   <CurrencyInput value={item.amount} onChange={(v) => update(i, "amount", v)} />
                 </div>
                 <div className="space-y-1.5">
+                  <Label>Tipo</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => update(i, "is_fixed", true)}
+                      className={`h-10 rounded-lg border text-[0.875rem] font-medium transition-all ${
+                        item.is_fixed
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border/60 bg-card text-muted-foreground hover:border-border"
+                      }`}
+                    >
+                      Fixa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        update(i, "is_fixed", false);
+                        update(i, "due_day", "");
+                      }}
+                      className={`h-10 rounded-lg border text-[0.875rem] font-medium transition-all ${
+                        !item.is_fixed
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border/60 bg-card text-muted-foreground hover:border-border"
+                      }`}
+                    >
+                      Variável
+                    </button>
+                  </div>
+                </div>
+                {item.is_fixed && (
+                  <div className="space-y-1.5">
+                    <Label>Vencimento (dia do mês)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={31}
+                      inputMode="numeric"
+                      value={item.due_day}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "");
+                        if (!raw) return update(i, "due_day", "");
+                        const n = Math.min(31, Math.max(1, parseInt(raw, 10)));
+                        update(i, "due_day", String(n));
+                      }}
+                      placeholder="Ex: 10"
+                    />
+                  </div>
+                )}
+                <div className="space-y-1.5 md:col-span-2">
                   <Label>Observação</Label>
                   <Input
                     value={item.description}
