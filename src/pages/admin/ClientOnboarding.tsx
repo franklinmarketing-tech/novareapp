@@ -273,7 +273,7 @@ const ClientOnboarding = () => {
           setRendas((committed ?? []).map((r: any) => ({ id: r.id, description: r.description, amount: r.amount.toString(), frequency: r.frequency, is_primary: r.is_primary ?? false, stability: r.stability ?? "media" })));
           break;
         case 2:
-          setDespesas((committed ?? []).map((e: any) => ({ id: e.id, category: e.category, amount: e.amount.toString(), description: e.description ?? "" })));
+          setDespesas((committed ?? []).map((e: any) => ({ id: e.id, category: e.category, amount: e.amount.toString(), description: e.description ?? "", is_fixed: e.is_fixed ?? true, due_day: e.due_day != null ? String(e.due_day) : "" })));
           break;
         case 3:
           setDividas((committed ?? []).map((d: any) => ({ id: d.id, type: d.type, creditor: d.creditor ?? "", total_amount: d.total_amount.toString(), monthly_payment: d.monthly_payment?.toString() ?? "", interest_rate: d.interest_rate?.toString() ?? "", remaining_months: d.remaining_months?.toString() ?? "" })));
