@@ -175,11 +175,19 @@ interface SimResult {
   patrimonioLiquido: string;
   rendaMensal: string;
   rendaMensalLiquida: string;
+  rendaAnualLiquida: string;
   totalInvestido: string;
+  totalAportado: string;
   ganhoLiquido: string;
+  ganhoBruto: string;
+  irDevido: string;
+  multiploInvestido: number;   // patrimônio / total investido
+  rendaVsDesejada: number;     // % atingido (renda líquida / desejada)
   atingeMeta: boolean;
   anosAcumulo: number;
+  mesesAcumulo: number;
   aliquotaIR: number;
+  taxaMensalEfetiva: number;   // %
   // Numerical for charts
   patrimonioNum: number;
   patrimonioLiquidoNum: number;
@@ -252,17 +260,29 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
   const rendaMensalLiquida = rendaMensalBruta * (1 - aliquotaIR / 100);
 
   const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  const totalAportado = aporte * meses;
+  const rendaAnualLiquida = rendaMensalLiquida * 12;
+  const multiploInvestido = totalInvestido > 0 ? patrimonioBruto / totalInvestido : 0;
+  const rendaVsDesejada = rendaDesejada > 0 ? (rendaMensalLiquida / rendaDesejada) * 100 : 0;
 
   return {
     patrimonio: fmt(patrimonioBruto),
     patrimonioLiquido: fmt(patrimonioLiquido),
     rendaMensal: fmt(rendaMensalBruta),
     rendaMensalLiquida: fmt(rendaMensalLiquida),
+    rendaAnualLiquida: fmt(rendaAnualLiquida),
     totalInvestido: fmt(totalInvestido),
+    totalAportado: fmt(totalAportado),
     ganhoLiquido: fmt(ganhoLiquido),
+    ganhoBruto: fmt(ganhoBruto),
+    irDevido: fmt(irDevido),
+    multiploInvestido,
+    rendaVsDesejada,
     atingeMeta: rendaMensalLiquida >= rendaDesejada,
     anosAcumulo: anos,
+    mesesAcumulo: meses,
     aliquotaIR,
+    taxaMensalEfetiva: taxaMensal * 100,
     patrimonioNum: patrimonioBruto,
     patrimonioLiquidoNum: patrimonioLiquido,
     totalInvestidoNum: totalInvestido,
@@ -271,6 +291,20 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
     rendaDesejadaNum: rendaDesejada,
     timeline,
   };
+}
+
+/** Formato compacto para evitar overflow em valores enormes: R$ 1,2 mi / 3,4 bi / 5,6 tri */
+function formatCompactBRL(v: number): string {
+  if (!Number.isFinite(v)) return "—";
+  const abs = Math.abs(v);
+  const sign = v < 0 ? "-" : "";
+  const f = (n: number, suffix: string) =>
+    `${sign}R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${suffix}`;
+  if (abs >= 1e12) return f(v / 1e12, "tri");
+  if (abs >= 1e9) return f(v / 1e9, "bi");
+  if (abs >= 1e6) return f(v / 1e6, "mi");
+  if (abs >= 1e3) return f(v / 1e3, "mil");
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 }
 
 /* ── Scrolling pills ───────────────────────────── */
@@ -688,7 +722,7 @@ const YieldGuide = () => {
                               <label className="text-xs font-semibold text-white/50 leading-tight block">{f.label}</label>
                               <div className="relative">
                                 {hasPrefix && (
-                                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-white/40 font-medium">R$</span>
+                                  <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${numVal ? "text-accent" : "text-white/40"}`}>R$</span>
                                 )}
                                 <input
                                   type="text"
@@ -707,7 +741,7 @@ const YieldGuide = () => {
                                   }}
                                   className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30`}
                                 />
-                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-white/25 font-medium">{f.hint}</span>
+                                <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-white/25"}`}>{f.hint}</span>
                               </div>
                             </div>
                           );
@@ -717,6 +751,35 @@ const YieldGuide = () => {
                         <div className="space-y-1.5">
                           <label className="text-xs font-semibold text-white/50 leading-tight block">Taxa de juros dos seus investimentos</label>
                           <div className="relative">
+                            {/* Toggle % mês / % ano em DESTAQUE como prefixo à esquerda */}
+                            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (rentPeriodo === "anual" && sim.rentabilidade) {
+                                    const mensal = (Math.pow(1 + sim.rentabilidade / 100, 1/12) - 1) * 100;
+                                    setSim({ ...sim, rentabilidade: Number(mensal.toFixed(2)) });
+                                  }
+                                  setRentPeriodo("mensal");
+                                }}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/50 hover:text-white/70"}`}
+                              >
+                                % mês
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (rentPeriodo === "mensal" && sim.rentabilidade) {
+                                    const anual = (Math.pow(1 + sim.rentabilidade / 100, 12) - 1) * 100;
+                                    setSim({ ...sim, rentabilidade: Number(anual.toFixed(1)) });
+                                  }
+                                  setRentPeriodo("anual");
+                                }}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-white/50 hover:text-white/70"}`}
+                              >
+                                % ano
+                              </button>
+                            </div>
                             <input
                               type="text"
                               inputMode="decimal"
@@ -727,41 +790,16 @@ const YieldGuide = () => {
                                   : ""
                               }
                               onChange={(e) => {
-                                // aceita dígitos, vírgula e ponto; converte vírgula -> ponto
                                 const raw = e.target.value.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
                                 const n = parseFloat(raw);
-                                setSim({ ...sim, rentabilidade: Number.isFinite(n) ? n : 0 });
+                                // limite máximo defensivo: taxas absurdas viram patrimônio infinito
+                                const max = rentPeriodo === "mensal" ? 50 : 200;
+                                const clamped = Number.isFinite(n) ? Math.min(n, max) : 0;
+                                setSim({ ...sim, rentabilidade: clamped });
                               }}
-                              className="w-full h-12 rounded-xl px-4 pr-24 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
+                              className="w-full h-12 rounded-xl pl-[7.5rem] pr-10 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
                             />
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (rentPeriodo === "anual") {
-                                    const mensal = (Math.pow(1 + sim.rentabilidade / 100, 1/12) - 1) * 100;
-                                    setSim({ ...sim, rentabilidade: Number(mensal.toFixed(2)) });
-                                  }
-                                  setRentPeriodo("mensal");
-                                }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground" : "text-white/40 hover:text-white/60"}`}
-                              >
-                                % mês
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (rentPeriodo === "mensal") {
-                                    const anual = (Math.pow(1 + sim.rentabilidade / 100, 12) - 1) * 100;
-                                    setSim({ ...sim, rentabilidade: Number(anual.toFixed(1)) });
-                                  }
-                                  setRentPeriodo("anual");
-                                }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground" : "text-white/40 hover:text-white/60"}`}
-                              >
-                                % ano
-                              </button>
-                            </div>
+                            <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rentabilidade ? "text-accent" : "text-white/25"}`}>%</span>
                           </div>
                           <p className="text-[10px] text-white/30">
                             {rentPeriodo === "mensal"
@@ -790,34 +828,40 @@ const YieldGuide = () => {
                   </div>
 
                   {/* Results panel */}
-                  <div className="lg:col-span-2 flex flex-col" style={{ background: "linear-gradient(160deg, hsl(220 40% 14%), hsl(220 45% 9%))" }}>
+                  <div className="lg:col-span-2 flex flex-col min-w-0" style={{ background: "linear-gradient(160deg, hsl(220 40% 14%), hsl(220 45% 9%))" }}>
                     {/* Patrimônio card */}
-                    <div className="flex-1 p-6 md:p-8 flex flex-col justify-center relative overflow-hidden border-b border-white/[0.06]">
+                    <div className="flex-1 p-6 md:p-8 flex flex-col justify-center relative overflow-hidden border-b border-white/[0.06] min-w-0">
                       <motion.div
                         className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-accent/10 blur-3xl"
                         animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
                         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                       />
-                      <div className="relative z-10">
+                      <div className="relative z-10 min-w-0">
                         <div className="w-10 h-10 rounded-xl bg-accent/15 shadow-[0_0_15px_hsl(var(--accent)/0.15)] flex items-center justify-center mb-3">
                           <DollarSign className="h-6 w-6 text-accent" />
                         </div>
                         <p className="text-xs uppercase tracking-wider text-white/40 font-semibold mb-1">Patrimônio Bruto</p>
                         <motion.p
-                          className="text-3xl md:text-4xl font-bold text-white tracking-tight"
-                          key={result?.patrimonio}
+                          className="text-3xl md:text-4xl font-bold text-white tracking-tight tabular-nums break-words"
+                          key={result?.patrimonioNum}
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.4 }}
+                          title={result?.patrimonio}
                         >
-                          {result?.patrimonio || "—"}
+                          {result ? formatCompactBRL(result.patrimonioNum) : "—"}
                         </motion.p>
                         {result && (
                           <div className="mt-1 space-y-0.5">
-                            <p className="text-xs text-white/30">em {result.anosAcumulo} anos de acumulação</p>
-                            <p className="text-xs text-accent/70 font-medium">
-                              Líquido após IR ({result.aliquotaIR}%): {result.patrimonioLiquido}
+                            <p className="text-xs text-white/30">em {result.anosAcumulo} anos · {result.mesesAcumulo} meses de acumulação</p>
+                            <p className="text-xs text-accent/80 font-medium truncate" title={result.patrimonioLiquido}>
+                              Líquido após IR ({result.aliquotaIR}%): {formatCompactBRL(result.patrimonioLiquidoNum)}
                             </p>
+                            {result.multiploInvestido > 0 && Number.isFinite(result.multiploInvestido) && (
+                              <p className="text-[11px] text-white/40">
+                                Seu dinheiro multiplicou <span className="text-accent font-semibold">{result.multiploInvestido.toFixed(1)}×</span>
+                              </p>
+                            )}
                           </div>
                         )}
                       </div>
@@ -825,32 +869,42 @@ const YieldGuide = () => {
 
                     {/* Total investido vs Ganhos */}
                     <div className="grid grid-cols-3 border-b border-white/[0.06]">
-                      <div className="p-5 md:p-6 border-r border-white/[0.06]">
+                      <div className="p-4 md:p-5 border-r border-white/[0.06] min-w-0">
                         <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold mb-1">Você investiu</p>
                         <motion.p
-                          className="text-lg font-bold text-white/70 tracking-tight"
-                          key={result?.totalInvestido}
+                          className="text-base font-bold text-white/70 tracking-tight tabular-nums break-words"
+                          key={result?.totalInvestidoNum}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
+                          title={result?.totalInvestido}
                         >
-                          {result?.totalInvestido || "—"}
+                          {result ? formatCompactBRL(result.totalInvestidoNum) : "—"}
                         </motion.p>
+                        {result && (
+                          <p className="text-[10px] text-white/30 mt-0.5">Aportes mensais somados</p>
+                        )}
                       </div>
-                      <div className="p-5 md:p-6 border-r border-white/[0.06]">
+                      <div className="p-4 md:p-5 border-r border-white/[0.06] min-w-0">
                         <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold mb-1">Ganho Líquido</p>
                         <motion.p
-                          className="text-lg font-bold text-accent tracking-tight"
-                          key={result?.ganhoLiquido}
+                          className="text-base font-bold text-accent tracking-tight tabular-nums break-words"
+                          key={result?.ganhoLiquidoNum}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
+                          title={result?.ganhoLiquido}
                         >
-                          {result?.ganhoLiquido || "—"}
+                          {result ? formatCompactBRL(result.ganhoLiquidoNum) : "—"}
                         </motion.p>
+                        {result && (
+                          <p className="text-[10px] text-white/30 mt-0.5 truncate" title={result.ganhoBruto}>
+                            Bruto: {formatCompactBRL(result.patrimonioNum - result.totalInvestidoNum)}
+                          </p>
+                        )}
                       </div>
-                      <div className="p-5 md:p-6">
+                      <div className="p-4 md:p-5 min-w-0">
                         <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold mb-1">Alíquota IR</p>
                         <motion.p
-                          className="text-lg font-bold text-white/70 tracking-tight"
+                          className="text-base font-bold text-white/70 tracking-tight tabular-nums"
                           key={result?.aliquotaIR}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
@@ -858,28 +912,41 @@ const YieldGuide = () => {
                           {result ? `${result.aliquotaIR}%` : "—"}
                         </motion.p>
                         {result && (
-                          <p className="text-[10px] text-white/20 mt-0.5">Tabela regressiva</p>
+                          <p className="text-[10px] text-white/30 mt-0.5 truncate" title={result.irDevido}>
+                            IR: {formatCompactBRL(result.patrimonioNum - result.patrimonioLiquidoNum)}
+                          </p>
                         )}
                       </div>
                     </div>
 
                     {/* Renda mensal */}
-                    <div className="flex-1 p-6 md:p-8 flex flex-col justify-center bg-white/[0.02] border-b border-white/[0.06]">
+                    <div className="flex-1 p-6 md:p-8 flex flex-col justify-center bg-white/[0.02] border-b border-white/[0.06] min-w-0">
                       <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center mb-3">
                         <Wallet className="h-6 w-6 text-white/50" />
                       </div>
                       <p className="text-xs uppercase tracking-wider text-white/40 font-semibold mb-1">Renda Mensal Passiva</p>
                       <motion.p
-                        className="text-3xl md:text-4xl font-bold text-white tracking-tight"
-                        key={result?.rendaMensalLiquida}
+                        className="text-3xl md:text-4xl font-bold text-white tracking-tight tabular-nums break-words"
+                        key={result?.rendaMensalLiquidaNum}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.1 }}
+                        title={result?.rendaMensalLiquida}
                       >
-                        {result?.rendaMensalLiquida || "—"}
+                        {result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "—"}
                       </motion.p>
                       {result && (
-                        <p className="text-[11px] text-white/25 mt-1">Bruta: {result.rendaMensal} · Líquida após IR de {result.aliquotaIR}%</p>
+                        <div className="mt-1.5 space-y-0.5">
+                          <p className="text-[11px] text-white/40 truncate" title={result.rendaMensal}>
+                            Bruta: {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))} · líquida após IR de {result.aliquotaIR}%
+                          </p>
+                          <p className="text-[11px] text-white/40 truncate" title={result.rendaAnualLiquida}>
+                            Equivale a <span className="text-accent/80 font-semibold">{formatCompactBRL(result.rendaMensalLiquidaNum * 12)}</span> por ano
+                          </p>
+                          <p className="text-[10px] text-white/30">
+                            Taxa efetiva: {result.taxaMensalEfetiva.toFixed(2)}% ao mês · sem consumir o principal
+                          </p>
+                        </div>
                       )}
                       {!result && (
                         <p className="text-[11px] text-white/25 mt-1">Sem consumir o patrimônio principal</p>
@@ -887,7 +954,7 @@ const YieldGuide = () => {
                     </div>
 
                     {/* Meta atingida */}
-                    <div className={`p-6 md:p-8 flex flex-col justify-center transition-colors duration-500 ${
+                    <div className={`p-6 md:p-8 flex flex-col justify-center transition-colors duration-500 min-w-0 ${
                       result ? (result.atingeMeta ? "bg-success/[0.08]" : "bg-warning/[0.08]") : "bg-white/[0.01]"
                     }`}>
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
@@ -905,6 +972,26 @@ const YieldGuide = () => {
                       >
                         {result ? (result.atingeMeta ? "✓ Sim! Parabéns!" : "Ajuste aportes ou prazo") : "Simule primeiro"}
                       </motion.p>
+                      {result && result.rendaDesejadaNum > 0 && (
+                        <div className="mt-3 space-y-1.5">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-white/50 truncate pr-2">
+                              {formatCompactBRL(result.rendaMensalLiquidaNum)} / {formatCompactBRL(result.rendaDesejadaNum)}
+                            </span>
+                            <span className={`font-bold tabular-nums shrink-0 ${result.atingeMeta ? "text-success" : "text-warning"}`}>
+                              {result.rendaVsDesejada >= 1000 ? `${(result.rendaVsDesejada / 100).toFixed(0)}×` : `${result.rendaVsDesejada.toFixed(0)}%`}
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                            <motion.div
+                              className={`h-full rounded-full ${result.atingeMeta ? "bg-success" : "bg-warning"}`}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(100, result.rendaVsDesejada)}%` }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
