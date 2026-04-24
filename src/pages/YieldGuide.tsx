@@ -451,7 +451,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── BENTO STATS ─────────────────────────── */}
-      <section className="py-12 md:py-20">
+      <section className="py-8 md:py-12">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
@@ -477,7 +477,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── INTRO / ABOUT ───────────────────────── */}
-      <section id="intro" className="py-16 md:py-24">
+      <section id="intro" className="py-10 md:py-14">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -530,7 +530,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── RENDA FIXA TABLE ────────────────────── */}
-      <section id="renda-fixa" className="py-16 md:py-24 bg-muted/40">
+      <section id="renda-fixa" className="py-10 md:py-14 bg-muted/40">
         <div className="max-w-5xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
@@ -577,7 +577,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── BENTO GRID — INVEST TYPES ───────────── */}
-      <section className="py-16 md:py-24">
+      <section className="py-10 md:py-14">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
@@ -1652,7 +1652,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── TESTIMONIALS ────────────────────────── */}
-      <section className="py-16 md:py-24 bg-muted/40">
+      <section className="py-10 md:py-14 bg-muted/40">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
@@ -1692,7 +1692,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── CTA BENTO ───────────────────────────── */}
-      <section id="contato" className="py-16 md:py-24">
+      <section id="contato" className="py-10 md:py-14">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden bg-primary text-primary-foreground">
@@ -1878,7 +1878,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FAQ ──────────────────────────────────── */}
-      <section id="faq" className="py-16 md:py-24 bg-muted/40">
+      <section id="faq" className="py-10 md:py-14 bg-muted/40">
         <div className="max-w-3xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4">
@@ -1907,7 +1907,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── QUEM SOMOS ──────────────────────────── */}
-      <section id="quem-somos" className="py-16 md:py-24">
+      <section id="quem-somos" className="py-10 md:py-14">
         <div className="max-w-5xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-12">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4 max-w-2xl mx-auto">
@@ -2090,7 +2090,7 @@ const YieldGuide = () => {
       </AnimatePresence>
 
       {/* ── NEWSLETTER — immersive bento ────────── */}
-      <section className="py-16 md:py-24">
+      <section className="py-10 md:py-14">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden">
