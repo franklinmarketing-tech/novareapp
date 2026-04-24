@@ -1826,8 +1826,7 @@ const YieldGuide = () => {
               >
                 {/* Gráfico */}
                 <div
-                  className="calc-dark lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                  style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))", border: "1px solid hsl(var(--border))" }}
+                  className="calc-card-light lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                     <div>
@@ -1906,8 +1905,7 @@ const YieldGuide = () => {
 
                 {/* Tabela */}
                 <div
-                  className="calc-dark lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                  style={{ background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))", border: "1px solid hsl(var(--border))" }}
+                  className="calc-card-light lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
                 >
                   <div className="mb-5">
                     <p className="text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1">Tabela ano a ano</p>
