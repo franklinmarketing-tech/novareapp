@@ -1327,12 +1327,13 @@ const YieldGuide = () => {
                             "0 10px 24px -8px hsl(var(--accent) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
                           ] }}
                           transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
-                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group bg-accent text-accent-foreground border border-accent/40"
+                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group bg-accent text-accent-foreground border border-accent/40 cursor-pointer"
                           style={{}}
                         >
                           <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent" />
                           <FileDown className="relative z-10 h-4 w-4" />
                           <span className="relative z-10">Ver rendimento mensal em PDF</span>
+                          <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                         </motion.button>
                       )}
                     </motion.div>
