@@ -751,8 +751,29 @@ const YieldGuide = () => {
                         <div className="space-y-1.5">
                           <label className="text-xs font-semibold text-white/50 leading-tight block">Taxa de juros dos seus investimentos</label>
                           <div className="relative">
-                            {/* Toggle % mês / % ano em DESTAQUE como prefixo à esquerda */}
-                            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
+                            {/* Prefixo % à esquerda */}
+                            <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rentabilidade ? "text-accent" : "text-white/40"}`}>%</span>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="ex: 12"
+                              value={
+                                sim.rentabilidade
+                                  ? sim.rentabilidade.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+                                  : ""
+                              }
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
+                                const n = parseFloat(raw);
+                                // limite máximo defensivo: taxas absurdas viram patrimônio infinito
+                                const max = rentPeriodo === "mensal" ? 50 : 200;
+                                const clamped = Number.isFinite(n) ? Math.min(n, max) : 0;
+                                setSim({ ...sim, rentabilidade: clamped });
+                              }}
+                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
+                            />
+                            {/* Toggle % mês / % ano à direita */}
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -780,26 +801,6 @@ const YieldGuide = () => {
                                 % ano
                               </button>
                             </div>
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              placeholder="ex: 12"
-                              value={
-                                sim.rentabilidade
-                                  ? sim.rentabilidade.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const raw = e.target.value.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
-                                const n = parseFloat(raw);
-                                // limite máximo defensivo: taxas absurdas viram patrimônio infinito
-                                const max = rentPeriodo === "mensal" ? 50 : 200;
-                                const clamped = Number.isFinite(n) ? Math.min(n, max) : 0;
-                                setSim({ ...sim, rentabilidade: clamped });
-                              }}
-                              className="w-full h-12 rounded-xl pl-[7.5rem] pr-10 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
-                            />
-                            <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rentabilidade ? "text-accent" : "text-white/25"}`}>%</span>
                           </div>
                           <p className="text-[10px] text-white/30">
                             {rentPeriodo === "mensal"
