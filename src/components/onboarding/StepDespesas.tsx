@@ -54,6 +54,8 @@ export interface ExpenseItem {
   category: string;
   amount: string;
   description: string;
+  is_fixed: boolean;
+  due_day: string; // dia do mês 1-31, vazio quando variável/sem vencimento
 }
 
 const emptyExpense = (): ExpenseItem => ({
@@ -61,6 +63,8 @@ const emptyExpense = (): ExpenseItem => ({
   category: "",
   amount: "",
   description: "",
+  is_fixed: true,
+  due_day: "",
 });
 
 interface Props {
