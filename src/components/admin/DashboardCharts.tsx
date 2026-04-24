@@ -202,9 +202,6 @@ const DashboardCharts = ({
 
   return (
     <div className="space-y-4">
-      {/* ── Hero: Globo Patrimonial 3D ── */}
-      <WealthSphere3D selectedMonth={selectedMonth} selectedYear={selectedYear} />
-
       <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
       {/* ── Wealth evolution ── */}
       <motion.div
