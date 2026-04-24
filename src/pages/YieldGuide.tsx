@@ -349,19 +349,40 @@ const YieldGuide = () => {
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
-      // detectar seção ativa
       const sections = navLinks.map((l) => l.href.replace("#", ""));
-      const offset = window.scrollY + 120;
-      let current = "";
+      const vh = window.innerHeight;
+
+      // Se está perto do final da página, marca a última seção
+      const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80;
+      if (nearBottom) {
+        setActiveSection(sections[sections.length - 1]);
+        return;
+      }
+
+      // Caso contrário, escolhe a seção com maior área visível na viewport
+      let bestId = "";
+      let bestVisible = 0;
       for (const id of sections) {
         const el = document.getElementById(id);
-        if (el && el.offsetTop <= offset) current = id;
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        const top = Math.max(rect.top, 0);
+        const bottom = Math.min(rect.bottom, vh);
+        const visible = Math.max(0, bottom - top);
+        if (visible > bestVisible) {
+          bestVisible = visible;
+          bestId = id;
+        }
       }
-      setActiveSection(current);
+      setActiveSection(bestId);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   const rentAnual = rentPeriodo === "mensal"
@@ -424,7 +445,7 @@ const YieldGuide = () => {
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
           />
 
-          <div className="hidden lg:flex items-center gap-1 xl:gap-2">
+          <div className="hidden md:flex items-center gap-1 lg:gap-2">
             {navLinks.map((l, i) => {
               const id = l.href.replace("#", "");
               const isActive = activeSection === id;
@@ -437,7 +458,7 @@ const YieldGuide = () => {
                   transition={{ delay: 0.1 + i * 0.05, duration: 0.4 }}
                   whileHover={{ y: -2 }}
                   whileTap={{ y: 0, scale: 0.97 }}
-                  className={`relative group px-3 xl:px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-200 ${
+                  className={`relative group px-2.5 lg:px-3.5 py-2 rounded-xl text-[13px] lg:text-sm font-semibold transition-colors duration-200 whitespace-nowrap ${
                     isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -486,7 +507,7 @@ const YieldGuide = () => {
               <span className="relative z-10">Fale conosco</span>
               <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </motion.button>
-            <button className="lg:hidden text-foreground p-2 rounded-lg hover:bg-muted/60 transition-colors" onClick={() => setMobileNav(!mobileNav)} aria-label="Abrir menu">
+            <button className="md:hidden text-foreground p-2 rounded-lg hover:bg-muted/60 transition-colors" onClick={() => setMobileNav(!mobileNav)} aria-label="Abrir menu">
               {mobileNav ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
@@ -496,7 +517,7 @@ const YieldGuide = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl px-4 sm:px-6 py-4 space-y-1"
+            className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl px-4 sm:px-6 py-4 space-y-1"
           >
             {navLinks.map((l, i) => {
               const id = l.href.replace("#", "");
