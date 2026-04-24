@@ -1851,24 +1851,24 @@ const YieldGuide = () => {
                             <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.02} />
                           </linearGradient>
                           <linearGradient id="gradInv" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="rgba(255,255,255,0.35)" stopOpacity={0.35} />
-                            <stop offset="100%" stopColor="rgba(255,255,255,0.05)" stopOpacity={0.02} />
+                            <stop offset="0%" stopColor="hsl(215 50% 23%)" stopOpacity={0.30} />
+                            <stop offset="100%" stopColor="hsl(215 50% 23%)" stopOpacity={0.02} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 6" stroke="rgba(255,255,255,0.06)" />
+                        <CartesianGrid strokeDasharray="3 6" stroke="hsl(220 13% 88%)" />
                         <XAxis
                           dataKey="age"
-                          tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }}
+                          tick={{ fill: "hsl(220 9% 38%)", fontSize: 11 }}
                           tickLine={false}
-                          axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+                          axisLine={{ stroke: "hsl(220 13% 88%)" }}
                           tickFormatter={(v) => `${v} anos`}
                           interval="preserveStartEnd"
                           minTickGap={24}
                         />
                         <YAxis
-                          tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }}
+                          tick={{ fill: "hsl(220 9% 38%)", fontSize: 11 }}
                           tickLine={false}
-                          axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+                          axisLine={{ stroke: "hsl(220 13% 88%)" }}
                           tickFormatter={(v: number) => {
                             if (v >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(1)}M`;
                             if (v >= 1_000) return `R$ ${Math.round(v / 1_000)}k`;
@@ -1878,11 +1878,12 @@ const YieldGuide = () => {
                         />
                         <RTooltip
                           contentStyle={{
-                            background: "hsl(var(--card))",
-                            border: "1px solid rgba(255,255,255,0.08)",
+                            background: "hsl(0 0% 100%)",
+                            border: "1px solid hsl(220 13% 88%)",
                             borderRadius: 12,
-                            color: "white",
+                            color: "hsl(220 20% 12%)",
                             fontSize: 12,
+                            boxShadow: "0 12px 32px -12px hsl(215 50% 23% / 0.18)",
                           }}
                           labelFormatter={(label, payload) => {
                             const p = payload?.[0]?.payload as YearPoint | undefined;
@@ -1893,7 +1894,7 @@ const YieldGuide = () => {
                             name === "net" ? "Patrimônio líquido" : name === "invested" ? "Total investido" : "Bruto",
                           ]}
                         />
-                        <Area type="monotone" dataKey="invested" stroke="rgba(255,255,255,0.55)" strokeWidth={2} fill="url(#gradInv)" />
+                        <Area type="monotone" dataKey="invested" stroke="hsl(215 50% 23%)" strokeWidth={2} fill="url(#gradInv)" />
                         <Area type="monotone" dataKey="net" stroke="hsl(var(--accent))" strokeWidth={2.5} fill="url(#gradNet)" />
                       </AreaChart>
                     </ResponsiveContainer>
