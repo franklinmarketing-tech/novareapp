@@ -175,11 +175,19 @@ interface SimResult {
   patrimonioLiquido: string;
   rendaMensal: string;
   rendaMensalLiquida: string;
+  rendaAnualLiquida: string;
   totalInvestido: string;
+  totalAportado: string;
   ganhoLiquido: string;
+  ganhoBruto: string;
+  irDevido: string;
+  multiploInvestido: number;   // patrimônio / total investido
+  rendaVsDesejada: number;     // % atingido (renda líquida / desejada)
   atingeMeta: boolean;
   anosAcumulo: number;
+  mesesAcumulo: number;
   aliquotaIR: number;
+  taxaMensalEfetiva: number;   // %
   // Numerical for charts
   patrimonioNum: number;
   patrimonioLiquidoNum: number;
