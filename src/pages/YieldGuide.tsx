@@ -2568,10 +2568,31 @@ const YieldGuide = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="text-sm text-white/60 mb-6"
+                className="text-sm text-white/60 mb-4"
               >
                 Nossa inteligência financeira está montando seu cenário…
               </motion.p>
+
+              {/* Contador regressivo */}
+              <div className="flex items-center justify-center gap-2 mb-5">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold">
+                  Pronto em
+                </span>
+                <motion.div
+                  key={simCountdown}
+                  initial={{ scale: 0.6, opacity: 0, y: -6 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 18 }}
+                  className="relative inline-flex items-center justify-center min-w-[44px] h-9 px-2.5 rounded-lg font-mono font-black text-base text-accent"
+                  style={{
+                    background: "linear-gradient(180deg, hsl(var(--accent) / 0.15), hsl(var(--accent) / 0.05))",
+                    border: "1px solid hsl(var(--accent) / 0.35)",
+                    boxShadow: "0 0 18px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                  }}
+                >
+                  {simCountdown}s
+                </motion.div>
+              </div>
 
               {/* Barra de progresso animada */}
               <div className="relative h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden mb-5">
