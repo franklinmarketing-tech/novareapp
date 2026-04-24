@@ -1480,7 +1480,7 @@ const YieldGuide = () => {
                       </div>
 
                       <motion.p
-                        className="text-3xl md:text-[2.5rem] leading-[1.05] font-black text-white tracking-tight tabular-nums break-words"
+                        className="text-3xl md:text-[2rem] leading-[1.05] font-black text-white tracking-tight tabular-nums break-words"
                         key={result?.patrimonioNum}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1491,15 +1491,23 @@ const YieldGuide = () => {
                         {result ? formatCompactBRL(result.patrimonioNum) : "—"}
                       </motion.p>
 
+                      {!result && (
+                        <p className="text-xs text-white/40 mt-2 font-medium italic">aguardando simulação</p>
+                      )}
+
                       {result && (
                         <div className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-accent font-bold">Período</p>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-accent font-bold inline-flex items-center gap-1.5">
+                              <Calendar className="h-3 w-3" /> Período
+                            </p>
                             <p className="text-lg md:text-xl font-extrabold text-white mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-white/60 font-bold">anos</span></p>
                             <p className="text-xs text-white/50 mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Líquido após IR</p>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold inline-flex items-center gap-1.5">
+                              <Receipt className="h-3 w-3" /> Líquido após IR
+                            </p>
                             <p className="text-lg md:text-xl font-extrabold text-success mt-1 tabular-nums truncate" title={result.patrimonioLiquido}>
                               {formatCompactBRL(result.patrimonioLiquidoNum)}
                             </p>
