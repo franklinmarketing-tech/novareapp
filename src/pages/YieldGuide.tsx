@@ -1584,13 +1584,15 @@ const YieldGuide = () => {
                 className="relative z-10"
               >
                 <div
-                  className="relative rounded-2xl p-4 md:p-5 overflow-hidden"
+                  className="relative rounded-2xl p-4 md:p-5 overflow-hidden border-t-2 border-accent/40"
                   style={{
                     background:
                       "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(220 37% 19%), hsl(220 37% 14%))",
-                    border: "1px solid hsl(var(--accent) / 0.25)",
+                    borderLeft: "1px solid hsl(var(--accent) / 0.25)",
+                    borderRight: "1px solid hsl(var(--accent) / 0.25)",
+                    borderBottom: "1px solid hsl(var(--accent) / 0.25)",
                     boxShadow:
-                      "0 16px 40px -15px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                      "0 16px 40px -15px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
                   }}
                 >
                   {/* Orbs animados de fundo */}
