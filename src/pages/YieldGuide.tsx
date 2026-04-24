@@ -1096,6 +1096,57 @@ const YieldGuide = () => {
                         <ArrowRight className="h-6 w-6" />
                       </span>
                     </button>
+
+                    {/* === Insights / value props — preenchem o espaço restante e equilibram com a coluna de resultados === */}
+                    <div className="relative z-10 mt-5 flex-1 flex flex-col gap-3 justify-end">
+                      {[
+                        {
+                          icon: Shield,
+                          tone: "success" as const,
+                          label: "100% gratuito",
+                          text: "Sem cadastro. Seus dados ficam apenas no seu navegador.",
+                        },
+                        {
+                          icon: Calendar,
+                          tone: "primary" as const,
+                          label: "Juros compostos reais",
+                          text: "Cálculo mês a mês com IR regressivo da Receita Federal.",
+                        },
+                        {
+                          icon: TrendingUp,
+                          tone: "accent" as const,
+                          label: "Renda passiva vitalícia",
+                          text: "Descubra quanto você precisa para nunca consumir o principal.",
+                        },
+                      ].map((item) => {
+                        const Icon = item.icon;
+                        const tones = {
+                          success: { border: "border-success/25", iconBg: "bg-success/15", icon: "text-success", label: "text-success" },
+                          primary: { border: "border-primary/25", iconBg: "bg-primary/15", icon: "text-primary", label: "text-primary" },
+                          accent: { border: "border-accent/30", iconBg: "bg-accent/15", icon: "text-accent", label: "text-accent" },
+                        }[item.tone];
+                        return (
+                          <motion.div
+                            key={item.label}
+                            whileHover={{ x: 3 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                            className={`flex items-start gap-3 rounded-xl p-3 border ${tones.border}`}
+                            style={{
+                              background: "linear-gradient(160deg, hsl(220 35% 14%), hsl(220 40% 10%))",
+                              boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.04)",
+                            }}
+                          >
+                            <div className={`w-9 h-9 rounded-lg ${tones.iconBg} flex items-center justify-center shrink-0`}>
+                              <Icon className={`h-4 w-4 ${tones.icon}`} strokeWidth={2.5} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className={`text-[11px] uppercase tracking-wider font-extrabold ${tones.label}`}>{item.label}</p>
+                              <p className="text-xs md:text-[13px] text-white/70 leading-snug mt-0.5 font-medium">{item.text}</p>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Results panel — modern floating cards */}
