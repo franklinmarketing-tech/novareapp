@@ -826,6 +826,8 @@ const YieldGuide = () => {
                                 const max = rentPeriodo === "mensal" ? 50 : 200;
                                 const clamped = Number.isFinite(n) ? Math.min(n, max) : 0;
                                 setSim({ ...sim, rentabilidade: clamped });
+                                // edição manual desfaz a faixa pré-selecionada
+                                setSelectedFaixa(null);
                               }}
                               className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
                             />
