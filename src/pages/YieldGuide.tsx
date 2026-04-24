@@ -978,7 +978,7 @@ const YieldGuide = () => {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={2}>
+            <motion.div variants={fadeUp} custom={2} className="calc-dark">
               <div
                 className="rounded-3xl overflow-hidden shadow-elevated"
                 style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))" }}
@@ -1743,7 +1743,7 @@ const YieldGuide = () => {
                   <motion.div
                     variants={fadeUp}
                     custom={1.5}
-                    className="rounded-3xl overflow-hidden border border-border/40 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.6)]"
+                    className="calc-dark rounded-3xl overflow-hidden border border-border/40 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.6)]"
                     style={{ background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))" }}
                   >
                     <div className="p-6 md:p-8">
@@ -1854,7 +1854,7 @@ const YieldGuide = () => {
               >
                 {/* Gráfico */}
                 <div
-                  className="lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
+                  className="calc-dark lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
                   style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))", border: "1px solid hsl(var(--border))" }}
                 >
                   <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -1934,7 +1934,7 @@ const YieldGuide = () => {
 
                 {/* Tabela */}
                 <div
-                  className="lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
+                  className="calc-dark lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
                   style={{ background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))", border: "1px solid hsl(var(--border))" }}
                 >
                   <div className="mb-5">
