@@ -415,11 +415,11 @@ const YieldGuide = () => {
         {/* faixa accent superior 3D */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
 
-        <div className={`max-w-6xl mx-auto flex items-center justify-between px-6 transition-all duration-300 ${scrolled ? "h-16" : "h-20"}`}>
+        <div className={`max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 transition-all duration-300 ${scrolled ? "h-14 sm:h-16" : "h-16 sm:h-20"}`}>
           <motion.img
             src={logoPreta}
             alt="Novare"
-            className={`transition-all duration-300 ${scrolled ? "h-8" : "h-10"}`}
+            className={`transition-all duration-300 ${scrolled ? "h-7 sm:h-8" : "h-8 sm:h-10"}`}
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
           />
