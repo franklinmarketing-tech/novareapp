@@ -1117,15 +1117,9 @@ const YieldGuide = () => {
                       <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
                     </button>
 
-                    {/* === Renda Mensal Passiva (destaque ACCENT) === */}
+                    {/* === Renda Mensal Passiva (HERO escuro com glow laranja) === */}
                     <motion.div
-                      className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/30"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.04) 55%, transparent), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))",
-                        boxShadow:
-                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
-                      }}
+                      className="calc-dark calc-card-dark calc-glow-accent relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden"
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
