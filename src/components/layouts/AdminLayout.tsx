@@ -335,57 +335,7 @@ export const AdminLayout = ({ children }: Props) => {
                 {settingsCompletion.pendingCount}
               </span>
             )}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setSettingsOpen((o) => !o);
-              }}
-              aria-label={settingsOpen ? "Recolher submenu" : "Expandir submenu"}
-              aria-expanded={settingsOpen}
-              className="p-0.5 rounded hover:bg-sidebar-accent/60 transition-colors"
-            >
-              <ChevronDown
-                className={cn(
-                  "h-3.5 w-3.5 opacity-60 transition-transform duration-200",
-                  settingsOpen ? "rotate-0" : "-rotate-90"
-                )}
-              />
-            </button>
           </NavLink>
-
-          {settingsOpen && (
-            <div className="pl-3 mt-0.5 space-y-0.5 border-l border-sidebar-border/30 ml-5">
-              {settingsSubItems.map((sub) => {
-                const SubIcon = sub.icon;
-                const isActive = isOnSettings && currentTab === sub.id;
-                const pending = settingsCompletion[sub.id];
-                return (
-                  <NavLink
-                    key={sub.id}
-                    to={`/admin/configuracoes?tab=${sub.id}`}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "flex items-center gap-2.5 pl-3 pr-3 py-2 ml-1 rounded-lg text-[0.8125rem] transition-all duration-200",
-                      isActive
-                        ? "bg-sidebar-accent/70 text-sidebar-foreground font-medium"
-                        : "text-sidebar-foreground/55 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground/80"
-                    )}
-                  >
-                    <SubIcon className="h-3.5 w-3.5 shrink-0" />
-                    <span className="flex-1 truncate">{sub.label}</span>
-                    {!settingsCompletion.loading && pending && (
-                      <span
-                        className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0"
-                        aria-label="Pendente"
-                      />
-                    )}
-                  </NavLink>
-                );
-              })}
-            </div>
-          )}
 
           <ThemeToggle variant="sidebar" />
         </div>
