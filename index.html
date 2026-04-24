@@ -39,6 +39,8 @@
           var theme = (stored === 'light' || stored === 'dark') ? stored : 'light';
           if (theme === 'dark') document.documentElement.classList.add('dark');
           document.documentElement.style.colorScheme = theme;
+          // Pinta o background imediato para evitar flash escuro no boot
+          document.documentElement.style.backgroundColor = theme === 'dark' ? '#0B0F1A' : '#FCFCFD';
         } catch (e) { /* ignore */ }
       })();
     </script>
