@@ -192,7 +192,9 @@ const ClientOnboardingPage = () => {
               ...(e.id ? { id: e.id } : {}),
               client_id: clientId, category: e.category,
               amount: parseFloat(e.amount) || 0,
-              description: e.description || null, is_fixed: true,
+              description: e.description || null,
+              is_fixed: e.is_fixed ?? true,
+              due_day: e.is_fixed && e.due_day ? Math.min(31, Math.max(1, parseInt(e.due_day, 10))) : null,
             }))
           );
           break;
