@@ -1409,20 +1409,14 @@ const YieldGuide = () => {
                       </motion.div>
                     )}
 
-                    {/* === HERO CARD: Patrimônio Bruto === */}
+                    {/* === Patrimônio Bruto — branco premium com tinta accent === */}
                     <motion.div
-                      className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/20 group"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, hsl(var(--accent) / 0.12), hsl(var(--accent) / 0.04) 50%, transparent), linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)))",
-                        boxShadow:
-                          "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.5), inset 0 0 0 1px hsl(0 0% 100% / 0.02)",
-                      }}
+                      className="calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden ring-1 ring-accent/15 group"
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
                       {/* shine sweep on hover */}
-                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-accent/[0.05] to-transparent pointer-events-none" />
 
                       <div className="relative flex items-start justify-between gap-3 mb-4">
                         <div className="flex items-center gap-3 min-w-0">
