@@ -513,6 +513,12 @@ const MonthlyClosings = ({ clientId, clientName, isAdmin }: Props) => {
                                   Reabrir
                                 </Button>
                               )}
+                              {isAdmin && c.status === "reaberto" && (
+                                <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90" onClick={() => handleRefreshClose(c)}>
+                                  <Lock className="h-4 w-4" />
+                                  Fechar novamente
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
