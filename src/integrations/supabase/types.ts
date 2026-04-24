@@ -1164,6 +1164,96 @@ export type Database = {
           },
         ]
       }
+      monthly_closings: {
+        Row: {
+          action_plan_snapshot: Json
+          assets_snapshot: Json
+          client_id: string
+          closed_at: string
+          closed_by: string
+          created_at: string
+          debts_snapshot: Json
+          emergency_reserve_months: number | null
+          expenses_snapshot: Json
+          goals_snapshot: Json
+          id: string
+          income_snapshot: Json
+          insurance_snapshot: Json
+          month_ref: string
+          monthly_debt_payments: number | null
+          net_worth: number | null
+          notes: string | null
+          plan_completion_pct: number | null
+          reopened_at: string | null
+          reopened_by: string | null
+          savings_rate: number | null
+          status: string
+          total_assets: number | null
+          total_debts: number | null
+          total_expenses: number | null
+          total_income: number | null
+          updated_at: string
+        }
+        Insert: {
+          action_plan_snapshot?: Json
+          assets_snapshot?: Json
+          client_id: string
+          closed_at?: string
+          closed_by: string
+          created_at?: string
+          debts_snapshot?: Json
+          emergency_reserve_months?: number | null
+          expenses_snapshot?: Json
+          goals_snapshot?: Json
+          id?: string
+          income_snapshot?: Json
+          insurance_snapshot?: Json
+          month_ref: string
+          monthly_debt_payments?: number | null
+          net_worth?: number | null
+          notes?: string | null
+          plan_completion_pct?: number | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          savings_rate?: number | null
+          status?: string
+          total_assets?: number | null
+          total_debts?: number | null
+          total_expenses?: number | null
+          total_income?: number | null
+          updated_at?: string
+        }
+        Update: {
+          action_plan_snapshot?: Json
+          assets_snapshot?: Json
+          client_id?: string
+          closed_at?: string
+          closed_by?: string
+          created_at?: string
+          debts_snapshot?: Json
+          emergency_reserve_months?: number | null
+          expenses_snapshot?: Json
+          goals_snapshot?: Json
+          id?: string
+          income_snapshot?: Json
+          insurance_snapshot?: Json
+          month_ref?: string
+          monthly_debt_payments?: number | null
+          net_worth?: number | null
+          notes?: string | null
+          plan_completion_pct?: number | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          savings_rate?: number | null
+          status?: string
+          total_assets?: number | null
+          total_debts?: number | null
+          total_expenses?: number | null
+          total_income?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
