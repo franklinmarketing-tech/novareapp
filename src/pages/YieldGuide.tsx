@@ -1178,14 +1178,14 @@ const YieldGuide = () => {
                             </p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-accent font-bold">Bruta/mês</p>
-                            <p className="text-base md:text-lg font-extrabold text-accent tabular-nums truncate" title={result.rendaMensal}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-novare-blue-bright font-bold">Bruta/mês</p>
+                            <p className="text-base md:text-lg font-extrabold text-novare-blue-bright tabular-nums truncate" title={result.rendaMensal}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
                             </p>
                           </div>
-                          <div className="min-w-0 ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/15 border border-warning/30">
-                            <Percent className="h-3.5 w-3.5 text-warning" />
-                            <span className="text-xs md:text-sm font-extrabold text-warning tabular-nums">
+                          <div className="min-w-0 ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-novare-blue-bright/15 border border-novare-blue-bright/30">
+                            <Percent className="h-3.5 w-3.5 text-novare-blue-bright" />
+                            <span className="text-xs md:text-sm font-extrabold text-novare-blue-bright tabular-nums">
                               {result.taxaMensalEfetiva.toFixed(2)}% a.m.
                             </span>
                           </div>
@@ -1471,9 +1471,9 @@ const YieldGuide = () => {
                           </div>
                         </div>
                         {result && (
-                          <div className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/15 border border-accent/25">
-                            <TrendingUp className="h-3 w-3 text-accent" />
-                            <span className="text-[10px] font-bold text-accent tabular-nums">
+                          <div className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-novare-blue-bright/15 border border-novare-blue-bright/30">
+                            <TrendingUp className="h-3 w-3 text-novare-blue-bright" />
+                            <span className="text-[10px] font-bold text-novare-blue-bright tabular-nums">
                               {Number.isFinite(result.multiploInvestido) ? `${result.multiploInvestido.toFixed(1)}×` : "—"}
                             </span>
                           </div>
@@ -1499,7 +1499,7 @@ const YieldGuide = () => {
                       {result && (
                         <div className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-accent font-bold inline-flex items-center gap-1.5">
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-novare-blue-bright font-bold inline-flex items-center gap-1.5">
                               <Calendar className="h-3 w-3" /> Período
                             </p>
                             <p className="text-lg md:text-xl font-extrabold text-white mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-white/60 font-bold">anos</span></p>
@@ -1527,7 +1527,7 @@ const YieldGuide = () => {
                           full: result?.totalInvestido,
                           sub: "Aportes somados",
                           icon: PiggyBank,
-                          tone: "info" as const,
+                          tone: "blue" as const,
                         },
                         {
                           label: "Ganho líq.",
@@ -1549,6 +1549,7 @@ const YieldGuide = () => {
                         const Icon = k.icon;
                         const toneClasses = {
                           info: { ring: "border-accent/40", icon: "text-accent", bg: "bg-accent/15", value: "text-accent", label: "text-accent" },
+                          blue: { ring: "border-novare-blue-bright/35", icon: "text-novare-blue-bright", bg: "bg-novare-blue-bright/15", value: "text-novare-blue-bright", label: "text-novare-blue-bright" },
                           success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
                           neutral: { ring: "border-white/10", icon: "text-accent/80", bg: "bg-white/[0.04]", value: "text-white/85", label: "text-white/60" },
                         }[k.tone];

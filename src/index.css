@@ -63,6 +63,8 @@
     --novare-terracotta-light: 16 50% 95%;
     --novare-blue: 215 50% 23%;
     --novare-blue-light: 215 50% 96%;
+    /* Azul Novare claro/brilhante — para uso sobre fundos escuros (calculadoras, hero dark) */
+    --novare-blue-bright: 210 75% 62%;
   }
 
   .dark {
@@ -102,6 +104,7 @@
     --novare-terracotta-light: 16 40% 15%;
     --novare-blue: 215 45% 65%;
     --novare-blue-light: 215 30% 14%;
+    --novare-blue-bright: 210 75% 65%;
   }
 }
 

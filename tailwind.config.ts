@@ -87,6 +87,7 @@ export default {
           "terracotta-light": "hsl(var(--novare-terracotta-light))",
           blue: "hsl(var(--novare-blue))",
           "blue-light": "hsl(var(--novare-blue-light))",
+          "blue-bright": "hsl(var(--novare-blue-bright))",
         },
       },
       spacing: {
