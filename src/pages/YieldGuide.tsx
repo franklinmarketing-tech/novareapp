@@ -389,39 +389,133 @@ const YieldGuide = () => {
         canonicalPath="/ferramentas/calculadora-de-investimentos"
       />
       {/* ── NAV ─────────────────────────────────── */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-20">
-          <img src={logoPreta} alt="Novare" className="h-10" />
-          <div className="hidden md:flex items-center gap-10">
-            {navLinks.map((l) => (
-              <button key={l.href} onClick={() => scrollTo(l.href)} className="text-base text-muted-foreground hover:text-foreground transition-colors font-medium">
-                {l.label}
-              </button>
-            ))}
+      <motion.nav
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "backdrop-blur-2xl border-b border-white/40"
+            : "backdrop-blur-xl border-b border-border/30"
+        }`}
+        style={{
+          background: scrolled
+            ? "linear-gradient(180deg, hsl(0 0% 100% / 0.92), hsl(220 30% 97% / 0.88))"
+            : "linear-gradient(180deg, hsl(0 0% 100% / 0.82), hsl(220 30% 98% / 0.76))",
+          boxShadow: scrolled
+            ? "0 10px 40px -12px hsl(220 50% 20% / 0.18), 0 2px 0 hsl(0 0% 100% / 0.6) inset, 0 -1px 0 hsl(220 30% 90% / 0.6) inset"
+            : "0 4px 20px -8px hsl(220 50% 20% / 0.08), 0 1px 0 hsl(0 0% 100% / 0.6) inset",
+        }}
+      >
+        {/* faixa accent superior 3D */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+
+        <div className={`max-w-6xl mx-auto flex items-center justify-between px-6 transition-all duration-300 ${scrolled ? "h-16" : "h-20"}`}>
+          <motion.img
+            src={logoPreta}
+            alt="Novare"
+            className={`transition-all duration-300 ${scrolled ? "h-8" : "h-10"}`}
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 15 }}
+          />
+
+          <div className="hidden md:flex items-center gap-2">
+            {navLinks.map((l, i) => {
+              const id = l.href.replace("#", "");
+              const isActive = activeSection === id;
+              return (
+                <motion.button
+                  key={l.href}
+                  onClick={() => scrollTo(l.href)}
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.05, duration: 0.4 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0, scale: 0.97 }}
+                  className={`relative group px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-200 ${
+                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {/* fundo ativo com profundidade 3D */}
+                  {isActive && (
+                    <motion.span
+                      layoutId="navActiveBg"
+                      className="absolute inset-0 rounded-xl"
+                      style={{
+                        background: "linear-gradient(180deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.06))",
+                        boxShadow:
+                          "0 4px 12px -4px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.7), inset 0 -1px 0 hsl(var(--accent) / 0.2)",
+                        border: "1px solid hsl(var(--accent) / 0.25)",
+                      }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  {/* hover sweep */}
+                  <span className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                    style={{ background: "linear-gradient(180deg, hsl(220 30% 95% / 0.6), transparent)" }}
+                  />
+                  <span className="relative z-10">{l.label}</span>
+                  {/* underline animado no hover */}
+                  {!isActive && (
+                    <span className="absolute left-1/2 -translate-x-1/2 bottom-1 h-[2px] w-0 group-hover:w-6 bg-accent rounded-full transition-all duration-300" />
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
+
           <div className="flex items-center gap-3">
-            <Button
-              size="sm"
-              className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-5 font-medium text-sm hidden sm:inline-flex"
+            <motion.button
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ y: 0, scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
               onClick={() => window.open(whatsappUrl, "_blank")}
+              className="hidden sm:inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-5 py-2.5 font-semibold text-sm relative overflow-hidden group"
+              style={{
+                boxShadow:
+                  "0 6px 18px -4px hsl(var(--accent) / 0.5), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -2px 0 hsl(var(--accent) / 0.4)",
+              }}
             >
-              Fale conosco
-            </Button>
-            <button className="md:hidden text-foreground" onClick={() => setMobileNav(!mobileNav)}>
+              {/* shine sweep */}
+              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+              <span className="relative z-10">Fale conosco</span>
+              <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </motion.button>
+            <button className="md:hidden text-foreground p-2 rounded-lg hover:bg-muted/60 transition-colors" onClick={() => setMobileNav(!mobileNav)}>
               {mobileNav ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
         {mobileNav && (
-          <div className="md:hidden border-t border-border/40 bg-background px-6 py-4 space-y-3">
-            {navLinks.map((l) => (
-              <button key={l.href} onClick={() => scrollTo(l.href)} className="block text-sm text-foreground font-medium w-full text-left py-1">
-                {l.label}
-              </button>
-            ))}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl px-6 py-4 space-y-1"
+          >
+            {navLinks.map((l, i) => {
+              const id = l.href.replace("#", "");
+              const isActive = activeSection === id;
+              return (
+                <motion.button
+                  key={l.href}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  onClick={() => { scrollTo(l.href); setMobileNav(false); }}
+                  className={`block w-full text-left text-sm font-semibold py-2.5 px-3 rounded-lg transition-all ${
+                    isActive
+                      ? "bg-accent/10 text-foreground border-l-2 border-accent"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  }`}
+                >
+                  {l.label}
+                </motion.button>
+              );
+            })}
+          </motion.div>
         )}
-      </nav>
+      </motion.nav>
 
       {/* ── HERO ────────────────────────────────── */}
       <section className="pt-28 pb-6 md:pt-36 md:pb-12">
