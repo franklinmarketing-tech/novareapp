@@ -1254,6 +1254,95 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_lead_replies: {
+        Row: {
+          created_at: string
+          email_status: string
+          error_message: string | null
+          id: string
+          lead_id: string
+          message: string
+          replied_by_email: string | null
+          replied_by_user_id: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          email_status?: string
+          error_message?: string | null
+          id?: string
+          lead_id: string
+          message: string
+          replied_by_email?: string | null
+          replied_by_user_id: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          email_status?: string
+          error_message?: string | null
+          id?: string
+          lead_id?: string
+          message?: string
+          replied_by_email?: string | null
+          replied_by_user_id?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_lead_replies_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          last_replied_at: string | null
+          name: string | null
+          notes: string | null
+          reply_count: number
+          source: string
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          last_replied_at?: string | null
+          name?: string | null
+          notes?: string | null
+          reply_count?: number
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          last_replied_at?: string | null
+          name?: string | null
+          notes?: string | null
+          reply_count?: number
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null

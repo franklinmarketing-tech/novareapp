@@ -24,6 +24,9 @@ import newsletterHero from "@/assets/newsletter-hero.jpg";
 import { SEO } from "@/components/SEO";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateRendimentoPDF } from "@/lib/generateRendimentoPDF";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { z } from "zod";
 
 /* ── founder data ──────────────────────────────── */
 const founders = [
@@ -349,6 +352,37 @@ const YieldGuide = () => {
   const [activeSection, setActiveSection] = useState<string>("");
   const [isSimulating, setIsSimulating] = useState(false);
   const [simCountdown, setSimCountdown] = useState(5);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterDone, setNewsletterDone] = useState(false);
+
+  const handleNewsletterSubmit = async () => {
+    const schema = z.object({
+      email: z.string().trim().email("E-mail inválido").max(255),
+    });
+    const parsed = schema.safeParse({ email: newsletterEmail });
+    if (!parsed.success) {
+      toast.error(parsed.error.errors[0]?.message ?? "E-mail inválido");
+      return;
+    }
+    setNewsletterLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("newsletter-subscribe", {
+        body: { email: parsed.data.email, source: "yield-guide" },
+      });
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || "Não foi possível concluir sua inscrição");
+      } else {
+        toast.success("Inscrição confirmada! Verifique sua caixa de entrada.");
+        setNewsletterDone(true);
+        setNewsletterEmail("");
+      }
+    } catch {
+      toast.error("Erro ao enviar. Tente novamente.");
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -2460,16 +2494,31 @@ const YieldGuide = () => {
 
                       <div className="space-y-3">
                         <Input
+                          type="email"
+                          inputMode="email"
+                          autoComplete="email"
                           placeholder="Seu melhor e-mail"
+                          value={newsletterEmail}
+                          onChange={(e) => setNewsletterEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !newsletterLoading) handleNewsletterSubmit();
+                          }}
+                          disabled={newsletterLoading || newsletterDone}
+                          maxLength={255}
                           className="h-13 rounded-2xl px-5 border-border/60 bg-muted/30 focus:bg-background transition-colors text-base"
                         />
                         <button
-                          className="group relative w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground font-semibold text-base px-8 py-4 rounded-2xl shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                          type="button"
+                          onClick={handleNewsletterSubmit}
+                          disabled={newsletterLoading || newsletterDone}
+                          className="group relative w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground font-semibold text-base px-8 py-4 rounded-2xl shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                         >
-                          Quero receber
-                          <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-accent-foreground/20 group-hover:bg-accent-foreground/30 transition-colors">
-                            <ArrowRight className="h-6 w-6" />
-                          </span>
+                          {newsletterDone ? "Inscrição confirmada ✓" : newsletterLoading ? "Enviando..." : "Quero receber"}
+                          {!newsletterDone && (
+                            <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-accent-foreground/20 group-hover:bg-accent-foreground/30 transition-colors">
+                              <ArrowRight className="h-6 w-6" />
+                            </span>
+                          )}
                         </button>
                       </div>
 
