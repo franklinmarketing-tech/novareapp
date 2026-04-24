@@ -349,19 +349,40 @@ const YieldGuide = () => {
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
-      // detectar seção ativa
       const sections = navLinks.map((l) => l.href.replace("#", ""));
-      const offset = window.scrollY + 120;
-      let current = "";
+      const vh = window.innerHeight;
+
+      // Se está perto do final da página, marca a última seção
+      const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80;
+      if (nearBottom) {
+        setActiveSection(sections[sections.length - 1]);
+        return;
+      }
+
+      // Caso contrário, escolhe a seção com maior área visível na viewport
+      let bestId = "";
+      let bestVisible = 0;
       for (const id of sections) {
         const el = document.getElementById(id);
-        if (el && el.offsetTop <= offset) current = id;
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        const top = Math.max(rect.top, 0);
+        const bottom = Math.min(rect.bottom, vh);
+        const visible = Math.max(0, bottom - top);
+        if (visible > bestVisible) {
+          bestVisible = visible;
+          bestId = id;
+        }
       }
-      setActiveSection(current);
+      setActiveSection(bestId);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   const rentAnual = rentPeriodo === "mensal"
