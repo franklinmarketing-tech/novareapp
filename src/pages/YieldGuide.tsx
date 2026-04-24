@@ -1223,8 +1223,8 @@ const YieldGuide = () => {
                             <DollarSign className="h-5 w-5 text-accent" strokeWidth={2.5} />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[10px] uppercase tracking-[0.15em] text-accent/80 font-bold">Patrimônio Bruto</p>
-                            <p className="text-[10px] text-white/40 mt-0.5">acumulado ao final</p>
+                            <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-accent font-extrabold">Patrimônio Bruto</p>
+                            <p className="text-xs md:text-sm text-white/60 mt-1 font-medium">acumulado ao final</p>
                           </div>
                         </div>
                         {result && (
