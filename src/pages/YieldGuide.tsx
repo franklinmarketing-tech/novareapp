@@ -796,7 +796,7 @@ const YieldGuide = () => {
               <div className="rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]">
                 <div className="grid lg:grid-cols-5">
                   {/* Simulator form — glassmorphism dark card */}
-                  <div className="lg:col-span-3 p-6 md:p-10 relative" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
+                  <div className="lg:col-span-3 p-5 md:p-7 relative" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
                     {/* Subtle inner glow */}
                     <div className="absolute inset-0 rounded-l-3xl border border-white/[0.06] pointer-events-none" />
                     <motion.div
