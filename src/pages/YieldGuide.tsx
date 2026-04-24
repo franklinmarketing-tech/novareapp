@@ -1502,6 +1502,38 @@ const YieldGuide = () => {
                           </div>
                         </div>
                       )}
+
+                      {/* Botão destaque: Ver rendimento mensal em PDF (logo abaixo da Meta de Renda) */}
+                      {result && (
+                        <motion.button
+                          onClick={() => generateRendimentoPDF(result, {
+                            idadeAtual: sim.idadeAtual,
+                            idadeAposent: sim.idadeAposent,
+                            patrimonioAtual: sim.patrimonioAtual,
+                            aporte: sim.aporte,
+                            rendaDesejada: sim.rendaDesejada,
+                            rentabilidadeAnual: rentAnual,
+                          })}
+                          whileHover={{ y: -2, scale: 1.02 }}
+                          whileTap={{ y: 0, scale: 0.98 }}
+                          animate={{ boxShadow: [
+                            "0 10px 24px -8px hsl(217 91% 60% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                            "0 14px 30px -6px hsl(217 91% 60% / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
+                            "0 10px 24px -8px hsl(217 91% 60% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
+                          ] }}
+                          transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
+                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group"
+                          style={{
+                            background: "linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 48%))",
+                            color: "white",
+                            border: "1px solid hsl(0 0% 100% / 0.2)",
+                          }}
+                        >
+                          <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                          <FileDown className="relative z-10 h-4 w-4" />
+                          <span className="relative z-10">Ver rendimento mensal em PDF</span>
+                        </motion.button>
+                      )}
                     </motion.div>
                   </div>
                 </div>
@@ -1902,29 +1934,7 @@ const YieldGuide = () => {
                         </motion.button>
                       </div>
 
-                      {/* Botão Baixar PDF do rendimento mensal */}
-                      <motion.button
-                        onClick={() => generateRendimentoPDF(result, {
-                          idadeAtual: sim.idadeAtual,
-                          idadeAposent: sim.idadeAposent,
-                          patrimonioAtual: sim.patrimonioAtual,
-                          aporte: sim.aporte,
-                          rendaDesejada: sim.rendaDesejada,
-                          rentabilidadeAnual: rentAnual,
-                        })}
-                        whileHover={{ y: -2, scale: 1.02 }}
-                        whileTap={{ y: 0, scale: 0.98 }}
-                        className="relative z-10 inline-flex items-center justify-center gap-2 px-5 md:px-6 py-2.5 rounded-xl font-bold text-xs md:text-sm whitespace-nowrap transition-all w-full group"
-                        style={{
-                          background: "linear-gradient(180deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.03))",
-                          border: "1px solid hsl(var(--accent) / 0.4)",
-                          color: "hsl(var(--accent))",
-                          boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.08)",
-                        }}
-                      >
-                        <FileDown className="h-4 w-4" />
-                        <span>Ver rendimento mensal em PDF</span>
-                      </motion.button>
+                      {/* PDF agora fica em destaque abaixo da Meta de Renda */}
                     </div>
                   </div>
 

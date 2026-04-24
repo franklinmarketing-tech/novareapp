@@ -321,7 +321,23 @@ export async function generateRendimentoPDF(result: SimResultLite, input: SimInp
   doc.setTextColor(201, 162, 98);
   doc.text("WhatsApp: (19) 98340-2827   |   www.novareapp.com.br", 60, yEnd + 66);
 
-  // Salvar
+  // Abrir em nova aba + oferecer download como fallback
   const fileName = `Novare-Rendimento-${input.idadeAposent}anos.pdf`;
-  doc.save(fileName);
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+
+  const newWindow = window.open(url, "_blank");
+
+  // Se popup bloqueado, força download
+  if (!newWindow || newWindow.closed || typeof newWindow.closed === "undefined") {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // libera memória depois
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
