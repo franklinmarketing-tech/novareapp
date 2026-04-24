@@ -958,9 +958,9 @@ const YieldGuide = () => {
                 className="rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]"
                 style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 40% 11%))" }}
               >
-                <div className="grid lg:grid-cols-5 lg:items-start">
+                <div className="grid lg:grid-cols-2 lg:items-stretch">
                   {/* Simulator form — glassmorphism dark card */}
-                  <div className="lg:col-span-3 p-5 md:p-7 relative lg:sticky lg:top-4 lg:self-start" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
+                  <div className="p-5 md:p-7 relative flex flex-col" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
                     {/* Subtle inner glow */}
                     <div className="absolute inset-0 rounded-l-3xl border border-white/[0.06] pointer-events-none" />
                     <motion.div
@@ -1100,7 +1100,7 @@ const YieldGuide = () => {
 
                   {/* Results panel — modern floating cards */}
                   <div
-                    className="lg:col-span-2 flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden"
+                    className="flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden"
                     style={{
                       background:
                         "radial-gradient(120% 80% at 100% 0%, hsl(var(--accent) / 0.08), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(220 70% 30% / 0.15), transparent 60%), linear-gradient(160deg, hsl(220 40% 11%), hsl(220 50% 7%))",
