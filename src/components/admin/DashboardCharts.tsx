@@ -15,7 +15,7 @@ import { Card3D } from "@/components/ui/card-3d";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { TrendingUp, TrendingDown, ShieldAlert, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import WealthSphere3D from "@/components/admin/WealthSphere3D";
+
 
 const MONTHS_PT = [
   "jan", "fev", "mar", "abr", "mai", "jun",
