@@ -92,14 +92,6 @@ const KpiCard3D = React.forwardRef<HTMLDivElement, KpiCard3DProps>(
             transition: "transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
           }}
         >
-          {/* Animated radial glow (top-right) */}
-          <motion.div
-            className="absolute -top-12 -right-12 w-48 h-48 rounded-full pointer-events-none z-0"
-            style={{ background: `radial-gradient(circle, ${tone.glow} 0%, transparent 70%)` }}
-            animate={{ scale: [1, 1.15, 1], opacity: [0.55, 0.85, 0.55] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          />
-
           {/* Cursor-tracked glossy shine */}
           <div
             className="absolute inset-0 pointer-events-none z-[1] rounded-2xl opacity-80 mix-blend-overlay"
@@ -114,14 +106,6 @@ const KpiCard3D = React.forwardRef<HTMLDivElement, KpiCard3DProps>(
             className="absolute inset-x-0 top-0 h-px pointer-events-none z-[1]"
             style={{
               background: `linear-gradient(to right, transparent, hsl(var(--foreground) / 0.12), transparent)`,
-            }}
-          />
-
-          {/* Floating accent corner ring */}
-          <div
-            className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full pointer-events-none z-0 opacity-50"
-            style={{
-              background: `radial-gradient(circle, ${tone.shine} 0%, transparent 60%)`,
             }}
           />
 
