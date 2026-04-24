@@ -352,6 +352,37 @@ const YieldGuide = () => {
   const [activeSection, setActiveSection] = useState<string>("");
   const [isSimulating, setIsSimulating] = useState(false);
   const [simCountdown, setSimCountdown] = useState(5);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterDone, setNewsletterDone] = useState(false);
+
+  const handleNewsletterSubmit = async () => {
+    const schema = z.object({
+      email: z.string().trim().email("E-mail inválido").max(255),
+    });
+    const parsed = schema.safeParse({ email: newsletterEmail });
+    if (!parsed.success) {
+      toast.error(parsed.error.errors[0]?.message ?? "E-mail inválido");
+      return;
+    }
+    setNewsletterLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("newsletter-subscribe", {
+        body: { email: parsed.data.email, source: "yield-guide" },
+      });
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || "Não foi possível concluir sua inscrição");
+      } else {
+        toast.success("Inscrição confirmada! Verifique sua caixa de entrada.");
+        setNewsletterDone(true);
+        setNewsletterEmail("");
+      }
+    } catch {
+      toast.error("Erro ao enviar. Tente novamente.");
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => {
