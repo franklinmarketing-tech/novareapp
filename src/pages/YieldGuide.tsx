@@ -2584,7 +2584,7 @@ const YieldGuide = () => {
                   }}
                   initial={{ width: "0%" }}
                   animate={{ width: "100%" }}
-                  transition={{ duration: 6, ease: "easeInOut" }}
+                  transition={{ duration: 5, ease: "easeInOut" }}
                 />
                 {/* Shimmer */}
                 <motion.div
