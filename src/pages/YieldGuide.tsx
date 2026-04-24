@@ -1787,6 +1787,116 @@ const YieldGuide = () => {
                 </div>
               </motion.div>
             )}
+
+            {/* ── CTA: Fale com especialista Novare (aparece após simulação) ── */}
+            {result && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="relative"
+              >
+                <div
+                  className="relative rounded-3xl p-6 md:p-8 overflow-hidden"
+                  style={{
+                    background:
+                      "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(220 35% 14%), hsl(220 40% 9%))",
+                    border: "1px solid hsl(var(--accent) / 0.25)",
+                    boxShadow:
+                      "0 20px 50px -15px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                  }}
+                >
+                  {/* Orbs animados de fundo */}
+                  <motion.div
+                    className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[80px]"
+                    style={{ background: "hsl(var(--accent) / 0.25)" }}
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <motion.div
+                    className="pointer-events-none absolute -bottom-16 -left-16 w-52 h-52 rounded-full blur-[70px]"
+                    style={{ background: "hsl(220 70% 40% / 0.3)" }}
+                    animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.6, 0.3] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                  />
+
+                  <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8 text-center md:text-left">
+                    <div className="flex-1 space-y-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 border border-accent/30">
+                        <motion.span
+                          className="w-2 h-2 rounded-full bg-accent"
+                          animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+                          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                        <span className="text-[10px] uppercase tracking-[0.2em] text-accent font-bold">
+                          Próximo passo
+                        </span>
+                      </div>
+                      <h3 className="text-2xl md:text-3xl font-black text-white leading-tight">
+                        {result.atingeMeta
+                          ? "Pronto para sair do papel?"
+                          : "Quer ajustar essa estratégia?"}
+                      </h3>
+                      <p className="text-sm md:text-base text-white/60 leading-relaxed max-w-xl">
+                        Um especialista <span className="text-accent font-semibold">Novare</span> analisa seu perfil e monta uma carteira personalizada — sem custo e sem compromisso.
+                      </p>
+                    </div>
+
+                    {/* Botão pulsante 3D */}
+                    <div className="relative shrink-0">
+                      {/* Halos pulsantes */}
+                      <motion.span
+                        className="absolute inset-0 rounded-2xl bg-accent"
+                        animate={{ scale: [1, 1.25, 1.4], opacity: [0.5, 0.2, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                      />
+                      <motion.span
+                        className="absolute inset-0 rounded-2xl bg-accent"
+                        animate={{ scale: [1, 1.25, 1.4], opacity: [0.5, 0.2, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
+                      />
+                      <motion.button
+                        onClick={() => window.open(whatsappUrl, "_blank")}
+                        whileHover={{ y: -3, scale: 1.03 }}
+                        whileTap={{ y: 0, scale: 0.98 }}
+                        animate={{ scale: [1, 1.04, 1] }}
+                        transition={{
+                          scale: { duration: 1.6, repeat: Infinity, ease: "easeInOut" },
+                          y: { type: "spring", stiffness: 400, damping: 15 },
+                        }}
+                        className="relative z-10 inline-flex items-center gap-3 bg-accent text-accent-foreground px-6 md:px-8 py-4 rounded-2xl font-bold text-base md:text-lg overflow-hidden group whitespace-nowrap"
+                        style={{
+                          boxShadow:
+                            "0 12px 32px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -3px 0 hsl(var(--accent) / 0.5)",
+                        }}
+                      >
+                        {/* Shine sweep */}
+                        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                        <MessageCircle className="relative z-10 h-5 w-5 md:h-6 md:w-6" />
+                        <span className="relative z-10">Falar com especialista</span>
+                        <ArrowRight className="relative z-10 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Selos de confiança */}
+                  <div className="relative z-10 mt-6 pt-5 border-t border-white/[0.08] flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-[11px] md:text-xs text-white/50">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Shield className="h-3.5 w-3.5 text-accent" />
+                      Atendimento gratuito
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Check className="h-3.5 w-3.5 text-success" />
+                      Sem compromisso
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <TrendingUp className="h-3.5 w-3.5 text-accent" />
+                      Resposta em até 1h útil
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>
