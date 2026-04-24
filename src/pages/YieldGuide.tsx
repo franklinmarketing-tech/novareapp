@@ -885,27 +885,23 @@ const YieldGuide = () => {
       {/* ── SIMULATOR ───────────────────────────── */}
       <section
         id="simulador"
-        className="py-6 md:py-10 relative overflow-hidden"
-        style={{
-          background:
-            "radial-gradient(120% 70% at 50% 0%, hsl(var(--primary) / 0.45), transparent 60%), linear-gradient(180deg, hsl(220 37% 13%), hsl(220 37% 9%))",
-        }}
+        className="py-6 md:py-10 relative overflow-hidden bg-background"
       >
-        {/* Background orbs */}
+        {/* Background orbs sutis (no tom da marca, baixa opacidade) */}
         <motion.div
           className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px]"
-          style={{ background: "hsl(var(--accent) / 0.08)" }}
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          style={{ background: "hsl(var(--accent) / 0.06)" }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.4, 0.25] }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px]"
-          style={{ background: "hsl(var(--primary) / 0.4)" }}
-          animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.5, 0.3] }}
+          style={{ background: "hsl(var(--primary) / 0.08)" }}
+          animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.35, 0.2] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 5 }}
         />
         {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-4 md:space-y-5">
@@ -916,24 +912,20 @@ const YieldGuide = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border border-white/10 backdrop-blur-md"
-                style={{
-                  background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02))",
-                  boxShadow: "0 8px 24px -8px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.08)",
-                }}
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border border-border/60 backdrop-blur-md bg-card shadow-soft"
               >
-                <img src={logoBranca} alt="Novare" className="h-6 md:h-7 w-auto" />
-                <span className="h-4 w-px bg-white/15" />
+                <img src={logoBranca} alt="Novare" className="h-6 md:h-7 w-auto invert-[0.85] brightness-0" />
+                <span className="h-4 w-px bg-border" />
                 <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">Simulador</span>
               </motion.div>
 
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.05]">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-[1.05]">
                 Projete sua renda{" "}
-                <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/60 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/70 bg-clip-text text-transparent">
                   no longo prazo
                 </span>
               </h2>
-              <p className="text-white/60 text-sm max-w-xl mx-auto leading-relaxed">
+              <p className="text-muted-foreground text-sm max-w-xl mx-auto leading-relaxed">
                 Simulador gratuito para planejar sua aposentadoria com precisão profissional.
               </p>
             </motion.div>
@@ -941,7 +933,7 @@ const YieldGuide = () => {
             {/* Submenu de escolha rápida de taxa */}
             <motion.div variants={fadeUp} custom={1} className="max-w-4xl mx-auto w-full">
               <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold">Escolha uma taxa de referência</span>
+                <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-semibold">Escolha uma taxa de referência</span>
               </div>
               <div className="grid grid-cols-3 gap-2 md:gap-3">
                 {bentoFeatures.map((f) => {
