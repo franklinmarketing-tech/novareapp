@@ -13,6 +13,7 @@ import PageBanner from "@/components/PageBanner";
 import { SEO } from "@/components/SEO";
 import { LoadingState } from "@/components/ui/loading-state";
 import { EmptyState } from "@/components/ui/empty-state";
+import MonthlyClosings from "@/components/monitoring/MonthlyClosings";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
