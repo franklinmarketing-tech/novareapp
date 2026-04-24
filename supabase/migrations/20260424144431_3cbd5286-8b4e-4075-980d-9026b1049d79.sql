@@ -1,0 +1,1 @@
+UPDATE public.founders SET image_url = NULL WHERE slug = 'jefferson' AND image_url = '/assets/jefferson-yqS8RtJE.png';
