@@ -393,14 +393,22 @@ const YieldGuide = () => {
 
   const handleSimulate = () => {
     setIsSimulating(true);
-    // calcula imediatamente, mas mantém o loader visível por 4s para criar expectativa
+    setSimCountdown(5);
+    // calcula imediatamente, mas mantém o loader visível por 5s para criar expectativa
     const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual);
     const faixa = selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null;
+
+    // Contador regressivo
+    const tickInterval = window.setInterval(() => {
+      setSimCountdown((prev) => (prev > 1 ? prev - 1 : 0));
+    }, 1000);
+
     window.setTimeout(() => {
+      window.clearInterval(tickInterval);
       setResult(r);
       setResultFaixa(faixa);
       setIsSimulating(false);
-    }, 6000);
+    }, 5000);
   };
 
   const scrollTo = (id: string) => {
