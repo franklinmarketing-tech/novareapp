@@ -480,7 +480,7 @@ const YieldGuide = () => {
       <section id="intro" className="py-10 md:py-14">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="grid lg:grid-cols-2 gap-8 items-center">
               <motion.div variants={fadeUp} custom={0} className="space-y-6">
                 <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Cenário Atual</span>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight leading-[1.15]">
@@ -532,7 +532,7 @@ const YieldGuide = () => {
       {/* ── RENDA FIXA TABLE ────────────────────── */}
       <section id="renda-fixa" className="py-10 md:py-14 bg-muted/40">
         <div className="max-w-5xl mx-auto px-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
               <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Simulação</span>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
@@ -579,7 +579,7 @@ const YieldGuide = () => {
       {/* ── BENTO GRID — INVEST TYPES ───────────── */}
       <section className="py-10 md:py-14">
         <div className="max-w-6xl mx-auto px-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
               <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Categorias</span>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
@@ -1654,7 +1654,7 @@ const YieldGuide = () => {
       {/* ── TESTIMONIALS ────────────────────────── */}
       <section className="py-10 md:py-14 bg-muted/40">
         <div className="max-w-6xl mx-auto px-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
               <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Depoimentos</span>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
@@ -1699,7 +1699,7 @@ const YieldGuide = () => {
               <CardContent className="p-0">
                 <div className="grid lg:grid-cols-2">
                   {/* Left */}
-                  <motion.div variants={fadeUp} custom={0} className="p-8 md:p-12 space-y-6 flex flex-col justify-center">
+                  <motion.div variants={fadeUp} custom={0} className="p-6 md:p-10 space-y-4 flex flex-col justify-center">
                     <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Consultoria Novare</span>
                     <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-[1.15]">
                       Conte com um especialista para investir melhor
@@ -1880,7 +1880,7 @@ const YieldGuide = () => {
       {/* ── FAQ ──────────────────────────────────── */}
       <section id="faq" className="py-10 md:py-14 bg-muted/40">
         <div className="max-w-3xl mx-auto px-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4">
               <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">FAQ</span>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
@@ -1909,7 +1909,7 @@ const YieldGuide = () => {
       {/* ── QUEM SOMOS ──────────────────────────── */}
       <section id="quem-somos" className="py-10 md:py-14">
         <div className="max-w-5xl mx-auto px-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-12">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-5">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4 max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                 Conheça os nossos{" "}
@@ -1920,7 +1920,7 @@ const YieldGuide = () => {
               </p>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={1} className="flex justify-center gap-12 md:gap-20">
+            <motion.div variants={fadeUp} custom={1} className="flex justify-center gap-8 md:gap-14">
               {founders.map((f, i) => (
                 <motion.button
                   key={f.id}
@@ -2139,7 +2139,7 @@ const YieldGuide = () => {
                     custom={1}
                     className="p-8 md:p-12 flex flex-col justify-center"
                   >
-                    <div className="max-w-sm mx-auto lg:mx-0 w-full space-y-8">
+                    <div className="max-w-sm mx-auto lg:mx-0 w-full space-y-5">
                       <div className="space-y-3">
                         <img src={logoPreta} alt="Novare" className="h-7" />
                         <h2 className="text-2xl font-bold text-foreground tracking-tight">
