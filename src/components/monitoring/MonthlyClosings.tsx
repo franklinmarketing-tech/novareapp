@@ -269,7 +269,15 @@ const MonthlyClosings = ({ clientId, clientName, isAdmin }: Props) => {
 
       const monthRef = firstOfMonth(targetYear, targetMonth);
 
-      const { error } = await supabase.from("monthly_closings").insert({
+      // Se já existe (ex.: reaberto), atualiza em vez de inserir
+      const { data: existing } = await supabase
+        .from("monthly_closings")
+        .select("id")
+        .eq("client_id", clientId)
+        .eq("month_ref", monthRef)
+        .maybeSingle();
+
+      const payload = {
         client_id: clientId,
         month_ref: monthRef,
         status: "fechado",
@@ -291,14 +299,16 @@ const MonthlyClosings = ({ clientId, clientName, isAdmin }: Props) => {
         action_plan_snapshot: actionItems,
         notes: notes.trim() || null,
         closed_by: user.id,
-      });
+        closed_at: new Date().toISOString(),
+        reopened_at: null,
+        reopened_by: null,
+      };
 
-      if (error) {
-        if (error.code === "23505") {
-          throw new Error("Este mês já tem um fechamento. Reabra-o se precisar refazer.");
-        }
-        throw error;
-      }
+      const { error } = existing
+        ? await supabase.from("monthly_closings").update(payload).eq("id", existing.id)
+        : await supabase.from("monthly_closings").insert(payload);
+
+      if (error) throw error;
 
       toast({ title: "Mês fechado!", description: "Snapshot completo registrado." });
       setCloseOpen(false);
