@@ -335,10 +335,11 @@ const ScrollingPills = ({ onPillClick }: { onPillClick: (target: string) => void
 
 /* ── page component ────────────────────────────── */
 const YieldGuide = () => {
-  const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: 0 });
+  const _preFaixa = bentoFeatures.find((b) => b.title === "Prefixado") ?? bentoFeatures[0];
+  const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: _preFaixa.rentAnual });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
   const [result, setResult] = useState<SimResult | null>(null);
-  const [selectedFaixa, setSelectedFaixa] = useState<string | null>(null);
+  const [selectedFaixa, setSelectedFaixa] = useState<string | null>(_preFaixa.title);
   const [resultFaixa, setResultFaixa] = useState<typeof bentoFeatures[number] | null>(null);
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
