@@ -5,6 +5,7 @@ import {
   Phone, MessageCircle, BarChart3, Wallet, PiggyBank, Lock,
   Percent, Calendar, DollarSign, ArrowUpRight, Landmark, Menu, X,
   Users, Award, Briefcase, GraduationCap, Linkedin, Info, Receipt,
+  FileDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import leonardoImg from "@/assets/leonardo.png";
 import newsletterHero from "@/assets/newsletter-hero.jpg";
 import { SEO } from "@/components/SEO";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateRendimentoPDF } from "@/lib/generateRendimentoPDF";
 
 /* ── founder data ──────────────────────────────── */
 const founders = [
@@ -346,6 +348,7 @@ const YieldGuide = () => {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
   const [isSimulating, setIsSimulating] = useState(false);
+  const [simCountdown, setSimCountdown] = useState(5);
 
   useEffect(() => {
     const onScroll = () => {
@@ -392,14 +395,22 @@ const YieldGuide = () => {
 
   const handleSimulate = () => {
     setIsSimulating(true);
-    // calcula imediatamente, mas mantém o loader visível por 4s para criar expectativa
+    setSimCountdown(5);
+    // calcula imediatamente, mas mantém o loader visível por 5s para criar expectativa
     const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual);
     const faixa = selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null;
+
+    // Contador regressivo
+    const tickInterval = window.setInterval(() => {
+      setSimCountdown((prev) => (prev > 1 ? prev - 1 : 0));
+    }, 1000);
+
     window.setTimeout(() => {
+      window.clearInterval(tickInterval);
       setResult(r);
       setResultFaixa(faixa);
       setIsSimulating(false);
-    }, 6000);
+    }, 5000);
   };
 
   const scrollTo = (id: string) => {
@@ -1850,39 +1861,66 @@ const YieldGuide = () => {
                       </p>
                     </div>
 
-                    {/* Botão pulsante 3D */}
-                    <div className="relative shrink-0">
-                      {/* Halos pulsantes */}
-                      <motion.span
-                        className="absolute inset-0 rounded-xl bg-accent"
-                        animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-                      />
-                      <motion.span
-                        className="absolute inset-0 rounded-xl bg-accent"
-                        animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
-                      />
+                    {/* Botões de ação */}
+                    <div className="relative shrink-0 flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto">
+                      {/* Botão Falar com especialista (pulsante 3D) */}
+                      <div className="relative">
+                        {/* Halos pulsantes */}
+                        <motion.span
+                          className="absolute inset-0 rounded-xl bg-accent"
+                          animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                        />
+                        <motion.span
+                          className="absolute inset-0 rounded-xl bg-accent"
+                          animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
+                        />
+                        <motion.button
+                          onClick={() => window.open(whatsappUrl, "_blank")}
+                          whileHover={{ y: -3, scale: 1.03 }}
+                          whileTap={{ y: 0, scale: 0.98 }}
+                          animate={{ scale: [1, 1.04, 1] }}
+                          transition={{
+                            scale: { duration: 1.6, repeat: Infinity, ease: "easeInOut" },
+                            y: { type: "spring", stiffness: 400, damping: 15 },
+                          }}
+                          className="relative z-10 inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-5 md:px-6 py-3 rounded-xl font-bold text-sm md:text-base overflow-hidden group whitespace-nowrap w-full"
+                          style={{
+                            boxShadow:
+                              "0 10px 26px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -3px 0 hsl(var(--accent) / 0.5)",
+                          }}
+                        >
+                          {/* Shine sweep */}
+                          <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                          <MessageCircle className="relative z-10 h-4 w-4 md:h-5 md:w-5" />
+                          <span className="relative z-10">Falar com especialista</span>
+                          <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                        </motion.button>
+                      </div>
+
+                      {/* Botão Baixar PDF do rendimento mensal */}
                       <motion.button
-                        onClick={() => window.open(whatsappUrl, "_blank")}
-                        whileHover={{ y: -3, scale: 1.03 }}
+                        onClick={() => generateRendimentoPDF(result, {
+                          idadeAtual: sim.idadeAtual,
+                          idadeAposent: sim.idadeAposent,
+                          patrimonioAtual: sim.patrimonioAtual,
+                          aporte: sim.aporte,
+                          rendaDesejada: sim.rendaDesejada,
+                          rentabilidadeAnual: rentAnual,
+                        })}
+                        whileHover={{ y: -2, scale: 1.02 }}
                         whileTap={{ y: 0, scale: 0.98 }}
-                        animate={{ scale: [1, 1.04, 1] }}
-                        transition={{
-                          scale: { duration: 1.6, repeat: Infinity, ease: "easeInOut" },
-                          y: { type: "spring", stiffness: 400, damping: 15 },
-                        }}
-                        className="relative z-10 inline-flex items-center gap-2 bg-accent text-accent-foreground px-5 md:px-6 py-3 rounded-xl font-bold text-sm md:text-base overflow-hidden group whitespace-nowrap"
+                        className="relative z-10 inline-flex items-center justify-center gap-2 px-5 md:px-6 py-2.5 rounded-xl font-bold text-xs md:text-sm whitespace-nowrap transition-all w-full group"
                         style={{
-                          boxShadow:
-                            "0 10px 26px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -3px 0 hsl(var(--accent) / 0.5)",
+                          background: "linear-gradient(180deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.03))",
+                          border: "1px solid hsl(var(--accent) / 0.4)",
+                          color: "hsl(var(--accent))",
+                          boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.08)",
                         }}
                       >
-                        {/* Shine sweep */}
-                        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                        <MessageCircle className="relative z-10 h-4 w-4 md:h-5 md:w-5" />
-                        <span className="relative z-10">Falar com especialista</span>
-                        <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                        <FileDown className="h-4 w-4" />
+                        <span>Ver rendimento mensal em PDF</span>
                       </motion.button>
                     </div>
                   </div>
@@ -2559,10 +2597,31 @@ const YieldGuide = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="text-sm text-white/60 mb-6"
+                className="text-sm text-white/60 mb-4"
               >
                 Nossa inteligência financeira está montando seu cenário…
               </motion.p>
+
+              {/* Contador regressivo */}
+              <div className="flex items-center justify-center gap-2 mb-5">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold">
+                  Pronto em
+                </span>
+                <motion.div
+                  key={simCountdown}
+                  initial={{ scale: 0.6, opacity: 0, y: -6 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 18 }}
+                  className="relative inline-flex items-center justify-center min-w-[44px] h-9 px-2.5 rounded-lg font-mono font-black text-base text-accent"
+                  style={{
+                    background: "linear-gradient(180deg, hsl(var(--accent) / 0.15), hsl(var(--accent) / 0.05))",
+                    border: "1px solid hsl(var(--accent) / 0.35)",
+                    boxShadow: "0 0 18px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.1)",
+                  }}
+                >
+                  {simCountdown}s
+                </motion.div>
+              </div>
 
               {/* Barra de progresso animada */}
               <div className="relative h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden mb-5">
@@ -2575,7 +2634,7 @@ const YieldGuide = () => {
                   }}
                   initial={{ width: "0%" }}
                   animate={{ width: "100%" }}
-                  transition={{ duration: 6, ease: "easeInOut" }}
+                  transition={{ duration: 5, ease: "easeInOut" }}
                 />
                 {/* Shimmer */}
                 <motion.div
@@ -2589,9 +2648,9 @@ const YieldGuide = () => {
               <div className="space-y-2 text-left">
                 {[
                   { label: "Analisando seu perfil de investidor", delay: 0 },
-                  { label: "Projetando juros compostos", delay: 1.5 },
-                  { label: "Calculando IR e renda líquida", delay: 3.0 },
-                  { label: "Finalizando relatório", delay: 4.5 },
+                  { label: "Projetando juros compostos", delay: 1.2 },
+                  { label: "Calculando IR e renda líquida", delay: 2.5 },
+                  { label: "Finalizando relatório", delay: 3.8 },
                 ].map((step, i) => (
                   <motion.div
                     key={i}
