@@ -39,6 +39,26 @@ const NewClient = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Estado do diálogo pós-cadastro
+  const [postCreate, setPostCreate] = useState<{
+    open: boolean;
+    slug: string | null;
+    email: string;
+    password: string;
+    name: string;
+  }>({ open: false, slug: null, email: "", password: "", name: "" });
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 1500);
+    } catch {
+      toast({ title: "Não foi possível copiar", variant: "destructive" });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
@@ -60,7 +80,7 @@ const NewClient = () => {
       toast({
         title: data?.alreadyExisted ? "Cliente já existia" : "Cliente cadastrado!",
         description: data?.alreadyExisted
-          ? `Continuando o onboarding de ${email}.`
+          ? `Senha redefinida e e-mail reenviado para ${email}.`
           : `E-mail com credenciais enviado para ${email}.`,
       });
 
@@ -69,7 +89,15 @@ const NewClient = () => {
         const { data: client } = await supabase.from("clients").select("slug").eq("id", clientId).maybeSingle();
         finalSlug = client?.slug;
       }
-      navigate(finalSlug ? `/admin/cliente/${finalSlug}/onboarding` : "/admin/clientes");
+
+      // Abre diálogo com as opções de onboarding
+      setPostCreate({
+        open: true,
+        slug: finalSlug ?? null,
+        email,
+        password,
+        name,
+      });
     } catch (error: any) {
       toast({
         title: "Erro ao cadastrar cliente",
