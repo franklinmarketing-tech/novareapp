@@ -1898,7 +1898,7 @@ const YieldGuide = () => {
                       Sem compromisso
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <TrendingUp className="h-3.5 w-3.5 text-accent" />
+                      <TrendingUp className="h-3 w-3 text-accent" />
                       Resposta em até 1h útil
                     </span>
                   </div>
