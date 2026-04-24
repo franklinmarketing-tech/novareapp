@@ -923,7 +923,7 @@ const YieldGuide = () => {
                     {/* 3D Button */}
                     <button
                       onClick={handleSimulate}
-                      className="group relative z-10 w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-semibold text-base shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 mt-8"
+                      className="group relative z-10 w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground px-8 py-3.5 rounded-2xl font-semibold text-base shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 mt-5"
                     >
                       <BarChart3 className="h-6 w-6" />
                       Simular Aposentadoria
