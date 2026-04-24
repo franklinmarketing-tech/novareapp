@@ -1252,7 +1252,7 @@ const YieldGuide = () => {
                       {result && (
                         <div className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-info font-bold">Período</p>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-primary font-bold">Período</p>
                             <p className="text-lg md:text-xl font-extrabold text-white mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-white/60 font-bold">anos</span></p>
                             <p className="text-xs text-white/50 mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
@@ -1297,7 +1297,7 @@ const YieldGuide = () => {
                       ].map((k) => {
                         const Icon = k.icon;
                         const toneClasses = {
-                          info: { ring: "border-info/30", icon: "text-info", bg: "bg-info/15", value: "text-info", label: "text-info" },
+                          info: { ring: "border-primary/30", icon: "text-primary", bg: "bg-primary/15", value: "text-primary", label: "text-primary" },
                           success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
                           warning: { ring: "border-warning/30", icon: "text-warning", bg: "bg-warning/15", value: "text-warning", label: "text-warning" },
                         }[k.tone];
@@ -1373,8 +1373,8 @@ const YieldGuide = () => {
                             </p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-info font-bold">Bruta/mês</p>
-                            <p className="text-base md:text-lg font-extrabold text-info tabular-nums truncate" title={result.rendaMensal}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-primary font-bold">Bruta/mês</p>
+                            <p className="text-base md:text-lg font-extrabold text-primary tabular-nums truncate" title={result.rendaMensal}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
                             </p>
                           </div>
