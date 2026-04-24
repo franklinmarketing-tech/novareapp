@@ -888,7 +888,7 @@ const YieldGuide = () => {
         className="py-6 md:py-10 relative overflow-hidden"
         style={{
           background:
-            "radial-gradient(120% 70% at 50% 0%, hsl(var(--primary) / 0.45), transparent 60%), linear-gradient(180deg, hsl(215 55% 12%), hsl(220 50% 7%))",
+            "radial-gradient(120% 70% at 50% 0%, hsl(var(--primary) / 0.45), transparent 60%), linear-gradient(180deg, hsl(220 37% 22%), hsl(220 37% 18%))",
         }}
       >
         {/* Background orbs */}
@@ -990,11 +990,11 @@ const YieldGuide = () => {
             <motion.div variants={fadeUp} custom={2}>
               <div
                 className="rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]"
-                style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 40% 11%))" }}
+                style={{ background: "linear-gradient(145deg, hsl(220 37% 27%), hsl(220 37% 22%))" }}
               >
                 <div className="grid lg:grid-cols-2 lg:items-stretch">
                   {/* Simulator form — glassmorphism dark card */}
-                  <div className="p-5 md:p-7 relative flex flex-col" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
+                  <div className="p-5 md:p-7 relative flex flex-col" style={{ background: "linear-gradient(145deg, hsl(220 37% 27%), hsl(220 37% 23%))" }}>
                     {/* Subtle inner glow */}
                     <div className="absolute inset-0 rounded-l-3xl border border-white/[0.06] pointer-events-none" />
                     <motion.div
@@ -1136,7 +1136,7 @@ const YieldGuide = () => {
                       className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/30"
                       style={{
                         background:
-                          "linear-gradient(135deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.04) 55%, transparent), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))",
+                          "linear-gradient(135deg, hsl(var(--accent) / 0.14), hsl(var(--accent) / 0.04) 55%, transparent), linear-gradient(180deg, hsl(220 37% 27%), hsl(220 37% 22%))",
                         boxShadow:
                           "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
                       }}
@@ -1209,9 +1209,9 @@ const YieldGuide = () => {
                       style={{
                         background: result
                           ? result.atingeMeta
-                            ? "linear-gradient(135deg, hsl(var(--success) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))"
-                            : "linear-gradient(135deg, hsl(var(--warning) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))"
-                          : "linear-gradient(180deg, hsl(220 35% 13%), hsl(220 40% 9%))",
+                            ? "linear-gradient(135deg, hsl(var(--success) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 37% 27%), hsl(220 37% 22%))"
+                            : "linear-gradient(135deg, hsl(var(--warning) / 0.18), transparent 60%), linear-gradient(180deg, hsl(220 37% 27%), hsl(220 37% 22%))"
+                          : "linear-gradient(180deg, hsl(220 37% 27%), hsl(220 37% 22%))",
                         boxShadow: result
                           ? result.atingeMeta
                             ? "0 20px 50px -20px hsl(var(--success) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)"
@@ -1351,7 +1351,7 @@ const YieldGuide = () => {
                     className="flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden"
                     style={{
                       background:
-                        "radial-gradient(120% 80% at 100% 0%, hsl(var(--accent) / 0.08), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(220 70% 30% / 0.15), transparent 60%), linear-gradient(160deg, hsl(220 40% 11%), hsl(220 50% 7%))",
+                        "radial-gradient(120% 80% at 100% 0%, hsl(var(--accent) / 0.08), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(220 70% 30% / 0.15), transparent 60%), linear-gradient(160deg, hsl(220 37% 24%), hsl(220 37% 20%))",
                     }}
                   >
                     {/* Floating ambient orbs */}
@@ -1449,7 +1449,7 @@ const YieldGuide = () => {
                       className="relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden border border-accent/20 group"
                       style={{
                         background:
-                          "linear-gradient(135deg, hsl(var(--accent) / 0.12), hsl(var(--accent) / 0.04) 50%, transparent), linear-gradient(180deg, hsl(220 35% 14%), hsl(220 40% 10%))",
+                          "linear-gradient(135deg, hsl(var(--accent) / 0.12), hsl(var(--accent) / 0.04) 50%, transparent), linear-gradient(180deg, hsl(220 37% 28%), hsl(220 37% 23%))",
                         boxShadow:
                           "0 20px 50px -20px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06), inset 0 0 0 1px hsl(0 0% 100% / 0.02)",
                       }}
@@ -1554,7 +1554,7 @@ const YieldGuide = () => {
                             key={k.label}
                             className={`relative rounded-2xl p-4 md:p-5 border ${toneClasses.ring} overflow-hidden min-w-0`}
                             style={{
-                              background: "linear-gradient(160deg, hsl(220 35% 13%), hsl(220 40% 9%))",
+                              background: "linear-gradient(160deg, hsl(220 37% 27%), hsl(220 37% 22%))",
                               boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.04)",
                             }}
                             whileHover={{ y: -2, scale: 1.02 }}
@@ -1585,7 +1585,7 @@ const YieldGuide = () => {
                   className="relative rounded-2xl p-4 md:p-5 overflow-hidden"
                   style={{
                     background:
-                      "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(220 35% 14%), hsl(220 40% 9%))",
+                      "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(220 37% 28%), hsl(220 37% 23%))",
                     border: "1px solid hsl(var(--accent) / 0.25)",
                     boxShadow:
                       "0 16px 40px -15px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
@@ -1747,7 +1747,7 @@ const YieldGuide = () => {
                     variants={fadeUp}
                     custom={1.5}
                     className="rounded-3xl overflow-hidden border border-white/[0.06] shadow-[0_15px_40px_-15px_rgba(0,0,0,0.6)]"
-                    style={{ background: "linear-gradient(160deg, hsl(220 40% 13%), hsl(220 45% 8%))" }}
+                    style={{ background: "linear-gradient(160deg, hsl(220 37% 26%), hsl(220 37% 21%))" }}
                   >
                     <div className="p-6 md:p-8">
                       <div className="flex items-start gap-4 mb-6">
@@ -1858,7 +1858,7 @@ const YieldGuide = () => {
                 {/* Gráfico */}
                 <div
                   className="lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                  style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))", border: "1px solid rgba(255,255,255,0.06)" }}
+                  style={{ background: "linear-gradient(145deg, hsl(220 37% 27%), hsl(220 37% 23%))", border: "1px solid rgba(255,255,255,0.06)" }}
                 >
                   <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                     <div>
@@ -1910,7 +1910,7 @@ const YieldGuide = () => {
                         />
                         <RTooltip
                           contentStyle={{
-                            background: "hsl(220 40% 10%)",
+                            background: "hsl(220 37% 24%)",
                             border: "1px solid rgba(255,255,255,0.08)",
                             borderRadius: 12,
                             color: "white",
@@ -1938,7 +1938,7 @@ const YieldGuide = () => {
                 {/* Tabela */}
                 <div
                   className="lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                  style={{ background: "linear-gradient(160deg, hsl(220 40% 14%), hsl(220 45% 9%))", border: "1px solid rgba(255,255,255,0.06)" }}
+                  style={{ background: "linear-gradient(160deg, hsl(220 37% 27%), hsl(220 37% 22%))", border: "1px solid rgba(255,255,255,0.06)" }}
                 >
                   <div className="mb-5">
                     <p className="text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1">Tabela ano a ano</p>
@@ -1946,7 +1946,7 @@ const YieldGuide = () => {
                   </div>
                   <div className="max-h-[340px] overflow-y-auto pr-1 -mr-1 sidebar-scroll">
                     <Table>
-                      <TableHeader className="sticky top-0 z-10" style={{ background: "hsl(220 45% 11%)" }}>
+                      <TableHeader className="sticky top-0 z-10" style={{ background: "hsl(220 37% 26%)" }}>
                         <TableRow className="border-white/[0.06] hover:bg-transparent">
                           <TableHead className="text-[10px] uppercase tracking-wider text-white/40 font-semibold h-9">Idade</TableHead>
                           <TableHead className="text-[10px] uppercase tracking-wider text-white/40 font-semibold text-right h-9">Investido</TableHead>
@@ -2577,7 +2577,7 @@ const YieldGuide = () => {
             className="fixed inset-0 z-[100] flex items-center justify-center px-6"
             style={{
               background:
-                "radial-gradient(80% 60% at 50% 50%, hsl(220 50% 12% / 0.85), hsl(220 60% 5% / 0.95))",
+                "radial-gradient(80% 60% at 50% 50%, hsl(220 37% 24% / 0.9), hsl(220 37% 18% / 0.95))",
               backdropFilter: "blur(12px)",
               WebkitBackdropFilter: "blur(12px)",
             }}
@@ -2604,7 +2604,7 @@ const YieldGuide = () => {
               className="relative w-full max-w-md rounded-3xl p-8 md:p-10 text-center"
               style={{
                 background:
-                  "linear-gradient(160deg, hsl(220 35% 14% / 0.9), hsl(220 45% 8% / 0.9))",
+                  "linear-gradient(160deg, hsl(220 37% 27% / 0.92), hsl(220 37% 22% / 0.92))",
                 border: "1px solid hsl(0 0% 100% / 0.08)",
                 boxShadow:
                   "0 30px 80px -20px hsl(var(--accent) / 0.4), 0 0 0 1px hsl(var(--accent) / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
