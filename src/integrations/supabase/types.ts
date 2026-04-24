@@ -725,6 +725,7 @@ export type Database = {
           client_id: string
           created_at: string
           description: string | null
+          due_day: number | null
           id: string
           is_fixed: boolean | null
           updated_at: string
@@ -735,6 +736,7 @@ export type Database = {
           client_id: string
           created_at?: string
           description?: string | null
+          due_day?: number | null
           id?: string
           is_fixed?: boolean | null
           updated_at?: string
@@ -745,6 +747,7 @@ export type Database = {
           client_id?: string
           created_at?: string
           description?: string | null
+          due_day?: number | null
           id?: string
           is_fixed?: boolean | null
           updated_at?: string
