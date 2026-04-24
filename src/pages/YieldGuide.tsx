@@ -1545,7 +1545,7 @@ const YieldGuide = () => {
                       ].map((k) => {
                         const Icon = k.icon;
                         const toneClasses = {
-                          info: { ring: "border-[hsl(210_100%_60%)]/40", icon: "text-[hsl(210_100%_65%)]", bg: "bg-[hsl(210_100%_60%)]/15", value: "text-[hsl(210_100%_65%)]", label: "text-[hsl(210_100%_65%)]" },
+                          info: { ring: "border-[hsl(16_80%_55%)]/40", icon: "text-[hsl(16_80%_62%)]", bg: "bg-[hsl(16_80%_55%)]/15", value: "text-[hsl(16_80%_62%)]", label: "text-[hsl(16_80%_62%)]" },
                           success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
                           warning: { ring: "border-warning/30", icon: "text-warning", bg: "bg-warning/15", value: "text-warning", label: "text-warning" },
                         }[k.tone];
