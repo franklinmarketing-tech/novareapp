@@ -34,7 +34,7 @@ const founders = [
     shortBio: "Consultor Wealth de Investimentos",
     linkedin: "https://www.linkedin.com/in/jeffersonfreitas",
     highlights: [
-      { icon: Briefcase, text: "Ex-Santander (Especialista Van Gogh / Select) e XP Inc." },
+      { icon: Briefcase, text: "Santander (Especialista Van Gogh / Select) e XP Inc." },
       { icon: TrendingUp, text: "+R$ 40 milhões em captação líquida em um único ano" },
       { icon: GraduationCap, text: "MBA PAAP CNEP-I · Aprovado CNPI (Conteúdo Brasileiro)" },
       { icon: Shield, text: "13 anos de voluntariado em Tesouraria na CCB" },
@@ -50,7 +50,7 @@ const founders = [
     shortBio: "Consultor Wealth de Investimentos",
     linkedin: "https://www.linkedin.com/in/leonardofreitasdeoliveira",
     highlights: [
-      { icon: Briefcase, text: "Ex-líder Triple AAA no Santander · Wave Capital (BTG)" },
+      { icon: Briefcase, text: "Líder Triple AAA no Santander · Wave Capital (BTG)" },
       { icon: Users, text: "Liderou +20 profissionais na região de Limeira" },
       { icon: Award, text: "Quadrante A1+ recorrente — referência em assessoria" },
       { icon: GraduationCap, text: "Bacharel em Administração · ANCORD" },
@@ -692,7 +692,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR ───────────────────────────── */}
       <section
         id="simulador"
-        className="py-10 md:py-16 relative overflow-hidden"
+        className="py-6 md:py-10 relative overflow-hidden"
         style={{
           background:
             "radial-gradient(120% 70% at 50% 0%, hsl(var(--primary) / 0.45), transparent 60%), linear-gradient(180deg, hsl(215 55% 12%), hsl(220 50% 7%))",
@@ -715,40 +715,39 @@ const YieldGuide = () => {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6 md:space-y-8">
-            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-4">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-4 md:space-y-5">
+            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-2.5">
               {/* Logo Novare */}
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl border border-white/10 backdrop-blur-md"
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border border-white/10 backdrop-blur-md"
                 style={{
                   background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02))",
                   boxShadow: "0 8px 24px -8px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.08)",
                 }}
               >
-                <img src={logoBranca} alt="Novare" className="h-7 md:h-8 w-auto" />
-                <span className="h-5 w-px bg-white/15" />
+                <img src={logoBranca} alt="Novare" className="h-6 md:h-7 w-auto" />
+                <span className="h-4 w-px bg-white/15" />
                 <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">Simulador</span>
               </motion.div>
 
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.05]">
-                Projete sua renda
-                <br />
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.05]">
+                Projete sua renda{" "}
                 <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/60 bg-clip-text text-transparent">
                   no longo prazo
                 </span>
               </h2>
-              <p className="text-white/60 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-                Use nosso simulador gratuito para planejar sua aposentadoria com precisão profissional.
+              <p className="text-white/60 text-sm max-w-xl mx-auto leading-relaxed">
+                Simulador gratuito para planejar sua aposentadoria com precisão profissional.
               </p>
             </motion.div>
 
             {/* Submenu de escolha rápida de taxa */}
             <motion.div variants={fadeUp} custom={1} className="max-w-4xl mx-auto w-full">
-              <div className="flex items-center justify-center gap-2 mb-3">
+              <div className="flex items-center justify-center gap-2 mb-2">
                 <span className="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold">Escolha uma taxa de referência</span>
               </div>
               <div className="grid grid-cols-3 gap-2 md:gap-3">
@@ -797,7 +796,7 @@ const YieldGuide = () => {
               <div className="rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]">
                 <div className="grid lg:grid-cols-5">
                   {/* Simulator form — glassmorphism dark card */}
-                  <div className="lg:col-span-3 p-6 md:p-10 relative" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
+                  <div className="lg:col-span-3 p-5 md:p-7 relative" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
                     {/* Subtle inner glow */}
                     <div className="absolute inset-0 rounded-l-3xl border border-white/[0.06] pointer-events-none" />
                     <motion.div
@@ -807,7 +806,7 @@ const YieldGuide = () => {
                       transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     />
 
-                    <div className="relative z-10 space-y-6">
+                    <div className="relative z-10 space-y-4">
                       <div className="grid sm:grid-cols-2 gap-x-6 gap-y-5">
                         {([
                           { label: "Qual sua idade hoje?", key: "idadeAtual", hint: "anos", kind: "int" as const, placeholder: "ex: 30" },
@@ -924,7 +923,7 @@ const YieldGuide = () => {
                     {/* 3D Button */}
                     <button
                       onClick={handleSimulate}
-                      className="group relative z-10 w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-semibold text-base shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 mt-8"
+                      className="group relative z-10 w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground px-8 py-3.5 rounded-2xl font-semibold text-base shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 mt-5"
                     >
                       <BarChart3 className="h-6 w-6" />
                       Simular Aposentadoria
