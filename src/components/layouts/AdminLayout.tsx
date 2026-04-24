@@ -22,6 +22,7 @@ import {
   Lock,
   Shield,
   HelpCircle,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
