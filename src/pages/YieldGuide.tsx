@@ -345,6 +345,7 @@ const YieldGuide = () => {
   const [mobileNav, setMobileNav] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
+  const [isSimulating, setIsSimulating] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
