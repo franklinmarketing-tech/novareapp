@@ -144,6 +144,8 @@ OBJETIVOS:
 ${goals.map(g => `- ${g.description}: R$ ${Number(g.target_amount || 0).toFixed(0)}, prioridade ${g.priority || "N/A"}, prazo ${g.deadline || "N/A"}`).join("\n") || "- Sem objetivos"}
 `.trim();
 
+    const hasGoals = goals.length > 0;
+
     const systemPrompt = `Você é um consultor financeiro sênior brasileiro especializado em planejamento financeiro pessoal. Sua função é analisar os dados financeiros reais do cliente e gerar recomendações personalizadas e acionáveis.
 
 REGRAS CRÍTICAS:
@@ -156,8 +158,15 @@ REGRAS CRÍTICAS:
 7. Gere entre 3 e 6 recomendações
 8. A severity deve refletir urgência real: "alta" = precisa agir agora, "media" = importante mas não urgente, "baixa" = oportunidade de otimização
 9. Para cada recomendação, inclua 2 a 4 sub-tarefas concretas e sequenciais que detalham COMO executar a ação principal
-10. IMPORTANTE: Cada recomendação DEVE estar vinculada a um dos objetivos do cliente listados abaixo. Use o campo "goal_description" para vincular. Se não houver objetivo adequado, use o objetivo mais relevante.
-11. As recomendações devem sempre focar em COMO atingir os objetivos do cliente.
+
+ALINHAMENTO COM OBJETIVOS DO CLIENTE (REGRA PRINCIPAL):
+${hasGoals
+  ? `10. O cliente possui objetivos cadastrados (listados abaixo). PRIORIZE recomendações que ajudem a atingi-los. Para cada uma:
+    - Se a recomendação avança um objetivo existente, copie em "goal_description" a descrição EXATA do objetivo do cliente (sem reformular).
+    - Se você identificar uma oportunidade financeira relevante (ex: dívida cara, falta de reserva de emergência, ausência de seguro essencial, oportunidade tributária) que NÃO está coberta pelos objetivos atuais e cuja não-ação prejudica o cliente, gere a recomendação mesmo assim e em "goal_description" proponha um NOVO objetivo curto, claro e mensurável (ex: "Quitar cartão de crédito em 12 meses", "Construir reserva de emergência de 6 meses").
+11. Tente cobrir TODOS os objetivos importantes do cliente — não deixe um objetivo prioritário sem pelo menos uma recomendação.`
+  : `10. O cliente NÃO possui objetivos cadastrados. Para cada recomendação, proponha em "goal_description" um objetivo financeiro novo, claro e mensurável que faça sentido com a ação sugerida (ex: "Quitar cartão em 12 meses", "Construir reserva de 6 meses de despesas", "Investir 20% da renda mensal").`}
+12. As recomendações devem sempre focar em COMO atingir os objetivos (existentes ou propostos).
 
 ${financialContext}`;
 
