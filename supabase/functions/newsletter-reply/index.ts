@@ -163,16 +163,19 @@ Deno.serve(async (req) => {
     if (replyInsErr) console.error("Reply log error:", replyInsErr);
 
     if (emailStatus === "sent") {
+      const { data: cur } = await admin
+        .from("newsletter_leads")
+        .select("reply_count")
+        .eq("id", leadId)
+        .maybeSingle();
       await admin
         .from("newsletter_leads")
         .update({
           status: "responded",
           last_replied_at: new Date().toISOString(),
-          reply_count: ((lead as any).reply_count ?? 0) + 1,
+          reply_count: ((cur?.reply_count as number | undefined) ?? 0) + 1,
         })
         .eq("id", leadId);
-      // Increment via raw — mais seguro:
-      await admin.rpc as any; // noop
     }
 
     if (emailStatus === "failed") {
