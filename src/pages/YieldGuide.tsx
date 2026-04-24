@@ -1362,7 +1362,7 @@ const YieldGuide = () => {
                     />
                     <motion.div
                       className="pointer-events-none absolute -bottom-24 -left-16 w-56 h-56 rounded-full blur-[100px]"
-                      style={{ background: "hsl(220 80% 50% / 0.12)" }}
+                      style={{ background: "hsl(16 65% 50% / 0.12)" }}
                       animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.45, 0.25] }}
                       transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                     />
