@@ -376,7 +376,12 @@ const YieldGuide = () => {
 
   const scrollTo = (id: string) => {
     setMobileNav(false);
-    document.querySelector(id)?.scrollIntoView({ behavior: "smooth" });
+    const el = document.querySelector(id) as HTMLElement | null;
+    if (!el) return;
+    // offset = altura do header fixo (h-20 = 80px / h-16 quando rolado = 64px) + folga
+    const headerH = window.scrollY > 20 ? 64 : 80;
+    const top = el.getBoundingClientRect().top + window.scrollY - headerH - 16;
+    window.scrollTo({ top, behavior: "smooth" });
   };
 
   const whatsappUrl = "https://api.whatsapp.com/send/?phone=5519983402827&text=Li+o+conteúdo+da+Novare+e+gostaria+de+falar+com+um+consultor";
@@ -410,16 +415,16 @@ const YieldGuide = () => {
         {/* faixa accent superior 3D */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
 
-        <div className={`max-w-6xl mx-auto flex items-center justify-between px-6 transition-all duration-300 ${scrolled ? "h-16" : "h-20"}`}>
+        <div className={`max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 transition-all duration-300 ${scrolled ? "h-14 sm:h-16" : "h-16 sm:h-20"}`}>
           <motion.img
             src={logoPreta}
             alt="Novare"
-            className={`transition-all duration-300 ${scrolled ? "h-8" : "h-10"}`}
+            className={`transition-all duration-300 ${scrolled ? "h-7 sm:h-8" : "h-8 sm:h-10"}`}
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
           />
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-1 xl:gap-2">
             {navLinks.map((l, i) => {
               const id = l.href.replace("#", "");
               const isActive = activeSection === id;
@@ -432,7 +437,7 @@ const YieldGuide = () => {
                   transition={{ delay: 0.1 + i * 0.05, duration: 0.4 }}
                   whileHover={{ y: -2 }}
                   whileTap={{ y: 0, scale: 0.97 }}
-                  className={`relative group px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-200 ${
+                  className={`relative group px-3 xl:px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-200 ${
                     isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -464,13 +469,13 @@ const YieldGuide = () => {
             })}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.button
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ y: 0, scale: 0.98 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
               onClick={() => window.open(whatsappUrl, "_blank")}
-              className="hidden sm:inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-5 py-2.5 font-semibold text-sm relative overflow-hidden group"
+              className="hidden sm:inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-4 sm:px-5 py-2 sm:py-2.5 font-semibold text-xs sm:text-sm relative overflow-hidden group whitespace-nowrap"
               style={{
                 boxShadow:
                   "0 6px 18px -4px hsl(var(--accent) / 0.5), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -2px 0 hsl(var(--accent) / 0.4)",
@@ -481,7 +486,7 @@ const YieldGuide = () => {
               <span className="relative z-10">Fale conosco</span>
               <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </motion.button>
-            <button className="md:hidden text-foreground p-2 rounded-lg hover:bg-muted/60 transition-colors" onClick={() => setMobileNav(!mobileNav)}>
+            <button className="lg:hidden text-foreground p-2 rounded-lg hover:bg-muted/60 transition-colors" onClick={() => setMobileNav(!mobileNav)} aria-label="Abrir menu">
               {mobileNav ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
@@ -491,7 +496,7 @@ const YieldGuide = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl px-6 py-4 space-y-1"
+            className="lg:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl px-4 sm:px-6 py-4 space-y-1"
           >
             {navLinks.map((l, i) => {
               const id = l.href.replace("#", "");
