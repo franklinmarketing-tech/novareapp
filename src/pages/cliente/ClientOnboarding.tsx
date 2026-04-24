@@ -116,7 +116,7 @@ const ClientOnboardingPage = () => {
         setComportamental(c.behavioral_profile as any);
       }
       if (incomeRes.data?.length) setRendas(incomeRes.data.map((r) => ({ id: r.id, description: r.description, amount: r.amount.toString(), frequency: r.frequency, is_primary: r.is_primary ?? false, stability: r.stability ?? "media" })));
-      if (expenseRes.data?.length) setDespesas(expenseRes.data.map((e) => ({ id: e.id, category: e.category, amount: e.amount.toString(), description: e.description ?? "" })));
+      if (expenseRes.data?.length) setDespesas(expenseRes.data.map((e: any) => ({ id: e.id, category: e.category, amount: e.amount.toString(), description: e.description ?? "", is_fixed: e.is_fixed ?? true, due_day: e.due_day != null ? String(e.due_day) : "" })));
       if (debtRes.data?.length) setDividas(debtRes.data.map((d) => ({ id: d.id, type: d.type, creditor: d.creditor ?? "", total_amount: d.total_amount.toString(), monthly_payment: d.monthly_payment?.toString() ?? "", interest_rate: d.interest_rate?.toString() ?? "", remaining_months: d.remaining_months?.toString() ?? "" })));
       if (assetRes.data?.length) setPatrimonio(assetRes.data.map((a) => ({ id: a.id, type: a.type, description: a.description ?? "", estimated_value: a.estimated_value.toString() })));
       if (insuranceRes.data?.length) setSeguros(insuranceRes.data.map((ins) => ({ id: ins.id, type: ins.type, provider: ins.provider ?? "", monthly_premium: ins.monthly_premium?.toString() ?? "", coverage_amount: ins.coverage_amount?.toString() ?? "" })));
