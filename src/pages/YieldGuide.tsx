@@ -1223,8 +1223,8 @@ const YieldGuide = () => {
                             <DollarSign className="h-5 w-5 text-accent" strokeWidth={2.5} />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[10px] uppercase tracking-[0.15em] text-accent/80 font-bold">Patrimônio Bruto</p>
-                            <p className="text-[10px] text-white/40 mt-0.5">acumulado ao final</p>
+                            <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-accent font-extrabold">Patrimônio Bruto</p>
+                            <p className="text-xs md:text-sm text-white/60 mt-1 font-medium">acumulado ao final</p>
                           </div>
                         </div>
                         {result && (
@@ -1250,18 +1250,18 @@ const YieldGuide = () => {
                       </motion.p>
 
                       {result && (
-                        <div className="mt-3 pt-3 border-t border-white/[0.06] grid grid-cols-2 gap-3">
+                        <div className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Período</p>
-                            <p className="text-sm font-bold text-white/90 mt-0.5 tabular-nums">{result.anosAcumulo} anos</p>
-                            <p className="text-[10px] text-white/30">{result.mesesAcumulo} meses</p>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-primary font-bold">Período</p>
+                            <p className="text-lg md:text-xl font-extrabold text-white mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-white/60 font-bold">anos</span></p>
+                            <p className="text-xs text-white/50 mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Líquido após IR</p>
-                            <p className="text-sm font-bold text-accent mt-0.5 tabular-nums truncate" title={result.patrimonioLiquido}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Líquido após IR</p>
+                            <p className="text-lg md:text-xl font-extrabold text-success mt-1 tabular-nums truncate" title={result.patrimonioLiquido}>
                               {formatCompactBRL(result.patrimonioLiquidoNum)}
                             </p>
-                            <p className="text-[10px] text-white/30">IR de {result.aliquotaIR}%</p>
+                            <p className="text-xs text-white/50 mt-0.5">IR de {result.aliquotaIR}%</p>
                           </div>
                         </div>
                       )}
@@ -1276,7 +1276,7 @@ const YieldGuide = () => {
                           full: result?.totalInvestido,
                           sub: "Aportes somados",
                           icon: PiggyBank,
-                          tone: "neutral" as const,
+                          tone: "info" as const,
                         },
                         {
                           label: "Ganho líq.",
@@ -1284,7 +1284,7 @@ const YieldGuide = () => {
                           full: result?.ganhoLiquido,
                           sub: result ? `Bruto ${formatCompactBRL(result.patrimonioNum - result.totalInvestidoNum)}` : "—",
                           icon: TrendingUp,
-                          tone: "accent" as const,
+                          tone: "success" as const,
                         },
                         {
                           label: "Imposto",
@@ -1297,29 +1297,29 @@ const YieldGuide = () => {
                       ].map((k) => {
                         const Icon = k.icon;
                         const toneClasses = {
-                          neutral: { ring: "border-white/[0.08]", icon: "text-white/60", bg: "bg-white/[0.06]", value: "text-white" },
-                          accent: { ring: "border-accent/25", icon: "text-accent", bg: "bg-accent/15", value: "text-accent" },
-                          warning: { ring: "border-warning/20", icon: "text-warning", bg: "bg-warning/15", value: "text-warning" },
+                          info: { ring: "border-primary/30", icon: "text-primary", bg: "bg-primary/15", value: "text-primary", label: "text-primary" },
+                          success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
+                          warning: { ring: "border-warning/30", icon: "text-warning", bg: "bg-warning/15", value: "text-warning", label: "text-warning" },
                         }[k.tone];
                         return (
                           <motion.div
                             key={k.label}
-                            className={`relative rounded-2xl p-3.5 border ${toneClasses.ring} overflow-hidden min-w-0`}
+                            className={`relative rounded-2xl p-4 md:p-5 border ${toneClasses.ring} overflow-hidden min-w-0`}
                             style={{
                               background: "linear-gradient(160deg, hsl(220 35% 13%), hsl(220 40% 9%))",
                               boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.04)",
                             }}
-                            whileHover={{ y: -2, scale: 1.01 }}
+                            whileHover={{ y: -2, scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 300, damping: 22 }}
                           >
-                            <div className={`w-7 h-7 rounded-lg ${toneClasses.bg} flex items-center justify-center mb-2`}>
-                              <Icon className={`h-3.5 w-3.5 ${toneClasses.icon}`} strokeWidth={2.5} />
+                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl ${toneClasses.bg} flex items-center justify-center mb-2.5`}>
+                              <Icon className={`h-4 w-4 md:h-5 md:w-5 ${toneClasses.icon}`} strokeWidth={2.5} />
                             </div>
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold mb-1 truncate">{k.label}</p>
-                            <p className={`text-base md:text-lg font-bold ${toneClasses.value} tracking-tight tabular-nums break-words`} title={k.full}>
+                            <p className={`text-[11px] md:text-xs uppercase tracking-wider ${toneClasses.label} font-extrabold mb-1.5 truncate`}>{k.label}</p>
+                            <p className={`text-lg md:text-2xl font-black ${toneClasses.value} tracking-tight tabular-nums break-words`} title={k.full}>
                               {k.value}
                             </p>
-                            <p className="text-[9px] text-white/30 mt-0.5 truncate">{k.sub}</p>
+                            <p className="text-[11px] md:text-xs text-white/60 mt-1 truncate font-medium">{k.sub}</p>
                           </motion.div>
                         );
                       })}
@@ -1348,8 +1348,8 @@ const YieldGuide = () => {
                           <Wallet className="h-5 w-5 text-white/80" strokeWidth={2.5} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[10px] uppercase tracking-[0.15em] text-white/60 font-bold">Renda Mensal Passiva</p>
-                          <p className="text-[10px] text-white/40 mt-0.5">sem consumir o principal</p>
+                          <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-white font-extrabold">Renda Mensal Passiva</p>
+                          <p className="text-xs md:text-sm text-white/60 mt-1 font-medium">sem consumir o principal</p>
                         </div>
                       </div>
 
@@ -1365,28 +1365,28 @@ const YieldGuide = () => {
                       </motion.p>
 
                       {result ? (
-                        <div className="mt-3 pt-3 border-t border-white/[0.06] flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                        <div className="mt-4 pt-4 border-t border-white/[0.08] flex flex-wrap items-center gap-x-5 gap-y-2">
                           <div className="min-w-0">
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Anual</p>
-                            <p className="text-sm font-bold text-accent/90 tabular-nums truncate" title={result.rendaAnualLiquida}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Anual</p>
+                            <p className="text-base md:text-lg font-extrabold text-success tabular-nums truncate" title={result.rendaAnualLiquida}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum * 12)}
                             </p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Bruta/mês</p>
-                            <p className="text-sm font-bold text-white/70 tabular-nums truncate" title={result.rendaMensal}>
+                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-primary font-bold">Bruta/mês</p>
+                            <p className="text-base md:text-lg font-extrabold text-primary tabular-nums truncate" title={result.rendaMensal}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
                             </p>
                           </div>
-                          <div className="min-w-0 ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08]">
-                            <Percent className="h-3 w-3 text-white/50" />
-                            <span className="text-[10px] font-bold text-white/70 tabular-nums">
+                          <div className="min-w-0 ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/30">
+                            <Percent className="h-3.5 w-3.5 text-accent" />
+                            <span className="text-xs md:text-sm font-extrabold text-accent tabular-nums">
                               {result.taxaMensalEfetiva.toFixed(2)}% a.m.
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-[11px] text-white/25 mt-2">Simule para ver sua renda passiva</p>
+                        <p className="text-sm text-white/40 mt-3 font-medium">Simule para ver sua renda passiva</p>
                       )}
                     </motion.div>
 
