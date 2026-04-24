@@ -338,6 +338,8 @@ const YieldGuide = () => {
   const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: 0 });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
   const [result, setResult] = useState<SimResult | null>(null);
+  const [selectedFaixa, setSelectedFaixa] = useState<string | null>(null);
+  const [resultFaixa, setResultFaixa] = useState<typeof bentoFeatures[number] | null>(null);
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
 
@@ -347,6 +349,8 @@ const YieldGuide = () => {
 
   const handleSimulate = () => {
     setResult(simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual));
+    // Congela a faixa escolhida no momento da simulação
+    setResultFaixa(selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null);
   };
 
   const scrollTo = (id: string) => {
