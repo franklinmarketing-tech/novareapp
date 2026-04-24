@@ -260,17 +260,29 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
   const rendaMensalLiquida = rendaMensalBruta * (1 - aliquotaIR / 100);
 
   const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  const totalAportado = aporte * meses;
+  const rendaAnualLiquida = rendaMensalLiquida * 12;
+  const multiploInvestido = totalInvestido > 0 ? patrimonioBruto / totalInvestido : 0;
+  const rendaVsDesejada = rendaDesejada > 0 ? (rendaMensalLiquida / rendaDesejada) * 100 : 0;
 
   return {
     patrimonio: fmt(patrimonioBruto),
     patrimonioLiquido: fmt(patrimonioLiquido),
     rendaMensal: fmt(rendaMensalBruta),
     rendaMensalLiquida: fmt(rendaMensalLiquida),
+    rendaAnualLiquida: fmt(rendaAnualLiquida),
     totalInvestido: fmt(totalInvestido),
+    totalAportado: fmt(totalAportado),
     ganhoLiquido: fmt(ganhoLiquido),
+    ganhoBruto: fmt(ganhoBruto),
+    irDevido: fmt(irDevido),
+    multiploInvestido,
+    rendaVsDesejada,
     atingeMeta: rendaMensalLiquida >= rendaDesejada,
     anosAcumulo: anos,
+    mesesAcumulo: meses,
     aliquotaIR,
+    taxaMensalEfetiva: taxaMensal * 100,
     patrimonioNum: patrimonioBruto,
     patrimonioLiquidoNum: patrimonioLiquido,
     totalInvestidoNum: totalInvestido,
@@ -279,6 +291,20 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
     rendaDesejadaNum: rendaDesejada,
     timeline,
   };
+}
+
+/** Formato compacto para evitar overflow em valores enormes: R$ 1,2 mi / 3,4 bi / 5,6 tri */
+function formatCompactBRL(v: number): string {
+  if (!Number.isFinite(v)) return "—";
+  const abs = Math.abs(v);
+  const sign = v < 0 ? "-" : "";
+  const f = (n: number, suffix: string) =>
+    `${sign}R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${suffix}`;
+  if (abs >= 1e12) return f(v / 1e12, "tri");
+  if (abs >= 1e9) return f(v / 1e9, "bi");
+  if (abs >= 1e6) return f(v / 1e6, "mi");
+  if (abs >= 1e3) return f(v / 1e3, "mil");
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 }
 
 /* ── Scrolling pills ───────────────────────────── */
