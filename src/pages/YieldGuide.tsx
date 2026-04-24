@@ -992,9 +992,9 @@ const YieldGuide = () => {
                 className="rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]"
                 style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 40% 11%))" }}
               >
-                <div className="grid lg:grid-cols-2 lg:items-start">
+                <div className="grid lg:grid-cols-2 lg:items-stretch">
                   {/* Simulator form — glassmorphism dark card */}
-                  <div className="p-5 md:p-7 relative flex flex-col lg:sticky lg:top-4" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
+                  <div className="p-5 md:p-7 relative flex flex-col" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
                     {/* Subtle inner glow */}
                     <div className="absolute inset-0 rounded-l-3xl border border-white/[0.06] pointer-events-none" />
                     <motion.div
