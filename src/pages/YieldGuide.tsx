@@ -424,7 +424,7 @@ const YieldGuide = () => {
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
           />
 
-          <div className="hidden lg:flex items-center gap-1 xl:gap-2">
+          <div className="hidden md:flex items-center gap-1 lg:gap-2">
             {navLinks.map((l, i) => {
               const id = l.href.replace("#", "");
               const isActive = activeSection === id;
