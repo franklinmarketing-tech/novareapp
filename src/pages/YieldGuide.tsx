@@ -978,7 +978,7 @@ const YieldGuide = () => {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={2} className="calc-dark">
+            <motion.div variants={fadeUp} custom={2}>
               <div
                 className="rounded-3xl overflow-hidden shadow-elevated"
                 style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))" }}
