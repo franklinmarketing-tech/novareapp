@@ -1600,7 +1600,7 @@ const YieldGuide = () => {
                   />
                   <motion.div
                     className="pointer-events-none absolute -bottom-12 -left-12 w-40 h-40 rounded-full blur-[70px]"
-                    style={{ background: "hsl(220 70% 40% / 0.3)" }}
+                    style={{ background: "hsl(16 65% 50% / 0.3)" }}
                     animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.6, 0.3] }}
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                   />
