@@ -1028,7 +1028,7 @@ const YieldGuide = () => {
                                       setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
                                     }
                                   }}
-                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-foreground bg-muted/60 border border-border/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-muted/70 outline-none transition-all duration-200 placeholder:text-muted-foreground/60`}
+                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-foreground bg-[hsl(220_22%_97%)] border border-[hsl(220_15%_88%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.06),0_1px_0_hsl(0_0%_100%)] focus:border-accent focus:ring-2 focus:ring-accent/30 focus:bg-white outline-none transition-all duration-200 placeholder:text-muted-foreground/60`}
                                 />
                                 <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-muted-foreground/50"}`}>{f.hint}</span>
                               </div>
@@ -1061,10 +1061,10 @@ const YieldGuide = () => {
                                 // edição manual desfaz a faixa pré-selecionada
                                 setSelectedFaixa(null);
                               }}
-                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-foreground bg-muted/60 border border-border/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent focus:ring-2 focus:ring-accent/40 focus:bg-muted/70 outline-none transition-all duration-200 placeholder:text-muted-foreground/60"
+                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-foreground bg-[hsl(220_22%_97%)] border border-[hsl(220_15%_88%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.06),0_1px_0_hsl(0_0%_100%)] focus:border-accent focus:ring-2 focus:ring-accent/30 focus:bg-white outline-none transition-all duration-200 placeholder:text-muted-foreground/60"
                             />
                             {/* Toggle % mês / % ano à direita */}
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-muted/60 rounded-lg overflow-hidden border border-border/40">
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-[hsl(220_22%_97%)] rounded-lg overflow-hidden border border-[hsl(220_15%_88%)]">
                               <button
                                 type="button"
                                 onClick={() => {
