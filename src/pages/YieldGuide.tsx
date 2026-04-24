@@ -1316,7 +1316,7 @@ const YieldGuide = () => {
                     className="flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden border-t lg:border-t-0 lg:border-l border-border/60"
                     style={{
                       background:
-                        "radial-gradient(120% 80% at 100% 0%, hsl(16 65% 50% / 0.05), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(215 50% 23% / 0.05), transparent 60%), linear-gradient(160deg, hsl(220 30% 99%), hsl(220 25% 97%))",
+                        "radial-gradient(120% 80% at 100% 0%, hsl(16 80% 55% / 0.05), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(215 50% 23% / 0.05), transparent 60%), linear-gradient(160deg, hsl(220 30% 99%), hsl(220 25% 97%))",
                     }}
                   >
                     {/* Floating ambient orbs */}
@@ -1343,35 +1343,35 @@ const YieldGuide = () => {
                           className="relative z-10 rounded-2xl p-3.5 overflow-hidden"
                           style={{
                             background:
-                              "linear-gradient(135deg, hsl(16 75% 55% / 0.22) 0%, hsl(16 70% 50% / 0.08) 55%, hsl(215 50% 14% / 0.6) 100%)",
-                            border: "1px solid hsl(16 75% 60% / 0.55)",
+                              "linear-gradient(135deg, hsl(16 80% 56% / 0.22) 0%, hsl(16 80% 50% / 0.08) 55%, hsl(215 50% 14% / 0.6) 100%)",
+                            border: "1px solid hsl(16 80% 62% / 0.55)",
                             boxShadow:
-                              "0 1px 0 hsl(0 0% 100% / 0.18) inset, 0 0 0 1px hsl(16 75% 55% / 0.25) inset, 0 0 28px hsl(16 75% 55% / 0.30), 0 12px 28px -10px hsl(16 70% 40% / 0.45), 0 24px 48px -16px hsl(215 60% 6% / 0.55)",
+                              "0 1px 0 hsl(0 0% 100% / 0.18) inset, 0 0 0 1px hsl(16 80% 56% / 0.25) inset, 0 0 28px hsl(16 80% 56% / 0.30), 0 12px 28px -10px hsl(16 80% 40% / 0.45), 0 24px 48px -16px hsl(215 60% 6% / 0.55)",
                           }}
                         >
                           <div className="flex items-start gap-3">
                             <div
                               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                               style={{
-                                background: "linear-gradient(135deg, hsl(16 80% 58%) 0%, hsl(16 70% 48%) 100%)",
+                                background: "linear-gradient(135deg, hsl(16 80% 58%) 0%, hsl(16 80% 48%) 100%)",
                                 border: "1px solid hsl(16 80% 65% / 0.6)",
                                 boxShadow:
-                                  "0 1px 0 hsl(0 0% 100% / 0.35) inset, 0 0 0 1px hsl(0 0% 0% / 0.15) inset, 0 8px 18px -6px hsl(16 75% 40% / 0.7), 0 0 16px hsl(16 75% 55% / 0.4)",
+                                  "0 1px 0 hsl(0 0% 100% / 0.35) inset, 0 0 0 1px hsl(0 0% 0% / 0.15) inset, 0 8px 18px -6px hsl(16 80% 40% / 0.7), 0 0 16px hsl(16 80% 56% / 0.4)",
                               }}
                             >
                               <FaixaIcon className="h-5 w-5 text-white" strokeWidth={2.5} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-[9px] uppercase tracking-[0.15em] font-bold" style={{ color: "hsl(16 95% 70%)" }}>
+                                <p className="text-[9px] uppercase tracking-[0.15em] font-bold" style={{ color: "hsl(16 85% 70%)" }}>
                                   Sua escolha
                                 </p>
                                 <span
                                   className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider"
                                   style={{
-                                    background: "hsl(16 75% 55% / 0.22)",
-                                    color: "hsl(16 95% 72%)",
-                                    border: "1px solid hsl(16 75% 60% / 0.45)",
+                                    background: "hsl(16 80% 56% / 0.22)",
+                                    color: "hsl(16 85% 72%)",
+                                    border: "1px solid hsl(16 80% 62% / 0.45)",
                                   }}
                                 >
                                   <Check className="h-2.5 w-2.5" strokeWidth={3} />
@@ -1380,7 +1380,7 @@ const YieldGuide = () => {
                               </div>
                               <p className="text-base md:text-lg font-bold text-foreground tracking-tight leading-tight mt-0.5">
                                 {resultFaixa.title}{" "}
-                                <span className="font-black tabular-nums" style={{ color: "hsl(16 95% 65%)" }}>{resultFaixa.rate}</span>
+                                <span className="font-black tabular-nums" style={{ color: "hsl(16 85% 65%)" }}>{resultFaixa.rate}</span>
                                 {!resultFaixa.rate.includes("IPCA") && <span className="text-muted-foreground/80 text-xs font-medium ml-1">a.a.</span>}
                               </p>
                               <p className="text-[11px] text-muted-foreground leading-snug mt-1 line-clamp-2">
