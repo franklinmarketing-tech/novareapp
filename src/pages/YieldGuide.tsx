@@ -399,7 +399,7 @@ const YieldGuide = () => {
       setResult(r);
       setResultFaixa(faixa);
       setIsSimulating(false);
-    }, 4000);
+    }, 6000);
   };
 
   const scrollTo = (id: string) => {
