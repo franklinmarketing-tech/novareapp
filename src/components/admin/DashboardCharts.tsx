@@ -15,7 +15,7 @@ import { Card3D } from "@/components/ui/card-3d";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { TrendingUp, TrendingDown, ShieldAlert, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import WealthSphere3D from "@/components/admin/WealthSphere3D";
+
 
 const MONTHS_PT = [
   "jan", "fev", "mar", "abr", "mai", "jun",
@@ -202,9 +202,6 @@ const DashboardCharts = ({
 
   return (
     <div className="space-y-4">
-      {/* ── Hero: Globo Patrimonial 3D ── */}
-      <WealthSphere3D selectedMonth={selectedMonth} selectedYear={selectedYear} />
-
       <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
       {/* ── Wealth evolution ── */}
       <motion.div
