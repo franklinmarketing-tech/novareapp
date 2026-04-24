@@ -1097,26 +1097,38 @@ const YieldGuide = () => {
                       </span>
                     </button>
 
-                    {/* === Insights / value props — preenchem o espaço restante e equilibram com a coluna de resultados === */}
-                    <div className="relative z-10 mt-5 flex-1 flex flex-col gap-3 justify-end">
+                    {/* === Insights / value props — distribuídos para preencher o espaço da coluna de resultados === */}
+                    <div className="relative z-10 mt-5 flex-1 flex flex-col gap-3">
                       {[
                         {
                           icon: Shield,
                           tone: "success" as const,
                           label: "100% gratuito",
-                          text: "Sem cadastro. Seus dados ficam apenas no seu navegador.",
+                          text: "Sem cadastro. Seus dados ficam apenas no seu navegador, com total privacidade.",
                         },
                         {
                           icon: Calendar,
                           tone: "primary" as const,
                           label: "Juros compostos reais",
-                          text: "Cálculo mês a mês com IR regressivo da Receita Federal.",
+                          text: "Cálculo mês a mês com IR regressivo da Receita Federal aplicado no resgate.",
                         },
                         {
                           icon: TrendingUp,
                           tone: "accent" as const,
                           label: "Renda passiva vitalícia",
-                          text: "Descubra quanto você precisa para nunca consumir o principal.",
+                          text: "Descubra quanto você precisa para viver de renda sem nunca consumir o principal.",
+                        },
+                        {
+                          icon: BarChart3,
+                          tone: "primary" as const,
+                          label: "Projeção realista",
+                          text: "Baseado em premissas conservadoras de mercado, com transparência total.",
+                        },
+                        {
+                          icon: Sparkles,
+                          tone: "accent" as const,
+                          label: "Relatório em PDF",
+                          text: "Exporte sua simulação e compartilhe com seu assessor ou família.",
                         },
                       ].map((item) => {
                         const Icon = item.icon;
@@ -1130,14 +1142,14 @@ const YieldGuide = () => {
                             key={item.label}
                             whileHover={{ x: 3 }}
                             transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                            className={`flex items-start gap-3 rounded-xl p-3 border ${tones.border}`}
+                            className={`flex-1 flex items-center gap-3 rounded-xl p-3 border ${tones.border} min-h-[68px]`}
                             style={{
                               background: "linear-gradient(160deg, hsl(220 35% 14%), hsl(220 40% 10%))",
                               boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.04)",
                             }}
                           >
-                            <div className={`w-9 h-9 rounded-lg ${tones.iconBg} flex items-center justify-center shrink-0`}>
-                              <Icon className={`h-4 w-4 ${tones.icon}`} strokeWidth={2.5} />
+                            <div className={`w-10 h-10 rounded-lg ${tones.iconBg} flex items-center justify-center shrink-0`}>
+                              <Icon className={`h-5 w-5 ${tones.icon}`} strokeWidth={2.5} />
                             </div>
                             <div className="min-w-0">
                               <p className={`text-[11px] uppercase tracking-wider font-extrabold ${tones.label}`}>{item.label}</p>
