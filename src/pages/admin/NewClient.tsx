@@ -5,10 +5,18 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, ArrowRight, RefreshCw, Eye, EyeOff } from "lucide-react";
+import { UserPlus, ArrowRight, RefreshCw, Eye, EyeOff, ClipboardList, UserCircle2, Mail, Copy, Check } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function generatePassword(): string {
   const lower = "abcdefghijkmnpqrstuvwxyz";
