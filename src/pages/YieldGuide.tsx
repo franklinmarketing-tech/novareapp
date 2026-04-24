@@ -692,7 +692,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR ───────────────────────────── */}
       <section
         id="simulador"
-        className="py-20 md:py-28 relative overflow-hidden"
+        className="py-10 md:py-16 relative overflow-hidden"
         style={{
           background:
             "radial-gradient(120% 70% at 50% 0%, hsl(var(--primary) / 0.45), transparent 60%), linear-gradient(180deg, hsl(215 55% 12%), hsl(220 50% 7%))",
