@@ -793,7 +793,7 @@ const YieldGuide = () => {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={1}>
+            <motion.div variants={fadeUp} custom={2}>
               <div className="rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]">
                 <div className="grid lg:grid-cols-5">
                   {/* Simulator form — glassmorphism dark card */}
