@@ -960,7 +960,7 @@ const YieldGuide = () => {
               >
                 <div className="grid lg:grid-cols-5 lg:items-start">
                   {/* Simulator form — glassmorphism dark card */}
-                  <div className="lg:col-span-3 p-5 md:p-7 relative" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
+                  <div className="lg:col-span-3 p-5 md:p-7 relative lg:sticky lg:top-4 lg:self-start" style={{ background: "linear-gradient(145deg, hsl(220 30% 16%), hsl(220 35% 12%))" }}>
                     {/* Subtle inner glow */}
                     <div className="absolute inset-0 rounded-l-3xl border border-white/[0.06] pointer-events-none" />
                     <motion.div
