@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
 import { sendClientEmail } from "@/lib/sendClientEmail";
+import MonthlyClosings from "@/components/monitoring/MonthlyClosings";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
   ResponsiveContainer, Area, AreaChart, Legend,
