@@ -97,6 +97,9 @@ Deno.serve(async (req) => {
         return json({ error: `Ação desconhecida: ${action}` }, 400);
     }
 
+    // Strip sensitive credentials before persisting to audit log
+    const { temp_password: _omitTempPassword, ...safeMetadata } = result as Record<string, unknown>;
+
     await logAction(admin, {
       actor_user_id: user.id,
       actor_email: user.email,
@@ -107,7 +110,7 @@ Deno.serve(async (req) => {
       reason,
       ip_address: ip,
       user_agent: ua,
-      metadata: result,
+      metadata: safeMetadata,
     });
 
     return json(result);
