@@ -300,7 +300,7 @@ const ScrollingPills = ({ onPillClick }: { onPillClick: (target: string) => void
 
 /* ── page component ────────────────────────────── */
 const YieldGuide = () => {
-  const [sim, setSim] = useState({ idadeAtual: 30, idadeAposent: 60, patrimonioAtual: 10000, aporte: 2000, rendaDesejada: 15000, rentabilidade: 12 });
+  const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: 0 });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
   const [result, setResult] = useState<SimResult | null>(null);
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
@@ -672,11 +672,11 @@ const YieldGuide = () => {
                     <div className="relative z-10 space-y-6">
                       <div className="grid sm:grid-cols-2 gap-x-6 gap-y-5">
                         {([
-                          { label: "Qual sua idade hoje?", key: "idadeAtual", hint: "anos", kind: "int" as const },
-                          { label: "Com que idade quer parar de trabalhar?", key: "idadeAposent", hint: "anos", kind: "int" as const },
-                          { label: "Quanto já tem guardado/investido?", key: "patrimonioAtual", hint: "R$", kind: "brl" as const },
-                          { label: "Quanto consegue investir por mês?", key: "aporte", hint: "R$", kind: "brl" as const },
-                          { label: "Qual renda mensal deseja no futuro?", key: "rendaDesejada", hint: "R$", kind: "brl" as const },
+                          { label: "Qual sua idade hoje?", key: "idadeAtual", hint: "anos", kind: "int" as const, placeholder: "ex: 30" },
+                          { label: "Com que idade quer parar de trabalhar?", key: "idadeAposent", hint: "anos", kind: "int" as const, placeholder: "ex: 60" },
+                          { label: "Quanto já tem guardado/investido?", key: "patrimonioAtual", hint: "R$", kind: "brl" as const, placeholder: "ex: 10.000,00" },
+                          { label: "Quanto consegue investir por mês?", key: "aporte", hint: "R$", kind: "brl" as const, placeholder: "ex: 2.000,00" },
+                          { label: "Qual renda mensal deseja no futuro?", key: "rendaDesejada", hint: "R$", kind: "brl" as const, placeholder: "ex: 15.000,00" },
                         ]).map((f) => {
                           const numVal = (sim as any)[f.key] as number;
                           const display = f.kind === "brl"
@@ -694,6 +694,7 @@ const YieldGuide = () => {
                                   type="text"
                                   inputMode="numeric"
                                   value={display}
+                                  placeholder={f.placeholder}
                                   onChange={(e) => {
                                     if (f.kind === "brl") {
                                       const digits = e.target.value.replace(/\D/g, "");
@@ -704,7 +705,7 @@ const YieldGuide = () => {
                                       setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
                                     }
                                   }}
-                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/20`}
+                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30`}
                                 />
                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-white/25 font-medium">{f.hint}</span>
                               </div>
@@ -719,8 +720,9 @@ const YieldGuide = () => {
                             <input
                               type="text"
                               inputMode="decimal"
+                              placeholder="ex: 12"
                               value={
-                                Number.isFinite(sim.rentabilidade)
+                                sim.rentabilidade
                                   ? sim.rentabilidade.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
                                   : ""
                               }
@@ -730,7 +732,7 @@ const YieldGuide = () => {
                                 const n = parseFloat(raw);
                                 setSim({ ...sim, rentabilidade: Number.isFinite(n) ? n : 0 });
                               }}
-                              className="w-full h-12 rounded-xl px-4 pr-24 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/20"
+                              className="w-full h-12 rounded-xl px-4 pr-24 text-base font-medium text-white bg-white/[0.06] border border-white/[0.08] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/40 focus:ring-1 focus:ring-accent/20 focus:bg-white/[0.08] outline-none transition-all duration-200 placeholder:text-white/30"
                             />
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.06]">
                               <button
