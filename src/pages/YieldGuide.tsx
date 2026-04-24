@@ -346,6 +346,7 @@ const YieldGuide = () => {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
   const [isSimulating, setIsSimulating] = useState(false);
+  const [simCountdown, setSimCountdown] = useState(5);
 
   useEffect(() => {
     const onScroll = () => {
