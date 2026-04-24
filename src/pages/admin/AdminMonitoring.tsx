@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
 import { sendClientEmail } from "@/lib/sendClientEmail";
+import MonthlyClosings from "@/components/monitoring/MonthlyClosings";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
   ResponsiveContainer, Area, AreaChart, Legend,
@@ -97,7 +98,7 @@ const AdminMonitoring = () => {
   const [loading, setLoading] = useState(true);
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [creating, setCreating] = useState(false);
-  
+  const [clientName, setClientName] = useState("");
 
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
 
@@ -105,13 +106,18 @@ const AdminMonitoring = () => {
     if (!clientId) return;
     if (!silent) setLoading(true);
 
-    const [snapRes, goalsRes, planRes] = await Promise.all([
+    const [snapRes, goalsRes, planRes, clientRes] = await Promise.all([
       supabase.from("monitoring_snapshots").select("*").eq("client_id", clientId).order("snapshot_date", { ascending: true }),
       supabase.from("goals").select("*").eq("client_id", clientId),
       supabase.from("action_plans").select("id").eq("client_id", clientId).maybeSingle(),
+      supabase.from("clients").select("user_id").eq("id", clientId).maybeSingle(),
     ]);
 
     setSnapshots((snapRes.data as Snapshot[]) || []);
+    if (clientRes.data?.user_id) {
+      const { data: prof } = await supabase.from("profiles").select("full_name").eq("user_id", clientRes.data.user_id).maybeSingle();
+      if (prof?.full_name) setClientName(prof.full_name);
+    }
 
     // Load action items for goal progress
     let items: any[] = [];
@@ -401,6 +407,9 @@ const AdminMonitoring = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* ── Fechamentos Mensais ─────────────────── */}
+      <MonthlyClosings clientId={clientId} clientName={clientName} isAdmin />
 
       {/* ── Charts (below snapshots) ───────────── */}
       {chartData.length >= 2 && (

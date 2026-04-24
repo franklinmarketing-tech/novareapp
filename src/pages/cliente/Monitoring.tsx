@@ -13,6 +13,7 @@ import PageBanner from "@/components/PageBanner";
 import { SEO } from "@/components/SEO";
 import { LoadingState } from "@/components/ui/loading-state";
 import { EmptyState } from "@/components/ui/empty-state";
+import MonthlyClosings from "@/components/monitoring/MonthlyClosings";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
@@ -138,13 +139,17 @@ const Monitoring = () => {
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [openSnapshotId, setOpenSnapshotId] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
+  const [clientName, setClientName] = useState("");
 
   useEffect(() => {
     const load = async () => {
       if (!user) return;
       const { data: client } = await supabase.from("clients").select("id").eq("user_id", user.id).single();
       if (!client) { setLoading(false); return; }
-
+      setClientId(client.id);
+      const { data: prof } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+      if (prof?.full_name) setClientName(prof.full_name);
       const [snapRes, goalsRes, planRes] = await Promise.all([
         supabase.from("monitoring_snapshots").select("*").eq("client_id", client.id).order("snapshot_date", { ascending: true }),
         supabase.from("goals").select("*").eq("client_id", client.id),
@@ -262,6 +267,11 @@ const Monitoring = () => {
             delay={0.24}
           />
         </div>
+      )}
+
+      {/* ── Fechamentos Mensais ── */}
+      {clientId && (
+        <MonthlyClosings clientId={clientId} clientName={clientName} isAdmin={false} />
       )}
 
       {/* ── Goal Progress — 3D Cards ── */}
