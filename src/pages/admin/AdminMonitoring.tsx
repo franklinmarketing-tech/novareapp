@@ -98,7 +98,7 @@ const AdminMonitoring = () => {
   const [loading, setLoading] = useState(true);
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [creating, setCreating] = useState(false);
-  
+  const [clientName, setClientName] = useState("");
 
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
 
