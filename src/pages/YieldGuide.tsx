@@ -715,34 +715,33 @@ const YieldGuide = () => {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6 md:space-y-8">
-            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-4">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-4 md:space-y-5">
+            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-2.5">
               {/* Logo Novare */}
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl border border-white/10 backdrop-blur-md"
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border border-white/10 backdrop-blur-md"
                 style={{
                   background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02))",
                   boxShadow: "0 8px 24px -8px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.08)",
                 }}
               >
-                <img src={logoBranca} alt="Novare" className="h-7 md:h-8 w-auto" />
-                <span className="h-5 w-px bg-white/15" />
+                <img src={logoBranca} alt="Novare" className="h-6 md:h-7 w-auto" />
+                <span className="h-4 w-px bg-white/15" />
                 <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">Simulador</span>
               </motion.div>
 
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.05]">
-                Projete sua renda
-                <br />
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.05]">
+                Projete sua renda{" "}
                 <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/60 bg-clip-text text-transparent">
                   no longo prazo
                 </span>
               </h2>
-              <p className="text-white/60 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-                Use nosso simulador gratuito para planejar sua aposentadoria com precisão profissional.
+              <p className="text-white/60 text-sm max-w-xl mx-auto leading-relaxed">
+                Simulador gratuito para planejar sua aposentadoria com precisão profissional.
               </p>
             </motion.div>
 
