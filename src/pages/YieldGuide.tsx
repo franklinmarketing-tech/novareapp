@@ -912,24 +912,20 @@ const YieldGuide = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border border-white/10 backdrop-blur-md"
-                style={{
-                  background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02))",
-                  boxShadow: "0 8px 24px -8px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.08)",
-                }}
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border border-border/60 backdrop-blur-md bg-card shadow-soft"
               >
-                <img src={logoBranca} alt="Novare" className="h-6 md:h-7 w-auto" />
-                <span className="h-4 w-px bg-white/15" />
+                <img src={logoBranca} alt="Novare" className="h-6 md:h-7 w-auto invert-[0.85] brightness-0" />
+                <span className="h-4 w-px bg-border" />
                 <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">Simulador</span>
               </motion.div>
 
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.05]">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-[1.05]">
                 Projete sua renda{" "}
-                <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/60 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/70 bg-clip-text text-transparent">
                   no longo prazo
                 </span>
               </h2>
-              <p className="text-white/60 text-sm max-w-xl mx-auto leading-relaxed">
+              <p className="text-muted-foreground text-sm max-w-xl mx-auto leading-relaxed">
                 Simulador gratuito para planejar sua aposentadoria com precisão profissional.
               </p>
             </motion.div>
