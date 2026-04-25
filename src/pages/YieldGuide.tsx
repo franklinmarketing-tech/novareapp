@@ -1420,10 +1420,8 @@ const YieldGuide = () => {
                     )}
 
                     {/* === Patrimônio Bruto — branco premium com tinta accent === */}
-                    <motion.div
+                    <div
                       className="calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden ring-1 ring-accent/15 group"
-                      whileHover={{ y: -2 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
                       {/* shine sweep on hover */}
                       <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-accent/[0.05] to-transparent pointer-events-none" />
@@ -1490,7 +1488,7 @@ const YieldGuide = () => {
                           </div>
                         </div>
                       )}
-                    </motion.div>
+                    </div>
 
                     {/* === Mini KPIs grid === */}
                     <div className="relative z-10 grid grid-cols-3 gap-3">
