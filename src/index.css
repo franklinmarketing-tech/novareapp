@@ -627,29 +627,50 @@
       0 8px 18px -3px hsl(var(--accent) / 0.28);
   }
 
-  /* === BOTÃO PRIMÁRIO (Simular, CTA) === */
+  /* === BOTÃO PRIMÁRIO (Simular, CTA) — limpo e elegante === */
   .calc-btn-primary {
     background: hsl(var(--accent));
     color: hsl(var(--accent-foreground));
-    border: 1px solid hsl(var(--accent) / 0.35);
+    border: 1px solid hsl(var(--accent) / 0.30);
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.15) inset,
-      0 6px 20px -4px hsl(var(--accent) / 0.45),
-      0 2px 6px hsl(var(--accent) / 0.20);
-    transition: transform 200ms ease, box-shadow 200ms ease;
+      0 1px 0 hsl(0 0% 100% / 0.18) inset,
+      0 4px 12px -2px hsl(var(--accent) / 0.30);
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, background-color 200ms ease;
   }
   .calc-btn-primary:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+    background: hsl(16 80% 52%);
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.20) inset,
-      0 8px 28px -4px hsl(var(--accent) / 0.55),
-      0 3px 8px hsl(var(--accent) / 0.25);
+      0 1px 0 hsl(0 0% 100% / 0.22) inset,
+      0 6px 18px -3px hsl(var(--accent) / 0.40);
   }
   .calc-btn-primary:active {
     transform: translateY(0);
     box-shadow:
       0 1px 0 hsl(0 0% 100% / 0.10) inset,
-      0 2px 8px -2px hsl(var(--accent) / 0.35);
+      0 2px 6px -2px hsl(var(--accent) / 0.30);
+  }
+
+  /* === BOTÃO SECUNDÁRIO (PDF, ações alternativas) — outline accent === */
+  .calc-btn-secondary {
+    background: hsl(0 0% 100%);
+    color: hsl(var(--accent));
+    border: 1.5px solid hsl(var(--accent) / 0.40);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.6) inset,
+      0 2px 6px -1px hsl(var(--accent) / 0.12);
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, background-color 200ms ease, border-color 200ms ease;
+  }
+  .calc-btn-secondary:hover {
+    transform: translateY(-1px);
+    background: hsl(16 80% 97%);
+    border-color: hsl(var(--accent) / 0.65);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.6) inset,
+      0 4px 12px -2px hsl(var(--accent) / 0.22);
+  }
+  .calc-btn-secondary:active {
+    transform: translateY(0);
   }
 
   /* === BADGE SELECIONADO — padronizado === */
