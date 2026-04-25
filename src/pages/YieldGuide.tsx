@@ -1060,7 +1060,23 @@ const YieldGuide = () => {
 
             {/* ─── BLOCO DOS 6 CARDS (largura total) ─── */}
             <motion.div variants={fadeUp} custom={0.5} className="mb-3 md:mb-4">
-              <div className="rounded-2xl border border-border/60 bg-card/40 dark:bg-card/20 backdrop-blur-sm p-2.5 md:p-3 space-y-2.5">
+              <div
+                className="relative rounded-2xl border-2 bg-card/40 dark:bg-card/20 backdrop-blur-sm p-2.5 md:p-3 space-y-2.5 overflow-hidden"
+                style={{
+                  borderColor: "hsl(var(--novare-blue) / 0.45)",
+                  boxShadow:
+                    "0 0 0 1px hsl(var(--novare-blue-bright) / 0.15), 0 12px 32px -16px hsl(var(--novare-blue) / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.4)",
+                }}
+              >
+                {/* Faixa superior azul Novare (acento) */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-1 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent 0%, hsl(var(--novare-blue)) 25%, hsl(var(--novare-blue-bright)) 50%, hsl(var(--novare-blue)) 75%, transparent 100%)",
+                  }}
+                  aria-hidden
+                />
                 <div className="space-y-2">
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   Escolha a forma de rendimento
