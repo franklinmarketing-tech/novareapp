@@ -1048,23 +1048,23 @@ const YieldGuide = () => {
                           {isSel && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
                         </span>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                           <div
-                            className={`w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                            className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center shrink-0 ${
                               isSel
                                 ? "bg-novare-blue/15 dark:bg-novare-blue-bright/20"
                                 : "bg-muted/70"
                             }`}
                           >
                             <Icon
-                              className={`h-3.5 w-3.5 md:h-4 md:w-4 ${
+                              className={`h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 ${
                                 isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground"
                               }`}
                               strokeWidth={2.25}
                             />
                           </div>
                           <p
-                            className={`text-[12px] md:text-sm font-bold leading-tight pr-3 ${
+                            className={`text-[10.5px] sm:text-[12px] md:text-sm font-bold leading-tight pr-4 min-w-0 break-words ${
                               isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-foreground"
                             }`}
                           >
@@ -1072,10 +1072,10 @@ const YieldGuide = () => {
                           </p>
                         </div>
 
-                        <p className="text-[10px] md:text-[11px] text-muted-foreground mt-1.5 leading-snug">{t.desc}</p>
+                        <p className="text-[9.5px] sm:text-[10px] md:text-[11px] text-muted-foreground mt-1 sm:mt-1.5 leading-snug">{t.desc}</p>
 
                         <span
-                          className={`inline-flex mt-2 px-1.5 py-0.5 rounded text-[8.5px] md:text-[9.5px] font-bold uppercase tracking-wider ${t.badgeBg}`}
+                          className={`inline-flex self-start mt-auto pt-1.5 sm:pt-2 px-1.5 py-0.5 rounded text-[8px] sm:text-[8.5px] md:text-[9.5px] font-bold uppercase tracking-wider w-fit ${t.badgeBg}`}
                         >
                           {t.badge}
                         </span>
