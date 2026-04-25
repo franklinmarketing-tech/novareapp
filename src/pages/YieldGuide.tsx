@@ -489,6 +489,14 @@ const YieldGuide = () => {
     setSelectedFaixa(primeira.title);
     setSim((prev) => ({ ...prev, rentabilidade: primeira.rentAnual }));
     setRentPeriodo("anual");
+    // Rola até a seção dos cards grandes para mostrar o destaque correspondente
+    requestAnimationFrame(() => {
+      const el = document.getElementById("categorias");
+      if (!el) return;
+      const headerH = window.scrollY > 20 ? 64 : 80;
+      const top = el.getBoundingClientRect().top + window.scrollY - headerH - 16;
+      window.scrollTo({ top, behavior: "smooth" });
+    });
   };
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
@@ -930,7 +938,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── BENTO GRID — INVEST TYPES ───────────── */}
-      <section className="py-10 md:py-14">
+      <section id="categorias" className="py-10 md:py-14 scroll-mt-24">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
