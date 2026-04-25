@@ -88,6 +88,7 @@ const staticSegments: Record<string, string> = {
   relatorio: "Relatório",
   workspace: "Workspace",
   ajuda: "Ajuda & Manual",
+  leads: "Leads",
   "leads-newsletter": "Leads Newsletter",
   "leads-pdf": "Leads PDF",
 };
