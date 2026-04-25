@@ -1038,26 +1038,26 @@ const YieldGuide = () => {
                 </p>
               </div>
 
-              {/* 3 cards de tipo de renda (decorativos por enquanto — Renda Fixa selecionado) */}
+              {/* 3 cards de tipo de renda — sincronizam com os cards "Prefixado/CDI/IPCA+" abaixo */}
               <div className="space-y-3">
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   Escolha a forma de rendimento
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                   {([
-                    { id: "fixa", title: "Renda Fixa", desc: "Mais previsibilidade", icon: TrendingUp, badge: "Menor risco", badgeBg: "bg-novare-blue-light text-novare-blue dark:bg-novare-blue/30 dark:text-novare-blue-bright" },
-                    { id: "mista", title: "Renda Mista", desc: "Equilíbrio entre risco e rentabilidade", icon: Landmark, badge: "Médio risco", badgeBg: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" },
-                    { id: "variavel", title: "Renda Variável", desc: "Maior potencial de retorno", icon: ArrowUpRight, badge: "Maior risco", badgeBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" },
-                  ] as const).map((t) => {
+                    { id: "fixa" as TipoRenda, title: "Renda Fixa", desc: "Mais previsibilidade", icon: TrendingUp, badge: "Menor risco", badgeBg: "bg-novare-blue-light text-novare-blue dark:bg-novare-blue/30 dark:text-novare-blue-bright" },
+                    { id: "mista" as TipoRenda, title: "Renda Mista", desc: "Equilíbrio entre risco e rentabilidade", icon: Landmark, badge: "Médio risco", badgeBg: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" },
+                    { id: "variavel" as TipoRenda, title: "Renda Variável", desc: "Maior potencial de retorno", icon: ArrowUpRight, badge: "Maior risco", badgeBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" },
+                  ]).map((t) => {
                     const Icon = t.icon;
-                    const isSel = t.id === "fixa";
+                    const isSel = t.id === tipoRenda;
                     return (
                       <button
                         key={t.id}
                         type="button"
-                        disabled={t.id !== "fixa"}
-                        title={t.id !== "fixa" ? "Em breve" : undefined}
-                        className={`text-left group ${isSel ? "sim-type-card sim-type-card-selected" : "sim-type-card opacity-80 hover:opacity-100"} relative disabled:cursor-not-allowed`}
+                        onClick={() => handleTipoRendaChange(t.id)}
+                        aria-pressed={isSel}
+                        className={`text-left group ${isSel ? "sim-type-card sim-type-card-selected" : "sim-type-card"} relative cursor-pointer`}
                       >
                         {isSel && (
                           <span className="absolute top-3 right-3 inline-flex items-center justify-center w-5 h-5 rounded-full bg-novare-blue text-white shadow-[0_2px_6px_-1px_hsl(215_50%_23%/0.5)]">
