@@ -1033,7 +1033,7 @@ const YieldGuide = () => {
                                       setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
                                     }
                                   }}
-                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-foreground bg-[hsl(220_22%_97%)] border border-[hsl(220_15%_88%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.06),0_1px_0_hsl(0_0%_100%)] focus:border-accent focus:ring-2 focus:ring-accent/30 focus:bg-white outline-none transition-all duration-200 placeholder:text-muted-foreground/60`}
+                                  className={`calc-input ${hasPrefix ? "pl-11" : "pl-4"} pr-14`}
                                 />
                                 <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-muted-foreground/50"}`}>{f.hint}</span>
                               </div>
