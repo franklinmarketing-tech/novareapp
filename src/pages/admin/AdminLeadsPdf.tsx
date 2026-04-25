@@ -86,12 +86,23 @@ export default function AdminLeadsPdf() {
   const filtered = useMemo(() => {
     let arr = leads;
     if (filter !== "all") arr = arr.filter((l) => l.status === filter);
+    if (pdfFilter === "with_pdf") arr = arr.filter((l) => !!l.pdf_url);
+    else if (pdfFilter === "without_pdf") arr = arr.filter((l) => !l.pdf_url);
     if (search.trim()) {
       const s = search.toLowerCase();
       arr = arr.filter((l) => l.email.toLowerCase().includes(s) || (l.name ?? "").toLowerCase().includes(s));
     }
     return arr;
-  }, [leads, filter, search]);
+  }, [leads, filter, pdfFilter, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = useMemo(
+    () => filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [filtered, currentPage],
+  );
+
+  useEffect(() => { setPage(1); }, [search, filter, pdfFilter]);
 
   const stats = useMemo(() => ({
     total: leads.length,
