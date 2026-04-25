@@ -304,13 +304,14 @@ function formatCompactBRL(v: number): string {
   if (!Number.isFinite(v)) return "—";
   const abs = Math.abs(v);
   const sign = v < 0 ? "-" : "";
+  // \u00A0 (NBSP) entre símbolo e número impede quebras feias do tipo "R$\n100 mil"
   const f = (n: number, suffix: string) =>
-    `${sign}R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${suffix}`;
+    `${sign}R$\u00A0${n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}\u00A0${suffix}`;
   if (abs >= 1e12) return f(v / 1e12, "tri");
   if (abs >= 1e9) return f(v / 1e9, "bi");
   if (abs >= 1e6) return f(v / 1e6, "mi");
   if (abs >= 1e3) return f(v / 1e3, "mil");
-  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).replace(/\s/g, "\u00A0");
 }
 
 /* ── Scrolling pills ───────────────────────────── */
@@ -1032,7 +1033,7 @@ const YieldGuide = () => {
                                       setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
                                     }
                                   }}
-                                  className={`w-full h-12 rounded-xl ${hasPrefix ? "pl-11" : "pl-4"} pr-14 text-base font-medium text-foreground bg-[hsl(220_22%_97%)] border border-[hsl(220_15%_88%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.06),0_1px_0_hsl(0_0%_100%)] focus:border-accent focus:ring-2 focus:ring-accent/30 focus:bg-white outline-none transition-all duration-200 placeholder:text-muted-foreground/60`}
+                                  className={`calc-input ${hasPrefix ? "pl-11" : "pl-4"} pr-14`}
                                 />
                                 <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-muted-foreground/50"}`}>{f.hint}</span>
                               </div>
@@ -1065,10 +1066,10 @@ const YieldGuide = () => {
                                 // edição manual desfaz a faixa pré-selecionada
                                 setSelectedFaixa(null);
                               }}
-                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-foreground bg-[hsl(220_22%_97%)] border border-[hsl(220_15%_88%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.06),0_1px_0_hsl(0_0%_100%)] focus:border-accent focus:ring-2 focus:ring-accent/30 focus:bg-white outline-none transition-all duration-200 placeholder:text-muted-foreground/60"
+                              className="calc-input pl-10 pr-[7.5rem]"
                             />
                             {/* Toggle % mês / % ano à direita */}
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-[hsl(220_22%_97%)] rounded-lg overflow-hidden border border-[hsl(220_15%_88%)]">
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-[hsl(220_22%_96%)] dark:bg-[hsl(220_18%_14%)] rounded-lg overflow-hidden border border-[hsl(220_15%_85%)] dark:border-[hsl(220_15%_22%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.05)]">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -1106,15 +1107,15 @@ const YieldGuide = () => {
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-foreground/80 leading-relaxed">
-                        * Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
+                      <p className="text-[11px] md:text-xs text-muted-foreground/80 leading-relaxed -mt-1">
+                        <span className="font-bold text-foreground/70">*</span> Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
                       </p>
                     </div>
                     {/* 3D Button */}
                     <button
                       onClick={handleSimulate}
                       disabled={isSimulating}
-                      className="group relative z-10 w-full inline-flex items-center justify-center gap-2.5 calc-btn-primary px-8 py-3.5 rounded-2xl font-semibold text-base mt-5 disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
+                      className="group relative z-10 w-full inline-flex items-center justify-center gap-2.5 calc-btn-primary px-8 py-3.5 rounded-2xl font-semibold text-base disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
                     >
                       <BarChart3 className="h-[18px] w-[18px]" />
                       Simular Aposentadoria
@@ -1142,13 +1143,13 @@ const YieldGuide = () => {
                       </div>
 
                       <motion.p
-                        className="text-3xl md:text-[2.25rem] leading-[1.05] font-black text-accent tracking-tight tabular-nums break-words"
+                        className="calc-num text-[2rem] md:text-[2.4rem] lg:text-[2.5rem] leading-[1.05] font-black text-accent break-words"
                         key={result?.rendaMensalLiquidaNum}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.1 }}
                         title={result?.rendaMensalLiquida}
-                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.3)" }}
+                        style={{ textShadow: "0 2px 24px hsl(var(--accent) / 0.35)" }}
                       >
                         {result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "—"}
                       </motion.p>
@@ -1156,26 +1157,28 @@ const YieldGuide = () => {
                       {result ? (
                         <div className="mt-4 pt-4 border-t border-accent/15 flex flex-wrap items-center gap-x-5 gap-y-2">
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Anual líq.</p>
-                            <p className="text-base md:text-lg font-extrabold text-success tabular-nums truncate" title={result.rendaAnualLiquida}>
+                            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.12em] text-success font-bold">Anual líq.</p>
+                            <p className="calc-num text-base md:text-lg font-extrabold text-success truncate" title={result.rendaAnualLiquida}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum * 12)}
                             </p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-novare-blue-bright font-bold">Bruta/mês</p>
-                            <p className="text-base md:text-lg font-extrabold text-novare-blue-bright tabular-nums truncate" title={result.rendaMensal}>
+                            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.12em] text-novare-blue-bright font-bold">Bruta/mês</p>
+                            <p className="calc-num text-base md:text-lg font-extrabold text-novare-blue-bright truncate" title={result.rendaMensal}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
                             </p>
                           </div>
                           <div className="min-w-0 ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-novare-blue-bright/15 border border-novare-blue-bright/30">
                             <Percent className="h-3.5 w-3.5 text-novare-blue-bright" />
-                            <span className="text-xs md:text-sm font-extrabold text-novare-blue-bright tabular-nums">
+                            <span className="calc-num text-xs md:text-sm font-extrabold text-novare-blue-bright">
                               {result.taxaMensalEfetiva.toFixed(2)}% a.m.
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-muted-foreground/80 mt-3 font-medium">Simule para ver sua renda passiva</p>
+                        <p className="text-sm text-muted-foreground/80 mt-3 font-medium italic">
+                          Preencha os campos e simule para projetar sua renda passiva
+                        </p>
                       )}
                     </div>
 
@@ -1237,13 +1240,13 @@ const YieldGuide = () => {
 
                       {result && result.rendaDesejadaNum > 0 && (
                         <div className="mt-4 space-y-2">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-muted-foreground truncate pr-2 tabular-nums">
+                          <div className="flex items-center justify-between text-[11px] gap-3">
+                            <span className="calc-num text-muted-foreground truncate pr-2">
                               {formatCompactBRL(result.rendaMensalLiquidaNum)} <span className="text-muted-foreground/60">de</span>{" "}
                               {formatCompactBRL(result.rendaDesejadaNum)}
                             </span>
                             <span
-                              className={`font-black tabular-nums shrink-0 text-base ${
+                              className={`calc-num font-black shrink-0 text-base md:text-lg ${
                                 result.atingeMeta ? "text-success" : "text-warning"
                               }`}
                             >
@@ -1252,26 +1255,26 @@ const YieldGuide = () => {
                                 : `${result.rendaVsDesejada.toFixed(0)}%`}
                             </span>
                           </div>
-                          <div className="h-2 w-full rounded-full bg-muted/60 overflow-hidden border border-border/40">
+                          <div className="h-2.5 w-full rounded-full bg-muted/60 overflow-hidden border border-border/40 shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.08)]">
                             <motion.div
                               className="h-full rounded-full relative overflow-hidden"
                               style={{
                                 background: result.atingeMeta
-                                  ? "linear-gradient(90deg, hsl(var(--success)), hsl(var(--success) / 0.7))"
-                                  : "linear-gradient(90deg, hsl(var(--warning)), hsl(var(--warning) / 0.7))",
+                                  ? "linear-gradient(90deg, hsl(var(--success)), hsl(var(--success) / 0.75))"
+                                  : "linear-gradient(90deg, hsl(var(--warning)), hsl(var(--warning) / 0.75))",
                                 boxShadow: result.atingeMeta
-                                  ? "0 0 12px hsl(var(--success) / 0.6)"
-                                  : "0 0 12px hsl(var(--warning) / 0.6)",
+                                  ? "0 0 14px hsl(var(--success) / 0.65)"
+                                  : "0 0 14px hsl(var(--warning) / 0.65)",
                               }}
                               initial={{ width: 0 }}
-                              animate={{ width: `${Math.min(100, result.rendaVsDesejada)}%` }}
+                              animate={{ width: `${Math.max(2, Math.min(100, result.rendaVsDesejada))}%` }}
                               transition={{ duration: 1, ease: "easeOut" }}
                             >
                               {/* shimmer */}
                               <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
                                 animate={{ x: ["-100%", "200%"] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
                               />
                             </motion.div>
                           </div>
@@ -1385,13 +1388,13 @@ const YieldGuide = () => {
                       </div>
 
                       <motion.p
-                        className="text-3xl md:text-[2rem] leading-[1.05] font-black text-foreground tracking-tight tabular-nums break-words"
+                        className="calc-num text-[1.75rem] md:text-[2.1rem] lg:text-[2.25rem] leading-[1.05] font-black text-foreground break-words"
                         key={result?.patrimonioNum}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
                         title={result?.patrimonio}
-                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.25)" }}
+                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.22)" }}
                       >
                         {result ? formatCompactBRL(result.patrimonioNum) : "—"}
                       </motion.p>
@@ -1400,30 +1403,38 @@ const YieldGuide = () => {
                         <p className="text-xs text-muted-foreground/80 mt-2 font-medium italic">aguardando simulação</p>
                       )}
 
-                      {result && (
+                      {result && result.mesesAcumulo > 0 && (
                         <div className="mt-4 pt-4 border-t border-border/40 grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-[11px] md:text-xs uppercase tracking-wider text-novare-blue-bright font-bold inline-flex items-center gap-1.5">
                               <Calendar className="h-3 w-3" /> Período
                             </p>
-                            <p className="text-lg md:text-xl font-extrabold text-foreground mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-muted-foreground font-bold">anos</span></p>
+                            <p className="text-lg md:text-xl font-extrabold text-foreground mt-1 calc-num">{result.anosAcumulo} <span className="text-sm text-muted-foreground font-bold">anos</span></p>
                             <p className="text-xs text-muted-foreground mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
                           <div className="min-w-0">
                             <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold inline-flex items-center gap-1.5">
                               <Receipt className="h-3 w-3" /> Líquido após IR
                             </p>
-                            <p className="text-lg md:text-xl font-extrabold text-success mt-1 tabular-nums truncate" title={result.patrimonioLiquido}>
+                            <p className="text-lg md:text-xl font-extrabold text-success mt-1 calc-num truncate" title={result.patrimonioLiquido}>
                               {formatCompactBRL(result.patrimonioLiquidoNum)}
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">IR de {result.aliquotaIR}%</p>
                           </div>
                         </div>
                       )}
+
+                      {result && result.mesesAcumulo === 0 && (
+                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warning/10 border border-warning/30">
+                          <span className="text-[11px] font-semibold text-warning">
+                            Defina <span className="font-extrabold">idade futura</span> maior que a atual para projetar o crescimento
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* === Mini KPIs grid === */}
-                    <div className="relative z-10 grid grid-cols-3 gap-3 md:gap-5">
+                    <div className="relative z-10 grid grid-cols-3 gap-3 md:gap-4">
                       {[
                         {
                           label: "Investido",
@@ -1447,35 +1458,61 @@ const YieldGuide = () => {
                           full: undefined,
                           sub: result ? `IR ${formatCompactBRL(result.patrimonioNum - result.patrimonioLiquidoNum)}` : "—",
                           icon: Receipt,
-                          tone: "neutral" as const,
+                          tone: "accent" as const,
                         },
                       ].map((k) => {
                         const Icon = k.icon;
-                        const toneClasses = {
-                          info: { ring: "border-accent/40", icon: "text-accent", bg: "bg-accent/15", value: "text-accent", label: "text-accent" },
-                          blue: { ring: "border-novare-blue-bright/35", icon: "text-novare-blue-bright", bg: "bg-novare-blue-bright/15", value: "text-novare-blue-bright", label: "text-novare-blue-bright" },
-                          success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
-                          neutral: { ring: "border-border/60", icon: "text-accent/80", bg: "bg-muted/40", value: "text-foreground", label: "text-muted-foreground" },
+                        const tone = {
+                          blue: {
+                            card: "calc-kpi-blue",
+                            iconBg: "linear-gradient(135deg, hsl(var(--novare-blue-bright) / 0.22), hsl(var(--novare-blue-bright) / 0.06))",
+                            iconColor: "text-novare-blue-bright",
+                            label: "text-novare-blue-bright",
+                            value: "text-novare-blue",
+                            valueDark: "dark:text-novare-blue-bright",
+                          },
+                          success: {
+                            card: "calc-kpi-success",
+                            iconBg: "linear-gradient(135deg, hsl(var(--success) / 0.22), hsl(var(--success) / 0.05))",
+                            iconColor: "text-success",
+                            label: "text-success",
+                            value: "text-success",
+                            valueDark: "",
+                          },
+                          accent: {
+                            card: "calc-kpi-accent",
+                            iconBg: "linear-gradient(135deg, hsl(var(--accent) / 0.22), hsl(var(--accent) / 0.05))",
+                            iconColor: "text-accent",
+                            label: "text-accent-strong",
+                            value: "text-accent-strong",
+                            valueDark: "",
+                          },
                         }[k.tone];
                         return (
                           <motion.div
                             key={k.label}
-                            className={`relative rounded-2xl p-4 md:p-6 border ${toneClasses.ring} overflow-hidden min-w-0`}
-                            style={{
-                              background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))",
-                              boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
-                            }}
-                            whileHover={{ y: -2, scale: 1.02 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                            className={`calc-kpi ${tone.card} p-3.5 md:p-5 min-w-0`}
+                            whileHover={{ y: -4 }}
+                            transition={{ type: "spring", stiffness: 320, damping: 24 }}
                           >
-                            <div className={`w-9 h-9 md:w-11 md:h-11 rounded-xl ${toneClasses.bg} flex items-center justify-center mb-2.5 md:mb-3`}>
-                              <Icon className={`h-4 w-4 md:h-5 md:w-5 ${toneClasses.icon}`} strokeWidth={2.5} />
+                            <div
+                              className="calc-kpi-icon mb-2.5 md:mb-3"
+                              style={{ background: tone.iconBg }}
+                            >
+                              <Icon className={`h-4 w-4 md:h-5 md:w-5 ${tone.iconColor}`} strokeWidth={2.5} />
                             </div>
-                            <p className={`text-[11px] md:text-xs uppercase tracking-wider ${toneClasses.label} font-extrabold mb-1.5 truncate`}>{k.label}</p>
-                            <p className={`text-lg md:text-2xl lg:text-[1.6rem] font-black ${toneClasses.value} tracking-tight tabular-nums break-words leading-tight`} title={k.full}>
+                            <p className={`text-[10px] md:text-[11px] uppercase tracking-[0.12em] ${tone.label} font-extrabold mb-1 truncate`}>
+                              {k.label}
+                            </p>
+                            <p
+                              className={`calc-num text-[1.05rem] md:text-2xl lg:text-[1.55rem] font-black ${tone.value} ${tone.valueDark} leading-[1.05] truncate`}
+                              title={k.full}
+                            >
                               {k.value}
                             </p>
-                            <p className="text-[11px] md:text-xs text-muted-foreground mt-1.5 truncate font-medium">{k.sub}</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground mt-1.5 truncate font-medium">
+                              {k.sub}
+                            </p>
                           </motion.div>
                         );
                       })}
