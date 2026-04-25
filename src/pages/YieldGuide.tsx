@@ -1304,7 +1304,7 @@ const YieldGuide = () => {
 
                   {/* Results panel — superfície clara com tinta azul/laranja */}
                   <div
-                    className="flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden border-t lg:border-t-0 lg:border-l border-border/60"
+                    className="flex flex-col min-w-0 p-5 md:p-7 gap-5 md:gap-6 relative overflow-hidden border-t lg:border-t-0 lg:border-l border-border/60"
                     style={{
                       background:
                         "radial-gradient(120% 80% at 100% 0%, hsl(16 80% 55% / 0.05), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(215 50% 23% / 0.05), transparent 60%), linear-gradient(160deg, hsl(220 30% 99%), hsl(220 25% 97%))",
