@@ -196,6 +196,7 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
             </Button>
             <Button
               type="submit"
+              disabled={loading || !!emailError}
               disabled={loading}
               className="bg-novare-blue hover:bg-novare-blue/90 text-white"
             >
