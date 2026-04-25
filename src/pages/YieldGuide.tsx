@@ -1177,7 +1177,7 @@ const YieldGuide = () => {
                       ) : (
                         <p className="text-sm text-muted-foreground/80 mt-3 font-medium">Simule para ver sua renda passiva</p>
                       )}
-                    </motion.div>
+                    </div>
 
                     {/* === Meta atingida — branco premium com tinta success/warning === */}
                     <motion.div
