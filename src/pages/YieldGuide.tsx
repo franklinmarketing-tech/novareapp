@@ -996,7 +996,7 @@ const YieldGuide = () => {
                       transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     />
 
-                    <div className="relative z-10 space-y-4">
+                    <div className="relative z-10 space-y-5 md:space-y-7 flex flex-col h-full">
                       <div className="grid sm:grid-cols-2 gap-x-6 gap-y-5">
                         {([
                           { label: "Qual sua idade hoje?", key: "idadeAtual", hint: "anos", kind: "int" as const, placeholder: "ex: 30" },
@@ -1304,7 +1304,7 @@ const YieldGuide = () => {
 
                   {/* Results panel — superfície clara com tinta azul/laranja */}
                   <div
-                    className="flex flex-col min-w-0 p-4 md:p-5 gap-4 relative overflow-hidden border-t lg:border-t-0 lg:border-l border-border/60"
+                    className="flex flex-col min-w-0 p-5 md:p-7 gap-5 md:gap-6 relative overflow-hidden border-t lg:border-t-0 lg:border-l border-border/60"
                     style={{
                       background:
                         "radial-gradient(120% 80% at 100% 0%, hsl(16 80% 55% / 0.05), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(215 50% 23% / 0.05), transparent 60%), linear-gradient(160deg, hsl(220 30% 99%), hsl(220 25% 97%))",
@@ -1423,7 +1423,7 @@ const YieldGuide = () => {
                     </div>
 
                     {/* === Mini KPIs grid === */}
-                    <div className="relative z-10 grid grid-cols-3 gap-3">
+                    <div className="relative z-10 grid grid-cols-3 gap-3 md:gap-5">
                       {[
                         {
                           label: "Investido",
@@ -1460,7 +1460,7 @@ const YieldGuide = () => {
                         return (
                           <motion.div
                             key={k.label}
-                            className={`relative rounded-2xl p-4 md:p-5 border ${toneClasses.ring} overflow-hidden min-w-0`}
+                            className={`relative rounded-2xl p-4 md:p-6 border ${toneClasses.ring} overflow-hidden min-w-0`}
                             style={{
                               background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))",
                               boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
@@ -1468,14 +1468,14 @@ const YieldGuide = () => {
                             whileHover={{ y: -2, scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 300, damping: 22 }}
                           >
-                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl ${toneClasses.bg} flex items-center justify-center mb-2.5`}>
+                            <div className={`w-9 h-9 md:w-11 md:h-11 rounded-xl ${toneClasses.bg} flex items-center justify-center mb-2.5 md:mb-3`}>
                               <Icon className={`h-4 w-4 md:h-5 md:w-5 ${toneClasses.icon}`} strokeWidth={2.5} />
                             </div>
                             <p className={`text-[11px] md:text-xs uppercase tracking-wider ${toneClasses.label} font-extrabold mb-1.5 truncate`}>{k.label}</p>
-                            <p className={`text-lg md:text-2xl font-black ${toneClasses.value} tracking-tight tabular-nums break-words`} title={k.full}>
+                            <p className={`text-lg md:text-2xl lg:text-[1.6rem] font-black ${toneClasses.value} tracking-tight tabular-nums break-words leading-tight`} title={k.full}>
                               {k.value}
                             </p>
-                            <p className="text-[11px] md:text-xs text-muted-foreground mt-1 truncate font-medium">{k.sub}</p>
+                            <p className="text-[11px] md:text-xs text-muted-foreground mt-1.5 truncate font-medium">{k.sub}</p>
                           </motion.div>
                         );
                       })}
@@ -1487,10 +1487,10 @@ const YieldGuide = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="relative z-10"
+                className="relative z-10 lg:mt-auto lg:pt-2"
               >
                 <div
-                  className="relative rounded-2xl p-4 md:p-5 overflow-hidden border-t-2 border-accent/40"
+                  className="relative rounded-2xl p-5 md:p-6 overflow-hidden border-t-2 border-accent/40"
                   style={{
                     background:
                       "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))",
