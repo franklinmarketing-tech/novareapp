@@ -55,16 +55,33 @@ const emailSchema = z.object({
 export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [touched, setTouched] = useState(false);
+
+  const validateEmail = (value: string): string | null => {
+    const parsed = emailSchema.safeParse({ email: value });
+    if (parsed.success) return null;
+    return parsed.error.errors[0]?.message ?? "E-mail inválido";
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (touched) setEmailError(validateEmail(value));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!result || !input) return;
 
-    const parsed = emailSchema.safeParse({ email });
-    if (!parsed.success) {
-      toast.error(parsed.error.errors[0]?.message ?? "E-mail inválido");
+    setTouched(true);
+    const err = validateEmail(email);
+    if (err) {
+      setEmailError(err);
       return;
     }
+    setEmailError(null);
+    const parsed = emailSchema.safeParse({ email });
+    if (!parsed.success) return;
 
     setLoading(true);
     try {
