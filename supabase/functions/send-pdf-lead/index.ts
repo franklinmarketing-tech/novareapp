@@ -157,6 +157,15 @@ Deno.serve(async (req) => {
     let emailStatus: "sent" | "failed" = "sent";
     let errorMessage: string | null = null;
     let resendId: string | null = null;
+    const plainText =
+      `Olá!\n\n` +
+      `Segue em anexo o relatório completo da sua simulação de aposentadoria.\n` +
+      `Nele você encontra a evolução do patrimônio, o detalhamento do Imposto de Renda e as recomendações da Novare.\n\n` +
+      `Quer entender como esses números mudam com uma estratégia personalizada? Fale com um consultor Novare:\n` +
+      `${APP_URL}\n\n` +
+      `Ou simplesmente responda este e-mail — nossa equipe vai te atender.\n\n` +
+      `Novare Consultoria de Investimentos\n` +
+      `${APP_URL}`;
     try {
       const res = await fetch(`${GATEWAY_URL}/emails`, {
         method: "POST",
@@ -171,6 +180,15 @@ Deno.serve(async (req) => {
           reply_to: REPLY_TO,
           subject,
           html,
+          text: plainText,
+          headers: {
+            "List-Unsubscribe": `<mailto:${REPLY_TO}?subject=unsubscribe>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          },
+          tags: [
+            { name: "category", value: "pdf_lead" },
+            { name: "source", value: "calculadora" },
+          ],
           attachments: [
             { filename, content: pdfBase64 }, // Resend aceita base64 em "content"
           ],
