@@ -1247,12 +1247,45 @@ const YieldGuide = () => {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Taxa de juros dos seus investimentos</label>
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="text-xs font-semibold text-foreground/85 leading-tight block">Taxa de juros dos seus investimentos</label>
+                        {/* Toggle Anual / Mensal */}
+                        <div className="inline-flex items-center rounded-full border border-border/60 bg-background/60 p-0.5 shadow-sm">
+                          {(["anual", "mensal"] as const).map((p) => {
+                            const ativo = rentPeriodo === p;
+                            return (
+                              <button
+                                key={p}
+                                type="button"
+                                onClick={() => {
+                                  if (ativo) return;
+                                  // Converte o valor digitado para o novo período (preserva equivalência)
+                                  setSim((prev) => {
+                                    if (!prev.rentabilidade) return prev;
+                                    const novoValor = p === "mensal"
+                                      ? (Math.pow(1 + prev.rentabilidade / 100, 1 / 12) - 1) * 100
+                                      : (Math.pow(1 + prev.rentabilidade / 100, 12) - 1) * 100;
+                                    return { ...prev, rentabilidade: Number(novoValor.toFixed(2)) };
+                                  });
+                                  setRentPeriodo(p);
+                                }}
+                                className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold uppercase tracking-wide transition-all ${
+                                  ativo
+                                    ? "bg-novare-blue text-white shadow-[0_2px_8px_-2px_hsl(var(--novare-blue)/0.55)]"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                {p === "anual" ? "Anual" : "Mensal"}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                       <div className="relative">
                         <input
                           type="text"
                           inputMode="decimal"
-                          placeholder="ex: 8,5"
+                          placeholder={rentPeriodo === "mensal" ? "ex: 1,28" : "ex: 16,5"}
                           value={
                             sim.rentabilidade
                               ? sim.rentabilidade.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
@@ -1266,7 +1299,7 @@ const YieldGuide = () => {
                             setSim({ ...sim, rentabilidade: clamped });
                             setSelectedFaixa(null);
                           }}
-                          className="calc-input pl-4 pr-16"
+                          className="calc-input pl-4 pr-20"
                         />
                         <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${sim.rentabilidade ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground/50"}`}>
                           {rentPeriodo === "mensal" ? "% a.m." : "% a.a."}
@@ -1274,7 +1307,7 @@ const YieldGuide = () => {
                       </div>
                       <p className="text-[10px] text-muted-foreground/70">
                         {rentPeriodo === "mensal"
-                          ? `≈ ${rentAnual.toFixed(1)}% ao ano`
+                          ? `≈ ${rentAnual.toFixed(2)}% ao ano`
                           : `≈ ${((Math.pow(1 + sim.rentabilidade / 100, 1 / 12) - 1) * 100).toFixed(2)}% ao mês`}
                         {" · "}Selic atual ~14,75% a.a.
                       </p>
