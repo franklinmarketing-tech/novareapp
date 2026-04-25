@@ -1085,8 +1085,11 @@ const YieldGuide = () => {
                 </div>
               </div>
 
+              {/* Divider sutil entre os 3 tipos e as 3 estratégias */}
+              <div className="h-px bg-border/50 my-1" />
+
               {/* ─── BENTO de faixas (Prefixado / CDI / IPCA+ ...) — embutido logo abaixo dos 3 tipos ─── */}
-              <div className="space-y-2 -mt-1">
+              <div className="space-y-2">
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   {tipoRenda === "fixa"
                     ? "Entenda cada tipo de Renda Fixa — selecione um"
