@@ -1076,7 +1076,7 @@ const YieldGuide = () => {
                                   }
                                   setRentPeriodo("mensal");
                                 }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "calc-toggle-active rounded-lg" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
                               >
                                 % mês
                               </button>
