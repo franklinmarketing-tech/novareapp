@@ -627,50 +627,74 @@
       0 8px 18px -3px hsl(var(--accent) / 0.28);
   }
 
-  /* === BOTÃO PRIMÁRIO (Simular, CTA) — limpo e elegante === */
+  /* === BOTÃO PRIMÁRIO (Simular, CTA) — laranja sólido, alto contraste === */
   .calc-btn-primary {
-    background: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
-    border: 1px solid hsl(var(--accent) / 0.30);
+    background: linear-gradient(180deg, hsl(16 82% 56%), hsl(16 80% 50%));
+    color: hsl(0 0% 100%);
+    border: 1px solid hsl(16 80% 44%);
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.18) inset,
-      0 4px 12px -2px hsl(var(--accent) / 0.30);
-    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, background-color 200ms ease;
+      0 1px 0 hsl(0 0% 100% / 0.28) inset,
+      0 -1px 0 hsl(16 70% 38% / 0.35) inset,
+      0 6px 16px -3px hsl(16 80% 45% / 0.42),
+      0 2px 4px hsl(16 80% 30% / 0.18);
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, background 200ms ease;
   }
   .calc-btn-primary:hover {
     transform: translateY(-1px);
-    background: hsl(16 80% 52%);
+    background: linear-gradient(180deg, hsl(16 84% 58%), hsl(16 82% 52%));
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.22) inset,
-      0 6px 18px -3px hsl(var(--accent) / 0.40);
+      0 1px 0 hsl(0 0% 100% / 0.32) inset,
+      0 -1px 0 hsl(16 70% 38% / 0.4) inset,
+      0 10px 24px -4px hsl(16 80% 45% / 0.55),
+      0 3px 6px hsl(16 80% 30% / 0.22);
   }
   .calc-btn-primary:active {
     transform: translateY(0);
+    background: linear-gradient(180deg, hsl(16 80% 50%), hsl(16 80% 48%));
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.10) inset,
-      0 2px 6px -2px hsl(var(--accent) / 0.30);
+      0 1px 2px hsl(16 80% 30% / 0.3) inset,
+      0 1px 3px hsl(16 80% 30% / 0.18);
   }
 
-  /* === BOTÃO SECUNDÁRIO (PDF, ações alternativas) — outline accent === */
+  /* === BOTÃO SECUNDÁRIO (PDF, ações alternativas) — soft tinted accent === */
   .calc-btn-secondary {
-    background: hsl(0 0% 100%);
-    color: hsl(var(--accent));
-    border: 1.5px solid hsl(var(--accent) / 0.40);
+    background: hsl(16 80% 96%);
+    color: hsl(16 75% 38%);
+    border: 1px solid hsl(16 70% 82%);
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.6) inset,
-      0 2px 6px -1px hsl(var(--accent) / 0.12);
-    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, background-color 200ms ease, border-color 200ms ease;
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 1px 2px hsl(16 60% 40% / 0.06);
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, background-color 200ms ease, border-color 200ms ease, color 200ms ease;
   }
   .calc-btn-secondary:hover {
     transform: translateY(-1px);
-    background: hsl(16 80% 97%);
-    border-color: hsl(var(--accent) / 0.65);
+    background: hsl(16 82% 93%);
+    color: hsl(16 78% 32%);
+    border-color: hsl(16 75% 70%);
     box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.6) inset,
-      0 4px 12px -2px hsl(var(--accent) / 0.22);
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 4px 10px -2px hsl(16 70% 45% / 0.18);
   }
   .calc-btn-secondary:active {
     transform: translateY(0);
+    background: hsl(16 80% 91%);
+  }
+
+  /* Variante dark do secundário (sobre fundos escuros) */
+  .calc-dark .calc-btn-secondary,
+  .calc-card-dark .calc-btn-secondary {
+    background: hsl(16 60% 18% / 0.5);
+    color: hsl(16 85% 72%);
+    border-color: hsl(16 70% 50% / 0.4);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.06) inset,
+      0 1px 2px hsl(0 0% 0% / 0.3);
+  }
+  .calc-dark .calc-btn-secondary:hover,
+  .calc-card-dark .calc-btn-secondary:hover {
+    background: hsl(16 65% 22% / 0.65);
+    color: hsl(16 90% 78%);
+    border-color: hsl(16 75% 58% / 0.55);
   }
 
   /* === BADGE SELECIONADO — padronizado === */
