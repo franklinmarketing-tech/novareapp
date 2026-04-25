@@ -955,41 +955,27 @@ const YieldGuide = () => {
                       }`}
                     >
                       {isSelected ? (
-                        <span
-                          className="absolute top-2.5 right-2.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-white ring-2 ring-background dark:ring-[hsl(220_18%_14%)]"
-                          style={{
-                            boxShadow:
-                              "0 1px 0 hsl(0 0% 100% / 0.4) inset, 0 -1px 0 hsl(16 80% 30% / 0.5) inset, 0 4px 10px -2px hsl(16 80% 40% / 0.55), 0 0 0 4px hsl(var(--accent) / 0.30)",
-                          }}
-                          aria-hidden="true"
-                        >
+                        <span className="calc-radio-checked absolute top-2.5 right-2.5" aria-hidden="true">
                           <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
                         </span>
                       ) : (
-                        <span
-                          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-background border-2 border-border group-hover:border-accent/60 group-hover:bg-accent/5 transition-all duration-200 dark:bg-[hsl(220_18%_18%)] dark:border-[hsl(220_15%_38%)] dark:group-hover:border-accent/70"
-                          style={{
-                            boxShadow:
-                              "0 1px 2px hsl(215 50% 23% / 0.10) inset, 0 1px 1px hsl(0 0% 100% / 0.8)",
-                          }}
-                          aria-hidden="true"
-                        />
+                        <span className="calc-radio absolute top-2.5 right-2.5" aria-hidden="true" />
                       )}
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                           isSelected
                             ? "bg-accent/25 ring-1 ring-accent/50 dark:bg-accent/30"
-                            : "bg-muted/60 dark:bg-[hsl(220_15%_22%)]"
+                            : "bg-muted/60"
                         }`}>
-                          <f.icon className={`h-4 w-4 ${isSelected ? "text-[hsl(var(--accent-strong))]" : "text-foreground/80"}`} strokeWidth={2.25} />
+                          <f.icon className={`h-4 w-4 ${isSelected ? "text-accent-strong" : "text-foreground/80"}`} strokeWidth={2.25} />
                         </div>
-                        <span className={`text-xs md:text-sm font-bold ${isSelected ? "text-[hsl(var(--accent-strong))]" : "text-foreground"}`}>{f.title}</span>
+                        <span className={`text-xs md:text-sm font-bold ${isSelected ? "text-accent-strong" : "text-foreground"}`}>{f.title}</span>
                       </div>
                       <div className="flex items-baseline gap-1">
-                        <span className={`text-lg md:text-xl font-black ${isSelected ? "text-[hsl(var(--accent-strong))]" : "text-accent"}`}>{f.rate}</span>
-                        {!f.rate.includes("IPCA") && <span className={`text-[10px] ${isSelected ? "text-[hsl(var(--accent-strong))]/80" : "text-muted-foreground/80"}`}>a.a.</span>}
+                        <span className={`text-lg md:text-xl font-black ${isSelected ? "text-accent-strong" : "text-accent"}`}>{f.rate}</span>
+                        {!f.rate.includes("IPCA") && <span className={`text-[10px] ${isSelected ? "text-accent-strong/80" : "text-muted-foreground/80"}`}>a.a.</span>}
                       </div>
-                      <p className={`hidden md:block text-[10px] mt-1 truncate ${isSelected ? "text-[hsl(var(--accent-strong))]/75" : "text-muted-foreground/80"}`}>{f.rateLabel}</p>
+                      <p className={`hidden md:block text-[10px] mt-1 truncate ${isSelected ? "text-accent-strong/75" : "text-muted-foreground/80"}`}>{f.rateLabel}</p>
                     </button>
                   );
                 })}
