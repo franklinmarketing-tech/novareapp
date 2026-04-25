@@ -758,7 +758,7 @@ const YieldGuide = () => {
       </motion.nav>
 
       {/* ── HERO ────────────────────────────────── */}
-      <section className="pt-28 pb-6 md:pt-36 md:pb-12">
+      <section className="pt-28 pb-12 md:pt-36 md:pb-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div initial="hidden" animate="visible" className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-widest">
@@ -805,7 +805,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── BENTO STATS ─────────────────────────── */}
-      <section className="py-8 md:py-12">
+      <section className="py-12 md:py-20">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
@@ -831,7 +831,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── INTRO / ABOUT ───────────────────────── */}
-      <section id="intro" className="py-10 md:py-14">
+      <section id="intro" className="py-12 md:py-20">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <div className="grid lg:grid-cols-2 gap-8 items-center">
@@ -884,7 +884,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── RENDA FIXA TABLE ────────────────────── */}
-      <section id="renda-fixa" className="py-10 md:py-14 bg-muted/40">
+      <section id="renda-fixa" className="py-12 md:py-20 bg-muted/40">
         <div className="max-w-5xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
@@ -935,7 +935,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR (image-faithful, Novare blue) ─────────── */}
       <section
         id="simulador"
-        className="pt-6 pb-10 md:pt-8 md:pb-16 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
+        className="py-12 md:py-20 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
       >
         {/* Background orbs sutis (azul Novare) */}
         <motion.div
@@ -956,7 +956,7 @@ const YieldGuide = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
 
             {/* ─── TOPO: Hero esquerda + 3 cards de tipo de renda direita ─── */}
-            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-6 lg:gap-10 items-center mb-3 md:mb-4">
+            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-6 lg:gap-8 items-center mb-6 md:mb-8">
               {/* Hero esquerda */}
               <div className="space-y-3 md:space-y-4">
                 <motion.div
@@ -1217,7 +1217,7 @@ const YieldGuide = () => {
             </motion.div>
 
             {/* ─── CORPO: Form esquerda / Resultados direita ─── */}
-            <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-8 mt-6 md:mt-8">
 
               {/* ====== COLUNA ESQUERDA — Formulário em grupos ====== */}
               <motion.div variants={fadeUp} custom={1} className="calc-card-light rounded-3xl p-5 md:p-7 space-y-6 md:space-y-7">
@@ -1925,7 +1925,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── TESTIMONIALS ────────────────────────── */}
-      <section className="py-10 md:py-14 bg-muted/40">
+      <section className="py-12 md:py-20 bg-muted/40">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
@@ -1965,7 +1965,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── CTA BENTO ───────────────────────────── */}
-      <section id="contato" className="py-10 md:py-14">
+      <section id="contato" className="py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden bg-primary text-primary-foreground">
@@ -2151,7 +2151,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FAQ ──────────────────────────────────── */}
-      <section id="faq" className="py-10 md:py-14 bg-muted/40">
+      <section id="faq" className="py-12 md:py-20 bg-muted/40">
         <div className="max-w-3xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4">
@@ -2180,7 +2180,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── QUEM SOMOS ──────────────────────────── */}
-      <section id="quem-somos" className="py-10 md:py-14">
+      <section id="quem-somos" className="py-12 md:py-20">
         <div className="max-w-5xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-5">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4 max-w-2xl mx-auto">
@@ -2363,7 +2363,7 @@ const YieldGuide = () => {
       </AnimatePresence>
 
       {/* ── NEWSLETTER — immersive bento ────────── */}
-      <section className="py-10 md:py-14">
+      <section className="py-12 md:py-20">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden">
@@ -2487,7 +2487,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FOOTER ──────────────────────────────── */}
-      <footer className="py-10 border-t border-border/40">
+      <footer className="py-12 border-t border-border/40">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <img src={logoPreta} alt="Novare" className="h-6" />
           <p className="text-xs text-muted-foreground">
