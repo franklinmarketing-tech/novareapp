@@ -955,7 +955,7 @@ const YieldGuide = () => {
                       }`}
                     >
                       {isSelected ? (
-                        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]">
+                        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full calc-badge-selected">
                           <Check className="h-4 w-4" strokeWidth={3} />
                         </span>
                       ) : (
