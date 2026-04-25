@@ -55,16 +55,33 @@ const emailSchema = z.object({
 export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [touched, setTouched] = useState(false);
+
+  const validateEmail = (value: string): string | null => {
+    const parsed = emailSchema.safeParse({ email: value });
+    if (parsed.success) return null;
+    return parsed.error.errors[0]?.message ?? "E-mail inválido";
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (touched) setEmailError(validateEmail(value));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!result || !input) return;
 
-    const parsed = emailSchema.safeParse({ email });
-    if (!parsed.success) {
-      toast.error(parsed.error.errors[0]?.message ?? "E-mail inválido");
+    setTouched(true);
+    const err = validateEmail(email);
+    if (err) {
+      setEmailError(err);
       return;
     }
+    setEmailError(null);
+    const parsed = emailSchema.safeParse({ email });
+    if (!parsed.success) return;
 
     setLoading(true);
     try {
@@ -102,17 +119,16 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
 
       if (error || (data as { error?: string })?.error) {
         const msg = (data as { error?: string })?.error || error?.message || "Falha ao enviar e-mail";
-        toast.error(msg, {
-          description: "O PDF foi baixado no seu dispositivo.",
-        });
+        toast.error(msg, { description: "O PDF foi baixado no seu dispositivo." });
       } else {
         toast.success("PDF enviado para o seu e-mail! ✉️", {
           description: "Verifique sua caixa de entrada (e a pasta de spam).",
         });
       }
       setEmail("");
+      setEmailError(null);
+      setTouched(false);
       onOpenChange(false);
-      // Volta o usuário ao simulador
       setTimeout(scrollToSimulador, 150);
     } catch (err) {
       console.error(err);
@@ -135,7 +151,7 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
             <Label htmlFor="pdf-email" className="text-sm font-medium">
               <Mail className="inline h-3.5 w-3.5 mr-1 align-text-bottom" />
@@ -147,11 +163,19 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
               autoComplete="email"
               placeholder="voce@exemplo.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              onBlur={() => { setTouched(true); setEmailError(validateEmail(email)); }}
               disabled={loading}
-              className="mt-1.5"
+              aria-invalid={!!emailError}
+              aria-describedby={emailError ? "pdf-email-error" : undefined}
+              className={`mt-1.5 ${emailError ? "border-destructive focus-visible:ring-destructive" : ""}`}
               required
             />
+            {emailError && (
+              <p id="pdf-email-error" role="alert" className="mt-1.5 text-xs text-destructive font-medium">
+                {emailError}
+              </p>
+            )}
           </div>
 
           <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
@@ -172,7 +196,7 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
             </Button>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !!emailError}
               className="bg-novare-blue hover:bg-novare-blue/90 text-white"
             >
               {loading ? (
