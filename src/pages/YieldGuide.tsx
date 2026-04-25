@@ -296,7 +296,15 @@ function getAliquotaIR(anos: number): number {
   return 15;
 }
 
-function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: number, aporte: number, rendaDesejada: number, rentAnual: number): SimResult {
+function simulate(
+  idadeAtual: number,
+  idadeAposent: number,
+  patrimonioAtual: number,
+  aporte: number,
+  rendaDesejada: number,
+  rentAnual: number,
+  aliquotaIROverride?: number | null
+): SimResult {
   const anos = Math.max(0, idadeAposent - idadeAtual);
   const meses = anos * 12;
   const taxaMensal = Math.pow(1 + rentAnual / 100, 1 / 12) - 1;
@@ -314,14 +322,17 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
     gain: 0,
   });
 
+  // Quando há override (incl. 0 = isento), usamos esse valor em todos os pontos.
+  // Caso contrário, aplicamos a tabela regressiva conforme o horizonte do ponto.
+  const usaOverride = aliquotaIROverride !== undefined && aliquotaIROverride !== null;
+
   for (let m = 1; m <= meses; m++) {
     patrimonioBruto = patrimonioBruto * (1 + taxaMensal) + aporte;
     if (m % 12 === 0) {
       const yearIdx = m / 12;
       const investedSoFar = patrimonioAtual + aporte * m;
       const ganhoBrutoY = patrimonioBruto - investedSoFar;
-      // IR no ponto: usa a alíquota do horizonte total (estimativa visual)
-      const aliqPonto = getAliquotaIR(yearIdx);
+      const aliqPonto = usaOverride ? (aliquotaIROverride as number) : getAliquotaIR(yearIdx);
       const irY = Math.max(0, ganhoBrutoY) * (aliqPonto / 100);
       const netY = patrimonioBruto - irY;
       timeline.push({
@@ -339,7 +350,7 @@ function simulate(idadeAtual: number, idadeAposent: number, patrimonioAtual: num
   const ganhoBruto = patrimonioBruto - totalInvestido;
 
   // IR incide apenas sobre o ganho, no momento do resgate
-  const aliquotaIR = getAliquotaIR(anos);
+  const aliquotaIR = usaOverride ? (aliquotaIROverride as number) : getAliquotaIR(anos);
   const irDevido = ganhoBruto * (aliquotaIR / 100);
   const patrimonioLiquido = patrimonioBruto - irDevido;
   const ganhoLiquido = patrimonioLiquido - totalInvestido;
