@@ -1586,142 +1586,59 @@ const YieldGuide = () => {
               );
             })()}
 
-            {/* ── EVOLUÇÃO: Gráfico + Tabela ───────── */}
+            {/* ── EVOLUÇÃO: Tabela ano-a-ano ───────── */}
             {result && result.timeline.length > 1 && (
               <motion.div
                 variants={fadeUp}
                 custom={2}
-                className="grid lg:grid-cols-5 gap-6"
+                className="calc-card-light rounded-3xl p-6 md:p-8 relative overflow-hidden"
               >
-                {/* Gráfico */}
-                <div
-                  className="calc-card-light lg:col-span-3 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                >
-                  <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1">Evolução do patrimônio</p>
-                      <h3 className="text-xl font-bold text-foreground tracking-tight">Como seu dinheiro cresce</h3>
-                    </div>
-                    <div className="flex items-center gap-3 text-[11px]">
-                      <span className="flex items-center gap-1.5 text-muted-foreground">
-                        <span className="w-2.5 h-2.5 rounded-full bg-primary/40" /> Investido
-                      </span>
-                      <span className="flex items-center gap-1.5 text-muted-foreground">
-                        <span className="w-2.5 h-2.5 rounded-full bg-accent" /> Patrimônio líquido
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-[280px] md:h-[320px] -ml-3">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={result.timeline} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="gradNet" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.45} />
-                            <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.02} />
-                          </linearGradient>
-                          <linearGradient id="gradInv" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="hsl(215 50% 23%)" stopOpacity={0.30} />
-                            <stop offset="100%" stopColor="hsl(215 50% 23%)" stopOpacity={0.02} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 6" stroke="hsl(220 13% 88%)" />
-                        <XAxis
-                          dataKey="age"
-                          tick={{ fill: "hsl(220 9% 38%)", fontSize: 11 }}
-                          tickLine={false}
-                          axisLine={{ stroke: "hsl(220 13% 88%)" }}
-                          tickFormatter={(v) => `${v} anos`}
-                          interval="preserveStartEnd"
-                          minTickGap={24}
-                        />
-                        <YAxis
-                          tick={{ fill: "hsl(220 9% 38%)", fontSize: 11 }}
-                          tickLine={false}
-                          axisLine={{ stroke: "hsl(220 13% 88%)" }}
-                          tickFormatter={(v: number) => {
-                            if (v >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(1)}M`;
-                            if (v >= 1_000) return `R$ ${Math.round(v / 1_000)}k`;
-                            return `R$ ${v}`;
-                          }}
-                          width={70}
-                        />
-                        <RTooltip
-                          contentStyle={{
-                            background: "hsl(0 0% 100%)",
-                            border: "1px solid hsl(220 13% 88%)",
-                            borderRadius: 12,
-                            color: "hsl(220 20% 12%)",
-                            fontSize: 12,
-                            boxShadow: "0 12px 32px -12px hsl(215 50% 23% / 0.18)",
-                          }}
-                          labelFormatter={(label, payload) => {
-                            const p = payload?.[0]?.payload as YearPoint | undefined;
-                            return p ? `Ano ${p.year} · ${p.age} anos` : `${label} anos`;
-                          }}
-                          formatter={(value: number, name: string) => [
-                            value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }),
-                            name === "net" ? "Patrimônio líquido" : name === "invested" ? "Total investido" : "Bruto",
-                          ]}
-                        />
-                        <Area type="monotone" dataKey="invested" stroke="hsl(215 50% 23%)" strokeWidth={2} fill="url(#gradInv)" />
-                        <Area type="monotone" dataKey="net" stroke="hsl(var(--accent))" strokeWidth={2.5} fill="url(#gradNet)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <p className="text-[11px] text-foreground/35 mt-3 leading-relaxed">
-                    A área dourada representa o efeito dos juros compostos: tudo acima da linha branca é ganho gerado pelos seus investimentos.
-                  </p>
-                </div>
-
-                {/* Tabela */}
-                <div
-                  className="calc-card-light lg:col-span-2 rounded-3xl p-6 md:p-8 relative overflow-hidden"
-                >
-                  <div className="mb-5">
-                    <p className="text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1">Tabela ano a ano</p>
+                <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-novare-blue dark:text-novare-blue-bright font-semibold mb-1">Tabela ano a ano</p>
                     <h3 className="text-xl font-bold text-foreground tracking-tight">Acompanhe o crescimento</h3>
                   </div>
-                  <div className="max-h-[340px] overflow-y-auto pr-1 -mr-1 sidebar-scroll">
-                    <Table>
-                      <TableHeader className="sticky top-0 z-10" style={{ background: "hsl(var(--muted))" }}>
-                        <TableRow className="border-border/40 hover:bg-transparent">
-                          <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold h-9">Idade</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold text-right h-9">Investido</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold text-right h-9">Patrimônio</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider text-accent font-semibold text-right h-9">Ganho</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {result.timeline.map((row, idx) => {
-                          const isLast = idx === result.timeline.length - 1;
-                          return (
-                            <TableRow
-                              key={row.year}
-                              className={`border-border/40 hover:bg-muted/40 ${isLast ? "bg-accent/[0.06]" : ""}`}
-                            >
-                              <TableCell className="text-xs text-foreground/80 font-medium py-2.5">
-                                {row.age}
-                                <span className="text-muted-foreground/60 ml-1 text-[10px]">(ano {row.year})</span>
-                              </TableCell>
-                              <TableCell className="text-xs text-foreground/55 text-right tabular-nums py-2.5">
-                                {row.invested.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
-                              </TableCell>
-                              <TableCell className={`text-xs font-semibold text-right tabular-nums py-2.5 ${isLast ? "text-foreground" : "text-foreground"}`}>
-                                {row.net.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
-                              </TableCell>
-                              <TableCell className="text-xs text-accent font-semibold text-right tabular-nums py-2.5">
-                                {row.gain >= 0 ? "+" : ""}
-                                {row.gain.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  <p className="text-[11px] text-foreground/35 mt-2 leading-relaxed">
+                  <p className="text-xs text-muted-foreground max-w-sm">
                     Patrimônio líquido estimado após IR (tabela regressiva). Ano 0 = hoje.
                   </p>
+                </div>
+                <div className="max-h-[360px] overflow-y-auto pr-1 -mr-1 sidebar-scroll">
+                  <Table>
+                    <TableHeader className="sticky top-0 z-10" style={{ background: "hsl(var(--muted))" }}>
+                      <TableRow className="border-border/40 hover:bg-transparent">
+                        <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold h-9">Idade</TableHead>
+                        <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold text-right h-9">Investido</TableHead>
+                        <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold text-right h-9">Patrimônio</TableHead>
+                        <TableHead className="text-[10px] uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright font-semibold text-right h-9">Ganho</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {result.timeline.map((row, idx) => {
+                        const isLast = idx === result.timeline.length - 1;
+                        return (
+                          <TableRow
+                            key={row.year}
+                            className={`border-border/40 hover:bg-muted/40 ${isLast ? "bg-novare-blue/[0.06]" : ""}`}
+                          >
+                            <TableCell className="text-xs text-foreground/80 font-medium py-2.5">
+                              {row.age}
+                              <span className="text-muted-foreground/60 ml-1 text-[10px]">(ano {row.year})</span>
+                            </TableCell>
+                            <TableCell className="text-xs text-foreground/55 text-right tabular-nums py-2.5">
+                              {row.invested.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
+                            </TableCell>
+                            <TableCell className="text-xs font-semibold text-right tabular-nums py-2.5 text-foreground">
+                              {row.net.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
+                            </TableCell>
+                            <TableCell className="text-xs text-novare-blue dark:text-novare-blue-bright font-semibold text-right tabular-nums py-2.5">
+                              {row.gain >= 0 ? "+" : ""}
+                              {row.gain.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 </div>
               </motion.div>
             )}
