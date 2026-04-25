@@ -1324,21 +1324,33 @@ const YieldGuide = () => {
                   <p className="text-[11px] text-muted-foreground -mt-1">Simule o impacto do IR sobre seus rendimentos</p>
                   <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Alíquota de IR estimada</label>
+                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">
+                        Alíquota de IR ({tipoRenda === "fixa" ? "Renda Fixa" : tipoRenda === "mista" ? "Renda Mista" : "Renda Variável"})
+                      </label>
                       <div className="relative">
                         <select
-                          value={result?.aliquotaIR ?? 15}
-                          onChange={() => { /* informativo: alíquota é derivada do prazo */ }}
-                          className="calc-input pl-4 pr-10 appearance-none cursor-not-allowed opacity-90"
-                          disabled
+                          value={String(aliquotaIRSelecionada)}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setAliquotaIRSelecionada(v === "auto" ? "auto" : parseFloat(v));
+                          }}
+                          className="calc-input pl-4 pr-10 appearance-none cursor-pointer"
                         >
-                          {[22.5, 20, 17.5, 15].map((a) => (
-                            <option key={a} value={a}>{a.toString().replace(".", ",")}%</option>
+                          {irOptions.map((opt) => (
+                            <option key={String(opt.value)} value={String(opt.value)}>
+                              {opt.label}
+                            </option>
                           ))}
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                       </div>
-                      <p className="text-[10px] text-muted-foreground/70">Calculada automaticamente pela tabela regressiva.</p>
+                      <p className="text-[10px] text-muted-foreground/70 leading-snug">
+                        {aliquotaIRSelecionada === "auto"
+                          ? `Automático: ${aliquotaEfetivaAtual.toString().replace(".", ",")}% para ${anosHorizonte || 0} ${anosHorizonte === 1 ? "ano" : "anos"} de horizonte.`
+                          : aliquotaIRSelecionada === 0
+                            ? "Investimento isento de Imposto de Renda."
+                            : `Alíquota fixa de ${aliquotaIRSelecionada.toString().replace(".", ",")}% sobre o ganho.`}
+                      </p>
                     </div>
 
                     <div className="space-y-1.5">
@@ -1348,14 +1360,17 @@ const YieldGuide = () => {
                           type="text"
                           readOnly
                           value={
-                            result
-                              ? `${(rentAnual * (1 - (result.aliquotaIR / 100))).toFixed(2).replace(".", ",")}%`
+                            sim.rentabilidade
+                              ? `${(rentAnual * (1 - aliquotaEfetivaAtual / 100)).toFixed(2).replace(".", ",")}%`
                               : "—"
                           }
                           className="calc-input pl-4 pr-16 font-bold text-novare-blue dark:text-novare-blue-bright bg-novare-blue-light/60 dark:bg-novare-blue/15"
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-novare-blue/70 dark:text-novare-blue-bright/70">a.a.</span>
                       </div>
+                      <p className="text-[10px] text-muted-foreground/70">
+                        Bruto {rentAnual.toFixed(2).replace(".", ",")}% − IR {aliquotaEfetivaAtual.toString().replace(".", ",")}%
+                      </p>
                     </div>
                   </div>
                 </div>
