@@ -1764,8 +1764,8 @@ const YieldGuide = () => {
                     custom={1.5}
                     className="calc-card-light rounded-3xl overflow-hidden"
                   >
-                    <div className="p-6 md:p-8">
-                      <div className="flex items-start gap-4 mb-6">
+                    <div className="p-4 md:p-5">
+                      <div className="flex items-start gap-3 mb-4">
                         <div className="w-11 h-11 rounded-xl bg-warning/15 shadow-[0_0_15px_hsl(var(--warning)/0.15)] flex items-center justify-center shrink-0">
                           <Receipt className="h-6 w-6 text-warning" />
                         </div>
@@ -1780,7 +1780,7 @@ const YieldGuide = () => {
                       </div>
 
                       {/* Steps */}
-                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3">
                         {steps.map((s) => (
                           <Tooltip key={s.num}>
                             <TooltipTrigger asChild>
@@ -1811,7 +1811,7 @@ const YieldGuide = () => {
                       </div>
 
                       {/* Tabela regressiva auxiliar */}
-                      <div className="mt-6 pt-5 border-t border-border/40">
+                      <div className="mt-4 pt-4 border-t border-border/40">
                         <div className="flex items-center gap-2 mb-3">
                           <Percent className="h-4 w-4 text-muted-foreground/80" />
                           <p className="text-xs uppercase tracking-wider text-muted-foreground/80 font-semibold">
