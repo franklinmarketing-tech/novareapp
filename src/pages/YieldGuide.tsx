@@ -1240,13 +1240,13 @@ const YieldGuide = () => {
 
                       {result && result.rendaDesejadaNum > 0 && (
                         <div className="mt-4 space-y-2">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-muted-foreground truncate pr-2 tabular-nums">
+                          <div className="flex items-center justify-between text-[11px] gap-3">
+                            <span className="calc-num text-muted-foreground truncate pr-2">
                               {formatCompactBRL(result.rendaMensalLiquidaNum)} <span className="text-muted-foreground/60">de</span>{" "}
                               {formatCompactBRL(result.rendaDesejadaNum)}
                             </span>
                             <span
-                              className={`font-black tabular-nums shrink-0 text-base ${
+                              className={`calc-num font-black shrink-0 text-base md:text-lg ${
                                 result.atingeMeta ? "text-success" : "text-warning"
                               }`}
                             >
@@ -1255,26 +1255,26 @@ const YieldGuide = () => {
                                 : `${result.rendaVsDesejada.toFixed(0)}%`}
                             </span>
                           </div>
-                          <div className="h-2 w-full rounded-full bg-muted/60 overflow-hidden border border-border/40">
+                          <div className="h-2.5 w-full rounded-full bg-muted/60 overflow-hidden border border-border/40 shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.08)]">
                             <motion.div
                               className="h-full rounded-full relative overflow-hidden"
                               style={{
                                 background: result.atingeMeta
-                                  ? "linear-gradient(90deg, hsl(var(--success)), hsl(var(--success) / 0.7))"
-                                  : "linear-gradient(90deg, hsl(var(--warning)), hsl(var(--warning) / 0.7))",
+                                  ? "linear-gradient(90deg, hsl(var(--success)), hsl(var(--success) / 0.75))"
+                                  : "linear-gradient(90deg, hsl(var(--warning)), hsl(var(--warning) / 0.75))",
                                 boxShadow: result.atingeMeta
-                                  ? "0 0 12px hsl(var(--success) / 0.6)"
-                                  : "0 0 12px hsl(var(--warning) / 0.6)",
+                                  ? "0 0 14px hsl(var(--success) / 0.65)"
+                                  : "0 0 14px hsl(var(--warning) / 0.65)",
                               }}
                               initial={{ width: 0 }}
-                              animate={{ width: `${Math.min(100, result.rendaVsDesejada)}%` }}
+                              animate={{ width: `${Math.max(2, Math.min(100, result.rendaVsDesejada))}%` }}
                               transition={{ duration: 1, ease: "easeOut" }}
                             >
                               {/* shimmer */}
                               <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
                                 animate={{ x: ["-100%", "200%"] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
                               />
                             </motion.div>
                           </div>
