@@ -1,1 +1,7 @@
 project_id = "hjikeevfzfswqydduars"
+
+[functions.pdf-lead-inbound]
+verify_jwt = false
+
+[functions.send-pdf-lead]
+verify_jwt = false

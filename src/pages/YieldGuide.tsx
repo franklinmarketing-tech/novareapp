@@ -24,6 +24,7 @@ import newsletterHero from "@/assets/newsletter-hero.jpg";
 import { SEO } from "@/components/SEO";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateRendimentoPDF } from "@/lib/generateRendimentoPDF";
+import { PdfEmailDialog } from "@/components/PdfEmailDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -497,6 +498,7 @@ const YieldGuide = () => {
   const [activeSection, setActiveSection] = useState<string>("");
   const [isSimulating, setIsSimulating] = useState(false);
   const [simCountdown, setSimCountdown] = useState(5);
+  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterLoading, setNewsletterLoading] = useState(false);
   const [newsletterDone, setNewsletterDone] = useState(false);
@@ -1767,14 +1769,7 @@ const YieldGuide = () => {
               </button>
 
               <button
-                onClick={() => result && generateRendimentoPDF(result, {
-                  idadeAtual: sim.idadeAtual,
-                  idadeAposent: sim.idadeAposent,
-                  patrimonioAtual: sim.patrimonioAtual,
-                  aporte: sim.aporte,
-                  rendaDesejada: sim.rendaDesejada,
-                  rentabilidadeAnual: rentAnual,
-                })}
+                onClick={() => result && setPdfDialogOpen(true)}
                 disabled={!result}
                 title={!result ? "Simule primeiro para gerar o relatório" : undefined}
                 className="sim-btn-outline inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed !text-red-600 dark:!text-red-400"
@@ -2833,6 +2828,20 @@ const YieldGuide = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <PdfEmailDialog
+        open={pdfDialogOpen}
+        onOpenChange={setPdfDialogOpen}
+        result={result}
+        input={result ? {
+          idadeAtual: sim.idadeAtual,
+          idadeAposent: sim.idadeAposent,
+          patrimonioAtual: sim.patrimonioAtual,
+          aporte: sim.aporte,
+          rendaDesejada: sim.rendaDesejada,
+          rentabilidadeAnual: rentAnual,
+        } : null}
+      />
     </div>
   );
 };

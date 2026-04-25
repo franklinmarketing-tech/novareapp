@@ -385,7 +385,22 @@ function drawFooter(doc: jsPDF, pageNumber: number, totalPages: number) {
 // GERADOR PRINCIPAL
 // ============================================================
 
-export async function generateRendimentoPDF(result: SimResultLite, input: SimInputLite) {
+export interface GeneratePDFOptions {
+  /** Se true, dispara o download no navegador. Padrão true. */
+  download?: boolean;
+}
+
+export interface GeneratePDFResult {
+  blob: Blob;
+  base64: string;
+  fileName: string;
+}
+
+export async function generateRendimentoPDF(
+  result: SimResultLite,
+  input: SimInputLite,
+  options: GeneratePDFOptions = {},
+): Promise<GeneratePDFResult> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -535,36 +550,11 @@ export async function generateRendimentoPDF(result: SimResultLite, input: SimInp
   // @ts-ignore
   y = (doc as any).lastAutoTable.finalY + 18;
 
-  // ===== Fórmula do montante =====
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(...NOVARE_BLUE_DARK);
-  doc.text("2. Fórmula da capitalização composta", 40, y);
-  y += 16;
-
-  doc.setFillColor(...BG_SOFT);
-  doc.setDrawColor(...BORDER_LIGHT);
-  doc.roundedRect(40, y, pageW - 80, 70, 6, 6, "FD");
-
-  doc.setFont("courier", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(...NOVARE_BLUE_DARK);
-  doc.text("M = P0 · (1+i)^n  +  PMT · [((1+i)^n − 1) / i]", pageW / 2, y + 28, { align: "center" });
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(...TEXT_MUTED);
-  doc.text(
-    "M = montante final  ·  P0 = patrimônio inicial  ·  PMT = aporte mensal  ·  i = taxa mensal  ·  n = nº de meses",
-    pageW / 2, y + 50, { align: "center" }
-  );
-  y += 86;
-
   // ===== Cálculo do IR (passo a passo) =====
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(...NOVARE_BLUE_DARK);
-  doc.text("3. Imposto de Renda no resgate", 40, y);
+  doc.text("2. Imposto de Renda no resgate", 40, y);
   y += 14;
 
   const baseCalc = Math.max(0, result.patrimonioNum - result.totalInvestidoNum);
@@ -824,18 +814,23 @@ export async function generateRendimentoPDF(result: SimResultLite, input: SimInp
     drawFooter(doc, p, totalPages);
   }
 
-  // ===== Download =====
+  // ===== Saída =====
   const fileName = `Novare-Aposentadoria-${input.idadeAposent}anos.pdf`;
   const blob = doc.output("blob");
-  const url = URL.createObjectURL(blob);
+  // Base64 puro (sem o prefixo data:...)
+  const base64 = doc.output("datauristring").split(",")[1] ?? "";
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  if (options.download !== false) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
 
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  return { blob, base64, fileName };
 }

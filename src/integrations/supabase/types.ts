@@ -1379,6 +1379,134 @@ export type Database = {
         }
         Relationships: []
       }
+      pdf_lead_messages: {
+        Row: {
+          body_html: string | null
+          body_text: string
+          created_at: string
+          direction: string
+          email_status: string
+          error_message: string | null
+          has_attachment_pdf: boolean
+          id: string
+          lead_id: string
+          metadata: Json | null
+          recipient_email: string | null
+          resend_message_id: string | null
+          sender_email: string | null
+          sender_user_id: string | null
+          subject: string
+        }
+        Insert: {
+          body_html?: string | null
+          body_text: string
+          created_at?: string
+          direction: string
+          email_status?: string
+          error_message?: string | null
+          has_attachment_pdf?: boolean
+          id?: string
+          lead_id: string
+          metadata?: Json | null
+          recipient_email?: string | null
+          resend_message_id?: string | null
+          sender_email?: string | null
+          sender_user_id?: string | null
+          subject: string
+        }
+        Update: {
+          body_html?: string | null
+          body_text?: string
+          created_at?: string
+          direction?: string
+          email_status?: string
+          error_message?: string | null
+          has_attachment_pdf?: boolean
+          id?: string
+          lead_id?: string
+          metadata?: Json | null
+          recipient_email?: string | null
+          resend_message_id?: string | null
+          sender_email?: string | null
+          sender_user_id?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_lead_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "pdf_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pdf_leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          inbound_count: number
+          ip_address: string | null
+          last_inbound_at: string | null
+          last_message_at: string | null
+          last_replied_at: string | null
+          message_count: number
+          name: string | null
+          notes: string | null
+          pdf_filename: string | null
+          pdf_url: string | null
+          reply_count: number
+          simulation_snapshot: Json | null
+          source: string
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          inbound_count?: number
+          ip_address?: string | null
+          last_inbound_at?: string | null
+          last_message_at?: string | null
+          last_replied_at?: string | null
+          message_count?: number
+          name?: string | null
+          notes?: string | null
+          pdf_filename?: string | null
+          pdf_url?: string | null
+          reply_count?: number
+          simulation_snapshot?: Json | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          inbound_count?: number
+          ip_address?: string | null
+          last_inbound_at?: string | null
+          last_message_at?: string | null
+          last_replied_at?: string | null
+          message_count?: number
+          name?: string | null
+          notes?: string | null
+          pdf_filename?: string | null
+          pdf_url?: string | null
+          reply_count?: number
+          simulation_snapshot?: Json | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
