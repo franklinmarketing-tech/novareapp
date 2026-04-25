@@ -996,7 +996,7 @@ const YieldGuide = () => {
                       transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     />
 
-                    <div className="relative z-10 space-y-5 md:space-y-7 flex flex-col h-full">
+                    <div className="relative z-10 flex flex-col gap-5 md:gap-6 h-full">
                       <div className="grid sm:grid-cols-2 gap-x-6 gap-y-5">
                         {([
                           { label: "Qual sua idade hoje?", key: "idadeAtual", hint: "anos", kind: "int" as const, placeholder: "ex: 30" },
