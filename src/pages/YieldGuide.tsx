@@ -1180,7 +1180,7 @@ const YieldGuide = () => {
                     </div>
 
                     {/* === Meta atingida — branco premium com tinta success/warning === */}
-                    <motion.div
+                    <div
                       className={`calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden transition-all duration-500 ${
                         result
                           ? result.atingeMeta
@@ -1188,8 +1188,6 @@ const YieldGuide = () => {
                             : "ring-1 ring-warning/30"
                           : ""
                       }`}
-                      whileHover={{ y: -2 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div
