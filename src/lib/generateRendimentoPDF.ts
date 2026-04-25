@@ -385,7 +385,22 @@ function drawFooter(doc: jsPDF, pageNumber: number, totalPages: number) {
 // GERADOR PRINCIPAL
 // ============================================================
 
-export async function generateRendimentoPDF(result: SimResultLite, input: SimInputLite) {
+export interface GeneratePDFOptions {
+  /** Se true, dispara o download no navegador. Padrão true. */
+  download?: boolean;
+}
+
+export interface GeneratePDFResult {
+  blob: Blob;
+  base64: string;
+  fileName: string;
+}
+
+export async function generateRendimentoPDF(
+  result: SimResultLite,
+  input: SimInputLite,
+  options: GeneratePDFOptions = {},
+): Promise<GeneratePDFResult> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -799,18 +814,23 @@ export async function generateRendimentoPDF(result: SimResultLite, input: SimInp
     drawFooter(doc, p, totalPages);
   }
 
-  // ===== Download =====
+  // ===== Saída =====
   const fileName = `Novare-Aposentadoria-${input.idadeAposent}anos.pdf`;
   const blob = doc.output("blob");
-  const url = URL.createObjectURL(blob);
+  // Base64 puro (sem o prefixo data:...)
+  const base64 = doc.output("datauristring").split(",")[1] ?? "";
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  if (options.download !== false) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
 
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  return { blob, base64, fileName };
 }
