@@ -758,8 +758,8 @@ const YieldGuide = () => {
       </motion.nav>
 
       {/* ── HERO ────────────────────────────────── */}
-      <section className="pt-24 pb-10 md:pt-32 md:pb-14">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="pt-20 pb-8 md:pt-28 md:pb-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-5 lg:px-6 text-center">
           <motion.div initial="hidden" animate="visible" className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-widest">
               <Landmark className="h-6 w-6" />
@@ -805,8 +805,8 @@ const YieldGuide = () => {
       </section>
 
       {/* ── BENTO STATS ─────────────────────────── */}
-      <section className="py-10 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-8 md:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
             className="grid grid-cols-2 md:grid-cols-4 gap-4"
@@ -831,8 +831,8 @@ const YieldGuide = () => {
       </section>
 
       {/* ── INTRO / ABOUT ───────────────────────── */}
-      <section id="intro" className="py-10 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="intro" className="py-8 md:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <div className="grid lg:grid-cols-2 gap-8 items-center">
               <motion.div variants={fadeUp} custom={0} className="space-y-6">
@@ -884,8 +884,8 @@ const YieldGuide = () => {
       </section>
 
       {/* ── RENDA FIXA TABLE ────────────────────── */}
-      <section id="renda-fixa" className="py-10 md:py-16 bg-muted/40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="renda-fixa" className="py-8 md:py-12 bg-muted/40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
               <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Simulação</span>
@@ -935,7 +935,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR (image-faithful, Novare blue) ─────────── */}
       <section
         id="simulador"
-        className="py-10 md:py-16 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
+        className="py-8 md:py-12 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
       >
         {/* Background orbs sutis (azul Novare) */}
         <motion.div
@@ -952,7 +952,7 @@ const YieldGuide = () => {
         />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-novare-blue/40 to-transparent" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6 relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
 
             {/* ─── TOPO: Hero esquerda + 3 cards de tipo de renda direita ─── */}
@@ -1925,8 +1925,8 @@ const YieldGuide = () => {
       </section>
 
       {/* ── TESTIMONIALS ────────────────────────── */}
-      <section className="py-10 md:py-16 bg-muted/40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-8 md:py-12 bg-muted/40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
               <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Depoimentos</span>
@@ -1965,8 +1965,8 @@ const YieldGuide = () => {
       </section>
 
       {/* ── CTA BENTO ───────────────────────────── */}
-      <section id="contato" className="py-10 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="contato" className="py-8 md:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden bg-primary text-primary-foreground">
               <CardContent className="p-0">
@@ -2151,8 +2151,8 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FAQ ──────────────────────────────────── */}
-      <section id="faq" className="py-10 md:py-16 bg-muted/40">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="faq" className="py-8 md:py-12 bg-muted/40">
+        <div className="max-w-3xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4">
               <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">FAQ</span>
@@ -2180,8 +2180,8 @@ const YieldGuide = () => {
       </section>
 
       {/* ── QUEM SOMOS ──────────────────────────── */}
-      <section id="quem-somos" className="py-10 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="quem-somos" className="py-8 md:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-5">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4 max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
@@ -2363,8 +2363,8 @@ const YieldGuide = () => {
       </AnimatePresence>
 
       {/* ── NEWSLETTER — immersive bento ────────── */}
-      <section className="py-10 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-8 md:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden">
               <CardContent className="p-0">
@@ -2487,8 +2487,8 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FOOTER ──────────────────────────────── */}
-      <footer className="py-8 md:py-10 border-t border-border/40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="py-6 md:py-8 border-t border-border/40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <img src={logoPreta} alt="Novare" className="h-6" />
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Novare Consultoria de Investimentos. Todos os direitos reservados.
