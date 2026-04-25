@@ -535,36 +535,11 @@ export async function generateRendimentoPDF(result: SimResultLite, input: SimInp
   // @ts-ignore
   y = (doc as any).lastAutoTable.finalY + 18;
 
-  // ===== Fórmula do montante =====
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(...NOVARE_BLUE_DARK);
-  doc.text("2. Fórmula da capitalização composta", 40, y);
-  y += 16;
-
-  doc.setFillColor(...BG_SOFT);
-  doc.setDrawColor(...BORDER_LIGHT);
-  doc.roundedRect(40, y, pageW - 80, 70, 6, 6, "FD");
-
-  doc.setFont("courier", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(...NOVARE_BLUE_DARK);
-  doc.text("M = P0 · (1+i)^n  +  PMT · [((1+i)^n − 1) / i]", pageW / 2, y + 28, { align: "center" });
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(...TEXT_MUTED);
-  doc.text(
-    "M = montante final  ·  P0 = patrimônio inicial  ·  PMT = aporte mensal  ·  i = taxa mensal  ·  n = nº de meses",
-    pageW / 2, y + 50, { align: "center" }
-  );
-  y += 86;
-
   // ===== Cálculo do IR (passo a passo) =====
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(...NOVARE_BLUE_DARK);
-  doc.text("3. Imposto de Renda no resgate", 40, y);
+  doc.text("2. Imposto de Renda no resgate", 40, y);
   y += 14;
 
   const baseCalc = Math.max(0, result.patrimonioNum - result.totalInvestidoNum);
