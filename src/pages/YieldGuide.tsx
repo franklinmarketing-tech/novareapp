@@ -1112,11 +1112,11 @@ const YieldGuide = () => {
                     <button
                       onClick={handleSimulate}
                       disabled={isSimulating}
-                      className="group relative z-10 w-full inline-flex items-center justify-center gap-3 calc-btn-primary px-8 py-3.5 rounded-2xl font-semibold text-base mt-5 disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
+                      className="group relative z-10 w-full inline-flex items-center justify-center gap-2.5 calc-btn-primary px-8 py-3.5 rounded-2xl font-semibold text-base mt-5 disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
                     >
-                      <BarChart3 className="h-5 w-5" />
+                      <BarChart3 className="h-[18px] w-[18px]" />
                       Simular Aposentadoria
-                      <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+                      <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
                     </button>
 
                     {/* === Renda Mensal Passiva (HERO escuro com glow laranja) === */}
