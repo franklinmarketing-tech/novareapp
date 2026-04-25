@@ -1124,16 +1124,16 @@ const YieldGuide = () => {
                         >
                           {/* Bolinha de seleção no canto superior direito */}
                           <span
-                            className={`absolute top-1.5 right-1.5 z-20 inline-flex items-center justify-center w-4 h-4 rounded-full transition-all ${
+                            className={`absolute top-2 right-2 z-20 inline-flex items-center justify-center rounded-full transition-all duration-200 ${
                               isSelected
-                                ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-1px_hsl(var(--accent)/0.55)]"
+                                ? "w-5 h-5 md:w-[22px] md:h-[22px] bg-accent text-accent-foreground ring-2 ring-accent/30 shadow-[0_4px_12px_-2px_hsl(var(--accent)/0.6)] scale-100"
                                 : isHero
-                                  ? "bg-transparent border border-primary-foreground/40"
-                                  : "bg-transparent border border-border/70"
+                                  ? "w-4 h-4 md:w-[18px] md:h-[18px] bg-primary-foreground/5 border-[1.5px] border-primary-foreground/50"
+                                  : "w-4 h-4 md:w-[18px] md:h-[18px] bg-background border-[1.5px] border-border"
                             }`}
                             aria-hidden
                           >
-                            {isSelected && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
+                            {isSelected && <Check className="h-3 w-3 md:h-3.5 md:w-3.5" strokeWidth={4} />}
                           </span>
 
                           <div className="p-2.5 md:p-3 flex flex-col h-full relative z-10">
