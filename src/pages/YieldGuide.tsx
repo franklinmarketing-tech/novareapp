@@ -1445,7 +1445,7 @@ const YieldGuide = () => {
                 <button
                   onClick={handleSimulate}
                   disabled={isSimulating}
-                  className="sim-btn-blue group w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-70 disabled:cursor-wait"
+                  className="sim-btn-orange group w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-70 disabled:cursor-wait"
                 >
                   <BarChart3 className="h-[18px] w-[18px]" />
                   <span>{result ? "Recalcular simulação" : "Simular Aposentadoria"}</span>
@@ -1673,10 +1673,10 @@ const YieldGuide = () => {
                 })}
                 disabled={!result}
                 title={!result ? "Simule primeiro para gerar o relatório" : undefined}
-                className="sim-btn-outline inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                className="sim-btn-outline inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed !text-red-600 dark:!text-red-400"
               >
-                <FileDown className="h-[18px] w-[18px]" />
-                <span>Baixar relatório em PDF</span>
+                <FileDown className="h-[18px] w-[18px] text-red-600 dark:text-red-400" />
+                <span className="text-red-600 dark:text-red-400">Baixar relatório em PDF</span>
               </button>
             </motion.div>
 
