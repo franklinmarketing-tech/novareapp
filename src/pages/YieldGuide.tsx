@@ -1318,61 +1318,65 @@ const YieldGuide = () => {
                   </div>
                 </div>
 
-                {/* Grupo 4 — IMPOSTO DE RENDA NA APLICAÇÃO */}
+                {/* Grupo 4 — IMPOSTO DE RENDA NA APLICAÇÃO (100% automático) */}
                 <div className="space-y-3">
                   <p className="sim-group-label">
                     <Receipt className="h-3.5 w-3.5" />
                     Imposto de Renda na Aplicação
                   </p>
-                  <p className="text-[11px] text-muted-foreground -mt-1">Simule o impacto do IR sobre seus rendimentos</p>
+                  <p className="text-[11px] text-muted-foreground -mt-1">
+                    Calculado automaticamente conforme o <span className="font-semibold text-foreground/80">tipo de renda</span> e o <span className="font-semibold text-foreground/80">prazo</span> escolhidos.
+                  </p>
                   <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                    {/* Card 1 — Alíquota automática */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground/85 leading-tight block">
                         Alíquota de IR ({tipoRenda === "fixa" ? "Renda Fixa" : tipoRenda === "mista" ? "Renda Mista" : "Renda Variável"})
                       </label>
-                      <div className="relative">
-                        <select
-                          value={String(aliquotaIRSelecionada)}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            setAliquotaIRSelecionada(v === "auto" ? "auto" : parseFloat(v));
-                          }}
-                          className="calc-input pl-4 pr-10 appearance-none cursor-pointer"
-                        >
-                          {irOptions.map((opt) => (
-                            <option key={String(opt.value)} value={String(opt.value)}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <div className="calc-input pl-4 pr-4 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
+                        <span className="text-xl font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
+                          {aliquotaEfetivaAtual.toString().replace(".", ",")}%
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-novare-blue/10 dark:bg-novare-blue-bright/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">
+                          <Sparkles className="h-3 w-3" />
+                          Auto
+                        </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/70 leading-snug">
-                        {aliquotaIRSelecionada === "auto"
-                          ? `Automático: ${aliquotaEfetivaAtual.toString().replace(".", ",")}% para ${anosHorizonte || 0} ${anosHorizonte === 1 ? "ano" : "anos"} de horizonte.`
-                          : aliquotaIRSelecionada === 0
-                            ? "Investimento isento de Imposto de Renda."
-                            : `Alíquota fixa de ${aliquotaIRSelecionada.toString().replace(".", ",")}% sobre o ganho.`}
+                      <p className="text-[10px] text-muted-foreground/80 leading-snug">{regraIRTexto}</p>
+                    </div>
+
+                    {/* Card 2 — Rendimento líquido após IR */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Rendimento líquido após IR</label>
+                      <div className="calc-input pl-4 pr-4 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
+                        <span className="text-xl font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
+                          {sim.rentabilidade
+                            ? `${(rentAnual * (1 - aliquotaEfetivaAtual / 100)).toFixed(2).replace(".", ",")}%`
+                            : "—"}
+                        </span>
+                        <span className="text-[10px] font-bold text-novare-blue/70 dark:text-novare-blue-bright/70 uppercase tracking-wider">a.a.</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/80">
+                        Bruto {rentAnual.toFixed(2).replace(".", ",")}% − IR {aliquotaEfetivaAtual.toString().replace(".", ",")}%
                       </p>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Rendimento líquido após IR</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          readOnly
-                          value={
-                            sim.rentabilidade
-                              ? `${(rentAnual * (1 - aliquotaEfetivaAtual / 100)).toFixed(2).replace(".", ",")}%`
-                              : "—"
-                          }
-                          className="calc-input pl-4 pr-16 font-bold text-novare-blue dark:text-novare-blue-bright bg-novare-blue-light/60 dark:bg-novare-blue/15"
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-novare-blue/70 dark:text-novare-blue-bright/70">a.a.</span>
+                    {/* Card 3 — Valor de IR estimado sobre o ganho */}
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Imposto estimado no resgate</label>
+                      <div className="calc-input pl-4 pr-4 flex items-center justify-between bg-gradient-to-br from-amber-100/40 to-transparent dark:from-amber-900/15">
+                        <span className="text-xl font-extrabold text-amber-700 dark:text-amber-400 tabular-nums tracking-tight">
+                          {result ? result.irDevido : "—"}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 dark:bg-amber-400/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                          <Receipt className="h-3 w-3" />
+                          IR devido
+                        </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/70">
-                        Bruto {rentAnual.toFixed(2).replace(".", ",")}% − IR {aliquotaEfetivaAtual.toString().replace(".", ",")}%
+                      <p className="text-[10px] text-muted-foreground/80">
+                        {result
+                          ? `${aliquotaEfetivaAtual.toString().replace(".", ",")}% sobre o ganho bruto de ${result.ganhoBruto}.`
+                          : "Será calculado após você simular a aposentadoria."}
                       </p>
                     </div>
                   </div>
