@@ -2180,8 +2180,8 @@ const YieldGuide = () => {
       </section>
 
       {/* ── QUEM SOMOS ──────────────────────────── */}
-      <section id="quem-somos" className="py-12 md:py-20">
-        <div className="max-w-5xl mx-auto px-6">
+      <section id="quem-somos" className="py-10 md:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-5">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4 max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
@@ -2488,7 +2488,7 @@ const YieldGuide = () => {
 
       {/* ── FOOTER ──────────────────────────────── */}
       <footer className="py-12 border-t border-border/40">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <img src={logoPreta} alt="Novare" className="h-6" />
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Novare Consultoria de Investimentos. Todos os direitos reservados.
