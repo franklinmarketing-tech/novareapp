@@ -2487,7 +2487,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FOOTER ──────────────────────────────── */}
-      <footer className="py-12 border-t border-border/40">
+      <footer className="py-8 md:py-10 border-t border-border/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <img src={logoPreta} alt="Novare" className="h-6" />
           <p className="text-xs text-muted-foreground">
