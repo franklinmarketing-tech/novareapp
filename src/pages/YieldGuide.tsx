@@ -211,32 +211,41 @@ const bentoByTipo: Record<TipoRenda, BentoFeature[]> = {
 // Mantém a referência usada no resto do código (default = renda fixa).
 const bentoFeatures = bentoByTipo.fixa;
 
-/* ── Opções de IR por tipo de renda ─────────────── */
-type IROption = { value: number | "auto"; label: string; hint?: string };
+/* ── IR automático por tipo de renda + prazo ───── */
+function getAliquotaIRPorTipo(tipo: TipoRenda, anos: number): number {
+  // Tabela regressiva padrão (Renda Fixa e fundos)
+  const dias = anos * 365;
+  const regressiva = dias <= 180 ? 22.5 : dias <= 360 ? 20 : dias <= 720 ? 17.5 : 15;
 
-const irOptionsByTipo: Record<TipoRenda, IROption[]> = {
-  fixa: [
-    { value: "auto", label: "Automático (tabela regressiva)", hint: "22,5% até 180d · 20% até 360d · 17,5% até 720d · 15% após 720d" },
-    { value: 22.5, label: "22,5% — até 180 dias" },
-    { value: 20,   label: "20,0% — 181 a 360 dias" },
-    { value: 17.5, label: "17,5% — 361 a 720 dias" },
-    { value: 15,   label: "15,0% — acima de 720 dias" },
-    { value: 0,    label: "Isento (LCI / LCA / Debêntures incentivadas)" },
-  ],
-  mista: [
-    { value: "auto", label: "Automático (tabela regressiva)", hint: "Aplica-se a fundos multimercado e previdência tradicional" },
-    { value: 15,   label: "15,0% — Fundos longo prazo" },
-    { value: 20,   label: "20,0% — Fundos curto prazo" },
-    { value: 10,   label: "10,0% — PGBL/VGBL após 10 anos" },
-    { value: 0,    label: "Isento (carteira balanceada)" },
-  ],
-  variavel: [
-    { value: 15,   label: "15,0% — Ações e ETFs (ganho de capital)" },
-    { value: 20,   label: "20,0% — Day Trade" },
-    { value: 0,    label: "Isento — FIIs / Dividendos / Vendas até R$ 20 mil/mês" },
-    { value: "auto", label: "Automático (tabela regressiva)", hint: "Quando aplicável" },
-  ],
-};
+  switch (tipo) {
+    case "fixa":
+      // Renda Fixa: tabela regressiva pura
+      return regressiva;
+    case "mista":
+      // Renda Mista: regressiva, mas mínima de 15% (fundos de longo prazo)
+      return Math.max(15, regressiva);
+    case "variavel":
+      // Renda Variável: 15% fixo sobre ganho de capital (ações/ETFs)
+      return 15;
+    default:
+      return regressiva;
+  }
+}
+
+/** Texto explicativo da regra aplicada */
+function getRegraIR(tipo: TipoRenda, anos: number): string {
+  const aliq = getAliquotaIRPorTipo(tipo, anos).toString().replace(".", ",");
+  if (tipo === "variavel") return `${aliq}% — alíquota fixa sobre ganho de capital (ações e ETFs)`;
+  if (tipo === "mista") {
+    if (anos >= 2) return `${aliq}% — fundos de longo prazo (após 720 dias)`;
+    return `${aliq}% — tabela regressiva por prazo (${anos} ${anos === 1 ? "ano" : "anos"})`;
+  }
+  // fixa
+  if (anos < 0.5) return `${aliq}% — até 180 dias (tabela regressiva)`;
+  if (anos < 1) return `${aliq}% — 181 a 360 dias (tabela regressiva)`;
+  if (anos < 2) return `${aliq}% — 361 a 720 dias (tabela regressiva)`;
+  return `${aliq}% — acima de 720 dias (alíquota mínima)`;
+}
 
 const bentoStats = [
   { value: "14,75%", label: "Taxa Selic", icon: Percent, color: "text-accent" },
