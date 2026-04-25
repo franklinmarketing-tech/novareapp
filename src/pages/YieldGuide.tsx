@@ -935,7 +935,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR (image-faithful, Novare blue) ─────────── */}
       <section
         id="simulador"
-        className="py-10 md:py-16 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
+        className="pt-6 pb-10 md:pt-8 md:pb-16 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
       >
         {/* Background orbs sutis (azul Novare) */}
         <motion.div
@@ -956,7 +956,7 @@ const YieldGuide = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
 
             {/* ─── TOPO: Hero esquerda + 3 cards de tipo de renda direita ─── */}
-            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-8 lg:gap-12 items-center mb-10 md:mb-14">
+            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-6 lg:gap-10 items-center mb-5 md:mb-7">
               {/* Hero esquerda */}
               <div className="space-y-3 md:space-y-4">
                 <motion.div
