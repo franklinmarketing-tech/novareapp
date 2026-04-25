@@ -786,12 +786,10 @@ const YieldGuide = () => {
                 return (
                   <motion.div key={f.title} variants={fadeUp} custom={i + 1} className={f.span}>
                     <Card
-                      className={`h-full rounded-2xl overflow-hidden relative group transition-all duration-500 cursor-pointer ${
+                      className={`h-full rounded-2xl overflow-hidden relative group cursor-pointer ${
                         isSelected
-                          ? "border-2 border-accent shadow-[0_20px_50px_-15px_hsl(var(--accent)/0.5)] -translate-y-1 ring-4 ring-accent/15"
-                          : "border border-border/40 hover:shadow-elevated"
-                      } ${
-                        isHero ? "bg-primary text-primary-foreground shadow-lg" : "bg-card text-foreground shadow-subtle hover:-translate-y-1"
+                          ? isHero ? "bg-primary text-primary-foreground calc-card-md-dark-selected" : "bg-card text-foreground calc-card-md-selected"
+                          : isHero ? "bg-primary text-primary-foreground calc-card-md-dark" : "bg-card text-foreground calc-card-md"
                       }`}
                       onClick={() => {
                         setSim(prev => ({ ...prev, rentabilidade: f.rentAnual }));
@@ -805,7 +803,7 @@ const YieldGuide = () => {
                         <motion.div
                           initial={{ opacity: 0, scale: 0.8, y: -8 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
-                          className="absolute top-3 right-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-wider shadow-[0_4px_12px_-2px_hsl(var(--accent)/0.6)]"
+                          className="absolute top-3 right-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider calc-badge-selected"
                         >
                           <Check className="h-3 w-3" strokeWidth={3} />
                           Selecionado
@@ -950,14 +948,14 @@ const YieldGuide = () => {
                         setRentPeriodo("anual");
                         setSelectedFaixa(f.title);
                       }}
-                      className={`group relative rounded-2xl p-3 md:p-4 text-left transition-all duration-300 border backdrop-blur-md ${
+                      className={`group relative rounded-2xl p-3 md:p-4 text-left backdrop-blur-md ${
                         isSelected
-                          ? "border-accent ring-2 ring-accent/30 bg-accent/[0.10] shadow-[0_8px_24px_-8px_hsl(var(--accent)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.08)] -translate-y-0.5"
-                          : "border-border/60 bg-muted/40 hover:bg-muted/60 hover:border-border hover:scale-[1.01]"
+                          ? "calc-card-sm-selected"
+                          : "calc-card-sm"
                       }`}
                     >
                       {isSelected ? (
-                        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]">
+                        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full calc-badge-selected">
                           <Check className="h-4 w-4" strokeWidth={3} />
                         </span>
                       ) : (
@@ -1078,7 +1076,7 @@ const YieldGuide = () => {
                                   }
                                   setRentPeriodo("mensal");
                                 }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "calc-toggle-active rounded-lg" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
                               >
                                 % mês
                               </button>
@@ -1091,7 +1089,7 @@ const YieldGuide = () => {
                                   }
                                   setRentPeriodo("anual");
                                 }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.6)]" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
+                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "calc-toggle-active rounded-lg" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
                               >
                                 % ano
                               </button>
@@ -1114,7 +1112,7 @@ const YieldGuide = () => {
                     <button
                       onClick={handleSimulate}
                       disabled={isSimulating}
-                      className="group relative z-10 w-full inline-flex items-center justify-center gap-3 bg-accent text-accent-foreground px-8 py-3.5 rounded-2xl font-semibold text-base shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 mt-5 disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
+                      className="group relative z-10 w-full inline-flex items-center justify-center gap-3 calc-btn-primary px-8 py-3.5 rounded-2xl font-semibold text-base mt-5 disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
                     >
                       <BarChart3 className="h-5 w-5" />
                       Simular Aposentadoria
@@ -1794,10 +1792,10 @@ const YieldGuide = () => {
                             return (
                               <div
                                 key={t.faixa}
-                                className={`p-3 rounded-xl border transition-all ${
+                                className={`p-3 rounded-xl transition-all ${
                                   isCurrent
-                                    ? "bg-accent/15 border-accent/40 shadow-[0_0_20px_-5px_hsl(var(--accent)/0.4)]"
-                                    : "bg-muted/20 border-border/40"
+                                    ? "calc-card-sm-selected"
+                                    : "calc-card-sm"
                                 }`}
                               >
                                 <p className={`text-[10px] uppercase tracking-wider font-semibold ${isCurrent ? "text-accent" : "text-muted-foreground/80"}`}>

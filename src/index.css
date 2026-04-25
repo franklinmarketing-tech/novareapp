@@ -265,33 +265,37 @@
     --ring: 16 65% 55%;
   }
 
-  /* --- Card branco premium 3D profundo ---
-     Borda fina + sombras multi-camada para sensação de elevação.
-     Usado nos cards principais (form, IR, gráfico, tabela). */
+  /* ═══════════════════════════════════════════════════════════════
+     CALCULADORA — SISTEMA DE ELEVAÇÃO PADRONIZADO
+     Regra: mesma easing (0.22, 1, 0.36, 1), mesma duração (320ms),
+     proporção de sombra escalada pelo tamanho do card.
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* --- Transição padrão de todos os cards da calculadora --- */
+  .calc-transition {
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms ease;
+  }
+
+  /* === CARD GRANDE — branco (form, resultados, gráfico) === */
   .calc-card-light {
-    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1);
     background:
       linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 30% 99%) 100%);
     border: 1px solid hsl(220 22% 88%);
     box-shadow:
-      /* highlight superior fino (borda iluminada) */
       0 1px 0 hsl(0 0% 100%) inset,
-      /* highlight superior extra (catch-light no topo) */
       0 2px 0 hsl(0 0% 100% / 0.6) inset,
-      /* hairline ring externa para definir contorno */
       0 0 0 1px hsl(215 30% 86% / 0.6),
-      /* sombra de contato curta */
       0 3px 6px hsl(215 50% 23% / 0.08),
-      /* sombra média */
       0 16px 32px -8px hsl(215 50% 23% / 0.16),
-      /* sombra ambiente longa (suspensão) */
       0 48px 96px -20px hsl(215 50% 23% / 0.28),
-      /* halo externo extra-profundo */
       0 80px 160px -40px hsl(215 60% 15% / 0.38),
-      /* halo deep abyss (flutuação dramática) */
       0 120px 220px -60px hsl(215 70% 10% / 0.32),
-      /* halo extremo (suspensão máxima) */
       0 160px 300px -80px hsl(215 70% 8% / 0.22);
   }
   .calc-card-light:hover {
@@ -307,12 +311,26 @@
       0 140px 280px -64px hsl(215 70% 10% / 0.38),
       0 180px 360px -90px hsl(215 70% 8% / 0.26);
   }
+  .calc-card-light:focus-visible {
+    outline: none;
+    transform: translateY(-4px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100%) inset,
+      0 2px 0 hsl(0 0% 100% / 0.6) inset,
+      0 0 0 1px hsl(215 35% 80% / 0.7),
+      0 0 0 3px hsl(var(--accent) / 0.25),
+      0 6px 12px hsl(215 50% 23% / 0.10),
+      0 24px 48px -10px hsl(215 50% 23% / 0.18),
+      0 64px 128px -24px hsl(215 50% 23% / 0.30),
+      0 100px 200px -44px hsl(215 60% 15% / 0.36),
+      0 140px 280px -64px hsl(215 70% 10% / 0.30);
+  }
 
-  /* --- Card escuro hero 3D profundo ---
-     Usado APENAS em "Renda Mensal Passiva" e CTA "Fale com especialista". */
+  /* === CARD GRANDE — escuro (renda passiva, CTA hero) === */
   .calc-card-dark {
-    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1);
     background:
       linear-gradient(180deg, hsl(215 50% 18%) 0%, hsl(215 55% 13%) 100%);
     border: 1px solid hsl(215 35% 30%);
@@ -338,9 +356,314 @@
       0 170px 340px -72px hsl(215 75% 3% / 0.65),
       0 220px 440px -100px hsl(215 80% 2% / 0.45);
   }
+  .calc-card-dark:focus-visible {
+    outline: none;
+    transform: translateY(-4px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.16) inset,
+      0 0 0 1px hsl(0 0% 0% / 0.25) inset,
+      0 0 0 3px hsl(var(--accent) / 0.30),
+      0 6px 12px hsl(215 60% 5% / 0.50),
+      0 28px 56px -12px hsl(215 60% 5% / 0.60),
+      0 72px 144px -28px hsl(215 60% 5% / 0.72),
+      0 120px 240px -48px hsl(215 70% 4% / 0.76),
+      0 170px 340px -72px hsl(215 75% 3% / 0.55);
+  }
 
-  /* --- Glow accent laranja (uso pontual em hero card) ---
-     Aro laranja vívido + halo quente profundo. */
+  /* === CARD MÉDIO — branco (bento features, tipos de investimento) === */
+  .calc-card-md {
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms ease;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.55);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 0 0 1px hsl(215 30% 88% / 0.35),
+      0 2px 4px hsl(215 50% 23% / 0.05),
+      0 8px 16px -4px hsl(215 50% 23% / 0.10),
+      0 20px 40px -8px hsl(215 50% 23% / 0.14);
+  }
+  .calc-card-md:hover {
+    transform: translateY(-4px);
+    border-color: hsl(var(--border) / 0.80);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 0 0 1px hsl(215 30% 82% / 0.50),
+      0 4px 8px hsl(215 50% 23% / 0.07),
+      0 12px 24px -6px hsl(215 50% 23% / 0.14),
+      0 32px 64px -12px hsl(215 50% 23% / 0.20);
+  }
+  .calc-card-md:focus-visible {
+    outline: none;
+    transform: translateY(-4px);
+    border-color: hsl(var(--accent) / 0.50);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 0 0 1px hsl(215 30% 82% / 0.50),
+      0 0 0 3px hsl(var(--accent) / 0.20),
+      0 4px 8px hsl(215 50% 23% / 0.07),
+      0 12px 24px -6px hsl(215 50% 23% / 0.12),
+      0 32px 64px -12px hsl(215 50% 23% / 0.16);
+  }
+
+  /* === CARD MÉDIO — selecionado (bento features ativo) === */
+  .calc-card-md-selected {
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms ease;
+    background: hsl(var(--card));
+    border: 2px solid hsl(var(--accent) / 0.65);
+    transform: translateY(-4px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 0 0 1px hsl(var(--accent) / 0.25),
+      0 0 0 4px hsl(var(--accent) / 0.10),
+      0 6px 12px hsl(215 50% 23% / 0.08),
+      0 18px 36px -6px hsl(215 50% 23% / 0.16),
+      0 40px 80px -14px hsl(215 50% 23% / 0.22),
+      0 0 40px -6px hsl(var(--accent) / 0.18);
+  }
+  .calc-card-md-selected:hover {
+    transform: translateY(-6px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 0 0 1px hsl(var(--accent) / 0.30),
+      0 0 0 4px hsl(var(--accent) / 0.12),
+      0 8px 16px hsl(215 50% 23% / 0.10),
+      0 24px 48px -8px hsl(215 50% 23% / 0.20),
+      0 52px 104px -18px hsl(215 50% 23% / 0.28),
+      0 0 50px -8px hsl(var(--accent) / 0.24);
+  }
+  .calc-card-md-selected:focus-visible {
+    outline: none;
+    transform: translateY(-6px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 0 0 1px hsl(var(--accent) / 0.30),
+      0 0 0 3px hsl(var(--accent) / 0.25),
+      0 0 0 4px hsl(var(--accent) / 0.12),
+      0 8px 16px hsl(215 50% 23% / 0.10),
+      0 24px 48px -8px hsl(215 50% 23% / 0.18),
+      0 52px 104px -18px hsl(215 50% 23% / 0.24),
+      0 0 50px -8px hsl(var(--accent) / 0.20);
+  }
+
+  /* === CARD PEQUENO — botões de taxa / pills === */
+  .calc-card-sm {
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms ease,
+      background-color 200ms ease;
+    background: hsl(var(--muted) / 0.55);
+    border: 1px solid hsl(var(--border) / 0.55);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.5) inset,
+      0 0 0 1px hsl(215 30% 88% / 0.20),
+      0 1px 3px hsl(215 50% 23% / 0.04),
+      0 4px 8px -2px hsl(215 50% 23% / 0.08);
+  }
+  .calc-card-sm:hover {
+    transform: translateY(-3px);
+    background: hsl(var(--muted) / 0.75);
+    border-color: hsl(var(--border) / 0.80);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.5) inset,
+      0 0 0 1px hsl(215 30% 82% / 0.35),
+      0 2px 6px hsl(215 50% 23% / 0.06),
+      0 8px 16px -3px hsl(215 50% 23% / 0.12),
+      0 18px 36px -6px hsl(215 50% 23% / 0.14);
+  }
+  .calc-card-sm:focus-visible {
+    outline: none;
+    transform: translateY(-3px);
+    border-color: hsl(var(--accent) / 0.45);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.5) inset,
+      0 0 0 1px hsl(215 30% 82% / 0.35),
+      0 0 0 3px hsl(var(--accent) / 0.18),
+      0 2px 6px hsl(215 50% 23% / 0.06),
+      0 8px 16px -3px hsl(215 50% 23% / 0.10);
+  }
+
+  /* === CARD PEQUENO — selecionado (botão de taxa ativo) === */
+  .calc-card-sm-selected {
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms ease;
+    background: hsl(var(--accent) / 0.10);
+    border: 1px solid hsl(var(--accent) / 0.55);
+    transform: translateY(-3px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.25) inset,
+      0 0 0 1px hsl(var(--accent) / 0.20),
+      0 0 0 3px hsl(var(--accent) / 0.08),
+      0 2px 6px hsl(215 50% 23% / 0.06),
+      0 10px 20px -4px hsl(215 50% 23% / 0.12),
+      0 0 24px -4px hsl(var(--accent) / 0.18);
+  }
+  .calc-card-sm-selected:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.25) inset,
+      0 0 0 1px hsl(var(--accent) / 0.25),
+      0 0 0 3px hsl(var(--accent) / 0.10),
+      0 3px 8px hsl(215 50% 23% / 0.08),
+      0 14px 28px -6px hsl(215 50% 23% / 0.16),
+      0 0 32px -6px hsl(var(--accent) / 0.24);
+  }
+  .calc-card-sm-selected:focus-visible {
+    outline: none;
+    transform: translateY(-4px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.25) inset,
+      0 0 0 1px hsl(var(--accent) / 0.25),
+      0 0 0 3px hsl(var(--accent) / 0.20),
+      0 0 0 3px hsl(var(--accent) / 0.10),
+      0 3px 8px hsl(215 50% 23% / 0.08),
+      0 14px 28px -6px hsl(215 50% 23% / 0.12),
+      0 0 32px -6px hsl(var(--accent) / 0.20);
+  }
+
+  /* === CARD MÉDIO — escuro (hero bento) === */
+  .calc-card-md-dark {
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms ease;
+    border: 1px solid hsl(215 40% 35% / 0.45);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.10) inset,
+      0 0 0 1px hsl(215 40% 25% / 0.25),
+      0 2px 4px hsl(215 60% 5% / 0.15),
+      0 8px 16px -4px hsl(215 60% 5% / 0.25),
+      0 20px 40px -8px hsl(215 60% 5% / 0.30);
+  }
+  .calc-card-md-dark:hover {
+    transform: translateY(-4px);
+    border-color: hsl(215 40% 35% / 0.65);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.12) inset,
+      0 0 0 1px hsl(215 40% 25% / 0.35),
+      0 4px 8px hsl(215 60% 5% / 0.20),
+      0 12px 24px -6px hsl(215 60% 5% / 0.32),
+      0 32px 64px -12px hsl(215 60% 5% / 0.38);
+  }
+  .calc-card-md-dark:focus-visible {
+    outline: none;
+    transform: translateY(-4px);
+    border-color: hsl(var(--accent) / 0.40);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.12) inset,
+      0 0 0 1px hsl(215 40% 25% / 0.35),
+      0 0 0 3px hsl(var(--accent) / 0.20),
+      0 4px 8px hsl(215 60% 5% / 0.20),
+      0 12px 24px -6px hsl(215 60% 5% / 0.28),
+      0 32px 64px -12px hsl(215 60% 5% / 0.32);
+  }
+
+  /* === CARD MÉDIO — escuro selecionado (hero bento ativo) === */
+  .calc-card-md-dark-selected {
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms ease;
+    border: 2px solid hsl(var(--accent) / 0.55);
+    transform: translateY(-4px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.10) inset,
+      0 0 0 1px hsl(var(--accent) / 0.20),
+      0 0 0 4px hsl(var(--accent) / 0.08),
+      0 6px 12px hsl(215 60% 5% / 0.18),
+      0 18px 36px -6px hsl(215 60% 5% / 0.28),
+      0 40px 80px -14px hsl(215 60% 5% / 0.32),
+      0 0 40px -6px hsl(var(--accent) / 0.14);
+  }
+  .calc-card-md-dark-selected:hover {
+    transform: translateY(-6px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.12) inset,
+      0 0 0 1px hsl(var(--accent) / 0.25),
+      0 0 0 4px hsl(var(--accent) / 0.10),
+      0 8px 16px hsl(215 60% 5% / 0.22),
+      0 24px 48px -8px hsl(215 60% 5% / 0.34),
+      0 52px 104px -18px hsl(215 60% 5% / 0.40),
+      0 0 50px -8px hsl(var(--accent) / 0.20);
+  }
+  .calc-card-md-dark-selected:focus-visible {
+    outline: none;
+    transform: translateY(-6px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.12) inset,
+      0 0 0 1px hsl(var(--accent) / 0.25),
+      0 0 0 3px hsl(var(--accent) / 0.20),
+      0 0 0 4px hsl(var(--accent) / 0.10),
+      0 8px 16px hsl(215 60% 5% / 0.20),
+      0 24px 48px -8px hsl(215 60% 5% / 0.28),
+      0 52px 104px -18px hsl(215 60% 5% / 0.34),
+      0 0 50px -8px hsl(var(--accent) / 0.16);
+  }
+
+  /* === TOGGLE ATIVO (botões % mês/ano) === */
+  .calc-toggle-active {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    border: 1px solid hsl(var(--accent) / 0.40);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.18) inset,
+      0 2px 6px hsl(var(--accent) / 0.35),
+      0 6px 14px -3px hsl(var(--accent) / 0.22);
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+  .calc-toggle-active:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.22) inset,
+      0 3px 8px hsl(var(--accent) / 0.40),
+      0 8px 18px -3px hsl(var(--accent) / 0.28);
+  }
+
+  /* === BOTÃO PRIMÁRIO (Simular, CTA) === */
+  .calc-btn-primary {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    border: 1px solid hsl(var(--accent) / 0.35);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.15) inset,
+      0 6px 20px -4px hsl(var(--accent) / 0.45),
+      0 2px 6px hsl(var(--accent) / 0.20);
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+  .calc-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.20) inset,
+      0 8px 28px -4px hsl(var(--accent) / 0.55),
+      0 3px 8px hsl(var(--accent) / 0.25);
+  }
+  .calc-btn-primary:active {
+    transform: translateY(0);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.10) inset,
+      0 2px 8px -2px hsl(var(--accent) / 0.35);
+  }
+
+  /* === BADGE SELECIONADO — padronizado === */
+  .calc-badge-selected {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    border: 1px solid hsl(var(--accent) / 0.50);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.25) inset,
+      0 2px 6px hsl(var(--accent) / 0.35),
+      0 6px 14px -3px hsl(var(--accent) / 0.25);
+  }
+
+  /* --- Glow accent laranja (uso pontual em hero card) --- */
   .calc-glow-accent {
     border-color: hsl(16 80% 55% / 0.5);
     box-shadow:
@@ -353,33 +676,25 @@
       0 76px 152px -32px hsl(16 75% 40% / 0.45);
   }
 
-  /* --- Faixa azul Novare premium (badge identidade do simulador) ---
-     Substitui o "chip" branco do logo. Profundo, com brilho superior. */
+  /* --- Faixa azul Novare premium --- */
   .calc-novare-banner {
     position: relative;
     background:
       linear-gradient(180deg, hsl(215 55% 24%) 0%, hsl(215 60% 16%) 100%);
     border: 1px solid hsl(215 40% 34%);
     box-shadow:
-      /* highlight superior */
       0 1px 0 hsl(0 0% 100% / 0.22) inset,
       0 2px 0 hsl(0 0% 100% / 0.08) inset,
-      /* selo escuro embaixo */
       0 -1px 0 hsl(0 0% 0% / 0.35) inset,
-      /* hairline ring */
       0 0 0 1px hsl(215 50% 10% / 0.45),
-      /* contato */
       0 4px 8px hsl(215 60% 5% / 0.40),
-      /* média */
       0 18px 36px -10px hsl(215 60% 5% / 0.58),
-      /* ambiente profunda */
       0 48px 96px -28px hsl(215 60% 5% / 0.65),
-      /* halo laranja sutil (acento da marca) */
       0 0 56px -10px hsl(16 80% 55% / 0.22),
-      /* halo profundo azul */
       0 0 80px -20px hsl(215 50% 30% / 0.18);
-    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   .calc-novare-banner:hover {
     transform: translateY(-4px);
@@ -394,6 +709,21 @@
       0 0 72px -12px hsl(16 80% 55% / 0.30),
       0 0 100px -24px hsl(215 50% 30% / 0.24);
   }
+  .calc-novare-banner:focus-visible {
+    outline: none;
+    transform: translateY(-4px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.25) inset,
+      0 2px 0 hsl(0 0% 100% / 0.10) inset,
+      0 -1px 0 hsl(0 0% 0% / 0.35) inset,
+      0 0 0 1px hsl(215 50% 10% / 0.50),
+      0 0 0 3px hsl(var(--accent) / 0.25),
+      0 6px 12px hsl(215 60% 5% / 0.45),
+      0 24px 48px -12px hsl(215 60% 5% / 0.55),
+      0 64px 128px -36px hsl(215 60% 5% / 0.65),
+      0 0 72px -12px hsl(16 80% 55% / 0.25),
+      0 0 100px -24px hsl(215 50% 30% / 0.20);
+  }
   .calc-novare-banner::before {
     content: "";
     position: absolute;
@@ -403,7 +733,7 @@
     pointer-events: none;
   }
 
-  /* --- Sub-superfície dentro de card branco (campos input, mini-cards) --- */
+  /* --- Sub-superfície dentro de card branco --- */
   .calc-surface-inset {
     background: linear-gradient(180deg, hsl(220 20% 97%) 0%, hsl(220 22% 95%) 100%);
     border: 1px solid hsl(220 15% 90%);
