@@ -1181,7 +1181,7 @@ const YieldGuide = () => {
 
                     {/* === Meta atingida — branco premium com tinta success/warning === */}
                     <div
-                      className={`calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden transition-all duration-500 ${
+                      className={`calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden transition-all duration-500 lg:mt-auto ${
                         result
                           ? result.atingeMeta
                             ? "ring-1 ring-success/30"
