@@ -108,8 +108,9 @@ const App = () => (
                 <Route path="/admin/configuracoes" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSettings /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/workspace" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminWorkspace /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/ajuda" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminAjuda /></AdminLayout></ProtectedRoute>} />
-                <Route path="/admin/leads-newsletter" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminLeadsNewsletter /></AdminLayout></ProtectedRoute>} />
-                <Route path="/admin/leads-pdf" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminLeadsPdf /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/leads" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminLeads /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/leads-newsletter" element={<Navigate to="/admin/leads?tab=newsletter" replace />} />
+                <Route path="/admin/leads-pdf" element={<Navigate to="/admin/leads?tab=pdf" replace />} />
 
                 {/* Admin client routes with tabs */}
                 <Route path="/admin/cliente/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminClientLayout /></AdminLayout></ProtectedRoute>}>
