@@ -989,8 +989,9 @@ const YieldGuide = () => {
                 </p>
               </div>
 
-              {/* 3 cards COMPACTOS de tipo de renda — estilo Prefixado/CDI/IPCA+ */}
-              <div className="space-y-2.5">
+              {/* Bloco unificado: 3 tipos de renda + 3 estratégias (6 cards juntos) */}
+              <div className="rounded-2xl border border-border/60 bg-card/40 dark:bg-card/20 backdrop-blur-sm p-3 md:p-4 space-y-3">
+                <div className="space-y-2">
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   Escolha a forma de rendimento
                 </p>
