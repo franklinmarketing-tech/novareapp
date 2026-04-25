@@ -304,13 +304,14 @@ function formatCompactBRL(v: number): string {
   if (!Number.isFinite(v)) return "—";
   const abs = Math.abs(v);
   const sign = v < 0 ? "-" : "";
+  // \u00A0 (NBSP) entre símbolo e número impede quebras feias do tipo "R$\n100 mil"
   const f = (n: number, suffix: string) =>
-    `${sign}R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${suffix}`;
+    `${sign}R$\u00A0${n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}\u00A0${suffix}`;
   if (abs >= 1e12) return f(v / 1e12, "tri");
   if (abs >= 1e9) return f(v / 1e9, "bi");
   if (abs >= 1e6) return f(v / 1e6, "mi");
   if (abs >= 1e3) return f(v / 1e3, "mil");
-  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).replace(/\s/g, "\u00A0");
 }
 
 /* ── Scrolling pills ───────────────────────────── */
