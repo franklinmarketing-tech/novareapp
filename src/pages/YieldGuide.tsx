@@ -786,12 +786,10 @@ const YieldGuide = () => {
                 return (
                   <motion.div key={f.title} variants={fadeUp} custom={i + 1} className={f.span}>
                     <Card
-                      className={`h-full rounded-2xl overflow-hidden relative group transition-all duration-500 cursor-pointer ${
+                      className={`h-full rounded-2xl overflow-hidden relative group cursor-pointer ${
                         isSelected
-                          ? "border-2 border-accent shadow-[0_20px_50px_-15px_hsl(var(--accent)/0.5)] -translate-y-1 ring-4 ring-accent/15"
-                          : "border border-border/40 hover:shadow-elevated"
-                      } ${
-                        isHero ? "bg-primary text-primary-foreground shadow-lg" : "bg-card text-foreground shadow-subtle hover:-translate-y-1"
+                          ? isHero ? "bg-primary text-primary-foreground calc-card-md-dark-selected" : "bg-card text-foreground calc-card-md-selected"
+                          : isHero ? "bg-primary text-primary-foreground calc-card-md-dark" : "bg-card text-foreground calc-card-md"
                       }`}
                       onClick={() => {
                         setSim(prev => ({ ...prev, rentabilidade: f.rentAnual }));
@@ -805,7 +803,7 @@ const YieldGuide = () => {
                         <motion.div
                           initial={{ opacity: 0, scale: 0.8, y: -8 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
-                          className="absolute top-3 right-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-wider shadow-[0_4px_12px_-2px_hsl(var(--accent)/0.6)]"
+                          className="absolute top-3 right-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider calc-badge-selected"
                         >
                           <Check className="h-3 w-3" strokeWidth={3} />
                           Selecionado
