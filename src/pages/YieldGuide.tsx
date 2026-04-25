@@ -964,12 +964,29 @@ const YieldGuide = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.55 }}
-                  className="calc-novare-banner inline-flex items-center gap-3 pl-3 pr-3 py-2 rounded-2xl"
+                  className="calc-novare-banner relative w-full flex items-center justify-between gap-4 pl-4 pr-3 md:pl-5 md:pr-4 py-3 md:py-3.5 rounded-2xl overflow-hidden"
                 >
-                  <img src={logoBranca} alt="Novare" className="h-6 md:h-7 w-auto relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
-                  <span className="h-4 w-px bg-white/20 relative z-10" />
-                  <span className="relative z-10 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-novare-blue-bright/90 text-white text-[10px] uppercase tracking-[0.22em] font-bold">
-                    <Sparkles className="h-3 w-3" strokeWidth={2.5} />
+                  {/* Lado esquerdo: logo + tagline */}
+                  <div className="flex items-center gap-3 md:gap-4 relative z-10 min-w-0">
+                    <img
+                      src={logoBranca}
+                      alt="Novare Consultoria de Investimentos"
+                      className="h-7 md:h-9 w-auto shrink-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                    />
+                    <span className="hidden sm:block h-8 md:h-9 w-px bg-gradient-to-b from-transparent via-white/30 to-transparent" />
+                    <div className="hidden sm:flex flex-col leading-tight min-w-0">
+                      <span className="text-white/95 text-[11px] md:text-xs font-semibold tracking-[0.14em] uppercase">
+                        Consultoria
+                      </span>
+                      <span className="text-white/55 text-[9.5px] md:text-[10.5px] tracking-[0.22em] uppercase font-medium">
+                        de Investimentos
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Lado direito: badge premium */}
+                  <span className="relative z-10 inline-flex items-center gap-1.5 px-2.5 md:px-3 py-1 md:py-1.5 rounded-lg bg-gradient-to-br from-novare-blue-bright to-novare-blue text-white text-[10px] md:text-[11px] uppercase tracking-[0.24em] font-bold shrink-0 shadow-[0_2px_8px_-2px_hsl(var(--novare-blue-bright)/0.6),inset_0_1px_0_hsl(0_0%_100%/0.25)] ring-1 ring-novare-blue-bright/40">
+                    <Sparkles className="h-3 w-3 md:h-3.5 md:w-3.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" strokeWidth={2.5} />
                     Simulador
                   </span>
                 </motion.div>
