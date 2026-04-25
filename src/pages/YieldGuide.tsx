@@ -1963,7 +1963,10 @@ const YieldGuide = () => {
               </motion.div>
             )}
 
-          </motion.div>
+              </motion.div>
+            </div>
+          </div>
+          {/* ╚════ FIM MOLDURA ELEVADA ════╝ */}
         </div>
       </section>
 
