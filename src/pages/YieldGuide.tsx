@@ -424,12 +424,25 @@ const ScrollingPills = ({ onPillClick }: { onPillClick: (target: string) => void
 
 /* ── page component ────────────────────────────── */
 const YieldGuide = () => {
-  const _preFaixa = bentoFeatures.find((b) => b.title === "Prefixado") ?? bentoFeatures[0];
+  const [tipoRenda, setTipoRenda] = useState<TipoRenda>("fixa");
+  const currentBento = bentoByTipo[tipoRenda];
+  const _preFaixa = currentBento[0];
   const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: _preFaixa.rentAnual });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
   const [result, setResult] = useState<SimResult | null>(null);
   const [selectedFaixa, setSelectedFaixa] = useState<string | null>(_preFaixa.title);
-  const [resultFaixa, setResultFaixa] = useState<typeof bentoFeatures[number] | null>(null);
+  const [resultFaixa, setResultFaixa] = useState<BentoFeature | null>(null);
+
+  // Quando o usuário troca o tipo de renda, sincroniza o card destacado e a taxa do simulador
+  const handleTipoRendaChange = (novoTipo: TipoRenda) => {
+    if (novoTipo === tipoRenda) return;
+    const novoConjunto = bentoByTipo[novoTipo];
+    const primeira = novoConjunto[0];
+    setTipoRenda(novoTipo);
+    setSelectedFaixa(primeira.title);
+    setSim((prev) => ({ ...prev, rentabilidade: primeira.rentAnual }));
+    setRentPeriodo("anual");
+  };
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
   const [scrolled, setScrolled] = useState(false);
