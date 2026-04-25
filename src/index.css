@@ -697,6 +697,35 @@
     border-color: hsl(16 75% 58% / 0.55);
   }
 
+  /* === FOCUS RING — sutil, consistente, acessível (WCAG 2.1 AA) === */
+  .calc-btn-primary,
+  .calc-btn-secondary {
+    outline: none;
+  }
+  .calc-btn-primary:focus-visible,
+  .calc-btn-secondary:focus-visible {
+    /* Halo duplo: anel branco interno (separa do botão) + anel laranja externo */
+    box-shadow:
+      0 0 0 2px hsl(0 0% 100%),
+      0 0 0 4px hsl(16 80% 50% / 0.55),
+      0 4px 12px -2px hsl(16 80% 45% / 0.30);
+    transition: box-shadow 160ms ease;
+  }
+  /* Mantém o lift + ring no hover-com-foco */
+  .calc-btn-primary:focus-visible:hover,
+  .calc-btn-secondary:focus-visible:hover {
+    transform: translateY(-1px);
+  }
+  /* Variante dark: anel interno escuro para contraste sobre fundos navy */
+  .calc-dark .calc-btn-primary:focus-visible,
+  .calc-card-dark .calc-btn-primary:focus-visible,
+  .calc-dark .calc-btn-secondary:focus-visible,
+  .calc-card-dark .calc-btn-secondary:focus-visible {
+    box-shadow:
+      0 0 0 2px hsl(215 60% 12%),
+      0 0 0 4px hsl(16 85% 60% / 0.70),
+      0 4px 12px -2px hsl(16 80% 45% / 0.35);
+  }
   /* === BADGE SELECIONADO — padronizado === */
   .calc-badge-selected {
     background: hsl(var(--accent));
