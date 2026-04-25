@@ -1090,58 +1090,7 @@ const YieldGuide = () => {
                 </p>
               </div>
 
-              {/* 3 cards de tipo de renda — sincronizam com os cards "Prefixado/CDI/IPCA+" abaixo */}
-              <div className="space-y-3">
-                <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
-                  Escolha a forma de rendimento
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                  {([
-                    { id: "fixa" as TipoRenda, title: "Renda Fixa", desc: "Mais previsibilidade", icon: TrendingUp, badge: "Menor risco", badgeBg: "bg-novare-blue-light text-novare-blue dark:bg-novare-blue/30 dark:text-novare-blue-bright" },
-                    { id: "mista" as TipoRenda, title: "Renda Mista", desc: "Equilíbrio entre risco e rentabilidade", icon: Landmark, badge: "Médio risco", badgeBg: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" },
-                    { id: "variavel" as TipoRenda, title: "Renda Variável", desc: "Maior potencial de retorno", icon: ArrowUpRight, badge: "Maior risco", badgeBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" },
-                  ]).map((t) => {
-                    const Icon = t.icon;
-                    const isSel = t.id === tipoRenda;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => handleTipoRendaChange(t.id)}
-                        aria-pressed={isSel}
-                        className={`text-left group ${isSel ? "sim-type-card sim-type-card-selected" : "sim-type-card"} relative cursor-pointer`}
-                      >
-                        {isSel && (
-                          <span className="absolute top-3 right-3 inline-flex items-center justify-center w-5 h-5 rounded-full bg-novare-blue text-white shadow-[0_2px_6px_-1px_hsl(215_50%_23%/0.5)]">
-                            <Check className="h-3 w-3" strokeWidth={3.5} />
-                          </span>
-                        )}
-                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-3"
-                          style={{
-                            background: isSel
-                              ? "linear-gradient(135deg, hsl(var(--novare-blue) / 0.25), hsl(var(--novare-blue-bright) / 0.10))"
-                              : "linear-gradient(135deg, hsl(var(--muted)), hsl(var(--muted) / 0.5))",
-                            boxShadow: isSel
-                              ? "0 8px 18px -8px hsl(var(--novare-blue) / 0.5), inset 0 1px 0 hsl(0 0% 100% / 0.6)"
-                              : "inset 0 1px 0 hsl(0 0% 100% / 0.5)",
-                          }}
-                        >
-                          <Icon className={`h-6 w-6 ${isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground"}`} strokeWidth={2.25} />
-                        </div>
-                        <p className={`text-sm md:text-base font-bold leading-tight ${isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-foreground"}`}>
-                          {t.title}
-                        </p>
-                        <p className="text-[11px] md:text-xs text-muted-foreground mt-1 leading-snug">
-                          {t.desc}
-                        </p>
-                        <span className={`inline-flex mt-3 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${t.badgeBg}`}>
-                          {t.badge}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* Bloco "Escolha a forma de rendimento" removido — o tipo de renda é definido pelos cards de investimento abaixo (Prefixado / CDI / IPCA+...) */}
             </motion.div>
 
             {/* ─── CORPO: Form esquerda / Resultados direita ─── */}
