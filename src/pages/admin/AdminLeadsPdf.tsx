@@ -58,6 +58,9 @@ export default function AdminLeadsPdf() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "new" | "responded">("all");
+  const [pdfFilter, setPdfFilter] = useState<"all" | "with_pdf" | "without_pdf">("all");
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
   const [selected, setSelected] = useState<PdfLead | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
