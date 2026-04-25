@@ -959,68 +959,42 @@ const YieldGuide = () => {
             <motion.div
               variants={fadeUp}
               custom={0}
-              className="text-center max-w-3xl mx-auto mb-5 md:mb-7"
+              className="text-center max-w-2xl mx-auto mb-4 md:mb-5"
             >
-              {/* Banner Novare — identidade da consultoria */}
+              {/* Banner Novare + Simulador (linha única) */}
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.55 }}
-                className="calc-novare-banner relative inline-flex items-center justify-center gap-3 sm:gap-4 px-4 sm:px-5 md:px-6 py-2.5 md:py-3 rounded-2xl overflow-hidden mb-3"
-              >
-                <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 relative z-10">
-                  <img
-                    src={logoBranca}
-                    alt="Novare Consultoria de Investimentos"
-                    className="h-7 md:h-9 w-auto shrink-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
-                  />
-                  <span className="hidden sm:block h-7 md:h-9 w-px bg-gradient-to-b from-transparent via-white/30 to-transparent shrink-0" />
-                  <div className="hidden sm:flex flex-col leading-[1.15] text-left">
-                    <span className="text-white text-[11px] md:text-[12.5px] font-semibold tracking-[0.12em] uppercase">
-                      Consultoria
-                    </span>
-                    <span className="text-white/60 text-[9.5px] md:text-[10.5px] tracking-[0.16em] uppercase font-medium">
-                      de Investimentos
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-
-              <br />
-
-              {/* Badge premium "Simulador" */}
-              <motion.span
                 initial={{ opacity: 0, y: -8 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-br from-novare-blue-bright to-novare-blue text-white text-[10px] md:text-[11px] uppercase tracking-[0.18em] font-bold shadow-[0_4px_14px_-4px_hsl(var(--novare-blue-bright)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.25)] ring-1 ring-novare-blue-bright/40"
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-2"
               >
-                <Sparkles className="h-3 w-3 md:h-3.5 md:w-3.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" strokeWidth={2.5} />
-                Simulador
-              </motion.span>
+                <span className="calc-novare-banner relative inline-flex items-center gap-2 px-3 md:px-3.5 py-1.5 md:py-2 rounded-xl overflow-hidden">
+                  <img
+                    src={logoBranca}
+                    alt="Novare Consultoria de Investimentos"
+                    className="h-5 md:h-6 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] relative z-10"
+                  />
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gradient-to-br from-novare-blue-bright to-novare-blue text-white text-[9.5px] md:text-[10.5px] uppercase tracking-[0.18em] font-bold shadow-[0_3px_10px_-3px_hsl(var(--novare-blue-bright)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.25)] ring-1 ring-novare-blue-bright/40">
+                  <Sparkles className="h-3 w-3 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" strokeWidth={2.5} />
+                  Simulador
+                </span>
+              </motion.div>
 
-              <h2 className="mt-3 text-3xl md:text-4xl lg:text-[2.85rem] font-black text-foreground tracking-tight leading-[1.04]">
+              <h2 className="mt-2.5 text-2xl md:text-3xl lg:text-[2.25rem] font-black text-foreground tracking-tight leading-[1.05]">
                 Simulador Inteligente
               </h2>
-              <h3 className="mt-1.5 text-xl md:text-2xl lg:text-[2rem] font-black tracking-tight leading-[1.06]">
+              <h3 className="mt-1 text-base md:text-lg lg:text-xl font-bold tracking-tight leading-[1.1]">
                 <span className="text-foreground">Projete sua renda</span>{" "}
                 <span className="bg-gradient-to-r from-novare-blue via-novare-blue-bright to-novare-blue bg-clip-text text-transparent">
                   no longo prazo
                 </span>
               </h3>
-              <p className="mt-2.5 text-muted-foreground text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+              <p className="mt-1.5 text-muted-foreground text-xs md:text-sm leading-snug max-w-xl mx-auto">
                 Simule gratuitamente e planeje sua{" "}
                 <strong className="text-foreground font-semibold">aposentadoria</strong> com precisão profissional.
               </p>
-
-              {/* Divisor decorativo */}
-              <div className="flex items-center justify-center gap-2 mt-4 md:mt-5" aria-hidden>
-                <span className="h-px w-10 md:w-16 bg-gradient-to-r from-transparent to-novare-blue/40" />
-                <span className="h-1.5 w-1.5 rounded-full bg-novare-blue/60" />
-                <span className="h-px w-10 md:w-16 bg-gradient-to-l from-transparent to-novare-blue/40" />
-              </div>
             </motion.div>
 
             {/* ─── BLOCO DOS 6 CARDS (largura total) ─── */}
