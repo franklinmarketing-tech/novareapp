@@ -995,7 +995,7 @@ const YieldGuide = () => {
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   Escolha a forma de rendimento
                 </p>
-                <div className="grid grid-cols-3 gap-2 md:gap-3">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
                   {([
                     {
                       id: "fixa" as TipoRenda,
@@ -1030,7 +1030,7 @@ const YieldGuide = () => {
                         type="button"
                         onClick={() => handleTipoRendaChange(t.id)}
                         aria-pressed={isSel}
-                        className={`relative text-left rounded-xl border transition-all duration-200 p-2.5 md:p-3 cursor-pointer group ${
+                        className={`relative flex flex-col h-full min-w-0 text-left rounded-xl border transition-all duration-200 p-2 sm:p-2.5 md:p-3 cursor-pointer group ${
                           isSel
                             ? "border-novare-blue/60 bg-novare-blue-light/40 dark:bg-novare-blue/15 shadow-[0_8px_22px_-12px_hsl(var(--novare-blue)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.5)]"
                             : "border-border/60 bg-card hover:border-novare-blue/30 hover:-translate-y-0.5 hover:shadow-md"
@@ -1048,23 +1048,23 @@ const YieldGuide = () => {
                           {isSel && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
                         </span>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                           <div
-                            className={`w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                            className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center shrink-0 ${
                               isSel
                                 ? "bg-novare-blue/15 dark:bg-novare-blue-bright/20"
                                 : "bg-muted/70"
                             }`}
                           >
                             <Icon
-                              className={`h-3.5 w-3.5 md:h-4 md:w-4 ${
+                              className={`h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 ${
                                 isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground"
                               }`}
                               strokeWidth={2.25}
                             />
                           </div>
                           <p
-                            className={`text-[12px] md:text-sm font-bold leading-tight pr-3 ${
+                            className={`text-[10.5px] sm:text-[12px] md:text-sm font-bold leading-tight pr-4 min-w-0 break-words ${
                               isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-foreground"
                             }`}
                           >
@@ -1072,10 +1072,10 @@ const YieldGuide = () => {
                           </p>
                         </div>
 
-                        <p className="text-[10px] md:text-[11px] text-muted-foreground mt-1.5 leading-snug">{t.desc}</p>
+                        <p className="text-[9.5px] sm:text-[10px] md:text-[11px] text-muted-foreground mt-1 sm:mt-1.5 leading-snug">{t.desc}</p>
 
                         <span
-                          className={`inline-flex mt-2 px-1.5 py-0.5 rounded text-[8.5px] md:text-[9.5px] font-bold uppercase tracking-wider ${t.badgeBg}`}
+                          className={`inline-flex self-start mt-auto pt-1.5 sm:pt-2 px-1.5 py-0.5 rounded text-[8px] sm:text-[8.5px] md:text-[9.5px] font-bold uppercase tracking-wider w-fit ${t.badgeBg}`}
                         >
                           {t.badge}
                         </span>
@@ -1097,7 +1097,7 @@ const YieldGuide = () => {
                       ? "Estratégias de Renda Mista — selecione uma"
                       : "Opções em Renda Variável — selecione uma"}
                 </p>
-                <div key={tipoRenda} className="grid grid-cols-3 gap-2 md:gap-3">
+                <div key={tipoRenda} className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
                   {currentBento.map((f, i) => {
                     const isHero = f.variant === "hero";
                     const isSelected = selectedFaixa === f.title;
@@ -1107,6 +1107,7 @@ const YieldGuide = () => {
                         initial={{ opacity: 0, y: 14 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: i * 0.07, ease: "easeOut" }}
+                        className="h-full min-w-0"
                       >
                         <button
                           type="button"
@@ -1140,10 +1141,10 @@ const YieldGuide = () => {
                             {isSelected && <Check className="h-3 w-3 md:h-3.5 md:w-3.5" strokeWidth={4} />}
                           </span>
 
-                          <div className="p-2.5 md:p-3 flex flex-col h-full relative z-10">
-                            <div className="flex items-center gap-1.5 mb-1">
+                          <div className="p-2 sm:p-2.5 md:p-3 flex flex-col h-full relative z-10 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-1 min-w-0">
                               <div
-                                className={`w-6 h-6 md:w-7 md:h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                                className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-lg flex items-center justify-center shrink-0 ${
                                   isSelected
                                     ? "bg-accent/20 ring-1 ring-accent/40"
                                     : isHero
@@ -1152,13 +1153,13 @@ const YieldGuide = () => {
                                 }`}
                               >
                                 <f.icon
-                                  className={`h-3 w-3 md:h-3.5 md:w-3.5 ${
+                                  className={`h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5 ${
                                     isSelected ? "text-accent" : isHero ? "" : "text-foreground"
                                   }`}
                                   strokeWidth={2.25}
                                 />
                               </div>
-                              <h3 className="text-[11px] md:text-xs font-bold tracking-tight pr-5 leading-tight">
+                              <h3 className="text-[10px] sm:text-[11px] md:text-xs font-bold tracking-tight pr-5 leading-tight min-w-0 break-words">
                                 {f.title}
                               </h3>
                             </div>
@@ -1176,15 +1177,15 @@ const YieldGuide = () => {
                                 isHero ? "border-primary-foreground/15" : "border-border/40"
                               }`}
                             >
-                              <div className="flex items-baseline gap-1">
-                                <span className={`text-sm md:text-base font-extrabold tracking-tight ${isHero ? "" : "text-primary"}`}>
+                              <div className="flex items-baseline gap-1 flex-wrap">
+                                <span className={`text-[13px] sm:text-sm md:text-base font-extrabold tracking-tight ${isHero ? "" : "text-primary"}`}>
                                   {f.rate}
                                 </span>
                                 {!f.rate.includes("IPCA") && (
-                                  <span className={`text-[9px] ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>
+                                  <span className={`text-[8.5px] sm:text-[9px] ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>
                                 )}
                               </div>
-                              <p className={`text-[9px] mt-0.5 leading-tight line-clamp-1 ${isHero ? "opacity-55" : "text-muted-foreground"}`}>
+                              <p className={`text-[8.5px] sm:text-[9px] mt-0.5 leading-tight line-clamp-1 ${isHero ? "opacity-55" : "text-muted-foreground"}`}>
                                 {f.rateLabel}
                               </p>
                             </div>
