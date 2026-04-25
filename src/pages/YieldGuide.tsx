@@ -1386,13 +1386,13 @@ const YieldGuide = () => {
                       </div>
 
                       <motion.p
-                        className="text-3xl md:text-[2rem] leading-[1.05] font-black text-foreground tracking-tight tabular-nums break-words"
+                        className="calc-num text-[1.75rem] md:text-[2.1rem] lg:text-[2.25rem] leading-[1.05] font-black text-foreground break-words"
                         key={result?.patrimonioNum}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
                         title={result?.patrimonio}
-                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.25)" }}
+                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.22)" }}
                       >
                         {result ? formatCompactBRL(result.patrimonioNum) : "—"}
                       </motion.p>
@@ -1401,24 +1401,32 @@ const YieldGuide = () => {
                         <p className="text-xs text-muted-foreground/80 mt-2 font-medium italic">aguardando simulação</p>
                       )}
 
-                      {result && (
+                      {result && result.mesesAcumulo > 0 && (
                         <div className="mt-4 pt-4 border-t border-border/40 grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-[11px] md:text-xs uppercase tracking-wider text-novare-blue-bright font-bold inline-flex items-center gap-1.5">
                               <Calendar className="h-3 w-3" /> Período
                             </p>
-                            <p className="text-lg md:text-xl font-extrabold text-foreground mt-1 tabular-nums">{result.anosAcumulo} <span className="text-sm text-muted-foreground font-bold">anos</span></p>
+                            <p className="text-lg md:text-xl font-extrabold text-foreground mt-1 calc-num">{result.anosAcumulo} <span className="text-sm text-muted-foreground font-bold">anos</span></p>
                             <p className="text-xs text-muted-foreground mt-0.5">{result.mesesAcumulo} meses</p>
                           </div>
                           <div className="min-w-0">
                             <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold inline-flex items-center gap-1.5">
                               <Receipt className="h-3 w-3" /> Líquido após IR
                             </p>
-                            <p className="text-lg md:text-xl font-extrabold text-success mt-1 tabular-nums truncate" title={result.patrimonioLiquido}>
+                            <p className="text-lg md:text-xl font-extrabold text-success mt-1 calc-num truncate" title={result.patrimonioLiquido}>
                               {formatCompactBRL(result.patrimonioLiquidoNum)}
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">IR de {result.aliquotaIR}%</p>
                           </div>
+                        </div>
+                      )}
+
+                      {result && result.mesesAcumulo === 0 && (
+                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warning/10 border border-warning/30">
+                          <span className="text-[11px] font-semibold text-warning">
+                            Defina <span className="font-extrabold">idade futura</span> maior que a atual para projetar o crescimento
+                          </span>
                         </div>
                       )}
                     </div>
