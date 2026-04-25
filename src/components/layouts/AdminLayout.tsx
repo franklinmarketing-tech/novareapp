@@ -23,6 +23,7 @@ import {
   Shield,
   HelpCircle,
   Mail,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +58,7 @@ const sections = [
       { to: "/admin/novo-cliente", icon: UserPlus, label: "Novo Cliente" },
       { to: "/admin/financeiro", icon: Wallet, label: "Financeiro" },
       { to: "/admin/leads-newsletter", icon: Mail, label: "Leads Newsletter" },
+      { to: "/admin/leads-pdf", icon: FileText, label: "Leads PDF" },
     ],
   },
   {
@@ -88,6 +90,7 @@ const staticSegments: Record<string, string> = {
   workspace: "Workspace",
   ajuda: "Ajuda & Manual",
   "leads-newsletter": "Leads Newsletter",
+  "leads-pdf": "Leads PDF",
 };
 
 interface Props {
