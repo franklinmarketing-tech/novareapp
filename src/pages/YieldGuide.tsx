@@ -1423,7 +1423,7 @@ const YieldGuide = () => {
                     </div>
 
                     {/* === Mini KPIs grid === */}
-                    <div className="relative z-10 grid grid-cols-3 gap-3">
+                    <div className="relative z-10 grid grid-cols-3 gap-3 md:gap-5">
                       {[
                         {
                           label: "Investido",
