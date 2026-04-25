@@ -57,8 +57,7 @@ const sections = [
       { to: "/admin/clientes", icon: Users, label: "Clientes" },
       { to: "/admin/novo-cliente", icon: UserPlus, label: "Novo Cliente" },
       { to: "/admin/financeiro", icon: Wallet, label: "Financeiro" },
-      { to: "/admin/leads-newsletter", icon: Mail, label: "Leads Newsletter" },
-      { to: "/admin/leads-pdf", icon: FileText, label: "Leads PDF" },
+      { to: "/admin/leads", icon: Mail, label: "Leads" },
     ],
   },
   {
