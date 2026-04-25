@@ -1578,7 +1578,7 @@ const YieldGuide = () => {
                         className="calc-num font-black text-novare-blue-bright leading-[1.05] tabular-nums tracking-tight whitespace-nowrap overflow-hidden"
                         style={{
                           textShadow: "0 2px 24px hsl(var(--novare-blue-bright) / 0.45)",
-                          fontSize: "clamp(1.25rem, 5.2vw, 2.25rem)",
+                          fontSize: "clamp(1.1rem, 2.6vw, 1.85rem)",
                         }}
                         title={result?.patrimonio}
                       >
@@ -1594,7 +1594,7 @@ const YieldGuide = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.05 }}
                         className="calc-num font-black text-white leading-[1.05] tabular-nums tracking-tight whitespace-nowrap overflow-hidden"
-                        style={{ fontSize: "clamp(1.25rem, 5.2vw, 2.25rem)" }}
+                        style={{ fontSize: "clamp(1.1rem, 2.6vw, 1.85rem)" }}
                         title={result?.patrimonioLiquido}
                       >
                         {result ? formatCompactBRL(result.patrimonioLiquidoNum) : "R$ —"}
