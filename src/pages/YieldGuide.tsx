@@ -1462,11 +1462,11 @@ const YieldGuide = () => {
                 <button
                   onClick={handleSimulate}
                   disabled={isSimulating}
-                  className="sim-btn-orange group w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-70 disabled:cursor-wait"
+                  className="sim-btn-orange group w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm md:text-base disabled:opacity-70 disabled:cursor-wait"
                 >
-                  <BarChart3 className="h-[18px] w-[18px]" />
+                  <BarChart3 className="h-4 w-4" />
                   <span>{result ? "Recalcular simulação" : "Simular Aposentadoria"}</span>
-                  <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </button>
               </motion.div>
 
