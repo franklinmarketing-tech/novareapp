@@ -177,11 +177,21 @@ Deno.serve(async (req) => {
         }),
       });
       const json = await res.json().catch(() => ({}));
+      console.log("[send-pdf-lead] Resend response", {
+        status: res.status,
+        ok: res.ok,
+        body: json,
+        from: FROM_ADDRESS,
+        to: email,
+      });
       if (!res.ok) {
         emailStatus = "failed";
-        errorMessage = json?.message || `HTTP ${res.status}`;
+        errorMessage = json?.message || json?.name || `HTTP ${res.status}`;
       } else {
         resendId = json?.id ?? null;
+        if (!resendId) {
+          console.warn("[send-pdf-lead] Resend retornou 200 sem id", json);
+        }
       }
     } catch (e) {
       emailStatus = "failed";
