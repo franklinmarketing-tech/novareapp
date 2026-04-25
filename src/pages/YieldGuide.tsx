@@ -1337,66 +1337,7 @@ const YieldGuide = () => {
                       transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                     />
 
-                    {/* === Badge da faixa escolhida — reflete a escolha do cliente === */}
-                    {result && resultFaixa && (() => {
-                      const FaixaIcon = resultFaixa.icon;
-                      return (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.4 }}
-                          className="relative z-10 rounded-2xl p-3.5 overflow-hidden"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, hsl(16 80% 56% / 0.22) 0%, hsl(16 80% 50% / 0.08) 55%, hsl(215 50% 14% / 0.6) 100%)",
-                            border: "1px solid hsl(16 80% 62% / 0.55)",
-                            boxShadow:
-                              "0 1px 0 hsl(0 0% 100% / 0.18) inset, 0 0 0 1px hsl(16 80% 56% / 0.25) inset, 0 0 28px hsl(16 80% 56% / 0.30), 0 12px 28px -10px hsl(16 80% 40% / 0.45), 0 24px 48px -16px hsl(215 60% 6% / 0.55)",
-                          }}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div
-                              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                              style={{
-                                background: "linear-gradient(135deg, hsl(16 80% 58%) 0%, hsl(16 80% 48%) 100%)",
-                                border: "1px solid hsl(16 80% 65% / 0.6)",
-                                boxShadow:
-                                  "0 1px 0 hsl(0 0% 100% / 0.35) inset, 0 0 0 1px hsl(0 0% 0% / 0.15) inset, 0 8px 18px -6px hsl(16 80% 40% / 0.7), 0 0 16px hsl(16 80% 56% / 0.4)",
-                              }}
-                            >
-                              <FaixaIcon className="h-5 w-5 text-white" strokeWidth={2.5} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-[9px] uppercase tracking-[0.15em] font-bold" style={{ color: "hsl(16 85% 70%)" }}>
-                                  Sua escolha
-                                </p>
-                                <span
-                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider"
-                                  style={{
-                                    background: "hsl(16 80% 56% / 0.22)",
-                                    color: "hsl(16 85% 72%)",
-                                    border: "1px solid hsl(16 80% 62% / 0.45)",
-                                  }}
-                                >
-                                  <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                                  Aplicada
-                                </span>
-                              </div>
-                              <p className="text-base md:text-lg font-bold text-foreground tracking-tight leading-tight mt-0.5">
-                                {resultFaixa.title}{" "}
-                                <span className="font-black tabular-nums" style={{ color: "hsl(16 85% 65%)" }}>{resultFaixa.rate}</span>
-                                {!resultFaixa.rate.includes("IPCA") && <span className="text-muted-foreground/80 text-xs font-medium ml-1">a.a.</span>}
-                              </p>
-                              <p className="text-[11px] text-muted-foreground leading-snug mt-1 line-clamp-2">
-                                {resultFaixa.desc}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground/80 mt-1">{resultFaixa.rateLabel}</p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })()}
+                    {/* Card "Sua escolha aplicada" removido — informação já visível nos 3 cards seletores acima */}
 
                     {/* Fallback: cliente usou taxa custom */}
                     {result && !resultFaixa && sim.rentabilidade > 0 && (
