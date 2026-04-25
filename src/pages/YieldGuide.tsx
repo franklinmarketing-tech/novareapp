@@ -1287,21 +1287,12 @@ const YieldGuide = () => {
                             rendaDesejada: sim.rendaDesejada,
                             rentabilidadeAnual: rentAnual,
                           })}
-                          whileHover={{ y: -2, scale: 1.02 }}
-                          whileTap={{ y: 0, scale: 0.98 }}
-                          animate={{ boxShadow: [
-                            "0 10px 24px -8px hsl(var(--accent) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
-                            "0 14px 30px -6px hsl(var(--accent) / 0.75), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
-                            "0 10px 24px -8px hsl(var(--accent) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.25)",
-                          ] }}
-                          transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
-                          className="mt-4 relative w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-xs md:text-sm overflow-hidden group bg-accent text-accent-foreground border border-accent/40 cursor-pointer"
-                          style={{}}
+                          whileTap={{ scale: 0.98 }}
+                          className="calc-btn-secondary mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-xs md:text-sm group cursor-pointer"
                         >
-                          <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                          <FileDown className="relative z-10 h-4 w-4" />
-                          <span className="relative z-10">Ver rendimento mensal em PDF</span>
-                          <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                          <FileDown className="h-4 w-4" />
+                          <span>Ver rendimento mensal em PDF</span>
+                          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                         </motion.button>
                       )}
                     </div>
