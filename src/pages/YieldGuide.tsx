@@ -872,7 +872,11 @@ const YieldGuide = () => {
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
               <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Categorias</span>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
-                Entenda cada tipo de Renda Fixa
+                {tipoRenda === "fixa"
+                  ? "Entenda cada tipo de Renda Fixa"
+                  : tipoRenda === "mista"
+                    ? "Estratégias de Renda Mista"
+                    : "Opções em Renda Variável"}
               </h2>
             </motion.div>
 
