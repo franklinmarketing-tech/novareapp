@@ -112,17 +112,24 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
         },
       });
 
+      const scrollToSimulador = () => {
+        const el = document.getElementById("simulador");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+
       if (error || (data as { error?: string })?.error) {
         const msg = (data as { error?: string })?.error || error?.message || "Falha ao enviar e-mail";
-        toast.error(msg);
-        // PDF já foi baixado; deixa o usuário fechar
+        toast.error(msg, { description: "O PDF foi baixado no seu dispositivo." });
       } else {
         toast.success("PDF enviado para o seu e-mail! ✉️", {
           description: "Verifique sua caixa de entrada (e a pasta de spam).",
         });
-        setEmail("");
-        onOpenChange(false);
       }
+      setEmail("");
+      setEmailError(null);
+      setTouched(false);
+      onOpenChange(false);
+      setTimeout(scrollToSimulador, 150);
     } catch (err) {
       console.error(err);
       toast.error("Erro ao gerar/enviar o PDF.");
