@@ -948,10 +948,10 @@ const YieldGuide = () => {
                         setRentPeriodo("anual");
                         setSelectedFaixa(f.title);
                       }}
-                      className={`group relative rounded-2xl p-3 md:p-4 text-left transition-all duration-300 border backdrop-blur-md ${
+                      className={`group relative rounded-2xl p-3 md:p-4 text-left backdrop-blur-md ${
                         isSelected
-                          ? "border-accent ring-2 ring-accent/30 bg-accent/[0.10] shadow-[0_8px_24px_-8px_hsl(var(--accent)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.08)] -translate-y-0.5"
-                          : "border-border/60 bg-muted/40 hover:bg-muted/60 hover:border-border hover:scale-[1.01]"
+                          ? "calc-card-sm-selected"
+                          : "calc-card-sm"
                       }`}
                     >
                       {isSelected ? (
