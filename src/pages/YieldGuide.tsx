@@ -1030,7 +1030,7 @@ const YieldGuide = () => {
                         type="button"
                         onClick={() => handleTipoRendaChange(t.id)}
                         aria-pressed={isSel}
-                        className={`relative text-left rounded-xl border transition-all duration-200 p-2.5 md:p-3 cursor-pointer group ${
+                        className={`relative flex flex-col h-full min-w-0 text-left rounded-xl border transition-all duration-200 p-2 sm:p-2.5 md:p-3 cursor-pointer group ${
                           isSel
                             ? "border-novare-blue/60 bg-novare-blue-light/40 dark:bg-novare-blue/15 shadow-[0_8px_22px_-12px_hsl(var(--novare-blue)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.5)]"
                             : "border-border/60 bg-card hover:border-novare-blue/30 hover:-translate-y-0.5 hover:shadow-md"
