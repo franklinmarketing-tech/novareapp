@@ -956,9 +956,9 @@ const YieldGuide = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
 
             {/* ─── TOPO: Hero esquerda + 3 cards de tipo de renda direita ─── */}
-            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-4 md:gap-5 items-center mb-4 md:mb-5">
+            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-3 md:gap-4 items-center mb-3 md:mb-4">
               {/* Hero esquerda */}
-              <div className="space-y-3 md:space-y-4">
+              <div className="space-y-2 md:space-y-3">
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -1007,7 +1007,7 @@ const YieldGuide = () => {
               </div>
 
               {/* Bloco unificado: 3 tipos de renda + 3 estratégias (6 cards juntos) */}
-              <div className="rounded-2xl border border-border/60 bg-card/40 dark:bg-card/20 backdrop-blur-sm p-3 md:p-4 space-y-3">
+              <div className="rounded-2xl border border-border/60 bg-card/40 dark:bg-card/20 backdrop-blur-sm p-2.5 md:p-3 space-y-2.5">
                 <div className="space-y-2">
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   Escolha a forma de rendimento
@@ -1217,10 +1217,10 @@ const YieldGuide = () => {
             </motion.div>
 
             {/* ─── CORPO: Form esquerda / Resultados direita ─── */}
-            <div className="grid lg:grid-cols-2 gap-4 md:gap-5 mt-4 md:mt-5">
+            <div className="grid lg:grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
 
               {/* ====== COLUNA ESQUERDA — Formulário em grupos ====== */}
-              <motion.div variants={fadeUp} custom={1} className="calc-card-light rounded-3xl p-4 md:p-5 space-y-5 md:space-y-6">
+              <motion.div variants={fadeUp} custom={1} className="calc-card-light rounded-3xl p-3.5 md:p-4 space-y-4 md:space-y-5">
 
                 {/* Grupo 1 — INFORMAÇÕES PESSOAIS */}
                 <div className="space-y-3">
@@ -1471,10 +1471,10 @@ const YieldGuide = () => {
               </motion.div>
 
               {/* ====== COLUNA DIREITA — Cenário projetado + KPIs + Gráfico ====== */}
-              <motion.div variants={fadeUp} custom={2} className="flex flex-col gap-4 md:gap-5 min-w-0">
+              <motion.div variants={fadeUp} custom={2} className="flex flex-col gap-3 md:gap-4 min-w-0">
 
                 {/* Painel escuro — Seu cenário projetado */}
-                <div className="sim-hero-dark relative rounded-3xl p-4 md:p-5 overflow-hidden">
+                <div className="sim-hero-dark relative rounded-3xl p-3.5 md:p-4 overflow-hidden">
                   <div className="flex items-start justify-between gap-3 mb-5">
                     <div>
                       <p className="text-xs md:text-sm uppercase tracking-[0.18em] text-white/70 font-bold">Seu cenário projetado</p>
@@ -1520,7 +1520,7 @@ const YieldGuide = () => {
                 </div>
 
                 {/* 3 KPIs laterais */}
-                <div className="grid sm:grid-cols-3 gap-3 md:gap-4">
+                <div className="grid sm:grid-cols-3 gap-2.5 md:gap-3">
                   {[
                     {
                       label: "Renda mensal",
@@ -1571,7 +1571,7 @@ const YieldGuide = () => {
                 </div>
 
                 {/* Gráfico de evolução do patrimônio líquido */}
-                <div className="calc-card-light rounded-3xl p-4 md:p-5 relative overflow-hidden">
+                <div className="calc-card-light rounded-3xl p-3.5 md:p-4 relative overflow-hidden">
                   <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
                     <div className="min-w-0">
                       <h3 className="text-base md:text-lg font-bold text-foreground tracking-tight leading-tight">
@@ -1668,7 +1668,7 @@ const YieldGuide = () => {
             <motion.div
               variants={fadeUp}
               custom={3}
-              className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-5"
+              className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3 mt-3 md:mt-4"
             >
               <button
                 onClick={() => window.open(whatsappUrl, "_blank")}
