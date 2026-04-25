@@ -955,58 +955,48 @@ const YieldGuide = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6 relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
 
-            {/* ─── TOPO: Hero esquerda + 3 cards de tipo de renda direita ─── */}
-            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-3 md:gap-4 items-center mb-3 md:mb-4">
-              {/* Hero esquerda */}
-              <div className="space-y-2 md:space-y-3">
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.55 }}
-                  className="calc-novare-banner relative w-full flex items-center justify-between gap-3 sm:gap-4 pl-3 pr-2.5 sm:pl-4 sm:pr-3 md:pl-5 md:pr-4 py-2.5 sm:py-3 md:py-3.5 rounded-2xl overflow-hidden"
-                >
-                  {/* Lado esquerdo: logo + tagline */}
-                  <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 relative z-10 min-w-0 flex-1">
-                    <img
-                      src={logoBranca}
-                      alt="Novare Consultoria de Investimentos"
-                      className="h-6 sm:h-7 md:h-9 w-auto shrink-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
-                    />
-                    <span className="hidden sm:block h-7 md:h-9 w-px bg-gradient-to-b from-transparent via-white/30 to-transparent shrink-0" />
-                    <div className="hidden sm:flex flex-col leading-[1.15] min-w-0 truncate">
-                      <span className="text-white text-[10.5px] md:text-[12.5px] font-semibold tracking-[0.12em] uppercase truncate">
-                        Consultoria
-                      </span>
-                      <span className="text-white/60 text-[9px] md:text-[10.5px] tracking-[0.16em] uppercase font-medium truncate">
-                        de Investimentos
-                      </span>
-                    </div>
-                  </div>
+            {/* ─── CABEÇALHO DA SEÇÃO: badge + título centralizado (desktop) ─── */}
+            <motion.div
+              variants={fadeUp}
+              custom={0}
+              className="text-center max-w-3xl mx-auto mb-5 md:mb-7"
+            >
+              {/* Badge premium "Simulador" */}
+              <motion.span
+                initial={{ opacity: 0, y: -8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-br from-novare-blue-bright to-novare-blue text-white text-[10px] md:text-[11px] uppercase tracking-[0.18em] font-bold shadow-[0_4px_14px_-4px_hsl(var(--novare-blue-bright)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.25)] ring-1 ring-novare-blue-bright/40"
+              >
+                <Sparkles className="h-3 w-3 md:h-3.5 md:w-3.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" strokeWidth={2.5} />
+                Simulador
+              </motion.span>
 
-                  {/* Lado direito: badge premium */}
-                  <span className="relative z-10 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 md:py-1.5 rounded-lg bg-gradient-to-br from-novare-blue-bright to-novare-blue text-white text-[9.5px] sm:text-[10px] md:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.16em] font-bold shrink-0 whitespace-nowrap shadow-[0_2px_8px_-2px_hsl(var(--novare-blue-bright)/0.6),inset_0_1px_0_hsl(0_0%_100%/0.25)] ring-1 ring-novare-blue-bright/40">
-                    <Sparkles className="h-3 w-3 md:h-3.5 md:w-3.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)] shrink-0" strokeWidth={2.5} />
-                    Simulador
-                  </span>
-                </motion.div>
+              <h2 className="mt-3 text-3xl md:text-4xl lg:text-[2.85rem] font-black text-foreground tracking-tight leading-[1.04]">
+                Simulador Inteligente
+              </h2>
+              <h3 className="mt-1.5 text-xl md:text-2xl lg:text-[2rem] font-black tracking-tight leading-[1.06]">
+                <span className="text-foreground">Projete sua renda</span>{" "}
+                <span className="bg-gradient-to-r from-novare-blue via-novare-blue-bright to-novare-blue bg-clip-text text-transparent">
+                  no longo prazo
+                </span>
+              </h3>
+              <p className="mt-2.5 text-muted-foreground text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+                Simule gratuitamente e planeje sua{" "}
+                <strong className="text-foreground font-semibold">aposentadoria</strong> com precisão profissional.
+              </p>
 
-                <h2 className="text-3xl md:text-4xl lg:text-[2.85rem] font-black text-foreground tracking-tight leading-[1.04]">
-                  Simulador Inteligente
-                </h2>
-                <h3 className="text-2xl md:text-3xl lg:text-[2.4rem] font-black tracking-tight leading-[1.04]">
-                  <span className="text-foreground">Projete sua renda</span>{" "}
-                  <span className="bg-gradient-to-r from-novare-blue via-novare-blue-bright to-novare-blue bg-clip-text text-transparent">
-                    no longo prazo
-                  </span>
-                </h3>
-                <p className="text-muted-foreground text-sm md:text-base max-w-md leading-relaxed">
-                  Simule gratuitamente e planeje sua{" "}
-                  <strong className="text-foreground font-semibold">aposentadoria</strong> com precisão profissional.
-                </p>
+              {/* Divisor decorativo */}
+              <div className="flex items-center justify-center gap-2 mt-4 md:mt-5" aria-hidden>
+                <span className="h-px w-10 md:w-16 bg-gradient-to-r from-transparent to-novare-blue/40" />
+                <span className="h-1.5 w-1.5 rounded-full bg-novare-blue/60" />
+                <span className="h-px w-10 md:w-16 bg-gradient-to-l from-transparent to-novare-blue/40" />
               </div>
+            </motion.div>
 
-              {/* Bloco unificado: 3 tipos de renda + 3 estratégias (6 cards juntos) */}
+            {/* ─── BLOCO DOS 6 CARDS (largura total) ─── */}
+            <motion.div variants={fadeUp} custom={0.5} className="mb-3 md:mb-4">
               <div className="rounded-2xl border border-border/60 bg-card/40 dark:bg-card/20 backdrop-blur-sm p-2.5 md:p-3 space-y-2.5">
                 <div className="space-y-2">
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
