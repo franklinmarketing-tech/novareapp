@@ -1757,26 +1757,52 @@ const YieldGuide = () => {
             <motion.div
               variants={fadeUp}
               custom={3}
-              className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3 mt-3 md:mt-4"
+              className={`relative grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3 mt-3 md:mt-4 ${result ? "sim-cta-ready" : ""}`}
             >
-              <button
-                onClick={() => window.open(whatsappUrl, "_blank")}
-                className="sim-btn-blue group inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base"
-              >
-                <MessageCircle className="h-[18px] w-[18px]" />
-                <span>Falar com um especialista</span>
-                <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
-              </button>
+              {/* Badge "Próximo passo" — só aparece após simular */}
+              {result && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.2, duration: 0.4 }}
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+                >
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-novare-blue to-novare-blue-bright text-white text-[10px] font-bold uppercase tracking-wider shadow-[0_4px_12px_-2px_hsl(var(--novare-blue-bright)/0.6)] ring-2 ring-white/40 dark:ring-novare-blue-bright/30">
+                    <Sparkles className="h-3 w-3" strokeWidth={2.5} />
+                    Próximo passo
+                  </span>
+                </motion.div>
+              )}
 
-              <button
+              <motion.button
+                onClick={() => window.open(whatsappUrl, "_blank")}
+                animate={result ? { scale: [1, 1.025, 1] } : { scale: 1 }}
+                transition={result ? { duration: 2.4, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
+                className={`sim-btn-blue group relative inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base ${result ? "sim-btn-glow-blue" : ""}`}
+              >
+                {/* Shine sweep — após simular */}
+                {result && (
+                  <span aria-hidden className="sim-btn-shine pointer-events-none absolute inset-0 rounded-2xl overflow-hidden" />
+                )}
+                <MessageCircle className="h-[18px] w-[18px] relative z-10" />
+                <span className="relative z-10">Falar com um especialista</span>
+                <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1 relative z-10" />
+              </motion.button>
+
+              <motion.button
                 onClick={() => result && setPdfDialogOpen(true)}
                 disabled={!result}
                 title={!result ? "Simule primeiro para gerar o relatório" : undefined}
-                className="sim-btn-outline inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed !text-red-600 dark:!text-red-400"
+                animate={result ? { scale: [1, 1.025, 1] } : { scale: 1 }}
+                transition={result ? { duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.6 } : { duration: 0.2 }}
+                className={`sim-btn-outline group relative inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed !text-red-600 dark:!text-red-400 ${result ? "sim-btn-glow-red" : ""}`}
               >
-                <FileDown className="h-[18px] w-[18px] text-red-600 dark:text-red-400" />
-                <span className="text-red-600 dark:text-red-400">Baixar relatório em PDF</span>
-              </button>
+                {result && (
+                  <span aria-hidden className="sim-btn-shine pointer-events-none absolute inset-0 rounded-2xl overflow-hidden" />
+                )}
+                <FileDown className="h-[18px] w-[18px] text-red-600 dark:text-red-400 relative z-10" />
+                <span className="text-red-600 dark:text-red-400 relative z-10">Baixar relatório em PDF</span>
+              </motion.button>
             </motion.div>
 
             {/* Selo de segurança */}
