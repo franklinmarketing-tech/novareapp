@@ -1594,39 +1594,16 @@ const YieldGuide = () => {
                       </p>
                     </div>
 
-                    {/* Botão Falar com especialista (pulsante 3D) */}
-                    <div className="relative w-full">
-                      <motion.span
-                        className="absolute inset-0 rounded-xl bg-accent"
-                        animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-                      />
-                      <motion.span
-                        className="absolute inset-0 rounded-xl bg-accent"
-                        animate={{ scale: [1, 1.2, 1.35], opacity: [0.5, 0.2, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
-                      />
-                      <motion.button
-                        onClick={() => window.open(whatsappUrl, "_blank")}
-                        whileHover={{ y: -3, scale: 1.02 }}
-                        whileTap={{ y: 0, scale: 0.98 }}
-                        animate={{ scale: [1, 1.03, 1] }}
-                        transition={{
-                          scale: { duration: 1.6, repeat: Infinity, ease: "easeInOut" },
-                          y: { type: "spring", stiffness: 400, damping: 15 },
-                        }}
-                        className="relative z-10 w-full inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-5 py-3 rounded-xl font-bold text-sm md:text-base overflow-hidden group whitespace-nowrap"
-                        style={{
-                          boxShadow:
-                            "0 10px 26px -6px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -3px 0 hsl(var(--accent) / 0.5)",
-                        }}
-                      >
-                        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                        <MessageCircle className="relative z-10 h-4 w-4 md:h-5 md:w-5" />
-                        <span className="relative z-10">Falar com especialista</span>
-                        <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-                      </motion.button>
-                    </div>
+                    {/* Botão Falar com especialista — limpo e elegante */}
+                    <motion.button
+                      onClick={() => window.open(whatsappUrl, "_blank")}
+                      whileTap={{ scale: 0.98 }}
+                      className="calc-btn-primary relative z-10 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm md:text-base group whitespace-nowrap"
+                    >
+                      <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
+                      <span>Falar com especialista</span>
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                    </motion.button>
                   </div>
 
                   {/* Selos de confiança */}
