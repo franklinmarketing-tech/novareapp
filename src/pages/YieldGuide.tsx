@@ -1107,15 +1107,15 @@ const YieldGuide = () => {
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-foreground/80 leading-relaxed">
-                        * Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
+                      <p className="text-[11px] md:text-xs text-muted-foreground/80 leading-relaxed -mt-1">
+                        <span className="font-bold text-foreground/70">*</span> Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
                       </p>
                     </div>
                     {/* 3D Button */}
                     <button
                       onClick={handleSimulate}
                       disabled={isSimulating}
-                      className="group relative z-10 w-full inline-flex items-center justify-center gap-2.5 calc-btn-primary px-8 py-3.5 rounded-2xl font-semibold text-base mt-5 disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
+                      className="group relative z-10 w-full inline-flex items-center justify-center gap-2.5 calc-btn-primary px-8 py-3.5 rounded-2xl font-semibold text-base disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
                     >
                       <BarChart3 className="h-[18px] w-[18px]" />
                       Simular Aposentadoria
