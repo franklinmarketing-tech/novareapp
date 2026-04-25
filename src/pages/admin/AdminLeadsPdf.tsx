@@ -201,15 +201,25 @@ export default function AdminLeadsPdf() {
         </CardContent></Card>
       </div>
 
-      <Card><CardContent className="p-4 flex flex-col md:flex-row gap-3 md:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Buscar por e-mail ou nome..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <Card><CardContent className="p-4 flex flex-col gap-3">
+        <div className="flex flex-col md:flex-row gap-3 md:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder="Buscar por e-mail ou nome..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {(["all", "new", "responded"] as const).map((f) => (
+              <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>
+                {f === "all" ? "Todos" : f === "new" ? "Novos" : "Respondidos"}
+              </Button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2">
-          {(["all", "new", "responded"] as const).map((f) => (
-            <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>
-              {f === "all" ? "Todos" : f === "new" ? "Novos" : "Respondidos"}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted-foreground mr-1">Status do PDF:</span>
+          {(["all", "with_pdf", "without_pdf"] as const).map((f) => (
+            <Button key={f} size="sm" variant={pdfFilter === f ? "default" : "outline"} onClick={() => setPdfFilter(f)}>
+              {f === "all" ? "Todos" : f === "with_pdf" ? "PDF enviado" : "Sem PDF"}
             </Button>
           ))}
         </div>
@@ -223,24 +233,43 @@ export default function AdminLeadsPdf() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">Nenhum lead encontrado.</div>
           ) : (
-            <div className="divide-y divide-border">
-              {filtered.map((lead) => (
-                <button key={lead.id} onClick={() => openLead(lead)} className="w-full text-left p-4 hover:bg-muted/40 transition-colors flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0"><UserIcon className="w-5 h-5 text-primary" /></div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold truncate">{lead.name || lead.email}</p>
-                      {statusBadge(lead.status)}
-                      {lead.pdf_url && <Badge variant="outline" className="text-xs"><FileText className="w-3 h-3 mr-1" />PDF</Badge>}
-                      {lead.inbound_count > 0 && <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-xs">{lead.inbound_count} resp. cliente</Badge>}
+            <>
+              <div className="divide-y divide-border">
+                {paginated.map((lead) => (
+                  <button key={lead.id} onClick={() => openLead(lead)} className="w-full text-left p-4 hover:bg-muted/40 transition-colors flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0"><UserIcon className="w-5 h-5 text-primary" /></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold truncate">{lead.name || lead.email}</p>
+                        {statusBadge(lead.status)}
+                        {lead.pdf_url
+                          ? <Badge variant="outline" className="text-xs"><FileText className="w-3 h-3 mr-1" />PDF enviado</Badge>
+                          : <Badge variant="outline" className="text-xs text-muted-foreground">Sem PDF</Badge>}
+                        {lead.inbound_count > 0 && <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-xs">{lead.inbound_count} resp. cliente</Badge>}
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">{lead.email}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">{fmtDate(lead.created_at)} · {lead.source}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">{lead.email}</p>
-                    <p className="text-xs text-muted-foreground/70 mt-0.5">{fmtDate(lead.created_at)} · {lead.source}</p>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+                  </button>
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between gap-2 p-4 border-t border-border">
+                  <p className="text-xs text-muted-foreground">
+                    Página {currentPage} de {totalPages} · {filtered.length} resultados
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                      Anterior
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                      Próxima
+                    </Button>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
-                </button>
-              ))}
-            </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
