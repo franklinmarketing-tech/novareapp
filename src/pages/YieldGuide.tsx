@@ -877,7 +877,7 @@ const YieldGuide = () => {
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-4">
-              {bentoFeatures.map((f, i) => {
+              {currentBento.map((f, i) => {
                 const isHero = f.variant === "hero";
                 const isSelected = selectedFaixa === f.title;
                 return (
