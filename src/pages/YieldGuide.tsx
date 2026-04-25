@@ -1177,15 +1177,15 @@ const YieldGuide = () => {
                                 isHero ? "border-primary-foreground/15" : "border-border/40"
                               }`}
                             >
-                              <div className="flex items-baseline gap-1">
-                                <span className={`text-sm md:text-base font-extrabold tracking-tight ${isHero ? "" : "text-primary"}`}>
+                              <div className="flex items-baseline gap-1 flex-wrap">
+                                <span className={`text-[13px] sm:text-sm md:text-base font-extrabold tracking-tight ${isHero ? "" : "text-primary"}`}>
                                   {f.rate}
                                 </span>
                                 {!f.rate.includes("IPCA") && (
-                                  <span className={`text-[9px] ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>
+                                  <span className={`text-[8.5px] sm:text-[9px] ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>
                                 )}
                               </div>
-                              <p className={`text-[9px] mt-0.5 leading-tight line-clamp-1 ${isHero ? "opacity-55" : "text-muted-foreground"}`}>
+                              <p className={`text-[8.5px] sm:text-[9px] mt-0.5 leading-tight line-clamp-1 ${isHero ? "opacity-55" : "text-muted-foreground"}`}>
                                 {f.rateLabel}
                               </p>
                             </div>
