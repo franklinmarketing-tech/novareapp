@@ -1069,7 +1069,7 @@ const YieldGuide = () => {
                               className="calc-input pl-10 pr-[7.5rem]"
                             />
                             {/* Toggle % mês / % ano à direita */}
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-[hsl(220_22%_97%)] rounded-lg overflow-hidden border border-[hsl(220_15%_88%)]">
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-[hsl(220_22%_96%)] dark:bg-[hsl(220_18%_14%)] rounded-lg overflow-hidden border border-[hsl(220_15%_85%)] dark:border-[hsl(220_15%_22%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.05)]">
                               <button
                                 type="button"
                                 onClick={() => {
