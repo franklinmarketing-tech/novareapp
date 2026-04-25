@@ -955,11 +955,23 @@ const YieldGuide = () => {
                       }`}
                     >
                       {isSelected ? (
-                        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full calc-badge-selected">
-                          <Check className="h-4 w-4" strokeWidth={3} />
+                        <span
+                          className="absolute top-2.5 right-2.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-white"
+                          style={{
+                            boxShadow:
+                              "0 1px 0 hsl(0 0% 100% / 0.4) inset, 0 -1px 0 hsl(16 80% 35% / 0.4) inset, 0 4px 10px -2px hsl(16 80% 45% / 0.55), 0 0 0 3px hsl(0 0% 100%), 0 0 0 4px hsl(var(--accent) / 0.30)",
+                          }}
+                        >
+                          <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
                         </span>
                       ) : (
-                        <span className="absolute top-2 right-2 w-5 h-5 rounded-full border border-border bg-muted/40 group-hover:border-border transition-colors" />
+                        <span
+                          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-white border-2 border-border/70 group-hover:border-accent/50 group-hover:bg-accent/5 transition-all duration-200"
+                          style={{
+                            boxShadow:
+                              "0 1px 2px hsl(215 50% 23% / 0.08) inset, 0 1px 1px hsl(0 0% 100% / 0.8)",
+                          }}
+                        />
                       )}
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
