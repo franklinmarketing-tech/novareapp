@@ -995,7 +995,7 @@ const YieldGuide = () => {
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   Escolha a forma de rendimento
                 </p>
-                <div className="grid grid-cols-3 gap-2 md:gap-3">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
                   {([
                     {
                       id: "fixa" as TipoRenda,
