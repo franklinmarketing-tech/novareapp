@@ -594,6 +594,16 @@ const YieldGuide = () => {
       setResult(r);
       setResultFaixa(faixa);
       setIsSimulating(false);
+
+      // Após gerar o resultado, role suavemente até o detalhamento do cálculo do IR
+      window.setTimeout(() => {
+        const el = document.getElementById("ir-detalhamento");
+        if (el) {
+          const headerH = window.scrollY > 20 ? 64 : 80;
+          const top = el.getBoundingClientRect().top + window.scrollY - headerH - 16;
+          window.scrollTo({ top, behavior: "smooth" });
+        }
+      }, 250);
     }, 5000);
   };
 
@@ -1829,9 +1839,10 @@ const YieldGuide = () => {
               return (
                 <TooltipProvider delayDuration={200}>
                   <motion.div
+                    id="ir-detalhamento"
                     variants={fadeUp}
                     custom={1.5}
-                    className="calc-card-light rounded-3xl overflow-hidden"
+                    className="calc-card-light rounded-3xl overflow-hidden scroll-mt-24"
                   >
                     <div className="p-3 md:p-4">
                       <div className="flex items-start gap-2.5 mb-3">
