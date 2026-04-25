@@ -1066,7 +1066,7 @@ const YieldGuide = () => {
                                 // edição manual desfaz a faixa pré-selecionada
                                 setSelectedFaixa(null);
                               }}
-                              className="w-full h-12 rounded-xl pl-10 pr-[7.5rem] text-base font-medium text-foreground bg-[hsl(220_22%_97%)] border border-[hsl(220_15%_88%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.06),0_1px_0_hsl(0_0%_100%)] focus:border-accent focus:ring-2 focus:ring-accent/30 focus:bg-white outline-none transition-all duration-200 placeholder:text-muted-foreground/60"
+                              className="calc-input pl-10 pr-[7.5rem]"
                             />
                             {/* Toggle % mês / % ano à direita */}
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-[hsl(220_22%_97%)] rounded-lg overflow-hidden border border-[hsl(220_15%_88%)]">
