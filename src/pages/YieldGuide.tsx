@@ -883,7 +883,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR ───────────────────────────── */}
       <section
         id="simulador"
-        className="py-6 md:py-10 relative overflow-hidden bg-background"
+        className="py-10 md:py-14 relative overflow-hidden bg-background"
       >
         {/* Background orbs sutis (no tom da marca, baixa opacidade) */}
         <motion.div
