@@ -1424,7 +1424,7 @@ const YieldGuide = () => {
                     </div>
 
                     {/* === Mini KPIs grid === */}
-                    <div className="relative z-10 grid grid-cols-3 gap-3 md:gap-5">
+                    <div className="relative z-10 grid grid-cols-3 gap-3 md:gap-4">
                       {[
                         {
                           label: "Investido",
@@ -1448,35 +1448,61 @@ const YieldGuide = () => {
                           full: undefined,
                           sub: result ? `IR ${formatCompactBRL(result.patrimonioNum - result.patrimonioLiquidoNum)}` : "—",
                           icon: Receipt,
-                          tone: "neutral" as const,
+                          tone: "accent" as const,
                         },
                       ].map((k) => {
                         const Icon = k.icon;
-                        const toneClasses = {
-                          info: { ring: "border-accent/40", icon: "text-accent", bg: "bg-accent/15", value: "text-accent", label: "text-accent" },
-                          blue: { ring: "border-novare-blue-bright/35", icon: "text-novare-blue-bright", bg: "bg-novare-blue-bright/15", value: "text-novare-blue-bright", label: "text-novare-blue-bright" },
-                          success: { ring: "border-success/30", icon: "text-success", bg: "bg-success/15", value: "text-success", label: "text-success" },
-                          neutral: { ring: "border-border/60", icon: "text-accent/80", bg: "bg-muted/40", value: "text-foreground", label: "text-muted-foreground" },
+                        const tone = {
+                          blue: {
+                            card: "calc-kpi-blue",
+                            iconBg: "linear-gradient(135deg, hsl(var(--novare-blue-bright) / 0.22), hsl(var(--novare-blue-bright) / 0.06))",
+                            iconColor: "text-novare-blue-bright",
+                            label: "text-novare-blue-bright",
+                            value: "text-novare-blue",
+                            valueDark: "dark:text-novare-blue-bright",
+                          },
+                          success: {
+                            card: "calc-kpi-success",
+                            iconBg: "linear-gradient(135deg, hsl(var(--success) / 0.22), hsl(var(--success) / 0.05))",
+                            iconColor: "text-success",
+                            label: "text-success",
+                            value: "text-success",
+                            valueDark: "",
+                          },
+                          accent: {
+                            card: "calc-kpi-accent",
+                            iconBg: "linear-gradient(135deg, hsl(var(--accent) / 0.22), hsl(var(--accent) / 0.05))",
+                            iconColor: "text-accent",
+                            label: "text-accent-strong",
+                            value: "text-accent-strong",
+                            valueDark: "",
+                          },
                         }[k.tone];
                         return (
                           <motion.div
                             key={k.label}
-                            className={`relative rounded-2xl p-4 md:p-6 border ${toneClasses.ring} overflow-hidden min-w-0`}
-                            style={{
-                              background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))",
-                              boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
-                            }}
-                            whileHover={{ y: -2, scale: 1.02 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                            className={`calc-kpi ${tone.card} p-3.5 md:p-5 min-w-0`}
+                            whileHover={{ y: -4 }}
+                            transition={{ type: "spring", stiffness: 320, damping: 24 }}
                           >
-                            <div className={`w-9 h-9 md:w-11 md:h-11 rounded-xl ${toneClasses.bg} flex items-center justify-center mb-2.5 md:mb-3`}>
-                              <Icon className={`h-4 w-4 md:h-5 md:w-5 ${toneClasses.icon}`} strokeWidth={2.5} />
+                            <div
+                              className="calc-kpi-icon mb-2.5 md:mb-3"
+                              style={{ background: tone.iconBg }}
+                            >
+                              <Icon className={`h-4 w-4 md:h-5 md:w-5 ${tone.iconColor}`} strokeWidth={2.5} />
                             </div>
-                            <p className={`text-[11px] md:text-xs uppercase tracking-wider ${toneClasses.label} font-extrabold mb-1.5 truncate`}>{k.label}</p>
-                            <p className={`text-lg md:text-2xl lg:text-[1.6rem] font-black ${toneClasses.value} tracking-tight tabular-nums break-words leading-tight`} title={k.full}>
+                            <p className={`text-[10px] md:text-[11px] uppercase tracking-[0.12em] ${tone.label} font-extrabold mb-1 truncate`}>
+                              {k.label}
+                            </p>
+                            <p
+                              className={`calc-num text-[1.05rem] md:text-2xl lg:text-[1.55rem] font-black ${tone.value} ${tone.valueDark} leading-[1.05] truncate`}
+                              title={k.full}
+                            >
                               {k.value}
                             </p>
-                            <p className="text-[11px] md:text-xs text-muted-foreground mt-1.5 truncate font-medium">{k.sub}</p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground mt-1.5 truncate font-medium">
+                              {k.sub}
+                            </p>
                           </motion.div>
                         );
                       })}
