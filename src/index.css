@@ -1213,6 +1213,153 @@
     background-image: radial-gradient(ellipse 60% 4px at 50% 0%, hsl(var(--destructive) / 0.45) 0%, transparent 100%);
     box-shadow: 0 0 0 1px hsl(0 0% 0% / 0.03);
   }
+
+  /* ── Simulator v2 (image-faithful, Novare blue) ─────────────────── */
+
+  /* Painel escuro "Seu cenário projetado" — alma do simulador */
+  .sim-hero-dark {
+    background:
+      radial-gradient(120% 80% at 100% 0%, hsl(var(--novare-blue-bright) / 0.18), transparent 55%),
+      radial-gradient(100% 80% at 0% 100%, hsl(var(--novare-blue) / 0.55), transparent 60%),
+      linear-gradient(160deg, hsl(220 45% 14%), hsl(215 55% 11%));
+    color: hsl(0 0% 100%);
+    border: 1px solid hsl(220 30% 24%);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.06) inset,
+      0 24px 60px -28px hsl(215 60% 5% / 0.7),
+      0 8px 24px -12px hsl(215 50% 8% / 0.5);
+  }
+  .dark .sim-hero-dark {
+    background:
+      radial-gradient(120% 80% at 100% 0%, hsl(var(--novare-blue-bright) / 0.22), transparent 55%),
+      radial-gradient(100% 80% at 0% 100%, hsl(var(--novare-blue) / 0.5), transparent 60%),
+      linear-gradient(160deg, hsl(220 40% 9%), hsl(215 50% 7%));
+    border-color: hsl(220 30% 18%);
+  }
+
+  /* Cards seletor de tipo de renda (Renda Fixa / Mista / Variável) */
+  .sim-type-card {
+    position: relative;
+    background: linear-gradient(168deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.55) 100%);
+    border: 1.5px solid hsl(var(--border));
+    border-radius: 1.25rem;
+    padding: 1.1rem 1.15rem;
+    transition: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.6) inset,
+      0 6px 14px -10px hsl(215 50% 23% / 0.18);
+  }
+  .sim-type-card:hover {
+    transform: translateY(-2px);
+    border-color: hsl(var(--novare-blue) / 0.3);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 14px 28px -14px hsl(var(--novare-blue) / 0.28);
+  }
+  .sim-type-card-selected {
+    background: linear-gradient(168deg, hsl(var(--novare-blue-light)) 0%, hsl(220 40% 92%) 100%);
+    border: 1.5px solid hsl(var(--novare-blue) / 0.55);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.85) inset,
+      0 0 0 4px hsl(var(--novare-blue) / 0.10),
+      0 18px 32px -16px hsl(var(--novare-blue) / 0.40);
+  }
+  .dark .sim-type-card-selected {
+    background: linear-gradient(168deg, hsl(220 40% 18%) 0%, hsl(220 35% 12%) 100%);
+    border-color: hsl(var(--novare-blue-bright) / 0.5);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.06) inset,
+      0 0 0 4px hsl(var(--novare-blue-bright) / 0.12),
+      0 18px 32px -16px hsl(var(--novare-blue-bright) / 0.30);
+  }
+
+  /* KPI lateral (Renda mensal / anual / Taxa de reposição) */
+  .sim-kpi {
+    background: linear-gradient(168deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.5) 100%);
+    border: 1px solid hsl(var(--border));
+    border-radius: 1.25rem;
+    padding: 1.15rem 1.25rem;
+    transition: all 240ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.85) inset,
+      0 8px 18px -10px hsl(215 50% 23% / 0.10);
+  }
+  .sim-kpi:hover {
+    transform: translateY(-3px);
+    border-color: hsl(var(--novare-blue) / 0.30);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.95) inset,
+      0 18px 30px -14px hsl(var(--novare-blue) / 0.25);
+  }
+
+  /* Badge flutuante do gráfico */
+  .sim-chart-badge {
+    background: linear-gradient(135deg, hsl(var(--novare-blue)) 0%, hsl(var(--novare-blue-bright)) 100%);
+    color: hsl(0 0% 100%);
+    border-radius: 0.85rem;
+    padding: 0.55rem 0.85rem;
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.25) inset,
+      0 14px 28px -10px hsl(var(--novare-blue) / 0.55);
+  }
+
+  /* CTA secundário com borda azul (PDF) */
+  .sim-btn-outline {
+    background: hsl(var(--card));
+    color: hsl(var(--novare-blue));
+    border: 1.5px solid hsl(var(--novare-blue) / 0.35);
+    transition: all 200ms ease;
+    box-shadow: 0 6px 14px -10px hsl(var(--novare-blue) / 0.30);
+  }
+  .sim-btn-outline:hover {
+    background: hsl(var(--novare-blue-light));
+    border-color: hsl(var(--novare-blue) / 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 24px -12px hsl(var(--novare-blue) / 0.45);
+  }
+  .dark .sim-btn-outline {
+    color: hsl(var(--novare-blue-bright));
+    border-color: hsl(var(--novare-blue-bright) / 0.4);
+  }
+  .dark .sim-btn-outline:hover {
+    background: hsl(var(--novare-blue-bright) / 0.10);
+    border-color: hsl(var(--novare-blue-bright) / 0.7);
+  }
+
+  /* Botão primário azul Novare (Recalcular / Falar com especialista) */
+  .sim-btn-blue {
+    background: linear-gradient(135deg, hsl(var(--novare-blue)) 0%, hsl(215 55% 30%) 100%);
+    color: hsl(0 0% 100%);
+    border: 1px solid hsl(var(--novare-blue) / 0.5);
+    transition: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.18) inset,
+      0 12px 24px -10px hsl(var(--novare-blue) / 0.55);
+  }
+  .sim-btn-blue:hover {
+    transform: translateY(-1.5px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.22) inset,
+      0 22px 36px -12px hsl(var(--novare-blue) / 0.65);
+  }
+  .sim-btn-blue:active {
+    transform: translateY(0);
+  }
+
+  /* Grupos rotulados do formulário (INFORMAÇÕES PESSOAIS, etc.) */
+  .sim-group-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: hsl(var(--novare-blue));
+  }
+  .dark .sim-group-label {
+    color: hsl(var(--novare-blue-bright));
+  }
 }
 
 /* ── Print / PDF styles ─────────────────────────────── */
