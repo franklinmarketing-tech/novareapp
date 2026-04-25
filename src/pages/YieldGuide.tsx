@@ -1143,13 +1143,13 @@ const YieldGuide = () => {
                       </div>
 
                       <motion.p
-                        className="text-3xl md:text-[2.25rem] leading-[1.05] font-black text-accent tracking-tight tabular-nums break-words"
+                        className="calc-num text-[2rem] md:text-[2.4rem] lg:text-[2.5rem] leading-[1.05] font-black text-accent break-words"
                         key={result?.rendaMensalLiquidaNum}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.1 }}
                         title={result?.rendaMensalLiquida}
-                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.3)" }}
+                        style={{ textShadow: "0 2px 24px hsl(var(--accent) / 0.35)" }}
                       >
                         {result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "—"}
                       </motion.p>
@@ -1157,26 +1157,28 @@ const YieldGuide = () => {
                       {result ? (
                         <div className="mt-4 pt-4 border-t border-accent/15 flex flex-wrap items-center gap-x-5 gap-y-2">
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold">Anual líq.</p>
-                            <p className="text-base md:text-lg font-extrabold text-success tabular-nums truncate" title={result.rendaAnualLiquida}>
+                            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.12em] text-success font-bold">Anual líq.</p>
+                            <p className="calc-num text-base md:text-lg font-extrabold text-success truncate" title={result.rendaAnualLiquida}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum * 12)}
                             </p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-novare-blue-bright font-bold">Bruta/mês</p>
-                            <p className="text-base md:text-lg font-extrabold text-novare-blue-bright tabular-nums truncate" title={result.rendaMensal}>
+                            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.12em] text-novare-blue-bright font-bold">Bruta/mês</p>
+                            <p className="calc-num text-base md:text-lg font-extrabold text-novare-blue-bright truncate" title={result.rendaMensal}>
                               {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
                             </p>
                           </div>
                           <div className="min-w-0 ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-novare-blue-bright/15 border border-novare-blue-bright/30">
                             <Percent className="h-3.5 w-3.5 text-novare-blue-bright" />
-                            <span className="text-xs md:text-sm font-extrabold text-novare-blue-bright tabular-nums">
+                            <span className="calc-num text-xs md:text-sm font-extrabold text-novare-blue-bright">
                               {result.taxaMensalEfetiva.toFixed(2)}% a.m.
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-muted-foreground/80 mt-3 font-medium">Simule para ver sua renda passiva</p>
+                        <p className="text-sm text-muted-foreground/80 mt-3 font-medium italic">
+                          Preencha os campos e simule para projetar sua renda passiva
+                        </p>
                       )}
                     </div>
 
