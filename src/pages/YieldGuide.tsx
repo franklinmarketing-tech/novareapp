@@ -596,6 +596,18 @@ const YieldGuide = () => {
     }, 5000);
   };
 
+  // 🔄 Recalcula AUTOMATICAMENTE após a primeira simulação
+  // Garante que trocar tipo de renda, taxa, idade ou aporte atualize TUDO em tempo real
+  // (KPIs, gráfico, IR estimado) sem precisar clicar em "Simular" novamente.
+  useEffect(() => {
+    if (!result || isSimulating) return;
+    const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliquotaEfetivaAtual);
+    const faixa = selectedFaixa ? currentBento.find((b) => b.title === selectedFaixa) ?? null : null;
+    setResult(r);
+    setResultFaixa(faixa);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tipoRenda, sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliquotaEfetivaAtual, selectedFaixa]);
+
   const scrollTo = (id: string) => {
     setMobileNav(false);
     const el = document.querySelector(id) as HTMLElement | null;
