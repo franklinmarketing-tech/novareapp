@@ -758,7 +758,7 @@ const YieldGuide = () => {
       </motion.nav>
 
       {/* ── HERO ────────────────────────────────── */}
-      <section className="pt-20 pb-8 md:pt-28 md:pb-10">
+      <section className="pt-16 pb-6 md:pt-24 md:pb-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-5 lg:px-6 text-center">
           <motion.div initial="hidden" animate="visible" className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-widest">
@@ -805,7 +805,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── BENTO STATS ─────────────────────────── */}
-      <section className="py-8 md:py-12">
+      <section className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
@@ -831,7 +831,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── INTRO / ABOUT ───────────────────────── */}
-      <section id="intro" className="py-8 md:py-12">
+      <section id="intro" className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <div className="grid lg:grid-cols-2 gap-8 items-center">
@@ -884,7 +884,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── RENDA FIXA TABLE ────────────────────── */}
-      <section id="renda-fixa" className="py-8 md:py-12 bg-muted/40">
+      <section id="renda-fixa" className="py-6 md:py-9 bg-muted/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
@@ -935,7 +935,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR (image-faithful, Novare blue) ─────────── */}
       <section
         id="simulador"
-        className="py-8 md:py-12 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
+        className="py-6 md:py-9 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
       >
         {/* Background orbs sutis (azul Novare) */}
         <motion.div
@@ -956,9 +956,9 @@ const YieldGuide = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
 
             {/* ─── TOPO: Hero esquerda + 3 cards de tipo de renda direita ─── */}
-            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-4 md:gap-5 items-center mb-4 md:mb-5">
+            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-3 md:gap-4 items-center mb-3 md:mb-4">
               {/* Hero esquerda */}
-              <div className="space-y-3 md:space-y-4">
+              <div className="space-y-2 md:space-y-3">
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -1007,7 +1007,7 @@ const YieldGuide = () => {
               </div>
 
               {/* Bloco unificado: 3 tipos de renda + 3 estratégias (6 cards juntos) */}
-              <div className="rounded-2xl border border-border/60 bg-card/40 dark:bg-card/20 backdrop-blur-sm p-3 md:p-4 space-y-3">
+              <div className="rounded-2xl border border-border/60 bg-card/40 dark:bg-card/20 backdrop-blur-sm p-2.5 md:p-3 space-y-2.5">
                 <div className="space-y-2">
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   Escolha a forma de rendimento
@@ -1217,10 +1217,10 @@ const YieldGuide = () => {
             </motion.div>
 
             {/* ─── CORPO: Form esquerda / Resultados direita ─── */}
-            <div className="grid lg:grid-cols-2 gap-4 md:gap-5 mt-4 md:mt-5">
+            <div className="grid lg:grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
 
               {/* ====== COLUNA ESQUERDA — Formulário em grupos ====== */}
-              <motion.div variants={fadeUp} custom={1} className="calc-card-light rounded-3xl p-4 md:p-5 space-y-5 md:space-y-6">
+              <motion.div variants={fadeUp} custom={1} className="calc-card-light rounded-3xl p-3.5 md:p-4 space-y-4 md:space-y-5">
 
                 {/* Grupo 1 — INFORMAÇÕES PESSOAIS */}
                 <div className="space-y-3">
@@ -1471,10 +1471,10 @@ const YieldGuide = () => {
               </motion.div>
 
               {/* ====== COLUNA DIREITA — Cenário projetado + KPIs + Gráfico ====== */}
-              <motion.div variants={fadeUp} custom={2} className="flex flex-col gap-4 md:gap-5 min-w-0">
+              <motion.div variants={fadeUp} custom={2} className="flex flex-col gap-3 md:gap-4 min-w-0">
 
                 {/* Painel escuro — Seu cenário projetado */}
-                <div className="sim-hero-dark relative rounded-3xl p-4 md:p-5 overflow-hidden">
+                <div className="sim-hero-dark relative rounded-3xl p-3.5 md:p-4 overflow-hidden">
                   <div className="flex items-start justify-between gap-3 mb-5">
                     <div>
                       <p className="text-xs md:text-sm uppercase tracking-[0.18em] text-white/70 font-bold">Seu cenário projetado</p>
@@ -1520,7 +1520,7 @@ const YieldGuide = () => {
                 </div>
 
                 {/* 3 KPIs laterais */}
-                <div className="grid sm:grid-cols-3 gap-3 md:gap-4">
+                <div className="grid sm:grid-cols-3 gap-2.5 md:gap-3">
                   {[
                     {
                       label: "Renda mensal",
@@ -1571,7 +1571,7 @@ const YieldGuide = () => {
                 </div>
 
                 {/* Gráfico de evolução do patrimônio líquido */}
-                <div className="calc-card-light rounded-3xl p-4 md:p-5 relative overflow-hidden">
+                <div className="calc-card-light rounded-3xl p-3.5 md:p-4 relative overflow-hidden">
                   <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
                     <div className="min-w-0">
                       <h3 className="text-base md:text-lg font-bold text-foreground tracking-tight leading-tight">
@@ -1668,7 +1668,7 @@ const YieldGuide = () => {
             <motion.div
               variants={fadeUp}
               custom={3}
-              className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-5"
+              className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3 mt-3 md:mt-4"
             >
               <button
                 onClick={() => window.open(whatsappUrl, "_blank")}
@@ -1764,8 +1764,8 @@ const YieldGuide = () => {
                     custom={1.5}
                     className="calc-card-light rounded-3xl overflow-hidden"
                   >
-                    <div className="p-6 md:p-8">
-                      <div className="flex items-start gap-4 mb-6">
+                    <div className="p-4 md:p-5">
+                      <div className="flex items-start gap-3 mb-4">
                         <div className="w-11 h-11 rounded-xl bg-warning/15 shadow-[0_0_15px_hsl(var(--warning)/0.15)] flex items-center justify-center shrink-0">
                           <Receipt className="h-6 w-6 text-warning" />
                         </div>
@@ -1780,7 +1780,7 @@ const YieldGuide = () => {
                       </div>
 
                       {/* Steps */}
-                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3">
                         {steps.map((s) => (
                           <Tooltip key={s.num}>
                             <TooltipTrigger asChild>
@@ -1811,7 +1811,7 @@ const YieldGuide = () => {
                       </div>
 
                       {/* Tabela regressiva auxiliar */}
-                      <div className="mt-6 pt-5 border-t border-border/40">
+                      <div className="mt-4 pt-4 border-t border-border/40">
                         <div className="flex items-center gap-2 mb-3">
                           <Percent className="h-4 w-4 text-muted-foreground/80" />
                           <p className="text-xs uppercase tracking-wider text-muted-foreground/80 font-semibold">
@@ -1925,7 +1925,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── TESTIMONIALS ────────────────────────── */}
-      <section className="py-8 md:py-12 bg-muted/40">
+      <section className="py-6 md:py-9 bg-muted/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
@@ -1965,7 +1965,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── CTA BENTO ───────────────────────────── */}
-      <section id="contato" className="py-8 md:py-12">
+      <section id="contato" className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden bg-primary text-primary-foreground">
@@ -2151,7 +2151,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FAQ ──────────────────────────────────── */}
-      <section id="faq" className="py-8 md:py-12 bg-muted/40">
+      <section id="faq" className="py-6 md:py-9 bg-muted/40">
         <div className="max-w-3xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4">
@@ -2180,7 +2180,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── QUEM SOMOS ──────────────────────────── */}
-      <section id="quem-somos" className="py-8 md:py-12">
+      <section id="quem-somos" className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-5">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4 max-w-2xl mx-auto">
@@ -2363,7 +2363,7 @@ const YieldGuide = () => {
       </AnimatePresence>
 
       {/* ── NEWSLETTER — immersive bento ────────── */}
-      <section className="py-8 md:py-12">
+      <section className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden">
@@ -2487,7 +2487,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FOOTER ──────────────────────────────── */}
-      <footer className="py-6 md:py-8 border-t border-border/40">
+      <footer className="py-5 md:py-6 border-t border-border/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <img src={logoPreta} alt="Novare" className="h-6" />
           <p className="text-xs text-muted-foreground">
