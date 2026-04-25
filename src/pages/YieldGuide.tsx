@@ -1306,7 +1306,7 @@ const YieldGuide = () => {
                           <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                         </motion.button>
                       )}
-                    </motion.div>
+                    </div>
 
 
                   </div>
