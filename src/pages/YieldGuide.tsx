@@ -1753,37 +1753,7 @@ const YieldGuide = () => {
               </motion.div>
             </div>
 
-            {/* ─── CTAs FINAIS — Falar com especialista + PDF ─── */}
-            <motion.div
-              variants={fadeUp}
-              custom={3}
-              className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3 mt-3 md:mt-4"
-            >
-              <button
-                onClick={() => window.open(whatsappUrl, "_blank")}
-                className="sim-btn-blue group inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base"
-              >
-                <MessageCircle className="h-[18px] w-[18px]" />
-                <span>Falar com um especialista</span>
-                <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
-              </button>
-
-              <button
-                onClick={() => result && setPdfDialogOpen(true)}
-                disabled={!result}
-                title={!result ? "Simule primeiro para gerar o relatório" : undefined}
-                className="sim-btn-outline inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed !text-red-600 dark:!text-red-400"
-              >
-                <FileDown className="h-[18px] w-[18px] text-red-600 dark:text-red-400" />
-                <span className="text-red-600 dark:text-red-400">Baixar relatório em PDF</span>
-              </button>
-            </motion.div>
-
-            {/* Selo de segurança */}
-            <p className="text-center text-[11px] text-muted-foreground mt-1.5 inline-flex items-center justify-center gap-2 w-full">
-              <Lock className="h-3 w-3 text-novare-blue dark:text-novare-blue-bright" />
-              Seus dados estão seguros e protegidos conosco.
-            </p>
+            {/* CTAs movidos para o final do card (após o detalhamento e a tabela) */}
 
             {/* ── DETALHAMENTO DO CÁLCULO DO IR ───── */}
             {result && result.totalInvestidoNum > 0 && (() => {
@@ -2002,6 +1972,38 @@ const YieldGuide = () => {
                 </div>
               </motion.div>
             )}
+
+            {/* ─── CTAs FINAIS — Falar com especialista + PDF (último bloco do card) ─── */}
+            <motion.div
+              variants={fadeUp}
+              custom={3}
+              className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3 mt-3 md:mt-4"
+            >
+              <button
+                onClick={() => window.open(whatsappUrl, "_blank")}
+                className="sim-btn-blue group inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base"
+              >
+                <MessageCircle className="h-[18px] w-[18px]" />
+                <span>Falar com um especialista</span>
+                <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
+              </button>
+
+              <button
+                onClick={() => result && setPdfDialogOpen(true)}
+                disabled={!result}
+                title={!result ? "Simule primeiro para gerar o relatório" : undefined}
+                className="sim-btn-outline inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed !text-red-600 dark:!text-red-400"
+              >
+                <FileDown className="h-[18px] w-[18px] text-red-600 dark:text-red-400" />
+                <span className="text-red-600 dark:text-red-400">Baixar relatório em PDF</span>
+              </button>
+            </motion.div>
+
+            {/* Selo de segurança */}
+            <p className="text-center text-[11px] text-muted-foreground mt-1.5 inline-flex items-center justify-center gap-2 w-full">
+              <Lock className="h-3 w-3 text-novare-blue dark:text-novare-blue-bright" />
+              Seus dados estão seguros e protegidos conosco.
+            </p>
 
               </motion.div>
             </div>
