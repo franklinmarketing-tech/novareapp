@@ -1567,18 +1567,18 @@ const YieldGuide = () => {
                     )}
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6 relative">
-                    <div className="min-w-0 sm:pr-4 md:pr-5 sm:border-r border-white/10">
+                  <div className="grid sm:grid-cols-2 gap-3 sm:gap-3 md:gap-4 relative">
+                    <div className="min-w-0 sm:pr-3 md:pr-4 sm:border-r border-white/10">
                       <p className="text-[11px] md:text-xs uppercase tracking-wider text-white/65 font-semibold mb-2">Patrimônio bruto estimado</p>
                       <motion.p
                         key={result?.patrimonioNum ?? "empty-bruto"}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
-                        className="calc-num font-black text-novare-blue-bright leading-[1.05] tabular-nums tracking-tight whitespace-nowrap overflow-hidden"
+                        className="calc-num font-black text-novare-blue-bright leading-[1.05] tabular-nums tracking-tight truncate"
                         style={{
                           textShadow: "0 2px 24px hsl(var(--novare-blue-bright) / 0.45)",
-                          fontSize: "clamp(1.1rem, 2.6vw, 1.85rem)",
+                          fontSize: "clamp(1rem, 2.2vw, 1.65rem)",
                         }}
                         title={result?.patrimonio}
                       >
@@ -1593,8 +1593,8 @@ const YieldGuide = () => {
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.05 }}
-                        className="calc-num font-black text-white leading-[1.05] tabular-nums tracking-tight whitespace-nowrap overflow-hidden"
-                        style={{ fontSize: "clamp(1.1rem, 2.6vw, 1.85rem)" }}
+                        className="calc-num font-black text-white leading-[1.05] tabular-nums tracking-tight truncate"
+                        style={{ fontSize: "clamp(1rem, 2.2vw, 1.65rem)" }}
                         title={result?.patrimonioLiquido}
                       >
                         {result ? formatCompactBRL(result.patrimonioLiquidoNum) : "R$ —"}
