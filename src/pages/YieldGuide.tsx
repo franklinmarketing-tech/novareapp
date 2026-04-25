@@ -1122,10 +1122,8 @@ const YieldGuide = () => {
                     </button>
 
                     {/* === Renda Mensal Passiva (HERO escuro com glow laranja) === */}
-                    <motion.div
+                    <div
                       className="calc-dark calc-card-dark calc-glow-accent relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden"
-                      whileHover={{ y: -2 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div
@@ -1179,10 +1177,10 @@ const YieldGuide = () => {
                       ) : (
                         <p className="text-sm text-muted-foreground/80 mt-3 font-medium">Simule para ver sua renda passiva</p>
                       )}
-                    </motion.div>
+                    </div>
 
                     {/* === Meta atingida — branco premium com tinta success/warning === */}
-                    <motion.div
+                    <div
                       className={`calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden transition-all duration-500 ${
                         result
                           ? result.atingeMeta
@@ -1190,8 +1188,6 @@ const YieldGuide = () => {
                             : "ring-1 ring-warning/30"
                           : ""
                       }`}
-                      whileHover={{ y: -2 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div
@@ -1310,7 +1306,7 @@ const YieldGuide = () => {
                           <ArrowRight className="relative z-10 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                         </motion.button>
                       )}
-                    </motion.div>
+                    </div>
 
 
                   </div>
@@ -1424,10 +1420,8 @@ const YieldGuide = () => {
                     )}
 
                     {/* === Patrimônio Bruto — branco premium com tinta accent === */}
-                    <motion.div
+                    <div
                       className="calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden ring-1 ring-accent/15 group"
-                      whileHover={{ y: -2 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
                       {/* shine sweep on hover */}
                       <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-accent/[0.05] to-transparent pointer-events-none" />
@@ -1494,7 +1488,7 @@ const YieldGuide = () => {
                           </div>
                         </div>
                       )}
-                    </motion.div>
+                    </div>
 
                     {/* === Mini KPIs grid === */}
                     <div className="relative z-10 grid grid-cols-3 gap-3">
