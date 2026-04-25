@@ -1391,61 +1391,61 @@ const YieldGuide = () => {
                 </div>
 
                 {/* Grupo 4 — IMPOSTO DE RENDA NA APLICAÇÃO (100% automático) */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <p className="sim-group-label">
                     <Receipt className="h-3.5 w-3.5" />
                     Imposto de Renda na Aplicação
                   </p>
-                  <p className="text-[11px] text-muted-foreground -mt-1">
+                  <p className="text-[10.5px] text-muted-foreground -mt-0.5 leading-snug">
                     Calculado automaticamente conforme o <span className="font-semibold text-foreground/80">tipo de renda</span> e o <span className="font-semibold text-foreground/80">prazo</span> escolhidos.
                   </p>
-                  <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                  <div className="grid sm:grid-cols-2 gap-x-3 gap-y-2.5">
                     {/* Card 1 — Alíquota automática */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">
                         Alíquota de IR ({tipoRenda === "fixa" ? "Renda Fixa" : tipoRenda === "mista" ? "Renda Mista" : "Renda Variável"})
                       </label>
-                      <div className="calc-input pl-4 pr-4 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
-                        <span className="text-xl font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
+                      <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
+                        <span className="text-base font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
                           {aliquotaEfetivaAtual.toString().replace(".", ",")}%
                         </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-novare-blue/10 dark:bg-novare-blue-bright/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">
-                          <Sparkles className="h-3 w-3" />
+                        <span className="inline-flex items-center gap-1 rounded-full bg-novare-blue/10 dark:bg-novare-blue-bright/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">
+                          <Sparkles className="h-2.5 w-2.5" />
                           Auto
                         </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/80 leading-snug">{regraIRTexto}</p>
+                      <p className="text-[9.5px] text-muted-foreground/80 leading-snug truncate" title={regraIRTexto}>{regraIRTexto}</p>
                     </div>
 
                     {/* Card 2 — Rendimento líquido após IR */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Rendimento líquido após IR</label>
-                      <div className="calc-input pl-4 pr-4 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
-                        <span className="text-xl font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">Rendimento líquido após IR</label>
+                      <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
+                        <span className="text-base font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
                           {sim.rentabilidade
                             ? `${(rentAnual * (1 - aliquotaEfetivaAtual / 100)).toFixed(2).replace(".", ",")}%`
                             : "—"}
                         </span>
-                        <span className="text-[10px] font-bold text-novare-blue/70 dark:text-novare-blue-bright/70 uppercase tracking-wider">a.a.</span>
+                        <span className="text-[9px] font-bold text-novare-blue/70 dark:text-novare-blue-bright/70 uppercase tracking-wider">a.a.</span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/80">
+                      <p className="text-[9.5px] text-muted-foreground/80 leading-snug truncate">
                         Bruto {rentAnual.toFixed(2).replace(".", ",")}% − IR {aliquotaEfetivaAtual.toString().replace(".", ",")}%
                       </p>
                     </div>
 
                     {/* Card 3 — Valor de IR estimado sobre o ganho */}
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Imposto estimado no resgate</label>
-                      <div className="calc-input pl-4 pr-4 flex items-center justify-between bg-gradient-to-br from-amber-100/40 to-transparent dark:from-amber-900/15">
-                        <span className="text-xl font-extrabold text-amber-700 dark:text-amber-400 tabular-nums tracking-tight">
+                    <div className="space-y-1 sm:col-span-2">
+                      <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">Imposto estimado no resgate</label>
+                      <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-amber-100/40 to-transparent dark:from-amber-900/15">
+                        <span className="text-base font-extrabold text-amber-700 dark:text-amber-400 tabular-nums tracking-tight">
                           {result ? result.irDevido : "—"}
                         </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 dark:bg-amber-400/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                          <Receipt className="h-3 w-3" />
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 dark:bg-amber-400/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                          <Receipt className="h-2.5 w-2.5" />
                           IR devido
                         </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/80">
+                      <p className="text-[9.5px] text-muted-foreground/80 leading-snug truncate">
                         {result
                           ? `${aliquotaEfetivaAtual.toString().replace(".", ",")}% sobre o ganho bruto de ${result.ganhoBruto}.`
                           : "Será calculado após você simular a aposentadoria."}
@@ -1454,7 +1454,7 @@ const YieldGuide = () => {
                   </div>
                 </div>
 
-                <p className="text-[10.5px] text-muted-foreground/70 leading-relaxed border-t border-border/40 pt-3">
+                <p className="text-[10px] text-muted-foreground/70 leading-snug border-t border-border/40 pt-2">
                   <span className="font-bold text-foreground/70">*</span> Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
                 </p>
 
