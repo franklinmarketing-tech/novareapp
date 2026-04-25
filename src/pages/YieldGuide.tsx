@@ -986,7 +986,7 @@ const YieldGuide = () => {
               <div className="calc-card-light rounded-3xl overflow-hidden">
                 <div className="grid lg:grid-cols-2 lg:items-stretch">
                   {/* Simulator form — light premium card */}
-                  <div className="p-5 md:p-7 relative flex flex-col bg-transparent">
+                  <div className="p-5 md:p-7 relative flex flex-col bg-transparent lg:h-full">
                     {/* Subtle inner divider on desktop split */}
                     <div className="hidden lg:block absolute top-6 bottom-6 right-0 w-px bg-gradient-to-b from-transparent via-border to-transparent pointer-events-none" />
                     <motion.div
