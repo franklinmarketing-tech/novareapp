@@ -2828,6 +2828,20 @@ const YieldGuide = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <PdfEmailDialog
+        open={pdfDialogOpen}
+        onOpenChange={setPdfDialogOpen}
+        result={result}
+        input={result ? {
+          idadeAtual: sim.idadeAtual,
+          idadeAposent: sim.idadeAposent,
+          patrimonioAtual: sim.patrimonioAtual,
+          aporte: sim.aporte,
+          rendaDesejada: sim.rendaDesejada,
+          rentabilidadeAnual: rentAnual,
+        } : null}
+      />
     </div>
   );
 };
