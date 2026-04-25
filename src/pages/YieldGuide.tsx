@@ -113,17 +113,17 @@ const bentoByTipo: Record<TipoRenda, BentoFeature[]> = {
   fixa: [
     {
       title: "Prefixado",
-      desc: "Você sabe exatamente qual será sua rentabilidade. Trave uma taxa quando esperar queda nos juros.",
+      desc: "Taxa travada — ideal em queda de juros.",
       icon: Lock,
       rate: "14,20%",
-      rateLabel: "Taxa referência CDB 12 meses",
+      rateLabel: "CDB 12 meses",
       span: "md:col-span-1",
       variant: "hero",
       rentAnual: 14.2,
     },
     {
       title: "Pós-fixado (CDI)",
-      desc: "Rentabilidade atrelada ao CDI. Ideal quando se espera manutenção ou alta nos juros.",
+      desc: "Acompanha o CDI — segue a Selic.",
       icon: TrendingUp,
       rate: "14,73%",
       rateLabel: "104% do CDI a.a.",
@@ -133,10 +133,10 @@ const bentoByTipo: Record<TipoRenda, BentoFeature[]> = {
     },
     {
       title: "IPCA+",
-      desc: "Proteção contra inflação com taxa real garantida. Preserva o poder de compra no longo prazo.",
+      desc: "Protege da inflação com ganho real.",
       icon: Shield,
       rate: "IPCA + 7%",
-      rateLabel: "Ganho real acima da inflação",
+      rateLabel: "Ganho real",
       span: "md:col-span-1",
       variant: "default",
       rentAnual: 11.51,
@@ -145,17 +145,17 @@ const bentoByTipo: Record<TipoRenda, BentoFeature[]> = {
   mista: [
     {
       title: "Multimercado",
-      desc: "Mistura renda fixa, ações e moedas. Gestão ativa em busca de retornos consistentes em qualquer cenário.",
+      desc: "Gestão ativa multiestratégia.",
       icon: Landmark,
       rate: "16,50%",
-      rateLabel: "Média histórica de 12 meses",
+      rateLabel: "Média 12 meses",
       span: "md:col-span-1",
       variant: "hero",
       rentAnual: 16.5,
     },
     {
       title: "Renda + Ações",
-      desc: "Carteira balanceada 60/40 — base sólida em renda fixa com exposição moderada a ações de qualidade.",
+      desc: "Carteira balanceada 60/40.",
       icon: TrendingUp,
       rate: "15,80%",
       rateLabel: "60% RF + 40% RV",
@@ -165,10 +165,10 @@ const bentoByTipo: Record<TipoRenda, BentoFeature[]> = {
     },
     {
       title: "Previdência PGBL",
-      desc: "Benefício fiscal de até 12% da renda + diferimento. Ideal para acumulação de longo prazo.",
+      desc: "Benefício fiscal + longo prazo.",
       icon: Shield,
       rate: "13,20%",
-      rateLabel: "Plano misto · longo prazo",
+      rateLabel: "Plano misto",
       span: "md:col-span-1",
       variant: "default",
       rentAnual: 13.2,
@@ -177,30 +177,30 @@ const bentoByTipo: Record<TipoRenda, BentoFeature[]> = {
   variavel: [
     {
       title: "Ações Brasil",
-      desc: "Carteira de ações brasileiras blue chips com pagamento de dividendos consistentes.",
+      desc: "Blue chips brasileiras com dividendos.",
       icon: TrendingUp,
       rate: "18,00%",
-      rateLabel: "Média histórica Ibovespa+",
+      rateLabel: "Ibovespa+",
       span: "md:col-span-1",
       variant: "hero",
       rentAnual: 18,
     },
     {
       title: "FIIs",
-      desc: "Fundos Imobiliários — renda mensal isenta de IR para pessoa física e exposição ao mercado imobiliário.",
+      desc: "Renda mensal isenta de IR (PF).",
       icon: Landmark,
       rate: "13,50%",
-      rateLabel: "Dividend Yield + valorização",
+      rateLabel: "DY + valorização",
       span: "md:col-span-1",
       variant: "default",
       rentAnual: 13.5,
     },
     {
       title: "Ações Globais",
-      desc: "Diversificação internacional via BDRs e ETFs. Acesso às maiores empresas do mundo.",
+      desc: "BDRs e ETFs internacionais.",
       icon: Shield,
       rate: "20,00%",
-      rateLabel: "S&P 500 média 10 anos",
+      rateLabel: "S&P 500 (10 anos)",
       span: "md:col-span-1",
       variant: "default",
       rentAnual: 20,
@@ -1093,7 +1093,7 @@ const YieldGuide = () => {
                       ? "Estratégias de Renda Mista — selecione uma"
                       : "Opções em Renda Variável — selecione uma"}
                 </p>
-                <div key={tipoRenda} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                <div key={tipoRenda} className="grid grid-cols-3 gap-2 md:gap-3">
                   {currentBento.map((f, i) => {
                     const isHero = f.variant === "hero";
                     const isSelected = selectedFaixa === f.title;
@@ -1112,7 +1112,7 @@ const YieldGuide = () => {
                             setSelectedFaixa(f.title);
                           }}
                           aria-pressed={isSelected}
-                          className={`relative w-full text-left h-full rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 ${
+                          className={`relative w-full text-left h-full rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ${
                             isSelected
                               ? isHero
                                 ? "bg-primary text-primary-foreground calc-card-md-dark-selected"
@@ -1124,7 +1124,7 @@ const YieldGuide = () => {
                         >
                           {/* Bolinha de seleção no canto superior direito */}
                           <span
-                            className={`absolute top-2.5 right-2.5 z-20 inline-flex items-center justify-center w-5 h-5 rounded-full transition-all ${
+                            className={`absolute top-1.5 right-1.5 z-20 inline-flex items-center justify-center w-4 h-4 rounded-full transition-all ${
                               isSelected
                                 ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-1px_hsl(var(--accent)/0.55)]"
                                 : isHero
@@ -1133,34 +1133,34 @@ const YieldGuide = () => {
                             }`}
                             aria-hidden
                           >
-                            {isSelected && <Check className="h-3 w-3" strokeWidth={3.5} />}
+                            {isSelected && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
                           </span>
 
-                          <div className="p-4 md:p-5 flex flex-col h-full relative z-10">
-                            <div className="flex items-center gap-2.5 mb-2">
+                          <div className="p-2.5 md:p-3 flex flex-col h-full relative z-10">
+                            <div className="flex items-center gap-1.5 mb-1">
                               <div
-                                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                className={`w-6 h-6 md:w-7 md:h-7 rounded-lg flex items-center justify-center shrink-0 ${
                                   isSelected
-                                    ? "bg-accent/20 ring-2 ring-accent/40"
+                                    ? "bg-accent/20 ring-1 ring-accent/40"
                                     : isHero
                                       ? "bg-primary-foreground/10"
                                       : "bg-muted"
                                 }`}
                               >
                                 <f.icon
-                                  className={`h-4 w-4 ${
+                                  className={`h-3 w-3 md:h-3.5 md:w-3.5 ${
                                     isSelected ? "text-accent" : isHero ? "" : "text-foreground"
                                   }`}
                                   strokeWidth={2.25}
                                 />
                               </div>
-                              <h3 className="text-sm md:text-base font-bold tracking-tight pr-6 leading-tight">
+                              <h3 className="text-[11px] md:text-xs font-bold tracking-tight pr-5 leading-tight">
                                 {f.title}
                               </h3>
                             </div>
 
                             <p
-                              className={`text-[11px] md:text-xs leading-relaxed mb-3 ${
+                              className={`hidden md:block text-[10px] leading-snug mb-2 line-clamp-2 ${
                                 isHero ? "opacity-75" : "text-muted-foreground"
                               }`}
                             >
@@ -1168,32 +1168,20 @@ const YieldGuide = () => {
                             </p>
 
                             <div
-                              className={`mt-auto pt-3 border-t ${
+                              className={`mt-auto pt-1.5 border-t ${
                                 isHero ? "border-primary-foreground/15" : "border-border/40"
                               }`}
                             >
-                              <div className="flex items-baseline gap-1.5">
-                                <span className={`text-lg md:text-xl font-extrabold tracking-tight ${isHero ? "" : "text-primary"}`}>
+                              <div className="flex items-baseline gap-1">
+                                <span className={`text-sm md:text-base font-extrabold tracking-tight ${isHero ? "" : "text-primary"}`}>
                                   {f.rate}
                                 </span>
                                 {!f.rate.includes("IPCA") && (
-                                  <span className={`text-[10px] ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>
+                                  <span className={`text-[9px] ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>
                                 )}
                               </div>
-                              <p className={`text-[10px] mt-0.5 ${isHero ? "opacity-55" : "text-muted-foreground"}`}>
+                              <p className={`text-[9px] mt-0.5 leading-tight line-clamp-1 ${isHero ? "opacity-55" : "text-muted-foreground"}`}>
                                 {f.rateLabel}
-                              </p>
-                              <p
-                                className={`text-[10px] mt-1.5 font-bold flex items-center gap-1 ${
-                                  isSelected
-                                    ? "text-accent"
-                                    : isHero
-                                      ? "opacity-60"
-                                      : "text-accent"
-                                }`}
-                              >
-                                {isSelected ? "✓ Taxa aplicada" : "Aplicar esta taxa"}
-                                {!isSelected && <ArrowRight className="h-3 w-3" />}
                               </p>
                             </div>
                           </div>
