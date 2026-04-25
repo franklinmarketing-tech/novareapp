@@ -28,6 +28,23 @@
     --accent-foreground: 0 0% 100%;
     /* Laranja AA-safe para texto sobre fundos claros (contraste ≥4.5:1 sobre #fff) */
     --accent-strong: 16 82% 36%;
+    --accent-soft: 16 70% 82%;          /* borda/anel suave */
+    --accent-tint: 16 90% 96%;          /* fundo selecionado claro topo */
+    --accent-tint-2: 16 85% 92%;        /* fundo selecionado claro base */
+
+    /* === Tokens semânticos: estado SELECIONADO de cards (calculadora) === */
+    --card-selected-bg-from: var(--accent-tint);
+    --card-selected-bg-to: var(--accent-tint-2);
+    --card-selected-border: var(--accent);
+    --card-selected-fg: var(--accent-strong);
+    --card-selected-ring: var(--accent);
+
+    /* === Tokens semânticos: bolinha (radio indicator) === */
+    --radio-bg: var(--background);
+    --radio-border: var(--border);
+    --radio-checked-bg: var(--accent);
+    --radio-checked-fg: var(--accent-foreground);
+    --radio-ring: var(--background);    /* anel externo separador */
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -84,8 +101,25 @@
     --muted-foreground: 220 10% 52%;
     --accent: 16 70% 55%;
     --accent-foreground: 0 0% 100%;
-    /* No dark, “strong” fica mais claro para AA contra fundos escuros */
+    /* No dark, "strong" fica mais claro para AA contra fundos escuros */
     --accent-strong: 16 88% 72%;
+    --accent-soft: 16 70% 30%;
+    --accent-tint: 16 55% 22%;
+    --accent-tint-2: 16 60% 16%;
+
+    /* Estados selecionados — overrides para tema escuro */
+    --card-selected-bg-from: var(--accent-tint);
+    --card-selected-bg-to: var(--accent-tint-2);
+    --card-selected-border: var(--accent);
+    --card-selected-fg: var(--accent-strong);
+    --card-selected-ring: var(--accent);
+
+    /* Bolinha (radio) — overrides escuros */
+    --radio-bg: 220 18% 18%;
+    --radio-border: 220 15% 38%;
+    --radio-checked-bg: var(--accent);
+    --radio-checked-fg: var(--accent-foreground);
+    --radio-ring: 220 18% 14%;
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
     --success: 152 55% 38%;
