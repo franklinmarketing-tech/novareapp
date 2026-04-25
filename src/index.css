@@ -934,6 +934,179 @@
       0 1px 0 hsl(0 0% 100% / 0.04);
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     CALCULADORA — KPI PREMIUM (3 mini-cards de resultado)
+     Sistema unificado, com tinta tonal, profundidade e shine sutil
+     ═══════════════════════════════════════════════════════════════ */
+  .calc-kpi {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    background:
+      linear-gradient(168deg,
+        hsl(var(--card)) 0%,
+        hsl(220 28% 98%) 60%,
+        hsl(220 22% 96%) 100%);
+    border: 1px solid hsl(220 16% 88% / 0.9);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.95) inset,
+      0 -1px 0 hsl(220 22% 92% / 0.6) inset,
+      0 0 0 1px hsl(215 30% 86% / 0.35),
+      0 2px 4px hsl(215 50% 23% / 0.04),
+      0 10px 20px -6px hsl(215 50% 23% / 0.10),
+      0 28px 56px -14px hsl(215 50% 23% / 0.18);
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms ease;
+  }
+  .calc-kpi::before {
+    /* faixa de luz superior */
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 40%;
+    background: linear-gradient(180deg, hsl(0 0% 100% / 0.55) 0%, transparent 100%);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .calc-kpi::after {
+    /* shine diagonal sutil ao hover */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, hsl(0 0% 100% / 0.35) 50%, transparent 70%);
+    transform: translateX(-110%);
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0.7;
+  }
+  .calc-kpi:hover {
+    transform: translateY(-4px);
+    border-color: hsl(220 16% 82% / 1);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.95) inset,
+      0 -1px 0 hsl(220 22% 92% / 0.6) inset,
+      0 0 0 1px hsl(215 30% 80% / 0.5),
+      0 4px 8px hsl(215 50% 23% / 0.06),
+      0 16px 32px -8px hsl(215 50% 23% / 0.16),
+      0 40px 80px -18px hsl(215 50% 23% / 0.26);
+  }
+  .calc-kpi:hover::after { transform: translateX(110%); }
+
+  /* Variantes tonais — apenas tinta sutil, mantém base branca */
+  .calc-kpi-blue {
+    border-color: hsl(var(--novare-blue-bright) / 0.30);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.95) inset,
+      0 -1px 0 hsl(var(--novare-blue-bright) / 0.10) inset,
+      0 0 0 1px hsl(var(--novare-blue-bright) / 0.18),
+      0 2px 4px hsl(var(--novare-blue) / 0.06),
+      0 10px 20px -6px hsl(var(--novare-blue) / 0.18),
+      0 28px 56px -14px hsl(var(--novare-blue) / 0.22),
+      0 0 32px -10px hsl(var(--novare-blue-bright) / 0.18);
+  }
+  .calc-kpi-blue:hover {
+    border-color: hsl(var(--novare-blue-bright) / 0.45);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.95) inset,
+      0 -1px 0 hsl(var(--novare-blue-bright) / 0.12) inset,
+      0 0 0 1px hsl(var(--novare-blue-bright) / 0.30),
+      0 4px 8px hsl(var(--novare-blue) / 0.08),
+      0 16px 32px -8px hsl(var(--novare-blue) / 0.24),
+      0 40px 80px -18px hsl(var(--novare-blue) / 0.30),
+      0 0 48px -12px hsl(var(--novare-blue-bright) / 0.32);
+  }
+  .calc-kpi-success {
+    border-color: hsl(var(--success) / 0.30);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.95) inset,
+      0 -1px 0 hsl(var(--success) / 0.08) inset,
+      0 0 0 1px hsl(var(--success) / 0.18),
+      0 2px 4px hsl(var(--success) / 0.06),
+      0 10px 20px -6px hsl(var(--success) / 0.18),
+      0 28px 56px -14px hsl(var(--success) / 0.22),
+      0 0 32px -10px hsl(var(--success) / 0.18);
+  }
+  .calc-kpi-success:hover {
+    border-color: hsl(var(--success) / 0.45);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.95) inset,
+      0 -1px 0 hsl(var(--success) / 0.10) inset,
+      0 0 0 1px hsl(var(--success) / 0.30),
+      0 4px 8px hsl(var(--success) / 0.08),
+      0 16px 32px -8px hsl(var(--success) / 0.24),
+      0 40px 80px -18px hsl(var(--success) / 0.30),
+      0 0 48px -12px hsl(var(--success) / 0.32);
+  }
+  .calc-kpi-accent {
+    border-color: hsl(var(--accent) / 0.30);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.95) inset,
+      0 -1px 0 hsl(var(--accent) / 0.08) inset,
+      0 0 0 1px hsl(var(--accent) / 0.18),
+      0 2px 4px hsl(var(--accent) / 0.06),
+      0 10px 20px -6px hsl(var(--accent) / 0.18),
+      0 28px 56px -14px hsl(var(--accent) / 0.22),
+      0 0 32px -10px hsl(var(--accent) / 0.20);
+  }
+  .calc-kpi-accent:hover {
+    border-color: hsl(var(--accent) / 0.45);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.95) inset,
+      0 -1px 0 hsl(var(--accent) / 0.10) inset,
+      0 0 0 1px hsl(var(--accent) / 0.30),
+      0 4px 8px hsl(var(--accent) / 0.08),
+      0 16px 32px -8px hsl(var(--accent) / 0.24),
+      0 40px 80px -18px hsl(var(--accent) / 0.30),
+      0 0 48px -12px hsl(var(--accent) / 0.36);
+  }
+
+  /* Dark mode dos KPIs */
+  .dark .calc-kpi {
+    background: linear-gradient(168deg, hsl(220 18% 12%) 0%, hsl(220 20% 10%) 60%, hsl(220 22% 8%) 100%);
+    border-color: hsl(220 15% 22% / 0.9);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.05) inset,
+      0 -1px 0 hsl(220 30% 5% / 0.6) inset,
+      0 0 0 1px hsl(220 15% 28% / 0.25),
+      0 4px 10px hsl(0 0% 0% / 0.30),
+      0 14px 30px -6px hsl(0 0% 0% / 0.45),
+      0 32px 60px -18px hsl(0 0% 0% / 0.55);
+  }
+  .dark .calc-kpi::before {
+    background: linear-gradient(180deg, hsl(0 0% 100% / 0.04) 0%, transparent 100%);
+  }
+  .dark .calc-kpi:hover {
+    border-color: hsl(220 15% 32% / 1);
+  }
+
+  /* Ícone dentro do KPI — pedestal com tinta tonal */
+  .calc-kpi-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.7) inset,
+      0 -1px 0 hsl(220 30% 50% / 0.10) inset,
+      0 4px 10px -2px hsl(215 50% 23% / 0.18);
+  }
+  @media (min-width: 768px) {
+    .calc-kpi-icon { width: 2.75rem; height: 2.75rem; border-radius: 0.875rem; }
+  }
+
+  /* Helper tipográfico para números monetários (impede quebra feia) */
+  .calc-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "ss01" 1;
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+  }
+
   /* Vertical stack helpers */
   .stack-sm > * + * { margin-top: 0.5rem; }
   .stack-md > * + * { margin-top: 1rem; }
