@@ -1097,7 +1097,7 @@ const YieldGuide = () => {
                       ? "Estratégias de Renda Mista — selecione uma"
                       : "Opções em Renda Variável — selecione uma"}
                 </p>
-                <div key={tipoRenda} className="grid grid-cols-3 gap-2 md:gap-3">
+                <div key={tipoRenda} className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
                   {currentBento.map((f, i) => {
                     const isHero = f.variant === "hero";
                     const isSelected = selectedFaixa === f.title;
@@ -1107,6 +1107,7 @@ const YieldGuide = () => {
                         initial={{ opacity: 0, y: 14 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: i * 0.07, ease: "easeOut" }}
+                        className="h-full min-w-0"
                       >
                         <button
                           type="button"
