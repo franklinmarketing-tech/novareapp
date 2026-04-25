@@ -957,36 +957,46 @@ const YieldGuide = () => {
 
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-5 relative z-10">
           {/* ╔════ MOLDURA ELEVADA — dá profundidade e isola a seção ════╗ */}
-          <div className="relative rounded-[28px] md:rounded-[32px] overflow-hidden">
+          <div
+            className="relative rounded-[28px] md:rounded-[32px] overflow-hidden border-2"
+            style={{
+              borderColor: "hsl(var(--novare-blue) / 0.55)",
+              boxShadow:
+                "0 0 0 1px hsl(var(--novare-blue-bright) / 0.18), 0 30px 80px -30px hsl(var(--novare-blue) / 0.45), 0 12px 30px -12px hsl(220 30% 10% / 0.22), inset 0 1px 0 hsl(0 0% 100% / 0.55)",
+            }}
+          >
             {/* Glow externo sutil (halo azul atrás do card) */}
             <div
-              className="absolute -inset-2 md:-inset-3 rounded-[36px] pointer-events-none opacity-60"
+              className="absolute -inset-2 md:-inset-3 rounded-[36px] pointer-events-none opacity-70"
               style={{
-                background: "radial-gradient(60% 60% at 50% 0%, hsl(var(--novare-blue) / 0.18), transparent 70%)",
+                background: "radial-gradient(60% 60% at 50% 0%, hsl(var(--novare-blue) / 0.22), transparent 70%)",
                 filter: "blur(28px)",
               }}
               aria-hidden
             />
-            {/* Borda gradiente premium (1px) */}
+            {/* Linha de brilho interno na borda azul (acentua o destaque) */}
             <div
-              className="absolute inset-0 rounded-[28px] md:rounded-[32px] pointer-events-none"
+              className="absolute inset-0 rounded-[26px] md:rounded-[30px] pointer-events-none"
               style={{
-                padding: "1px",
-                background: "linear-gradient(140deg, hsl(var(--novare-blue) / 0.55), hsl(var(--novare-blue-bright) / 0.25) 35%, hsl(var(--border) / 0.6) 60%, hsl(var(--novare-blue) / 0.4))",
-                WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                WebkitMaskComposite: "xor",
-                maskComposite: "exclude",
+                boxShadow: "inset 0 0 0 1px hsl(var(--novare-blue-bright) / 0.18)",
               }}
               aria-hidden
             />
             {/* Camada de fundo do card com gradiente elegante */}
             <div
-              className="absolute inset-0 rounded-[28px] md:rounded-[32px] pointer-events-none"
+              className="absolute inset-0 rounded-[26px] md:rounded-[30px] pointer-events-none"
               style={{
                 background:
                   "linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 50%, hsl(var(--card) / 0.85) 100%)",
-                boxShadow:
-                  "0 30px 80px -30px hsl(var(--novare-blue) / 0.35), 0 12px 30px -12px hsl(220 30% 10% / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.5), inset 0 -1px 0 hsl(var(--novare-blue) / 0.08)",
+              }}
+              aria-hidden
+            />
+            {/* Faixa superior azul Novare (acento de seção) */}
+            <div
+              className="absolute top-0 left-0 right-0 h-1 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent 0%, hsl(var(--novare-blue)) 25%, hsl(var(--novare-blue-bright)) 50%, hsl(var(--novare-blue)) 75%, transparent 100%)",
               }}
               aria-hidden
             />
