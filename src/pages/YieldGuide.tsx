@@ -2467,16 +2467,16 @@ const YieldGuide = () => {
               WebkitBackdropFilter: "blur(12px)",
             }}
           >
-            {/* Orbs de fundo animadas */}
+            {/* Orbs de fundo animadas — agora em azul Novare */}
             <motion.div
               className="pointer-events-none absolute top-1/4 left-1/4 w-[420px] h-[420px] rounded-full blur-[140px]"
-              style={{ background: "hsl(var(--accent) / 0.25)" }}
+              style={{ background: "hsl(var(--novare-blue-bright) / 0.30)" }}
               animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.div
               className="pointer-events-none absolute bottom-1/4 right-1/4 w-[380px] h-[380px] rounded-full blur-[130px]"
-              style={{ background: "hsl(var(--accent) / 0.3)" }}
+              style={{ background: "hsl(var(--novare-blue) / 0.35)" }}
               animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.6, 0.3] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             />
@@ -2492,48 +2492,113 @@ const YieldGuide = () => {
                   "linear-gradient(160deg, hsl(var(--card) / 0.95), hsl(var(--muted) / 0.95))",
                 border: "1px solid hsl(var(--border))",
                 boxShadow:
-                  "0 30px 80px -20px hsl(var(--accent) / 0.4), 0 0 0 1px hsl(var(--accent) / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
+                  "0 30px 80px -20px hsl(var(--novare-blue-bright) / 0.45), 0 0 0 1px hsl(var(--novare-blue-bright) / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
               }}
             >
-              {/* Logo Novare com halos pulsantes */}
-              <div className="relative mx-auto mb-6 w-40 h-40 flex items-center justify-center">
-                {/* Anéis orbitais animados */}
+              {/* Logo Novare com halos pulsantes — efeitos enriquecidos */}
+              <div className="relative mx-auto mb-6 w-44 h-44 flex items-center justify-center">
+                {/* Anel orbital 1 — externo lento */}
                 <motion.span
-                  className="absolute inset-0 rounded-full border-2 border-accent/30"
+                  className="absolute inset-0 rounded-full border-2 border-[hsl(var(--novare-blue-bright)/0.35)]"
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                   style={{ borderRightColor: "transparent", borderBottomColor: "transparent" }}
                 />
+                {/* Anel orbital 2 — médio inverso */}
                 <motion.span
-                  className="absolute inset-3 rounded-full border-2 border-accent/40"
+                  className="absolute inset-3 rounded-full border-2 border-[hsl(var(--novare-blue-bright)/0.45)]"
                   animate={{ rotate: -360 }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
                   style={{ borderLeftColor: "transparent", borderTopColor: "transparent" }}
                 />
-                {/* Halo pulsante */}
+                {/* Anel orbital 3 — interno rápido tracejado */}
                 <motion.span
-                  className="absolute inset-6 rounded-full"
-                  style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.4), transparent 70%)" }}
-                  animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
+                  className="absolute inset-6 rounded-full border-2 border-dashed border-[hsl(var(--novare-blue)/0.55)]"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                />
+
+                {/* Partículas orbitando (4 pontos azuis) */}
+                {[0, 1, 2, 3].map((i) => (
+                  <motion.span
+                    key={`particle-${i}`}
+                    className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                      background: "hsl(var(--novare-blue-bright))",
+                      boxShadow: "0 0 12px hsl(var(--novare-blue-bright) / 0.9), 0 0 24px hsl(var(--novare-blue-bright) / 0.6)",
+                    }}
+                    animate={{
+                      x: [
+                        Math.cos((i * Math.PI) / 2) * 80,
+                        Math.cos((i * Math.PI) / 2 + Math.PI * 2) * 80,
+                      ],
+                      y: [
+                        Math.sin((i * Math.PI) / 2) * 80,
+                        Math.sin((i * Math.PI) / 2 + Math.PI * 2) * 80,
+                      ],
+                    }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear", delay: i * 0.3 }}
+                  />
+                ))}
+
+                {/* Halo pulsante interno azul */}
+                <motion.span
+                  className="absolute inset-8 rounded-full"
+                  style={{
+                    background:
+                      "radial-gradient(circle, hsl(var(--novare-blue-bright) / 0.5), transparent 70%)",
+                  }}
+                  animate={{ scale: [1, 1.35, 1], opacity: [0.6, 1, 0.6] }}
                   transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                 />
-                {/* Logo */}
+
+                {/* Conic-gradient sweep (radar) */}
+                <motion.span
+                  className="absolute inset-2 rounded-full pointer-events-none"
+                  style={{
+                    background:
+                      "conic-gradient(from 0deg, transparent 0deg, hsl(var(--novare-blue-bright) / 0.35) 60deg, transparent 120deg)",
+                    maskImage:
+                      "radial-gradient(circle, transparent 38%, black 40%, black 100%)",
+                    WebkitMaskImage:
+                      "radial-gradient(circle, transparent 38%, black 40%, black 100%)",
+                  }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
+                />
+
+                {/* Logo com glow azul + leve respiração */}
                 <motion.img
                   src={logoPreta}
                   alt="Novare"
                   className="relative z-10 w-24 h-auto"
-                  animate={{ scale: [1, 1.05, 1] }}
+                  animate={{ scale: [1, 1.06, 1] }}
                   transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ filter: "drop-shadow(0 0 20px hsl(var(--accent) / 0.6))" }}
+                  style={{
+                    filter:
+                      "drop-shadow(0 0 18px hsl(var(--novare-blue-bright) / 0.7)) drop-shadow(0 0 36px hsl(var(--novare-blue) / 0.45))",
+                  }}
+                />
+
+                {/* Scan-line horizontal cruzando o logo */}
+                <motion.span
+                  className="absolute left-8 right-8 h-px pointer-events-none z-20"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, hsl(var(--novare-blue-bright)) 50%, transparent)",
+                    boxShadow: "0 0 12px hsl(var(--novare-blue-bright) / 0.9)",
+                  }}
+                  animate={{ top: ["20%", "80%", "20%"], opacity: [0, 1, 0] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
                 />
               </div>
 
-              {/* Título com gradiente */}
+              {/* Título com gradiente azul */}
               <motion.h3
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-2xl md:text-3xl font-black mb-2 bg-gradient-to-r from-foreground via-foreground to-accent/80 bg-clip-text text-transparent"
+                className="text-2xl md:text-3xl font-black mb-2 bg-gradient-to-r from-foreground via-foreground to-[hsl(var(--novare-blue-bright))] bg-clip-text text-transparent"
               >
                 Calculando sua aposentadoria
               </motion.h3>
@@ -2548,7 +2613,7 @@ const YieldGuide = () => {
                 Nossa inteligência financeira está montando seu cenário…
               </motion.p>
 
-              {/* Contador regressivo */}
+              {/* Contador regressivo — azul */}
               <div className="flex items-center justify-center gap-2 mb-5">
                 <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground/80 font-semibold">
                   Pronto em
@@ -2558,31 +2623,32 @@ const YieldGuide = () => {
                   initial={{ scale: 0.6, opacity: 0, y: -6 }}
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                  className="relative inline-flex items-center justify-center min-w-[44px] h-9 px-2.5 rounded-lg font-mono font-black text-base text-accent"
+                  className="relative inline-flex items-center justify-center min-w-[44px] h-9 px-2.5 rounded-lg font-mono font-black text-base text-[hsl(var(--novare-blue-bright))]"
                   style={{
-                    background: "linear-gradient(180deg, hsl(var(--accent) / 0.15), hsl(var(--accent) / 0.05))",
-                    border: "1px solid hsl(var(--accent) / 0.35)",
-                    boxShadow: "0 0 18px hsl(var(--accent) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.6)",
+                    background:
+                      "linear-gradient(180deg, hsl(var(--novare-blue-bright) / 0.18), hsl(var(--novare-blue-bright) / 0.06))",
+                    border: "1px solid hsl(var(--novare-blue-bright) / 0.40)",
+                    boxShadow:
+                      "0 0 18px hsl(var(--novare-blue-bright) / 0.40), inset 0 1px 0 hsl(0 0% 100% / 0.6)",
                   }}
                 >
                   {simCountdown}s
                 </motion.div>
               </div>
 
-              {/* Barra de progresso animada */}
+              {/* Barra de progresso azul */}
               <div className="relative h-1.5 w-full rounded-full bg-muted/60 overflow-hidden mb-5">
                 <motion.div
                   className="absolute inset-y-0 left-0 rounded-full"
                   style={{
                     background:
-                      "linear-gradient(90deg, hsl(var(--accent)), hsl(var(--accent) / 0.6))",
-                    boxShadow: "0 0 12px hsl(var(--accent) / 0.7)",
+                      "linear-gradient(90deg, hsl(var(--novare-blue-bright)), hsl(var(--novare-blue) / 0.7))",
+                    boxShadow: "0 0 12px hsl(var(--novare-blue-bright) / 0.7)",
                   }}
                   initial={{ width: "0%" }}
                   animate={{ width: "100%" }}
                   transition={{ duration: 5, ease: "easeInOut" }}
                 />
-                {/* Shimmer */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
                   animate={{ x: ["-100%", "200%"] }}
@@ -2590,7 +2656,7 @@ const YieldGuide = () => {
                 />
               </div>
 
-              {/* Etapas animadas */}
+              {/* Etapas animadas — bullets azuis */}
               <div className="space-y-2 text-left">
                 {[
                   { label: "Analisando seu perfil de investidor", delay: 0 },
@@ -2606,7 +2672,7 @@ const YieldGuide = () => {
                     className="flex items-center gap-2.5 text-xs text-foreground/80"
                   >
                     <motion.span
-                      className="w-1.5 h-1.5 rounded-full bg-accent shrink-0"
+                      className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--novare-blue-bright))] shrink-0"
                       animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
                       transition={{
                         duration: 1.2,
@@ -2622,9 +2688,9 @@ const YieldGuide = () => {
 
               {/* Selo */}
               <div className="mt-6 pt-5 border-t border-border/40 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80 font-semibold">
-                <span className="w-1 h-1 rounded-full bg-accent" />
+                <span className="w-1 h-1 rounded-full bg-[hsl(var(--novare-blue-bright))]" />
                 Powered by Novare
-                <span className="w-1 h-1 rounded-full bg-accent" />
+                <span className="w-1 h-1 rounded-full bg-[hsl(var(--novare-blue-bright))]" />
               </div>
             </motion.div>
           </motion.div>
