@@ -1122,10 +1122,8 @@ const YieldGuide = () => {
                     </button>
 
                     {/* === Renda Mensal Passiva (HERO escuro com glow laranja) === */}
-                    <motion.div
+                    <div
                       className="calc-dark calc-card-dark calc-glow-accent relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden"
-                      whileHover={{ y: -2 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div
