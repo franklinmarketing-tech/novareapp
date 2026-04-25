@@ -594,6 +594,16 @@ const YieldGuide = () => {
       setResult(r);
       setResultFaixa(faixa);
       setIsSimulating(false);
+
+      // Após gerar o resultado, role suavemente até o detalhamento do cálculo do IR
+      window.setTimeout(() => {
+        const el = document.getElementById("ir-detalhamento");
+        if (el) {
+          const headerH = window.scrollY > 20 ? 64 : 80;
+          const top = el.getBoundingClientRect().top + window.scrollY - headerH - 16;
+          window.scrollTo({ top, behavior: "smooth" });
+        }
+      }, 250);
     }, 5000);
   };
 
