@@ -1141,10 +1141,10 @@ const YieldGuide = () => {
                             {isSelected && <Check className="h-3 w-3 md:h-3.5 md:w-3.5" strokeWidth={4} />}
                           </span>
 
-                          <div className="p-2.5 md:p-3 flex flex-col h-full relative z-10">
-                            <div className="flex items-center gap-1.5 mb-1">
+                          <div className="p-2 sm:p-2.5 md:p-3 flex flex-col h-full relative z-10 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-1 min-w-0">
                               <div
-                                className={`w-6 h-6 md:w-7 md:h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                                className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-lg flex items-center justify-center shrink-0 ${
                                   isSelected
                                     ? "bg-accent/20 ring-1 ring-accent/40"
                                     : isHero
@@ -1153,13 +1153,13 @@ const YieldGuide = () => {
                                 }`}
                               >
                                 <f.icon
-                                  className={`h-3 w-3 md:h-3.5 md:w-3.5 ${
+                                  className={`h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5 ${
                                     isSelected ? "text-accent" : isHero ? "" : "text-foreground"
                                   }`}
                                   strokeWidth={2.25}
                                 />
                               </div>
-                              <h3 className="text-[11px] md:text-xs font-bold tracking-tight pr-5 leading-tight">
+                              <h3 className="text-[10px] sm:text-[11px] md:text-xs font-bold tracking-tight pr-5 leading-tight min-w-0 break-words">
                                 {f.title}
                               </h3>
                             </div>
