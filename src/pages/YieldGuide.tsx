@@ -1217,6 +1217,126 @@ const YieldGuide = () => {
                   })}
                 </div>
               </div>
+
+              {/* ─── BENTO de faixas (Prefixado / CDI / IPCA+ ...) — embutido no simulador ─── */}
+              <div className="space-y-3 mt-6">
+                <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
+                  {tipoRenda === "fixa"
+                    ? "Entenda cada tipo de Renda Fixa — selecione um"
+                    : tipoRenda === "mista"
+                      ? "Estratégias de Renda Mista — selecione uma"
+                      : "Opções em Renda Variável — selecione uma"}
+                </p>
+                <div key={tipoRenda} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                  {currentBento.map((f, i) => {
+                    const isHero = f.variant === "hero";
+                    const isSelected = selectedFaixa === f.title;
+                    return (
+                      <motion.div
+                        key={f.title}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, delay: i * 0.07, ease: "easeOut" }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSim((prev) => ({ ...prev, rentabilidade: f.rentAnual }));
+                            setRentPeriodo("anual");
+                            setSelectedFaixa(f.title);
+                          }}
+                          aria-pressed={isSelected}
+                          className={`relative w-full text-left h-full rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 ${
+                            isSelected
+                              ? isHero
+                                ? "bg-primary text-primary-foreground calc-card-md-dark-selected"
+                                : "bg-card text-foreground calc-card-md-selected"
+                              : isHero
+                                ? "bg-primary text-primary-foreground calc-card-md-dark hover:-translate-y-0.5"
+                                : "bg-card text-foreground calc-card-md hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {/* Bolinha de seleção no canto superior direito */}
+                          <span
+                            className={`absolute top-2.5 right-2.5 z-20 inline-flex items-center justify-center w-5 h-5 rounded-full transition-all ${
+                              isSelected
+                                ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-1px_hsl(var(--accent)/0.55)]"
+                                : isHero
+                                  ? "bg-transparent border border-primary-foreground/40"
+                                  : "bg-transparent border border-border/70"
+                            }`}
+                            aria-hidden
+                          >
+                            {isSelected && <Check className="h-3 w-3" strokeWidth={3.5} />}
+                          </span>
+
+                          <div className="p-4 md:p-5 flex flex-col h-full relative z-10">
+                            <div className="flex items-center gap-2.5 mb-2">
+                              <div
+                                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                  isSelected
+                                    ? "bg-accent/20 ring-2 ring-accent/40"
+                                    : isHero
+                                      ? "bg-primary-foreground/10"
+                                      : "bg-muted"
+                                }`}
+                              >
+                                <f.icon
+                                  className={`h-4 w-4 ${
+                                    isSelected ? "text-accent" : isHero ? "" : "text-foreground"
+                                  }`}
+                                  strokeWidth={2.25}
+                                />
+                              </div>
+                              <h3 className="text-sm md:text-base font-bold tracking-tight pr-6 leading-tight">
+                                {f.title}
+                              </h3>
+                            </div>
+
+                            <p
+                              className={`text-[11px] md:text-xs leading-relaxed mb-3 ${
+                                isHero ? "opacity-75" : "text-muted-foreground"
+                              }`}
+                            >
+                              {f.desc}
+                            </p>
+
+                            <div
+                              className={`mt-auto pt-3 border-t ${
+                                isHero ? "border-primary-foreground/15" : "border-border/40"
+                              }`}
+                            >
+                              <div className="flex items-baseline gap-1.5">
+                                <span className={`text-lg md:text-xl font-extrabold tracking-tight ${isHero ? "" : "text-primary"}`}>
+                                  {f.rate}
+                                </span>
+                                {!f.rate.includes("IPCA") && (
+                                  <span className={`text-[10px] ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>
+                                )}
+                              </div>
+                              <p className={`text-[10px] mt-0.5 ${isHero ? "opacity-55" : "text-muted-foreground"}`}>
+                                {f.rateLabel}
+                              </p>
+                              <p
+                                className={`text-[10px] mt-1.5 font-bold flex items-center gap-1 ${
+                                  isSelected
+                                    ? "text-accent"
+                                    : isHero
+                                      ? "opacity-60"
+                                      : "text-accent"
+                                }`}
+                              >
+                                {isSelected ? "✓ Taxa aplicada" : "Aplicar esta taxa"}
+                                {!isSelected && <ArrowRight className="h-3 w-3" />}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
             </motion.div>
 
             {/* ─── CORPO: Form esquerda / Resultados direita ─── */}
