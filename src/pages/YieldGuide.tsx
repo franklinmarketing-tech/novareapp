@@ -1792,10 +1792,10 @@ const YieldGuide = () => {
                             return (
                               <div
                                 key={t.faixa}
-                                className={`p-3 rounded-xl border transition-all ${
+                                className={`p-3 rounded-xl transition-all ${
                                   isCurrent
-                                    ? "bg-accent/15 border-accent/40 shadow-[0_0_20px_-5px_hsl(var(--accent)/0.4)]"
-                                    : "bg-muted/20 border-border/40"
+                                    ? "calc-card-sm-selected"
+                                    : "calc-card-sm"
                                 }`}
                               >
                                 <p className={`text-[10px] uppercase tracking-wider font-semibold ${isCurrent ? "text-accent" : "text-muted-foreground/80"}`}>
