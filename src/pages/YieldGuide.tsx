@@ -952,12 +952,18 @@ const YieldGuide = () => {
               </h2>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-4">
+            <div key={tipoRenda} className="grid md:grid-cols-3 gap-4">
               {currentBento.map((f, i) => {
                 const isHero = f.variant === "hero";
                 const isSelected = selectedFaixa === f.title;
                 return (
-                  <motion.div key={f.title} variants={fadeUp} custom={i + 1} className={f.span}>
+                  <motion.div
+                    key={f.title}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
+                    className={f.span}
+                  >
                     <Card
                       className={`h-full rounded-2xl overflow-hidden relative group cursor-pointer ${
                         isSelected
