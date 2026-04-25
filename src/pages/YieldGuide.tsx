@@ -935,7 +935,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR (image-faithful, Novare blue) ─────────── */}
       <section
         id="simulador"
-        className="py-10 md:py-16 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
+        className="pt-6 pb-10 md:pt-8 md:pb-16 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
       >
         {/* Background orbs sutis (azul Novare) */}
         <motion.div
