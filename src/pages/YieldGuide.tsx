@@ -482,6 +482,8 @@ const YieldGuide = () => {
     setSelectedFaixa(primeira.title);
     setSim((prev) => ({ ...prev, rentabilidade: primeira.rentAnual }));
     setRentPeriodo("anual");
+    // Reset da alíquota para a primeira opção compatível com o novo tipo
+    setAliquotaIRSelecionada(irOptionsByTipo[novoTipo][0].value);
   };
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
