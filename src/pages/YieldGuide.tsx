@@ -1764,42 +1764,42 @@ const YieldGuide = () => {
                     custom={1.5}
                     className="calc-card-light rounded-3xl overflow-hidden"
                   >
-                    <div className="p-4 md:p-5">
-                      <div className="flex items-start gap-3 mb-4">
-                        <div className="w-11 h-11 rounded-xl bg-warning/15 shadow-[0_0_15px_hsl(var(--warning)/0.15)] flex items-center justify-center shrink-0">
-                          <Receipt className="h-6 w-6 text-warning" />
+                    <div className="p-3 md:p-4">
+                      <div className="flex items-start gap-2.5 mb-3">
+                        <div className="w-9 h-9 rounded-lg bg-warning/15 shadow-[0_0_15px_hsl(var(--warning)/0.15)] flex items-center justify-center shrink-0">
+                          <Receipt className="h-5 w-5 text-warning" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg md:text-xl font-bold text-foreground tracking-tight">
+                          <h3 className="text-base md:text-lg font-bold text-foreground tracking-tight leading-tight">
                             Como o Imposto de Renda foi calculado
                           </h3>
-                          <p className="text-sm text-muted-foreground mt-0.5">
+                          <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5 leading-snug">
                             Passo a passo do desconto sobre seus rendimentos · passe o mouse em cada item para entender
                           </p>
                         </div>
                       </div>
 
                       {/* Steps */}
-                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3">
+                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-2.5">
                         {steps.map((s) => (
                           <Tooltip key={s.num}>
                             <TooltipTrigger asChild>
-                              <div className="group relative p-4 md:p-5 rounded-2xl bg-card border border-border/40 hover:border-accent/30 hover:bg-muted/40 transition-all duration-200 cursor-help min-w-0 shadow-soft">
-                                <div className="flex items-center justify-between mb-3">
-                                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-accent/15 text-accent text-xs font-bold">
+                              <div className="group relative p-2.5 md:p-3 rounded-xl bg-card border border-border/40 hover:border-accent/30 hover:bg-muted/40 transition-all duration-200 cursor-help min-w-0 shadow-soft">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-accent/15 text-accent text-[11px] font-bold">
                                     {s.num}
                                   </span>
-                                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 group-hover:text-accent transition-colors" />
+                                  <Info className="h-3 w-3 text-muted-foreground/60 group-hover:text-accent transition-colors" />
                                 </div>
-                                <p className="text-[11px] uppercase tracking-wider text-muted-foreground/80 font-semibold leading-tight mb-1.5">
+                                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold leading-tight mb-1">
                                   {s.label}
                                 </p>
-                                <p className={`text-xl md:text-2xl font-bold tracking-tight tabular-nums break-words ${s.color}`} title={s.fullValue}>
+                                <p className={`text-base md:text-lg font-bold tracking-tight tabular-nums break-words leading-tight ${s.color}`} title={s.fullValue}>
                                   {s.value}
                                 </p>
-                                <div className="mt-2 pt-2 border-t border-border/40 space-y-0.5">
-                                  <p className="text-[10px] text-muted-foreground/80 font-medium">{s.formula}</p>
-                                  <p className="text-[10px] text-muted-foreground/60 truncate" title={s.detail}>{s.detail}</p>
+                                <div className="mt-1.5 pt-1.5 border-t border-border/40 space-y-0">
+                                  <p className="text-[9.5px] text-muted-foreground/80 font-medium leading-snug">{s.formula}</p>
+                                  <p className="text-[9.5px] text-muted-foreground/60 truncate leading-snug" title={s.detail}>{s.detail}</p>
                                 </div>
                               </div>
                             </TooltipTrigger>
@@ -1811,41 +1811,41 @@ const YieldGuide = () => {
                       </div>
 
                       {/* Tabela regressiva auxiliar */}
-                      <div className="mt-4 pt-4 border-t border-border/40">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Percent className="h-4 w-4 text-muted-foreground/80" />
-                          <p className="text-xs uppercase tracking-wider text-muted-foreground/80 font-semibold">
+                      <div className="mt-3 pt-3 border-t border-border/40">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <Percent className="h-3.5 w-3.5 text-muted-foreground/80" />
+                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground/80 font-semibold">
                             Tabela regressiva do IR (Renda Fixa)
                           </p>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Info className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-accent cursor-help transition-colors" />
+                              <Info className="h-3 w-3 text-muted-foreground/60 hover:text-accent cursor-help transition-colors" />
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
                               Quanto mais tempo você mantém o investimento, menor a alíquota de IR. É um incentivo do governo ao investimento de longo prazo.
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
                           {aliquotaTabela.map((t) => {
                             const isCurrent = t.aliq === result.aliquotaIR;
                             return (
                               <div
                                 key={t.faixa}
-                                className={`p-3 rounded-xl transition-all ${
+                                className={`p-2 md:p-2.5 rounded-lg transition-all ${
                                   isCurrent
                                     ? "calc-card-sm-selected"
                                     : "calc-card-sm"
                                 }`}
                               >
-                                <p className={`text-[10px] uppercase tracking-wider font-semibold ${isCurrent ? "text-accent" : "text-muted-foreground/80"}`}>
+                                <p className={`text-[9.5px] uppercase tracking-wider font-semibold leading-tight ${isCurrent ? "text-accent" : "text-muted-foreground/80"}`}>
                                   {t.faixa}
                                 </p>
-                                <p className={`text-lg font-bold tabular-nums mt-0.5 ${isCurrent ? "text-accent" : "text-muted-foreground"}`}>
+                                <p className={`text-base font-bold tabular-nums mt-0.5 leading-tight ${isCurrent ? "text-accent" : "text-muted-foreground"}`}>
                                   {t.aliq.toString().replace(".", ",")}%
                                 </p>
                                 {isCurrent && (
-                                  <p className="text-[9px] text-accent/80 font-semibold mt-0.5 uppercase tracking-wider">
+                                  <p className="text-[9px] text-accent/80 font-semibold mt-0.5 uppercase tracking-wider leading-tight">
                                     ✓ Sua alíquota
                                   </p>
                                 )}
@@ -1853,7 +1853,7 @@ const YieldGuide = () => {
                             );
                           })}
                         </div>
-                        <p className="text-[10px] text-muted-foreground/60 mt-3 leading-relaxed">
+                        <p className="text-[9.5px] text-muted-foreground/60 mt-2 leading-snug">
                           * Aplicável a investimentos como CDB, LCI/LCA (estes isentos), Tesouro Direto, debêntures e fundos de renda fixa. Ações e fundos imobiliários têm regras próprias.
                         </p>
                       </div>
