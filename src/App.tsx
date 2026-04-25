@@ -37,6 +37,7 @@ import AdminWorkspace from "@/pages/admin/AdminWorkspace";
 import AdminAjuda from "@/pages/admin/AdminAjuda";
 import AdminLeadsNewsletter from "@/pages/AdminLeadsNewsletter";
 import AdminLeadsPdf from "@/pages/admin/AdminLeadsPdf";
+import AdminLeads from "@/pages/admin/AdminLeads";
 import ClientDashboard from "@/pages/cliente/ClientDashboard";
 import ClientOnboardingPage from "@/pages/cliente/ClientOnboarding";
 
