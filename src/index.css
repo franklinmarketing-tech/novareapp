@@ -539,45 +539,50 @@
       box-shadow 360ms cubic-bezier(0.22, 1, 0.36, 1),
       border-color 220ms ease,
       background 220ms ease;
-    background: linear-gradient(180deg, hsl(16 92% 96%), hsl(16 85% 92%));
-    border: 1.5px solid hsl(var(--accent) / 0.70);
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card-selected-bg-from)),
+      hsl(var(--card-selected-bg-to))
+    );
+    border: 1.5px solid hsl(var(--card-selected-border) / 0.70);
     transform: translateY(-6px);
     box-shadow:
       0 1px 0 hsl(0 0% 100% / 0.7) inset,
-      0 -1px 0 hsl(16 70% 82% / 0.7) inset,
-      0 0 0 1px hsl(var(--accent) / 0.32),
-      0 0 0 4px hsl(var(--accent) / 0.10),
-      0 4px 10px hsl(16 70% 40% / 0.10),
-      0 18px 32px -8px hsl(16 70% 40% / 0.20),
-      0 38px 70px -18px hsl(16 70% 35% / 0.28),
-      0 0 48px -10px hsl(var(--accent) / 0.35);
+      0 -1px 0 hsl(var(--accent-soft) / 0.7) inset,
+      0 0 0 1px hsl(var(--card-selected-ring) / 0.32),
+      0 0 0 4px hsl(var(--card-selected-ring) / 0.10),
+      0 4px 10px hsl(var(--accent) / 0.10),
+      0 18px 32px -8px hsl(var(--accent) / 0.20),
+      0 38px 70px -18px hsl(var(--accent) / 0.28),
+      0 0 48px -10px hsl(var(--card-selected-ring) / 0.35);
   }
   .calc-card-sm-selected:hover {
     transform: translateY(-7px);
     box-shadow:
       0 1px 0 hsl(0 0% 100% / 0.7) inset,
-      0 -1px 0 hsl(16 70% 82% / 0.7) inset,
-      0 0 0 1px hsl(var(--accent) / 0.38),
-      0 0 0 4px hsl(var(--accent) / 0.12),
-      0 5px 12px hsl(16 70% 40% / 0.12),
-      0 22px 40px -10px hsl(16 70% 40% / 0.24),
-      0 46px 84px -22px hsl(16 70% 35% / 0.32),
-      0 0 56px -10px hsl(var(--accent) / 0.42);
+      0 -1px 0 hsl(var(--accent-soft) / 0.7) inset,
+      0 0 0 1px hsl(var(--card-selected-ring) / 0.38),
+      0 0 0 4px hsl(var(--card-selected-ring) / 0.12),
+      0 5px 12px hsl(var(--accent) / 0.12),
+      0 22px 40px -10px hsl(var(--accent) / 0.24),
+      0 46px 84px -22px hsl(var(--accent) / 0.32),
+      0 0 56px -10px hsl(var(--card-selected-ring) / 0.42);
   }
   .calc-card-sm-selected:focus-visible {
     outline: none;
     transform: translateY(-7px);
     box-shadow:
       0 1px 0 hsl(0 0% 100% / 0.7) inset,
-      0 -1px 0 hsl(16 70% 82% / 0.7) inset,
-      0 0 0 1px hsl(var(--accent) / 0.45),
-      0 0 0 5px hsl(var(--accent) / 0.25),
-      0 5px 12px hsl(16 70% 40% / 0.12),
-      0 22px 40px -10px hsl(16 70% 40% / 0.22),
-      0 0 48px -10px hsl(var(--accent) / 0.38);
+      0 -1px 0 hsl(var(--accent-soft) / 0.7) inset,
+      0 0 0 1px hsl(var(--card-selected-ring) / 0.45),
+      0 0 0 5px hsl(var(--card-selected-ring) / 0.25),
+      0 5px 12px hsl(var(--accent) / 0.12),
+      0 22px 40px -10px hsl(var(--accent) / 0.22),
+      0 0 48px -10px hsl(var(--card-selected-ring) / 0.38);
   }
 
-  /* === DARK THEME — cards de taxa (mantém profundidade, AA garantido) === */
+  /* === DARK THEME — card normal (a versão selecionada herda automaticamente
+        os tokens --card-selected-* redefinidos em .dark) === */
   .dark .calc-card-sm {
     background: linear-gradient(180deg, hsl(220 18% 14%), hsl(220 20% 11%));
     border-color: hsl(220 15% 28% / 0.7);
@@ -600,30 +605,39 @@
       0 22px 44px -10px hsl(0 0% 0% / 0.5),
       0 0 36px -10px hsl(var(--accent) / 0.25);
   }
-  .dark .calc-card-sm-selected {
-    background: linear-gradient(180deg, hsl(16 55% 22%), hsl(16 60% 16%));
-    border-color: hsl(var(--accent) / 0.75);
-    box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.10) inset,
-      0 -1px 0 hsl(16 70% 8% / 0.6) inset,
-      0 0 0 1px hsl(var(--accent) / 0.45),
-      0 0 0 4px hsl(var(--accent) / 0.18),
-      0 6px 14px hsl(16 70% 8% / 0.4),
-      0 22px 44px -8px hsl(16 70% 8% / 0.55),
-      0 44px 80px -20px hsl(0 0% 0% / 0.6),
-      0 0 56px -10px hsl(var(--accent) / 0.45);
-  }
-  .dark .calc-card-sm-selected:hover {
-    box-shadow:
-      0 1px 0 hsl(0 0% 100% / 0.12) inset,
-      0 -1px 0 hsl(16 70% 8% / 0.6) inset,
-      0 0 0 1px hsl(var(--accent) / 0.55),
-      0 0 0 4px hsl(var(--accent) / 0.22),
-      0 8px 18px hsl(16 70% 8% / 0.45),
-      0 28px 52px -10px hsl(16 70% 8% / 0.6),
-      0 0 64px -10px hsl(var(--accent) / 0.55);
-  }
 
+  /* === Bolinha (radio indicator) === */
+  .calc-radio {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background: hsl(var(--radio-bg));
+    border: 2px solid hsl(var(--radio-border));
+    box-shadow:
+      0 1px 2px hsl(215 50% 23% / 0.10) inset,
+      0 1px 1px hsl(0 0% 100% / 0.8);
+    transition: border-color 200ms ease, background-color 200ms ease;
+  }
+  .group:hover .calc-radio {
+    border-color: hsl(var(--accent) / 0.60);
+    background: hsl(var(--accent) / 0.05);
+  }
+  .calc-radio-checked {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--radio-checked-bg));
+    color: hsl(var(--radio-checked-fg));
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.4) inset,
+      0 -1px 0 hsl(var(--accent) / 0.5) inset,
+      0 4px 10px -2px hsl(var(--accent) / 0.55),
+      0 0 0 2px hsl(var(--radio-ring)),
+      0 0 0 4px hsl(var(--accent) / 0.30);
+  }
   /* === CARD MÉDIO — escuro (hero bento) === */
   .calc-card-md-dark {
     transition:
