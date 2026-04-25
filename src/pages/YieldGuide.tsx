@@ -1084,8 +1084,8 @@ const YieldGuide = () => {
                 </div>
               </div>
 
-              {/* ─── BENTO de faixas (Prefixado / CDI / IPCA+ ...) — embutido no simulador ─── */}
-              <div className="space-y-3 mt-6">
+              {/* ─── BENTO de faixas (Prefixado / CDI / IPCA+ ...) — embutido logo abaixo dos 3 tipos ─── */}
+              <div className="space-y-2 -mt-1">
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   {tipoRenda === "fixa"
                     ? "Entenda cada tipo de Renda Fixa — selecione um"
