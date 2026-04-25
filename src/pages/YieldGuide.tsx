@@ -1379,7 +1379,7 @@ const YieldGuide = () => {
                     <div className="h-[260px] md:h-[300px] flex flex-col items-center justify-center text-center px-6 rounded-2xl border border-dashed border-border/60 bg-muted/30">
                       <BarChart3 className="h-10 w-10 text-muted-foreground/40 mb-3" />
                       <p className="text-sm text-muted-foreground font-medium">
-                        Preencha os campos ao lado e clique em <span className="font-bold text-novare-blue dark:text-novare-blue-bright">Recalcular simulação</span>
+                        Preencha os campos ao lado e clique em <span className="font-bold text-novare-blue dark:text-novare-blue-bright">Simular Aposentadoria</span>
                       </p>
                       <p className="text-[11px] text-muted-foreground/70 mt-1">para visualizar a evolução do seu patrimônio.</p>
                     </div>
