@@ -467,6 +467,8 @@ const YieldGuide = () => {
   const _preFaixa = currentBento[0];
   const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: _preFaixa.rentAnual });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
+  const [aliquotaIRSelecionada, setAliquotaIRSelecionada] = useState<number | "auto">("auto");
+  const irOptions = irOptionsByTipo[tipoRenda];
   const [result, setResult] = useState<SimResult | null>(null);
   const [selectedFaixa, setSelectedFaixa] = useState<string | null>(_preFaixa.title);
   const [resultFaixa, setResultFaixa] = useState<BentoFeature | null>(null);
