@@ -529,7 +529,7 @@ const YieldGuide = () => {
     setSimCountdown(5);
     // calcula imediatamente, mas mantém o loader visível por 5s para criar expectativa
     const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual);
-    const faixa = selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null;
+    const faixa = selectedFaixa ? currentBento.find((b) => b.title === selectedFaixa) ?? null : null;
 
     // Contador regressivo
     const tickInterval = window.setInterval(() => {
