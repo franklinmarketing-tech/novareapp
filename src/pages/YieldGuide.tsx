@@ -1565,16 +1565,19 @@ const YieldGuide = () => {
                     )}
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-5 md:gap-6 relative">
-                    <div className="min-w-0 sm:pr-5 sm:border-r border-white/10">
+                  <div className="grid sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6 relative">
+                    <div className="min-w-0 sm:pr-4 md:pr-5 sm:border-r border-white/10">
                       <p className="text-[11px] md:text-xs uppercase tracking-wider text-white/65 font-semibold mb-2">Patrimônio bruto estimado</p>
                       <motion.p
                         key={result?.patrimonioNum ?? "empty-bruto"}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
-                        className="calc-num text-[1.7rem] md:text-[2.1rem] lg:text-[2.4rem] font-black text-novare-blue-bright leading-[1] break-words"
-                        style={{ textShadow: "0 2px 24px hsl(var(--novare-blue-bright) / 0.45)" }}
+                        className="calc-num font-black text-novare-blue-bright leading-[1.05] tabular-nums tracking-tight whitespace-nowrap overflow-hidden"
+                        style={{
+                          textShadow: "0 2px 24px hsl(var(--novare-blue-bright) / 0.45)",
+                          fontSize: "clamp(1.25rem, 5.2vw, 2.25rem)",
+                        }}
                         title={result?.patrimonio}
                       >
                         {result ? formatCompactBRL(result.patrimonioNum) : "R$ —"}
@@ -1588,7 +1591,8 @@ const YieldGuide = () => {
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.05 }}
-                        className="calc-num text-[1.7rem] md:text-[2.1rem] lg:text-[2.4rem] font-black text-white leading-[1] break-words"
+                        className="calc-num font-black text-white leading-[1.05] tabular-nums tracking-tight whitespace-nowrap overflow-hidden"
+                        style={{ fontSize: "clamp(1.25rem, 5.2vw, 2.25rem)" }}
                         title={result?.patrimonioLiquido}
                       >
                         {result ? formatCompactBRL(result.patrimonioLiquidoNum) : "R$ —"}
@@ -1638,7 +1642,11 @@ const YieldGuide = () => {
                           </div>
                           <p className="text-[11px] md:text-xs uppercase tracking-[0.12em] text-foreground/75 font-bold leading-tight">{k.label}</p>
                         </div>
-                        <p className="calc-num text-lg md:text-xl lg:text-[1.4rem] font-black text-novare-blue dark:text-novare-blue-bright leading-tight truncate" title={k.value}>
+                        <p
+                          className="calc-num font-black text-novare-blue dark:text-novare-blue-bright leading-[1.1] tabular-nums tracking-tight whitespace-nowrap overflow-hidden"
+                          style={{ fontSize: "clamp(0.95rem, 3.6vw, 1.35rem)" }}
+                          title={k.value}
+                        >
                           {k.value}
                         </p>
                         <p className="text-[10.5px] text-muted-foreground mt-1.5 leading-snug whitespace-pre-line font-medium">
