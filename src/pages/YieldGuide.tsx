@@ -957,6 +957,13 @@ const YieldGuide = () => {
                           : isHero ? "bg-primary text-primary-foreground calc-card-md-dark" : "bg-card text-foreground calc-card-md"
                       }`}
                       onClick={() => {
+                        // Descobre a qual tipo de renda esta faixa pertence (sincronia bilateral)
+                        const tipoDaFaixa = (Object.keys(bentoByTipo) as TipoRenda[]).find((k) =>
+                          bentoByTipo[k].some((b) => b.title === f.title)
+                        ) ?? tipoRenda;
+                        if (tipoDaFaixa !== tipoRenda) {
+                          setTipoRenda(tipoDaFaixa);
+                        }
                         setSim(prev => ({ ...prev, rentabilidade: f.rentAnual }));
                         setRentPeriodo("anual");
                         setSelectedFaixa(f.title);
