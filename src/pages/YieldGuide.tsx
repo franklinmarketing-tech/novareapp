@@ -1181,6 +1181,17 @@ const YieldGuide = () => {
                 <p className="text-[10.5px] text-muted-foreground/70 leading-relaxed border-t border-border/40 pt-3">
                   <span className="font-bold text-foreground/70">*</span> Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
                 </p>
+
+                {/* Botão principal — junto da edição de dados */}
+                <button
+                  onClick={handleSimulate}
+                  disabled={isSimulating}
+                  className="sim-btn-blue group w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-70 disabled:cursor-wait"
+                >
+                  <BarChart3 className="h-[18px] w-[18px]" />
+                  <span>{result ? "Recalcular simulação" : "Simular Aposentadoria"}</span>
+                  <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
+                </button>
               </motion.div>
 
               {/* ====== COLUNA DIREITA — Cenário projetado + KPIs + Gráfico ====== */}
@@ -1368,7 +1379,7 @@ const YieldGuide = () => {
                     <div className="h-[260px] md:h-[300px] flex flex-col items-center justify-center text-center px-6 rounded-2xl border border-dashed border-border/60 bg-muted/30">
                       <BarChart3 className="h-10 w-10 text-muted-foreground/40 mb-3" />
                       <p className="text-sm text-muted-foreground font-medium">
-                        Preencha os campos ao lado e clique em <span className="font-bold text-novare-blue dark:text-novare-blue-bright">Recalcular simulação</span>
+                        Preencha os campos ao lado e clique em <span className="font-bold text-novare-blue dark:text-novare-blue-bright">Simular Aposentadoria</span>
                       </p>
                       <p className="text-[11px] text-muted-foreground/70 mt-1">para visualizar a evolução do seu patrimônio.</p>
                     </div>
@@ -1377,22 +1388,12 @@ const YieldGuide = () => {
               </motion.div>
             </div>
 
-            {/* ─── 3 CTAs FINAIS ─── */}
+            {/* ─── CTAs FINAIS — Falar com especialista + PDF ─── */}
             <motion.div
               variants={fadeUp}
               custom={3}
-              className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6 md:mt-8"
+              className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-6 md:mt-8"
             >
-              <button
-                onClick={handleSimulate}
-                disabled={isSimulating}
-                className="sim-btn-blue group inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-70 disabled:cursor-wait"
-              >
-                <BarChart3 className="h-[18px] w-[18px]" />
-                <span>Recalcular simulação</span>
-                <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
-              </button>
-
               <button
                 onClick={() => window.open(whatsappUrl, "_blank")}
                 className="sim-btn-blue group inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base"
