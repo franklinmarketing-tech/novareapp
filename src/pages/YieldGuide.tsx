@@ -1024,7 +1024,7 @@ const YieldGuide = () => {
             />
 
             {/* Conteúdo do simulador */}
-            <div className="relative z-10 px-4 sm:px-5 md:px-7 lg:px-9 py-6 md:py-9">
+            <div className="relative z-10 px-4 sm:px-5 md:px-7 lg:px-9 pt-6 md:pt-9 pb-4 md:pb-5">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
 
 
@@ -1780,7 +1780,7 @@ const YieldGuide = () => {
             </motion.div>
 
             {/* Selo de segurança */}
-            <p className="text-center text-[11px] text-muted-foreground mt-4 inline-flex items-center justify-center gap-2 w-full">
+            <p className="text-center text-[11px] text-muted-foreground mt-3 inline-flex items-center justify-center gap-2 w-full">
               <Lock className="h-3 w-3 text-novare-blue dark:text-novare-blue-bright" />
               Seus dados estão seguros e protegidos conosco.
             </p>
