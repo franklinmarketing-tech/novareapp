@@ -1445,7 +1445,7 @@ const YieldGuide = () => {
                 <button
                   onClick={handleSimulate}
                   disabled={isSimulating}
-                  className="sim-btn-blue group w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-70 disabled:cursor-wait"
+                  className="sim-btn-orange group w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-70 disabled:cursor-wait"
                 >
                   <BarChart3 className="h-[18px] w-[18px]" />
                   <span>{result ? "Recalcular simulação" : "Simular Aposentadoria"}</span>
