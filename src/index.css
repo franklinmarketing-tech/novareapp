@@ -608,6 +608,50 @@
       0 0 50px -8px hsl(var(--accent) / 0.16);
   }
 
+  /* === TOGGLE ATIVO (botões % mês/ano) === */
+  .calc-toggle-active {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    border: 1px solid hsl(var(--accent) / 0.40);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.18) inset,
+      0 2px 6px hsl(var(--accent) / 0.35),
+      0 6px 14px -3px hsl(var(--accent) / 0.22);
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+  .calc-toggle-active:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.22) inset,
+      0 3px 8px hsl(var(--accent) / 0.40),
+      0 8px 18px -3px hsl(var(--accent) / 0.28);
+  }
+
+  /* === BOTÃO PRIMÁRIO (Simular, CTA) === */
+  .calc-btn-primary {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    border: 1px solid hsl(var(--accent) / 0.35);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.15) inset,
+      0 6px 20px -4px hsl(var(--accent) / 0.45),
+      0 2px 6px hsl(var(--accent) / 0.20);
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+  .calc-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.20) inset,
+      0 8px 28px -4px hsl(var(--accent) / 0.55),
+      0 3px 8px hsl(var(--accent) / 0.25);
+  }
+  .calc-btn-primary:active {
+    transform: translateY(0);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.10) inset,
+      0 2px 8px -2px hsl(var(--accent) / 0.35);
+  }
+
   /* === BADGE SELECIONADO — padronizado === */
   .calc-badge-selected {
     background: hsl(var(--accent));
