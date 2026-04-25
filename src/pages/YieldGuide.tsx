@@ -489,14 +489,7 @@ const YieldGuide = () => {
     setSelectedFaixa(primeira.title);
     setSim((prev) => ({ ...prev, rentabilidade: primeira.rentAnual }));
     setRentPeriodo("anual");
-    // Rola até a seção dos cards grandes para mostrar o destaque correspondente
-    requestAnimationFrame(() => {
-      const el = document.getElementById("categorias");
-      if (!el) return;
-      const headerH = window.scrollY > 20 ? 64 : 80;
-      const top = el.getBoundingClientRect().top + window.scrollY - headerH - 16;
-      window.scrollTo({ top, behavior: "smooth" });
-    });
+    // Bento agora está embutido no simulador — nenhum scroll externo necessário.
   };
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
