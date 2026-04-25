@@ -489,14 +489,7 @@ const YieldGuide = () => {
     setSelectedFaixa(primeira.title);
     setSim((prev) => ({ ...prev, rentabilidade: primeira.rentAnual }));
     setRentPeriodo("anual");
-    // Rola até a seção dos cards grandes para mostrar o destaque correspondente
-    requestAnimationFrame(() => {
-      const el = document.getElementById("categorias");
-      if (!el) return;
-      const headerH = window.scrollY > 20 ? 64 : 80;
-      const top = el.getBoundingClientRect().top + window.scrollY - headerH - 16;
-      window.scrollTo({ top, behavior: "smooth" });
-    });
+    // Bento agora está embutido no simulador — nenhum scroll externo necessário.
   };
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
@@ -937,134 +930,7 @@ const YieldGuide = () => {
         </div>
       </section>
 
-      {/* ── BENTO GRID — INVEST TYPES ───────────── */}
-      <section id="categorias" className="py-10 md:py-14 scroll-mt-24">
-        <div className="max-w-6xl mx-auto px-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
-            <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
-              <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Categorias</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
-                {tipoRenda === "fixa"
-                  ? "Entenda cada tipo de Renda Fixa"
-                  : tipoRenda === "mista"
-                    ? "Estratégias de Renda Mista"
-                    : "Opções em Renda Variável"}
-              </h2>
-            </motion.div>
-
-            <div key={tipoRenda} className="grid md:grid-cols-3 gap-4">
-              {currentBento.map((f, i) => {
-                const isHero = f.variant === "hero";
-                const isSelected = selectedFaixa === f.title;
-                return (
-                  <motion.div
-                    key={f.title}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
-                    className={f.span}
-                  >
-                    <Card
-                      className={`h-full rounded-2xl overflow-hidden relative group cursor-pointer ${
-                        isSelected
-                          ? isHero ? "bg-primary text-primary-foreground calc-card-md-dark-selected" : "bg-card text-foreground calc-card-md-selected"
-                          : isHero ? "bg-primary text-primary-foreground calc-card-md-dark" : "bg-card text-foreground calc-card-md"
-                      }`}
-                      onClick={() => {
-                        // Descobre a qual tipo de renda esta faixa pertence (sincronia bilateral)
-                        const tipoDaFaixa = (Object.keys(bentoByTipo) as TipoRenda[]).find((k) =>
-                          bentoByTipo[k].some((b) => b.title === f.title)
-                        ) ?? tipoRenda;
-                        if (tipoDaFaixa !== tipoRenda) {
-                          setTipoRenda(tipoDaFaixa);
-                        }
-                        setSim(prev => ({ ...prev, rentabilidade: f.rentAnual }));
-                        setRentPeriodo("anual");
-                        setSelectedFaixa(f.title);
-                        scrollTo("#simulador");
-                      }}
-                    >
-                      {/* Selected badge */}
-                      {isSelected && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8, y: -8 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          className="absolute top-3 right-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider calc-badge-selected"
-                        >
-                          <Check className="h-3 w-3" strokeWidth={3} />
-                          Selecionado
-                        </motion.div>
-                      )}
-
-                      {/* Animated background decoration */}
-                      {isHero && (
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                          <motion.div
-                            className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-primary-foreground/[0.04]"
-                            animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
-                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                          />
-                          <motion.div
-                            className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-primary-foreground/[0.03]"
-                            animate={{ scale: [1.2, 1, 1.2], rotate: [0, -90, 0] }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                          />
-                        </div>
-                      )}
-                      {!isHero && (
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                          <motion.div
-                            className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-accent/[0.04]"
-                            animate={{ scale: [1, 1.15, 1] }}
-                            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-                          />
-                        </div>
-                      )}
-
-                      <CardContent className="p-7 md:p-8 flex flex-col justify-between h-full relative z-10">
-                        <div>
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 ${
-                            isSelected ? "bg-accent/20 ring-2 ring-accent/30" : isHero ? "bg-primary-foreground/10" : "bg-muted"
-                          }`}>
-                            <f.icon className={`h-6 w-6 ${isSelected ? "text-accent" : isHero ? "" : "text-foreground"}`} />
-                          </div>
-                          <h3 className="text-xl md:text-2xl font-bold tracking-tight mb-3">{f.title}</h3>
-                          <p className={`text-sm leading-relaxed ${isHero ? "opacity-70" : "text-muted-foreground"}`}>
-                            {f.desc}
-                          </p>
-                        </div>
-
-                        {/* Rate footer */}
-                        <div className={`mt-6 pt-5 border-t ${isHero ? "border-primary-foreground/10" : "border-border/40"}`}>
-                          <div className="flex items-baseline gap-2">
-                            <motion.span
-                              className={`text-2xl md:text-3xl font-bold ${isHero ? "" : "text-primary"}`}
-                              initial={{ opacity: 0, y: 10 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true }}
-                              transition={{ delay: 0.3 + i * 0.1 }}
-                            >
-                              {f.rate}
-                            </motion.span>
-                            {!f.rate.includes("IPCA") && <span className={`text-sm ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>}
-                          </div>
-                          <p className={`text-xs mt-1 ${isHero ? "opacity-50" : "text-muted-foreground"}`}>{f.rateLabel}</p>
-                          <p className={`text-[11px] mt-2 font-semibold flex items-center gap-1 ${
-                            isSelected ? "text-accent" : isHero ? "opacity-50" : "text-accent"
-                          }`}>
-                            {isSelected ? "✓ Taxa aplicada no simulador" : "Simular com esta taxa"}
-                            {!isSelected && <ArrowRight className="h-4 w-4" />}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      {/* Seção "Entenda cada tipo..." movida para DENTRO do simulador (abaixo dos 3 cards de tipo de renda). */}
 
       {/* ── SIMULATOR (image-faithful, Novare blue) ─────────── */}
       <section
@@ -1213,6 +1079,126 @@ const YieldGuide = () => {
                           {t.badge}
                         </span>
                       </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ─── BENTO de faixas (Prefixado / CDI / IPCA+ ...) — embutido no simulador ─── */}
+              <div className="space-y-3 mt-6">
+                <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
+                  {tipoRenda === "fixa"
+                    ? "Entenda cada tipo de Renda Fixa — selecione um"
+                    : tipoRenda === "mista"
+                      ? "Estratégias de Renda Mista — selecione uma"
+                      : "Opções em Renda Variável — selecione uma"}
+                </p>
+                <div key={tipoRenda} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                  {currentBento.map((f, i) => {
+                    const isHero = f.variant === "hero";
+                    const isSelected = selectedFaixa === f.title;
+                    return (
+                      <motion.div
+                        key={f.title}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, delay: i * 0.07, ease: "easeOut" }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSim((prev) => ({ ...prev, rentabilidade: f.rentAnual }));
+                            setRentPeriodo("anual");
+                            setSelectedFaixa(f.title);
+                          }}
+                          aria-pressed={isSelected}
+                          className={`relative w-full text-left h-full rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 ${
+                            isSelected
+                              ? isHero
+                                ? "bg-primary text-primary-foreground calc-card-md-dark-selected"
+                                : "bg-card text-foreground calc-card-md-selected"
+                              : isHero
+                                ? "bg-primary text-primary-foreground calc-card-md-dark hover:-translate-y-0.5"
+                                : "bg-card text-foreground calc-card-md hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {/* Bolinha de seleção no canto superior direito */}
+                          <span
+                            className={`absolute top-2.5 right-2.5 z-20 inline-flex items-center justify-center w-5 h-5 rounded-full transition-all ${
+                              isSelected
+                                ? "bg-accent text-accent-foreground shadow-[0_2px_8px_-1px_hsl(var(--accent)/0.55)]"
+                                : isHero
+                                  ? "bg-transparent border border-primary-foreground/40"
+                                  : "bg-transparent border border-border/70"
+                            }`}
+                            aria-hidden
+                          >
+                            {isSelected && <Check className="h-3 w-3" strokeWidth={3.5} />}
+                          </span>
+
+                          <div className="p-4 md:p-5 flex flex-col h-full relative z-10">
+                            <div className="flex items-center gap-2.5 mb-2">
+                              <div
+                                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                  isSelected
+                                    ? "bg-accent/20 ring-2 ring-accent/40"
+                                    : isHero
+                                      ? "bg-primary-foreground/10"
+                                      : "bg-muted"
+                                }`}
+                              >
+                                <f.icon
+                                  className={`h-4 w-4 ${
+                                    isSelected ? "text-accent" : isHero ? "" : "text-foreground"
+                                  }`}
+                                  strokeWidth={2.25}
+                                />
+                              </div>
+                              <h3 className="text-sm md:text-base font-bold tracking-tight pr-6 leading-tight">
+                                {f.title}
+                              </h3>
+                            </div>
+
+                            <p
+                              className={`text-[11px] md:text-xs leading-relaxed mb-3 ${
+                                isHero ? "opacity-75" : "text-muted-foreground"
+                              }`}
+                            >
+                              {f.desc}
+                            </p>
+
+                            <div
+                              className={`mt-auto pt-3 border-t ${
+                                isHero ? "border-primary-foreground/15" : "border-border/40"
+                              }`}
+                            >
+                              <div className="flex items-baseline gap-1.5">
+                                <span className={`text-lg md:text-xl font-extrabold tracking-tight ${isHero ? "" : "text-primary"}`}>
+                                  {f.rate}
+                                </span>
+                                {!f.rate.includes("IPCA") && (
+                                  <span className={`text-[10px] ${isHero ? "opacity-60" : "text-muted-foreground"}`}>a.a.</span>
+                                )}
+                              </div>
+                              <p className={`text-[10px] mt-0.5 ${isHero ? "opacity-55" : "text-muted-foreground"}`}>
+                                {f.rateLabel}
+                              </p>
+                              <p
+                                className={`text-[10px] mt-1.5 font-bold flex items-center gap-1 ${
+                                  isSelected
+                                    ? "text-accent"
+                                    : isHero
+                                      ? "opacity-60"
+                                      : "text-accent"
+                                }`}
+                              >
+                                {isSelected ? "✓ Taxa aplicada" : "Aplicar esta taxa"}
+                                {!isSelected && <ArrowRight className="h-3 w-3" />}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      </motion.div>
                     );
                   })}
                 </div>
