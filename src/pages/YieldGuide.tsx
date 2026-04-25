@@ -211,32 +211,41 @@ const bentoByTipo: Record<TipoRenda, BentoFeature[]> = {
 // Mantém a referência usada no resto do código (default = renda fixa).
 const bentoFeatures = bentoByTipo.fixa;
 
-/* ── Opções de IR por tipo de renda ─────────────── */
-type IROption = { value: number | "auto"; label: string; hint?: string };
+/* ── IR automático por tipo de renda + prazo ───── */
+function getAliquotaIRPorTipo(tipo: TipoRenda, anos: number): number {
+  // Tabela regressiva padrão (Renda Fixa e fundos)
+  const dias = anos * 365;
+  const regressiva = dias <= 180 ? 22.5 : dias <= 360 ? 20 : dias <= 720 ? 17.5 : 15;
 
-const irOptionsByTipo: Record<TipoRenda, IROption[]> = {
-  fixa: [
-    { value: "auto", label: "Automático (tabela regressiva)", hint: "22,5% até 180d · 20% até 360d · 17,5% até 720d · 15% após 720d" },
-    { value: 22.5, label: "22,5% — até 180 dias" },
-    { value: 20,   label: "20,0% — 181 a 360 dias" },
-    { value: 17.5, label: "17,5% — 361 a 720 dias" },
-    { value: 15,   label: "15,0% — acima de 720 dias" },
-    { value: 0,    label: "Isento (LCI / LCA / Debêntures incentivadas)" },
-  ],
-  mista: [
-    { value: "auto", label: "Automático (tabela regressiva)", hint: "Aplica-se a fundos multimercado e previdência tradicional" },
-    { value: 15,   label: "15,0% — Fundos longo prazo" },
-    { value: 20,   label: "20,0% — Fundos curto prazo" },
-    { value: 10,   label: "10,0% — PGBL/VGBL após 10 anos" },
-    { value: 0,    label: "Isento (carteira balanceada)" },
-  ],
-  variavel: [
-    { value: 15,   label: "15,0% — Ações e ETFs (ganho de capital)" },
-    { value: 20,   label: "20,0% — Day Trade" },
-    { value: 0,    label: "Isento — FIIs / Dividendos / Vendas até R$ 20 mil/mês" },
-    { value: "auto", label: "Automático (tabela regressiva)", hint: "Quando aplicável" },
-  ],
-};
+  switch (tipo) {
+    case "fixa":
+      // Renda Fixa: tabela regressiva pura
+      return regressiva;
+    case "mista":
+      // Renda Mista: regressiva, mas mínima de 15% (fundos de longo prazo)
+      return Math.max(15, regressiva);
+    case "variavel":
+      // Renda Variável: 15% fixo sobre ganho de capital (ações/ETFs)
+      return 15;
+    default:
+      return regressiva;
+  }
+}
+
+/** Texto explicativo da regra aplicada */
+function getRegraIR(tipo: TipoRenda, anos: number): string {
+  const aliq = getAliquotaIRPorTipo(tipo, anos).toString().replace(".", ",");
+  if (tipo === "variavel") return `${aliq}% — alíquota fixa sobre ganho de capital (ações e ETFs)`;
+  if (tipo === "mista") {
+    if (anos >= 2) return `${aliq}% — fundos de longo prazo (após 720 dias)`;
+    return `${aliq}% — tabela regressiva por prazo (${anos} ${anos === 1 ? "ano" : "anos"})`;
+  }
+  // fixa
+  if (anos < 0.5) return `${aliq}% — até 180 dias (tabela regressiva)`;
+  if (anos < 1) return `${aliq}% — 181 a 360 dias (tabela regressiva)`;
+  if (anos < 2) return `${aliq}% — 361 a 720 dias (tabela regressiva)`;
+  return `${aliq}% — acima de 720 dias (alíquota mínima)`;
+}
 
 const bentoStats = [
   { value: "14,75%", label: "Taxa Selic", icon: Percent, color: "text-accent" },
@@ -467,8 +476,6 @@ const YieldGuide = () => {
   const _preFaixa = currentBento[0];
   const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: _preFaixa.rentAnual });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
-  const [aliquotaIRSelecionada, setAliquotaIRSelecionada] = useState<number | "auto">("auto");
-  const irOptions = irOptionsByTipo[tipoRenda];
   const [result, setResult] = useState<SimResult | null>(null);
   const [selectedFaixa, setSelectedFaixa] = useState<string | null>(_preFaixa.title);
   const [resultFaixa, setResultFaixa] = useState<BentoFeature | null>(null);
@@ -482,8 +489,6 @@ const YieldGuide = () => {
     setSelectedFaixa(primeira.title);
     setSim((prev) => ({ ...prev, rentabilidade: primeira.rentAnual }));
     setRentPeriodo("anual");
-    // Reset da alíquota para a primeira opção compatível com o novo tipo
-    setAliquotaIRSelecionada(irOptionsByTipo[novoTipo][0].value);
   };
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
@@ -566,18 +571,16 @@ const YieldGuide = () => {
     ? (Math.pow(1 + sim.rentabilidade / 100, 12) - 1) * 100
     : sim.rentabilidade;
 
-  // Resolve a alíquota efetiva atual: "auto" → tabela regressiva, número → fixo
+  // Alíquota de IR é 100% automática: depende do TIPO de renda + PRAZO (anos até a aposentadoria).
   const anosHorizonte = Math.max(0, sim.idadeAposent - sim.idadeAtual);
-  const aliqOverride = aliquotaIRSelecionada === "auto" ? null : aliquotaIRSelecionada;
-  const aliquotaEfetivaAtual = aliquotaIRSelecionada === "auto"
-    ? getAliquotaIR(anosHorizonte)
-    : aliquotaIRSelecionada;
+  const aliquotaEfetivaAtual = getAliquotaIRPorTipo(tipoRenda, anosHorizonte);
+  const regraIRTexto = getRegraIR(tipoRenda, anosHorizonte);
 
   const handleSimulate = () => {
     setIsSimulating(true);
     setSimCountdown(5);
     // calcula imediatamente, mas mantém o loader visível por 5s para criar expectativa
-    const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliqOverride);
+    const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliquotaEfetivaAtual);
     const faixa = selectedFaixa ? currentBento.find((b) => b.title === selectedFaixa) ?? null : null;
 
     // Contador regressivo
@@ -1315,61 +1318,65 @@ const YieldGuide = () => {
                   </div>
                 </div>
 
-                {/* Grupo 4 — IMPOSTO DE RENDA NA APLICAÇÃO */}
+                {/* Grupo 4 — IMPOSTO DE RENDA NA APLICAÇÃO (100% automático) */}
                 <div className="space-y-3">
                   <p className="sim-group-label">
                     <Receipt className="h-3.5 w-3.5" />
                     Imposto de Renda na Aplicação
                   </p>
-                  <p className="text-[11px] text-muted-foreground -mt-1">Simule o impacto do IR sobre seus rendimentos</p>
+                  <p className="text-[11px] text-muted-foreground -mt-1">
+                    Calculado automaticamente conforme o <span className="font-semibold text-foreground/80">tipo de renda</span> e o <span className="font-semibold text-foreground/80">prazo</span> escolhidos.
+                  </p>
                   <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                    {/* Card 1 — Alíquota automática */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground/85 leading-tight block">
                         Alíquota de IR ({tipoRenda === "fixa" ? "Renda Fixa" : tipoRenda === "mista" ? "Renda Mista" : "Renda Variável"})
                       </label>
-                      <div className="relative">
-                        <select
-                          value={String(aliquotaIRSelecionada)}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            setAliquotaIRSelecionada(v === "auto" ? "auto" : parseFloat(v));
-                          }}
-                          className="calc-input pl-4 pr-10 appearance-none cursor-pointer"
-                        >
-                          {irOptions.map((opt) => (
-                            <option key={String(opt.value)} value={String(opt.value)}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <div className="calc-input pl-4 pr-4 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
+                        <span className="text-xl font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
+                          {aliquotaEfetivaAtual.toString().replace(".", ",")}%
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-novare-blue/10 dark:bg-novare-blue-bright/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">
+                          <Sparkles className="h-3 w-3" />
+                          Auto
+                        </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/70 leading-snug">
-                        {aliquotaIRSelecionada === "auto"
-                          ? `Automático: ${aliquotaEfetivaAtual.toString().replace(".", ",")}% para ${anosHorizonte || 0} ${anosHorizonte === 1 ? "ano" : "anos"} de horizonte.`
-                          : aliquotaIRSelecionada === 0
-                            ? "Investimento isento de Imposto de Renda."
-                            : `Alíquota fixa de ${aliquotaIRSelecionada.toString().replace(".", ",")}% sobre o ganho.`}
+                      <p className="text-[10px] text-muted-foreground/80 leading-snug">{regraIRTexto}</p>
+                    </div>
+
+                    {/* Card 2 — Rendimento líquido após IR */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Rendimento líquido após IR</label>
+                      <div className="calc-input pl-4 pr-4 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
+                        <span className="text-xl font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
+                          {sim.rentabilidade
+                            ? `${(rentAnual * (1 - aliquotaEfetivaAtual / 100)).toFixed(2).replace(".", ",")}%`
+                            : "—"}
+                        </span>
+                        <span className="text-[10px] font-bold text-novare-blue/70 dark:text-novare-blue-bright/70 uppercase tracking-wider">a.a.</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/80">
+                        Bruto {rentAnual.toFixed(2).replace(".", ",")}% − IR {aliquotaEfetivaAtual.toString().replace(".", ",")}%
                       </p>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Rendimento líquido após IR</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          readOnly
-                          value={
-                            sim.rentabilidade
-                              ? `${(rentAnual * (1 - aliquotaEfetivaAtual / 100)).toFixed(2).replace(".", ",")}%`
-                              : "—"
-                          }
-                          className="calc-input pl-4 pr-16 font-bold text-novare-blue dark:text-novare-blue-bright bg-novare-blue-light/60 dark:bg-novare-blue/15"
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-novare-blue/70 dark:text-novare-blue-bright/70">a.a.</span>
+                    {/* Card 3 — Valor de IR estimado sobre o ganho */}
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Imposto estimado no resgate</label>
+                      <div className="calc-input pl-4 pr-4 flex items-center justify-between bg-gradient-to-br from-amber-100/40 to-transparent dark:from-amber-900/15">
+                        <span className="text-xl font-extrabold text-amber-700 dark:text-amber-400 tabular-nums tracking-tight">
+                          {result ? result.irDevido : "—"}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 dark:bg-amber-400/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                          <Receipt className="h-3 w-3" />
+                          IR devido
+                        </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/70">
-                        Bruto {rentAnual.toFixed(2).replace(".", ",")}% − IR {aliquotaEfetivaAtual.toString().replace(".", ",")}%
+                      <p className="text-[10px] text-muted-foreground/80">
+                        {result
+                          ? `${aliquotaEfetivaAtual.toString().replace(".", ",")}% sobre o ganho bruto de ${result.ganhoBruto}.`
+                          : "Será calculado após você simular a aposentadoria."}
                       </p>
                     </div>
                   </div>
