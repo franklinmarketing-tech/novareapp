@@ -1024,7 +1024,7 @@ const YieldGuide = () => {
             />
 
             {/* Conteúdo do simulador */}
-            <div className="relative z-10 px-4 sm:px-5 md:px-7 lg:px-9 pt-6 md:pt-9 pb-2 md:pb-3">
+            <div className="relative z-10 px-4 sm:px-5 md:px-7 lg:px-9 pt-6 md:pt-9 pb-0">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
 
 
