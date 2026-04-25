@@ -151,7 +151,7 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
             <Label htmlFor="pdf-email" className="text-sm font-medium">
               <Mail className="inline h-3.5 w-3.5 mr-1 align-text-bottom" />
@@ -163,11 +163,19 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
               autoComplete="email"
               placeholder="voce@exemplo.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              onBlur={() => { setTouched(true); setEmailError(validateEmail(email)); }}
               disabled={loading}
-              className="mt-1.5"
+              aria-invalid={!!emailError}
+              aria-describedby={emailError ? "pdf-email-error" : undefined}
+              className={`mt-1.5 ${emailError ? "border-destructive focus-visible:ring-destructive" : ""}`}
               required
             />
+            {emailError && (
+              <p id="pdf-email-error" role="alert" className="mt-1.5 text-xs text-destructive font-medium">
+                {emailError}
+              </p>
+            )}
           </div>
 
           <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
