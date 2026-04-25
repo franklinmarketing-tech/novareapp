@@ -17,6 +17,7 @@ import {
   ResponsiveContainer, Legend, ReferenceLine,
 } from "recharts";
 import logoPreta from "@/assets/logo-preta.png";
+import logoBranca from "@/assets/logo-branca.png";
 import jeffersonImg from "@/assets/jefferson.png";
 import leonardoImg from "@/assets/leonardo.png";
 import newsletterHero from "@/assets/newsletter-hero.jpg";
@@ -904,18 +905,21 @@ const YieldGuide = () => {
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-4 md:space-y-5">
-            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-2.5">
-              {/* Logo Novare */}
+            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-3">
+              {/* Faixa azul Novare — identidade premium do simulador */}
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border border-border/60 backdrop-blur-md bg-card shadow-soft"
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="calc-novare-banner inline-flex items-center gap-3 md:gap-4 pl-4 pr-3 md:pl-5 md:pr-4 py-2.5 md:py-3 rounded-2xl"
               >
-                <img src={logoPreta} alt="Novare" className="h-6 md:h-7 w-auto" />
-                <span className="h-4 w-px bg-border" />
-                <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">Simulador</span>
+                <img src={logoBranca} alt="Novare" className="h-7 md:h-8 w-auto relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
+                <span className="h-5 md:h-6 w-px bg-white/20 relative z-10" />
+                <span className="relative z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[hsl(16_80%_55%)] text-white text-[10px] md:text-[11px] uppercase tracking-[0.22em] font-bold shadow-[0_2px_8px_-2px_hsl(16_80%_45%/0.5),inset_0_1px_0_hsl(0_0%_100%/0.25)]">
+                  <Sparkles className="h-3 w-3" strokeWidth={2.5} />
+                  Simulador
+                </span>
               </motion.div>
 
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-[1.05]">
