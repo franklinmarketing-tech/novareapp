@@ -1460,7 +1460,7 @@ const YieldGuide = () => {
                         return (
                           <motion.div
                             key={k.label}
-                            className={`relative rounded-2xl p-4 md:p-5 border ${toneClasses.ring} overflow-hidden min-w-0`}
+                            className={`relative rounded-2xl p-4 md:p-6 border ${toneClasses.ring} overflow-hidden min-w-0`}
                             style={{
                               background: "linear-gradient(160deg, hsl(var(--card)), hsl(var(--muted)))",
                               boxShadow: "0 10px 25px -15px rgba(0,0,0,0.6), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
@@ -1468,14 +1468,14 @@ const YieldGuide = () => {
                             whileHover={{ y: -2, scale: 1.02 }}
                             transition={{ type: "spring", stiffness: 300, damping: 22 }}
                           >
-                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl ${toneClasses.bg} flex items-center justify-center mb-2.5`}>
+                            <div className={`w-9 h-9 md:w-11 md:h-11 rounded-xl ${toneClasses.bg} flex items-center justify-center mb-2.5 md:mb-3`}>
                               <Icon className={`h-4 w-4 md:h-5 md:w-5 ${toneClasses.icon}`} strokeWidth={2.5} />
                             </div>
                             <p className={`text-[11px] md:text-xs uppercase tracking-wider ${toneClasses.label} font-extrabold mb-1.5 truncate`}>{k.label}</p>
-                            <p className={`text-lg md:text-2xl font-black ${toneClasses.value} tracking-tight tabular-nums break-words`} title={k.full}>
+                            <p className={`text-lg md:text-2xl lg:text-[1.6rem] font-black ${toneClasses.value} tracking-tight tabular-nums break-words leading-tight`} title={k.full}>
                               {k.value}
                             </p>
-                            <p className="text-[11px] md:text-xs text-muted-foreground mt-1 truncate font-medium">{k.sub}</p>
+                            <p className="text-[11px] md:text-xs text-muted-foreground mt-1.5 truncate font-medium">{k.sub}</p>
                           </motion.div>
                         );
                       })}
