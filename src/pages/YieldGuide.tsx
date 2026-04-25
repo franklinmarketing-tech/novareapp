@@ -1780,7 +1780,7 @@ const YieldGuide = () => {
             </motion.div>
 
             {/* Selo de segurança */}
-            <p className="text-center text-[11px] text-muted-foreground mt-4 inline-flex items-center justify-center gap-2 w-full">
+            <p className="text-center text-[11px] text-muted-foreground mt-3 inline-flex items-center justify-center gap-2 w-full">
               <Lock className="h-3 w-3 text-novare-blue dark:text-novare-blue-bright" />
               Seus dados estão seguros e protegidos conosco.
             </p>
