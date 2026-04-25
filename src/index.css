@@ -284,25 +284,28 @@
       /* sombra de contato curta */
       0 3px 6px hsl(215 50% 23% / 0.08),
       /* sombra média */
-      0 12px 24px -6px hsl(215 50% 23% / 0.14),
+      0 16px 32px -8px hsl(215 50% 23% / 0.16),
       /* sombra ambiente longa (suspensão) */
-      0 36px 72px -16px hsl(215 50% 23% / 0.26),
+      0 48px 96px -20px hsl(215 50% 23% / 0.28),
       /* halo externo extra-profundo */
-      0 64px 120px -32px hsl(215 60% 15% / 0.32),
+      0 80px 160px -40px hsl(215 60% 15% / 0.38),
       /* halo deep abyss (flutuação dramática) */
-      0 96px 180px -48px hsl(215 70% 10% / 0.28);
+      0 120px 220px -60px hsl(215 70% 10% / 0.32),
+      /* halo extremo (suspensão máxima) */
+      0 160px 300px -80px hsl(215 70% 8% / 0.22);
   }
   .calc-card-light:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px);
     box-shadow:
       0 1px 0 hsl(0 0% 100%) inset,
       0 2px 0 hsl(0 0% 100% / 0.6) inset,
       0 0 0 1px hsl(215 35% 80% / 0.7),
       0 6px 12px hsl(215 50% 23% / 0.10),
-      0 20px 40px -8px hsl(215 50% 23% / 0.18),
-      0 48px 96px -18px hsl(215 50% 23% / 0.32),
-      0 80px 160px -36px hsl(215 60% 15% / 0.38),
-      0 120px 220px -56px hsl(215 70% 10% / 0.32);
+      0 24px 48px -10px hsl(215 50% 23% / 0.20),
+      0 64px 128px -24px hsl(215 50% 23% / 0.36),
+      0 100px 200px -44px hsl(215 60% 15% / 0.44),
+      0 140px 280px -64px hsl(215 70% 10% / 0.38),
+      0 180px 360px -90px hsl(215 70% 8% / 0.26);
   }
 
   /* --- Card escuro hero 3D profundo ---
@@ -317,21 +320,23 @@
       0 1px 0 hsl(0 0% 100% / 0.14) inset,
       0 0 0 1px hsl(0 0% 0% / 0.25) inset,
       0 3px 6px hsl(215 60% 5% / 0.45),
-      0 16px 32px -8px hsl(215 60% 5% / 0.6),
-      0 44px 88px -20px hsl(215 60% 5% / 0.7),
-      0 76px 152px -32px hsl(215 70% 4% / 0.75),
-      0 110px 220px -48px hsl(215 75% 3% / 0.5);
+      0 20px 40px -10px hsl(215 60% 5% / 0.65),
+      0 56px 112px -24px hsl(215 60% 5% / 0.75),
+      0 96px 192px -40px hsl(215 70% 4% / 0.80),
+      0 140px 280px -60px hsl(215 75% 3% / 0.60),
+      0 180px 360px -80px hsl(215 80% 2% / 0.40);
   }
   .calc-card-dark:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px);
     box-shadow:
       0 1px 0 hsl(0 0% 100% / 0.16) inset,
       0 0 0 1px hsl(0 0% 0% / 0.25) inset,
-      0 6px 12px hsl(215 60% 5% / 0.5),
-      0 24px 48px -8px hsl(215 60% 5% / 0.65),
-      0 60px 120px -22px hsl(215 60% 5% / 0.78),
-      0 96px 192px -36px hsl(215 70% 4% / 0.82),
-      0 140px 260px -56px hsl(215 75% 3% / 0.55);
+      0 6px 12px hsl(215 60% 5% / 0.50),
+      0 28px 56px -12px hsl(215 60% 5% / 0.70),
+      0 72px 144px -28px hsl(215 60% 5% / 0.84),
+      0 120px 240px -48px hsl(215 70% 4% / 0.88),
+      0 170px 340px -72px hsl(215 75% 3% / 0.65),
+      0 220px 440px -100px hsl(215 80% 2% / 0.45);
   }
 
   /* --- Glow accent laranja (uso pontual em hero card) ---
@@ -353,30 +358,48 @@
   .calc-novare-banner {
     position: relative;
     background:
-      linear-gradient(180deg, hsl(215 55% 22%) 0%, hsl(215 60% 14%) 100%);
-    border: 1px solid hsl(215 40% 32%);
+      linear-gradient(180deg, hsl(215 55% 24%) 0%, hsl(215 60% 16%) 100%);
+    border: 1px solid hsl(215 40% 34%);
     box-shadow:
       /* highlight superior */
-      0 1px 0 hsl(0 0% 100% / 0.18) inset,
+      0 1px 0 hsl(0 0% 100% / 0.22) inset,
+      0 2px 0 hsl(0 0% 100% / 0.08) inset,
       /* selo escuro embaixo */
-      0 -1px 0 hsl(0 0% 0% / 0.3) inset,
+      0 -1px 0 hsl(0 0% 0% / 0.35) inset,
       /* hairline ring */
-      0 0 0 1px hsl(215 50% 10% / 0.4),
+      0 0 0 1px hsl(215 50% 10% / 0.45),
       /* contato */
-      0 3px 6px hsl(215 60% 5% / 0.35),
+      0 4px 8px hsl(215 60% 5% / 0.40),
       /* média */
-      0 14px 30px -8px hsl(215 60% 5% / 0.5),
+      0 18px 36px -10px hsl(215 60% 5% / 0.58),
       /* ambiente profunda */
-      0 36px 72px -20px hsl(215 60% 5% / 0.55),
+      0 48px 96px -28px hsl(215 60% 5% / 0.65),
       /* halo laranja sutil (acento da marca) */
-      0 0 48px -8px hsl(16 80% 55% / 0.18);
+      0 0 56px -10px hsl(16 80% 55% / 0.22),
+      /* halo profundo azul */
+      0 0 80px -20px hsl(215 50% 30% / 0.18);
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .calc-novare-banner:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.25) inset,
+      0 2px 0 hsl(0 0% 100% / 0.10) inset,
+      0 -1px 0 hsl(0 0% 0% / 0.35) inset,
+      0 0 0 1px hsl(215 50% 10% / 0.50),
+      0 6px 12px hsl(215 60% 5% / 0.45),
+      0 24px 48px -12px hsl(215 60% 5% / 0.65),
+      0 64px 128px -36px hsl(215 60% 5% / 0.75),
+      0 0 72px -12px hsl(16 80% 55% / 0.30),
+      0 0 100px -24px hsl(215 50% 30% / 0.24);
   }
   .calc-novare-banner::before {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(180deg, hsl(0 0% 100% / 0.06) 0%, transparent 40%);
+    background: linear-gradient(180deg, hsl(0 0% 100% / 0.08) 0%, transparent 40%);
     pointer-events: none;
   }
 
