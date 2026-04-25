@@ -1950,8 +1950,9 @@ const YieldGuide = () => {
             {/* ── EVOLUÇÃO: Tabela ano-a-ano ───────── */}
             {result && result.timeline.length > 1 && (
               <motion.div
-                variants={fadeUp}
-                custom={2}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="calc-card-light rounded-3xl p-6 md:p-8 relative overflow-hidden"
               >
                 <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
