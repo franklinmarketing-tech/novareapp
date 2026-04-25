@@ -1195,6 +1195,7 @@ const YieldGuide = () => {
                   })}
                 </div>
               </div>
+              </div>
             </motion.div>
 
             {/* ─── CORPO: Form esquerda / Resultados direita ─── */}
