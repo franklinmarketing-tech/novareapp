@@ -1487,10 +1487,10 @@ const YieldGuide = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="relative z-10"
+                className="relative z-10 lg:mt-auto lg:pt-2"
               >
                 <div
-                  className="relative rounded-2xl p-4 md:p-5 overflow-hidden border-t-2 border-accent/40"
+                  className="relative rounded-2xl p-5 md:p-6 overflow-hidden border-t-2 border-accent/40"
                   style={{
                     background:
                       "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))",
