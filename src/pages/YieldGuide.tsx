@@ -571,18 +571,16 @@ const YieldGuide = () => {
     ? (Math.pow(1 + sim.rentabilidade / 100, 12) - 1) * 100
     : sim.rentabilidade;
 
-  // Resolve a alíquota efetiva atual: "auto" → tabela regressiva, número → fixo
+  // Alíquota de IR é 100% automática: depende do TIPO de renda + PRAZO (anos até a aposentadoria).
   const anosHorizonte = Math.max(0, sim.idadeAposent - sim.idadeAtual);
-  const aliqOverride = aliquotaIRSelecionada === "auto" ? null : aliquotaIRSelecionada;
-  const aliquotaEfetivaAtual = aliquotaIRSelecionada === "auto"
-    ? getAliquotaIR(anosHorizonte)
-    : aliquotaIRSelecionada;
+  const aliquotaEfetivaAtual = getAliquotaIRPorTipo(tipoRenda, anosHorizonte);
+  const regraIRTexto = getRegraIR(tipoRenda, anosHorizonte);
 
   const handleSimulate = () => {
     setIsSimulating(true);
     setSimCountdown(5);
     // calcula imediatamente, mas mantém o loader visível por 5s para criar expectativa
-    const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliqOverride);
+    const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliquotaEfetivaAtual);
     const faixa = selectedFaixa ? currentBento.find((b) => b.title === selectedFaixa) ?? null : null;
 
     // Contador regressivo
