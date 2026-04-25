@@ -1090,7 +1090,100 @@ const YieldGuide = () => {
                 </p>
               </div>
 
-              {/* Bloco "Escolha a forma de rendimento" removido — o tipo de renda é definido pelos cards de investimento abaixo (Prefixado / CDI / IPCA+...) */}
+              {/* 3 cards COMPACTOS de tipo de renda — estilo Prefixado/CDI/IPCA+ */}
+              <div className="space-y-2.5">
+                <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
+                  Escolha a forma de rendimento
+                </p>
+                <div className="grid grid-cols-3 gap-2 md:gap-3">
+                  {([
+                    {
+                      id: "fixa" as TipoRenda,
+                      title: "Renda Fixa",
+                      desc: "Mais previsível",
+                      icon: TrendingUp,
+                      badge: "Menor risco",
+                      badgeBg: "bg-novare-blue-light text-novare-blue dark:bg-novare-blue/30 dark:text-novare-blue-bright",
+                    },
+                    {
+                      id: "mista" as TipoRenda,
+                      title: "Renda Mista",
+                      desc: "Equilíbrio",
+                      icon: Landmark,
+                      badge: "Médio risco",
+                      badgeBg: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+                    },
+                    {
+                      id: "variavel" as TipoRenda,
+                      title: "Renda Variável",
+                      desc: "Maior retorno",
+                      icon: ArrowUpRight,
+                      badge: "Maior risco",
+                      badgeBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+                    },
+                  ]).map((t) => {
+                    const Icon = t.icon;
+                    const isSel = t.id === tipoRenda;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => handleTipoRendaChange(t.id)}
+                        aria-pressed={isSel}
+                        className={`relative text-left rounded-xl border transition-all duration-200 p-2.5 md:p-3 cursor-pointer group ${
+                          isSel
+                            ? "border-novare-blue/60 bg-novare-blue-light/40 dark:bg-novare-blue/15 shadow-[0_8px_22px_-12px_hsl(var(--novare-blue)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.5)]"
+                            : "border-border/60 bg-card hover:border-novare-blue/30 hover:-translate-y-0.5 hover:shadow-md"
+                        }`}
+                      >
+                        {/* Bolinha de seleção no canto superior direito */}
+                        <span
+                          className={`absolute top-1.5 right-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full transition-all ${
+                            isSel
+                              ? "bg-novare-blue text-white shadow-[0_2px_6px_-1px_hsl(215_50%_23%/0.5)]"
+                              : "bg-transparent border border-border/70 group-hover:border-novare-blue/50"
+                          }`}
+                          aria-hidden
+                        >
+                          {isSel && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              isSel
+                                ? "bg-novare-blue/15 dark:bg-novare-blue-bright/20"
+                                : "bg-muted/70"
+                            }`}
+                          >
+                            <Icon
+                              className={`h-3.5 w-3.5 md:h-4 md:w-4 ${
+                                isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground"
+                              }`}
+                              strokeWidth={2.25}
+                            />
+                          </div>
+                          <p
+                            className={`text-[12px] md:text-sm font-bold leading-tight pr-3 ${
+                              isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-foreground"
+                            }`}
+                          >
+                            {t.title}
+                          </p>
+                        </div>
+
+                        <p className="text-[10px] md:text-[11px] text-muted-foreground mt-1.5 leading-snug">{t.desc}</p>
+
+                        <span
+                          className={`inline-flex mt-2 px-1.5 py-0.5 rounded text-[8.5px] md:text-[9.5px] font-bold uppercase tracking-wider ${t.badgeBg}`}
+                        >
+                          {t.badge}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </motion.div>
 
             {/* ─── CORPO: Form esquerda / Resultados direita ─── */}
