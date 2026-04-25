@@ -935,25 +935,76 @@ const YieldGuide = () => {
       {/* ── SIMULATOR (image-faithful, Novare blue) ─────────── */}
       <section
         id="simulador"
-        className="py-6 md:py-9 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
+        className="py-8 md:py-14 relative overflow-hidden bg-gradient-to-b from-muted/30 via-background to-muted/30"
       >
-        {/* Background orbs sutis (azul Novare) */}
+        {/* Linhas decorativas superior/inferior da seção */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-novare-blue/40 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-novare-blue/30 to-transparent" />
+
+        {/* Background orbs sutis (azul Novare) — posicionados fora do card */}
         <motion.div
-          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px] pointer-events-none"
-          style={{ background: "hsl(var(--novare-blue) / 0.05)" }}
-          animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.4, 0.25] }}
+          className="absolute -top-32 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px] pointer-events-none"
+          style={{ background: "hsl(var(--novare-blue) / 0.06)" }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.45, 0.25] }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px] pointer-events-none"
-          style={{ background: "hsl(var(--novare-blue-bright) / 0.07)" }}
-          animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.35, 0.2] }}
+          className="absolute -bottom-32 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px] pointer-events-none"
+          style={{ background: "hsl(var(--novare-blue-bright) / 0.08)" }}
+          animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.4, 0.2] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 5 }}
         />
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-novare-blue/40 to-transparent" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-5 relative z-10">
+          {/* ╔════ MOLDURA ELEVADA — dá profundidade e isola a seção ════╗ */}
+          <div className="relative rounded-[28px] md:rounded-[32px] overflow-hidden">
+            {/* Glow externo sutil (halo azul atrás do card) */}
+            <div
+              className="absolute -inset-2 md:-inset-3 rounded-[36px] pointer-events-none opacity-60"
+              style={{
+                background: "radial-gradient(60% 60% at 50% 0%, hsl(var(--novare-blue) / 0.18), transparent 70%)",
+                filter: "blur(28px)",
+              }}
+              aria-hidden
+            />
+            {/* Borda gradiente premium (1px) */}
+            <div
+              className="absolute inset-0 rounded-[28px] md:rounded-[32px] pointer-events-none"
+              style={{
+                padding: "1px",
+                background: "linear-gradient(140deg, hsl(var(--novare-blue) / 0.55), hsl(var(--novare-blue-bright) / 0.25) 35%, hsl(var(--border) / 0.6) 60%, hsl(var(--novare-blue) / 0.4))",
+                WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                WebkitMaskComposite: "xor",
+                maskComposite: "exclude",
+              }}
+              aria-hidden
+            />
+            {/* Camada de fundo do card com gradiente elegante */}
+            <div
+              className="absolute inset-0 rounded-[28px] md:rounded-[32px] pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 50%, hsl(var(--card) / 0.85) 100%)",
+                boxShadow:
+                  "0 30px 80px -30px hsl(var(--novare-blue) / 0.35), 0 12px 30px -12px hsl(220 30% 10% / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.5), inset 0 -1px 0 hsl(var(--novare-blue) / 0.08)",
+              }}
+              aria-hidden
+            />
+            {/* Highlight superior (brilho de vidro) */}
+            <div
+              className="absolute top-0 left-0 right-0 h-24 rounded-t-[28px] md:rounded-t-[32px] pointer-events-none opacity-70"
+              style={{
+                background:
+                  "linear-gradient(180deg, hsl(0 0% 100% / 0.6) 0%, transparent 100%)",
+                mixBlendMode: "soft-light",
+              }}
+              aria-hidden
+            />
+
+            {/* Conteúdo do simulador */}
+            <div className="relative z-10 px-4 sm:px-5 md:px-7 lg:px-9 py-6 md:py-9">
+              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
+
 
             {/* ─── CABEÇALHO DA SEÇÃO: badge + título centralizado (desktop) ─── */}
             <motion.div
@@ -1912,7 +1963,10 @@ const YieldGuide = () => {
               </motion.div>
             )}
 
-          </motion.div>
+              </motion.div>
+            </div>
+          </div>
+          {/* ╚════ FIM MOLDURA ELEVADA ════╝ */}
         </div>
       </section>
 
