@@ -95,38 +95,121 @@ const tableData = [
   { ativo: "IPCA + 7% (isento IR)", rent: "11,51%", v50: "R$ 55.755", v100: "R$ 111.510", v1m: "R$ 1.115.100" },
 ];
 
-const bentoFeatures = [
-  {
-    title: "Prefixado",
-    desc: "Você sabe exatamente qual será sua rentabilidade. Trave uma taxa quando esperar queda nos juros.",
-    icon: Lock,
-    rate: "14,20%",
-    rateLabel: "Taxa referência CDB 12 meses",
-    span: "md:col-span-1",
-    variant: "hero" as const,
-    rentAnual: 14.2,
-  },
-  {
-    title: "Pós-fixado (CDI)",
-    desc: "Rentabilidade atrelada ao CDI. Ideal quando se espera manutenção ou alta nos juros.",
-    icon: TrendingUp,
-    rate: "14,73%",
-    rateLabel: "104% do CDI a.a.",
-    span: "md:col-span-1",
-    variant: "default" as const,
-    rentAnual: 14.73,
-  },
-  {
-    title: "IPCA+",
-    desc: "Proteção contra inflação com taxa real garantida. Preserva o poder de compra no longo prazo.",
-    icon: Shield,
-    rate: "IPCA + 7%",
-    rateLabel: "Ganho real acima da inflação",
-    span: "md:col-span-1",
-    variant: "default" as const,
-    rentAnual: 11.51,
-  },
-];
+type TipoRenda = "fixa" | "mista" | "variavel";
+
+interface BentoFeature {
+  title: string;
+  desc: string;
+  icon: typeof Lock;
+  rate: string;
+  rateLabel: string;
+  span: string;
+  variant: "hero" | "default";
+  rentAnual: number;
+}
+
+/** Cards "Prefixado / Pós-fixado / IPCA+" — variam conforme o tipo de renda escolhido */
+const bentoByTipo: Record<TipoRenda, BentoFeature[]> = {
+  fixa: [
+    {
+      title: "Prefixado",
+      desc: "Você sabe exatamente qual será sua rentabilidade. Trave uma taxa quando esperar queda nos juros.",
+      icon: Lock,
+      rate: "14,20%",
+      rateLabel: "Taxa referência CDB 12 meses",
+      span: "md:col-span-1",
+      variant: "hero",
+      rentAnual: 14.2,
+    },
+    {
+      title: "Pós-fixado (CDI)",
+      desc: "Rentabilidade atrelada ao CDI. Ideal quando se espera manutenção ou alta nos juros.",
+      icon: TrendingUp,
+      rate: "14,73%",
+      rateLabel: "104% do CDI a.a.",
+      span: "md:col-span-1",
+      variant: "default",
+      rentAnual: 14.73,
+    },
+    {
+      title: "IPCA+",
+      desc: "Proteção contra inflação com taxa real garantida. Preserva o poder de compra no longo prazo.",
+      icon: Shield,
+      rate: "IPCA + 7%",
+      rateLabel: "Ganho real acima da inflação",
+      span: "md:col-span-1",
+      variant: "default",
+      rentAnual: 11.51,
+    },
+  ],
+  mista: [
+    {
+      title: "Multimercado",
+      desc: "Mistura renda fixa, ações e moedas. Gestão ativa em busca de retornos consistentes em qualquer cenário.",
+      icon: Landmark,
+      rate: "16,50%",
+      rateLabel: "Média histórica de 12 meses",
+      span: "md:col-span-1",
+      variant: "hero",
+      rentAnual: 16.5,
+    },
+    {
+      title: "Renda + Ações",
+      desc: "Carteira balanceada 60/40 — base sólida em renda fixa com exposição moderada a ações de qualidade.",
+      icon: TrendingUp,
+      rate: "15,80%",
+      rateLabel: "60% RF + 40% RV",
+      span: "md:col-span-1",
+      variant: "default",
+      rentAnual: 15.8,
+    },
+    {
+      title: "Previdência PGBL",
+      desc: "Benefício fiscal de até 12% da renda + diferimento. Ideal para acumulação de longo prazo.",
+      icon: Shield,
+      rate: "13,20%",
+      rateLabel: "Plano misto · longo prazo",
+      span: "md:col-span-1",
+      variant: "default",
+      rentAnual: 13.2,
+    },
+  ],
+  variavel: [
+    {
+      title: "Ações Brasil",
+      desc: "Carteira de ações brasileiras blue chips com pagamento de dividendos consistentes.",
+      icon: TrendingUp,
+      rate: "18,00%",
+      rateLabel: "Média histórica Ibovespa+",
+      span: "md:col-span-1",
+      variant: "hero",
+      rentAnual: 18,
+    },
+    {
+      title: "FIIs",
+      desc: "Fundos Imobiliários — renda mensal isenta de IR para pessoa física e exposição ao mercado imobiliário.",
+      icon: Landmark,
+      rate: "13,50%",
+      rateLabel: "Dividend Yield + valorização",
+      span: "md:col-span-1",
+      variant: "default",
+      rentAnual: 13.5,
+    },
+    {
+      title: "Ações Globais",
+      desc: "Diversificação internacional via BDRs e ETFs. Acesso às maiores empresas do mundo.",
+      icon: Shield,
+      rate: "20,00%",
+      rateLabel: "S&P 500 média 10 anos",
+      span: "md:col-span-1",
+      variant: "default",
+      rentAnual: 20,
+    },
+  ],
+};
+
+// Mantém a referência usada no resto do código (default = renda fixa).
+const bentoFeatures = bentoByTipo.fixa;
 
 const bentoStats = [
   { value: "14,75%", label: "Taxa Selic", icon: Percent, color: "text-accent" },
