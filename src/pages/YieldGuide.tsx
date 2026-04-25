@@ -881,735 +881,550 @@ const YieldGuide = () => {
         </div>
       </section>
 
-      {/* ── SIMULATOR ───────────────────────────── */}
+      {/* ── SIMULATOR (image-faithful, Novare blue) ─────────── */}
       <section
         id="simulador"
-        className="py-10 md:py-14 relative overflow-hidden bg-background"
+        className="py-10 md:py-16 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
       >
-        {/* Background orbs sutis (no tom da marca, baixa opacidade) */}
+        {/* Background orbs sutis (azul Novare) */}
         <motion.div
-          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px]"
-          style={{ background: "hsl(var(--accent) / 0.06)" }}
+          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px] pointer-events-none"
+          style={{ background: "hsl(var(--novare-blue) / 0.05)" }}
           animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.4, 0.25] }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px]"
-          style={{ background: "hsl(var(--primary) / 0.08)" }}
+          className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px] pointer-events-none"
+          style={{ background: "hsl(var(--novare-blue-bright) / 0.07)" }}
           animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.35, 0.2] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 5 }}
         />
-        {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-novare-blue/40 to-transparent" />
 
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-4 md:space-y-5">
-            <motion.div variants={fadeUp} custom={0} className="text-center max-w-3xl mx-auto space-y-3">
-              {/* Faixa azul Novare — identidade premium do simulador */}
-              <motion.div
-                initial={{ opacity: 0, y: -12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="calc-novare-banner inline-flex items-center gap-3 md:gap-4 pl-4 pr-3 md:pl-5 md:pr-4 py-2.5 md:py-3 rounded-2xl"
-              >
-                <img src={logoBranca} alt="Novare" className="h-7 md:h-8 w-auto relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
-                <span className="h-5 md:h-6 w-px bg-white/20 relative z-10" />
-                <span className="relative z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[hsl(16_80%_55%)] text-white text-[10px] md:text-[11px] uppercase tracking-[0.22em] font-bold shadow-[0_2px_8px_-2px_hsl(16_80%_45%/0.5),inset_0_1px_0_hsl(0_0%_100%/0.25)]">
-                  <Sparkles className="h-3 w-3" strokeWidth={2.5} />
-                  Simulador
-                </span>
-              </motion.div>
+        <div className="max-w-[1280px] mx-auto px-5 md:px-8 relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
 
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-[1.05]">
-                Projete sua renda{" "}
-                <span className="bg-gradient-to-r from-accent via-accent/90 to-accent/70 bg-clip-text text-transparent">
-                  no longo prazo
-                </span>
-              </h2>
-              <p className="text-muted-foreground text-sm max-w-xl mx-auto leading-relaxed">
-                Simulador gratuito para planejar sua aposentadoria com precisão profissional.
-              </p>
-            </motion.div>
+            {/* ─── TOPO: Hero esquerda + 3 cards de tipo de renda direita ─── */}
+            <motion.div variants={fadeUp} custom={0} className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)] gap-8 lg:gap-12 items-center mb-10 md:mb-14">
+              {/* Hero esquerda */}
+              <div className="space-y-3 md:space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55 }}
+                  className="calc-novare-banner inline-flex items-center gap-3 pl-3 pr-3 py-2 rounded-2xl"
+                >
+                  <img src={logoBranca} alt="Novare" className="h-6 md:h-7 w-auto relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
+                  <span className="h-4 w-px bg-white/20 relative z-10" />
+                  <span className="relative z-10 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-novare-blue-bright/90 text-white text-[10px] uppercase tracking-[0.22em] font-bold">
+                    <Sparkles className="h-3 w-3" strokeWidth={2.5} />
+                    Simulador
+                  </span>
+                </motion.div>
 
-            {/* Submenu de escolha rápida de taxa */}
-            <motion.div variants={fadeUp} custom={1} className="max-w-4xl mx-auto w-full">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-semibold">Escolha uma taxa de referência</span>
+                <h2 className="text-3xl md:text-4xl lg:text-[2.85rem] font-black text-foreground tracking-tight leading-[1.04]">
+                  Simulador Inteligente
+                </h2>
+                <h3 className="text-2xl md:text-3xl lg:text-[2.4rem] font-black tracking-tight leading-[1.04]">
+                  <span className="text-foreground">Projete sua renda</span>{" "}
+                  <span className="bg-gradient-to-r from-novare-blue via-novare-blue-bright to-novare-blue bg-clip-text text-transparent">
+                    no longo prazo
+                  </span>
+                </h3>
+                <p className="text-muted-foreground text-sm md:text-base max-w-md leading-relaxed">
+                  Simule gratuitamente e planeje sua{" "}
+                  <strong className="text-foreground font-semibold">aposentadoria</strong> com precisão profissional.
+                </p>
               </div>
-              <div className="grid grid-cols-3 gap-2 md:gap-3">
-                {bentoFeatures.map((f) => {
-                  const isSelected = selectedFaixa === f.title;
-                  return (
-                    <button
-                      key={f.title}
-                      type="button"
-                      onClick={() => {
-                        setSim((prev) => ({ ...prev, rentabilidade: f.rentAnual }));
-                        setRentPeriodo("anual");
-                        setSelectedFaixa(f.title);
-                      }}
-                      className={`group relative rounded-2xl p-3 md:p-4 text-left backdrop-blur-md ${
-                        isSelected
-                          ? "calc-card-sm-selected"
-                          : "calc-card-sm"
-                      }`}
-                    >
-                      {isSelected ? (
-                        <span className="calc-radio-checked absolute top-2.5 right-2.5" aria-hidden="true">
-                          <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
-                        </span>
-                      ) : (
-                        <span className="calc-radio absolute top-2.5 right-2.5" aria-hidden="true" />
-                      )}
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                          isSelected
-                            ? "bg-accent/25 ring-1 ring-accent/50 dark:bg-accent/30"
-                            : "bg-muted/60"
-                        }`}>
-                          <f.icon className={`h-4 w-4 ${isSelected ? "text-accent-strong" : "text-foreground/80"}`} strokeWidth={2.25} />
+
+              {/* 3 cards de tipo de renda (decorativos por enquanto — Renda Fixa selecionado) */}
+              <div className="space-y-3">
+                <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
+                  Escolha a forma de rendimento
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                  {([
+                    { id: "fixa", title: "Renda Fixa", desc: "Mais previsibilidade", icon: TrendingUp, badge: "Menor risco", badgeBg: "bg-novare-blue-light text-novare-blue dark:bg-novare-blue/30 dark:text-novare-blue-bright" },
+                    { id: "mista", title: "Renda Mista", desc: "Equilíbrio entre risco e rentabilidade", icon: Landmark, badge: "Médio risco", badgeBg: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" },
+                    { id: "variavel", title: "Renda Variável", desc: "Maior potencial de retorno", icon: ArrowUpRight, badge: "Maior risco", badgeBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" },
+                  ] as const).map((t) => {
+                    const Icon = t.icon;
+                    const isSel = t.id === "fixa";
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        disabled={t.id !== "fixa"}
+                        title={t.id !== "fixa" ? "Em breve" : undefined}
+                        className={`text-left group ${isSel ? "sim-type-card sim-type-card-selected" : "sim-type-card opacity-80 hover:opacity-100"} relative disabled:cursor-not-allowed`}
+                      >
+                        {isSel && (
+                          <span className="absolute top-3 right-3 inline-flex items-center justify-center w-5 h-5 rounded-full bg-novare-blue text-white shadow-[0_2px_6px_-1px_hsl(215_50%_23%/0.5)]">
+                            <Check className="h-3 w-3" strokeWidth={3.5} />
+                          </span>
+                        )}
+                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-3"
+                          style={{
+                            background: isSel
+                              ? "linear-gradient(135deg, hsl(var(--novare-blue) / 0.25), hsl(var(--novare-blue-bright) / 0.10))"
+                              : "linear-gradient(135deg, hsl(var(--muted)), hsl(var(--muted) / 0.5))",
+                            boxShadow: isSel
+                              ? "0 8px 18px -8px hsl(var(--novare-blue) / 0.5), inset 0 1px 0 hsl(0 0% 100% / 0.6)"
+                              : "inset 0 1px 0 hsl(0 0% 100% / 0.5)",
+                          }}
+                        >
+                          <Icon className={`h-6 w-6 ${isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground"}`} strokeWidth={2.25} />
                         </div>
-                        <span className={`text-xs md:text-sm font-bold ${isSelected ? "text-accent-strong" : "text-foreground"}`}>{f.title}</span>
-                      </div>
-                      <div className="flex items-baseline gap-1">
-                        <span className={`text-lg md:text-xl font-black ${isSelected ? "text-accent-strong" : "text-accent"}`}>{f.rate}</span>
-                        {!f.rate.includes("IPCA") && <span className={`text-[10px] ${isSelected ? "text-accent-strong/80" : "text-muted-foreground/80"}`}>a.a.</span>}
-                      </div>
-                      <p className={`hidden md:block text-[10px] mt-1 truncate ${isSelected ? "text-accent-strong/75" : "text-muted-foreground/80"}`}>{f.rateLabel}</p>
-                    </button>
-                  );
-                })}
+                        <p className={`text-sm md:text-base font-bold leading-tight ${isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-foreground"}`}>
+                          {t.title}
+                        </p>
+                        <p className="text-[11px] md:text-xs text-muted-foreground mt-1 leading-snug">
+                          {t.desc}
+                        </p>
+                        <span className={`inline-flex mt-3 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${t.badgeBg}`}>
+                          {t.badge}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={2}>
-              <div className="calc-card-light rounded-3xl overflow-hidden">
-                <div className="grid lg:grid-cols-2 lg:items-stretch">
-                  {/* Simulator form — light premium card */}
-                  <div className="p-5 md:p-7 relative flex flex-col bg-transparent lg:h-full">
-                    {/* Subtle inner divider on desktop split */}
-                    <div className="hidden lg:block absolute top-6 bottom-6 right-0 w-px bg-gradient-to-b from-transparent via-border to-transparent pointer-events-none" />
-                    <motion.div
-                      className="absolute -top-20 -left-20 w-60 h-60 rounded-full blur-[100px]"
-                      style={{ background: "hsl(220 50% 40% / 0.08)" }}
-                      animate={{ scale: [1, 1.15, 1] }}
-                      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                    />
+            {/* ─── CORPO: Form esquerda / Resultados direita ─── */}
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
 
-                    <div className="relative z-10 flex flex-col gap-5 md:gap-6 h-full">
-                      <div className="grid sm:grid-cols-2 gap-x-6 gap-y-5">
-                        {([
-                          { label: "Qual sua idade hoje?", key: "idadeAtual", hint: "anos", kind: "int" as const, placeholder: "ex: 30" },
-                          { label: "Com que idade quer parar de trabalhar?", key: "idadeAposent", hint: "anos", kind: "int" as const, placeholder: "ex: 60" },
-                          { label: "Quanto já tem guardado/investido?", key: "patrimonioAtual", hint: "R$", kind: "brl" as const, placeholder: "ex: 10.000,00" },
-                          { label: "Quanto consegue investir por mês?", key: "aporte", hint: "R$", kind: "brl" as const, placeholder: "ex: 2.000,00" },
-                          { label: "Qual renda mensal deseja no futuro?", key: "rendaDesejada", hint: "R$", kind: "brl" as const, placeholder: "ex: 15.000,00" },
-                        ]).map((f) => {
-                          const numVal = (sim as any)[f.key] as number;
-                          const display = f.kind === "brl"
-                            ? (numVal ? numVal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "")
-                            : (numVal ? String(numVal) : "");
-                          const hasPrefix = f.kind === "brl";
-                          return (
-                            <div key={f.key} className="space-y-1.5">
-                              <label className="text-xs font-semibold text-foreground leading-tight block">{f.label}</label>
-                              <div className="relative">
-                                {hasPrefix && (
-                                  <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${numVal ? "text-accent" : "text-muted-foreground/80"}`}>R$</span>
-                                )}
-                                <input
-                                  type="text"
-                                  inputMode="numeric"
-                                  value={display}
-                                  placeholder={f.placeholder}
-                                  onChange={(e) => {
-                                    if (f.kind === "brl") {
-                                      const digits = e.target.value.replace(/\D/g, "");
-                                      const cents = digits ? parseInt(digits, 10) : 0;
-                                      setSim({ ...sim, [f.key]: cents / 100 });
-                                    } else {
-                                      const digits = e.target.value.replace(/\D/g, "");
-                                      setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
-                                    }
-                                  }}
-                                  className={`calc-input ${hasPrefix ? "pl-11" : "pl-4"} pr-14`}
-                                />
-                                <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-accent" : "text-muted-foreground/50"}`}>{f.hint}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
+              {/* ====== COLUNA ESQUERDA — Formulário em grupos ====== */}
+              <motion.div variants={fadeUp} custom={1} className="calc-card-light rounded-3xl p-5 md:p-7 space-y-6 md:space-y-7">
 
-                        {/* Taxa de juros */}
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-foreground leading-tight block">Taxa de juros dos seus investimentos</label>
+                {/* Grupo 1 — INFORMAÇÕES PESSOAIS */}
+                <div className="space-y-3">
+                  <p className="sim-group-label">
+                    <Users className="h-3.5 w-3.5" />
+                    Informações Pessoais
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                    {([
+                      { label: "Qual sua idade hoje?", key: "idadeAtual", hint: "anos", kind: "int" as const, placeholder: "ex: 30" },
+                      { label: "Com que idade quer parar de trabalhar?", key: "idadeAposent", hint: "anos", kind: "int" as const, placeholder: "ex: 60" },
+                    ]).map((f) => {
+                      const numVal = (sim as any)[f.key] as number;
+                      const display = numVal ? String(numVal) : "";
+                      return (
+                        <div key={f.key} className="space-y-1.5">
+                          <label className="text-xs font-semibold text-foreground/85 leading-tight block">{f.label}</label>
                           <div className="relative">
-                            {/* Prefixo % à esquerda */}
-                            <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rentabilidade ? "text-accent" : "text-muted-foreground/80"}`}>%</span>
                             <input
                               type="text"
-                              inputMode="decimal"
-                              placeholder="ex: 12"
-                              value={
-                                sim.rentabilidade
-                                  ? sim.rentabilidade.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
-                                  : ""
-                              }
+                              inputMode="numeric"
+                              value={display}
+                              placeholder={f.placeholder}
                               onChange={(e) => {
-                                const raw = e.target.value.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
-                                const n = parseFloat(raw);
-                                // limite máximo defensivo: taxas absurdas viram patrimônio infinito
-                                const max = rentPeriodo === "mensal" ? 50 : 200;
-                                const clamped = Number.isFinite(n) ? Math.min(n, max) : 0;
-                                setSim({ ...sim, rentabilidade: clamped });
-                                // edição manual desfaz a faixa pré-selecionada
-                                setSelectedFaixa(null);
+                                const digits = e.target.value.replace(/\D/g, "");
+                                setSim({ ...sim, [f.key]: digits ? parseInt(digits, 10) : 0 });
                               }}
-                              className="calc-input pl-10 pr-[7.5rem]"
+                              className="calc-input pl-4 pr-14"
                             />
-                            {/* Toggle % mês / % ano à direita */}
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center bg-[hsl(220_22%_96%)] dark:bg-[hsl(220_18%_14%)] rounded-lg overflow-hidden border border-[hsl(220_15%_85%)] dark:border-[hsl(220_15%_22%)] shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.05)]">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (rentPeriodo === "anual" && sim.rentabilidade) {
-                                    const mensal = (Math.pow(1 + sim.rentabilidade / 100, 1/12) - 1) * 100;
-                                    setSim({ ...sim, rentabilidade: Number(mensal.toFixed(2)) });
-                                  }
-                                  setRentPeriodo("mensal");
-                                }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "mensal" ? "calc-toggle-active rounded-lg" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
-                              >
-                                % mês
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (rentPeriodo === "mensal" && sim.rentabilidade) {
-                                    const anual = (Math.pow(1 + sim.rentabilidade / 100, 12) - 1) * 100;
-                                    setSim({ ...sim, rentabilidade: Number(anual.toFixed(1)) });
-                                  }
-                                  setRentPeriodo("anual");
-                                }}
-                                className={`px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 ${rentPeriodo === "anual" ? "calc-toggle-active rounded-lg" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"}`}
-                              >
-                                % ano
-                              </button>
-                            </div>
-                          </div>
-                          <p className="text-[10px] text-muted-foreground/60">
-                            {rentPeriodo === "mensal"
-                              ? `≈ ${rentAnual.toFixed(1)}% ao ano`
-                              : `≈ ${((Math.pow(1 + sim.rentabilidade / 100, 1/12) - 1) * 100).toFixed(2)}% ao mês`
-                            }
-                            {" · "}Hoje a Selic rende ~1% ao mês
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-[11px] md:text-xs text-muted-foreground/80 leading-relaxed -mt-1">
-                        <span className="font-bold text-foreground/70">*</span> Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
-                      </p>
-                    </div>
-                    {/* 3D Button */}
-                    <button
-                      onClick={handleSimulate}
-                      disabled={isSimulating}
-                      className="group relative z-10 w-full inline-flex items-center justify-center gap-2.5 calc-btn-primary px-8 py-3.5 rounded-2xl font-semibold text-base disabled:opacity-70 disabled:cursor-wait disabled:hover:translate-y-0"
-                    >
-                      <BarChart3 className="h-[18px] w-[18px]" />
-                      Simular Aposentadoria
-                      <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
-                    </button>
-
-                    {/* === Renda Mensal Passiva (HERO escuro com glow laranja) === */}
-                    <div
-                      className="calc-dark calc-card-dark calc-glow-accent relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden"
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div
-                          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-accent/30"
-                          style={{
-                            background: "linear-gradient(135deg, hsl(var(--accent) / 0.25), hsl(var(--accent) / 0.05))",
-                            boxShadow: "0 8px 20px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)",
-                          }}
-                        >
-                          <Wallet className="h-5 w-5 text-accent" strokeWidth={2.5} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-accent font-extrabold">Renda Mensal Passiva</p>
-                          <p className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">sem consumir o principal</p>
-                        </div>
-                      </div>
-
-                      <motion.p
-                        className="calc-num text-[2rem] md:text-[2.4rem] lg:text-[2.5rem] leading-[1.05] font-black text-accent break-words"
-                        key={result?.rendaMensalLiquidaNum}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.1 }}
-                        title={result?.rendaMensalLiquida}
-                        style={{ textShadow: "0 2px 24px hsl(var(--accent) / 0.35)" }}
-                      >
-                        {result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "—"}
-                      </motion.p>
-
-                      {result ? (
-                        <div className="mt-4 pt-4 border-t border-accent/15 flex flex-wrap items-center gap-x-5 gap-y-2">
-                          <div className="min-w-0">
-                            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.12em] text-success font-bold">Anual líq.</p>
-                            <p className="calc-num text-base md:text-lg font-extrabold text-success truncate" title={result.rendaAnualLiquida}>
-                              {formatCompactBRL(result.rendaMensalLiquidaNum * 12)}
-                            </p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.12em] text-novare-blue-bright font-bold">Bruta/mês</p>
-                            <p className="calc-num text-base md:text-lg font-extrabold text-novare-blue-bright truncate" title={result.rendaMensal}>
-                              {formatCompactBRL(result.rendaMensalLiquidaNum / Math.max(0.01, 1 - result.aliquotaIR / 100))}
-                            </p>
-                          </div>
-                          <div className="min-w-0 ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-novare-blue-bright/15 border border-novare-blue-bright/30">
-                            <Percent className="h-3.5 w-3.5 text-novare-blue-bright" />
-                            <span className="calc-num text-xs md:text-sm font-extrabold text-novare-blue-bright">
-                              {result.taxaMensalEfetiva.toFixed(2)}% a.m.
-                            </span>
+                            <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${numVal ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground/50"}`}>{f.hint}</span>
                           </div>
                         </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground/80 mt-3 font-medium italic">
-                          Preencha os campos e simule para projetar sua renda passiva
-                        </p>
-                      )}
-                    </div>
-
-                    {/* === Meta atingida — branco premium com tinta success/warning === */}
-                    <div
-                      className={`calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden transition-all duration-500 lg:mt-auto ${
-                        result
-                          ? result.atingeMeta
-                            ? "ring-1 ring-success/30"
-                            : "ring-1 ring-warning/30"
-                          : ""
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div
-                          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border"
-                          style={{
-                            background: result
-                              ? result.atingeMeta
-                                ? "linear-gradient(135deg, hsl(var(--success) / 0.3), hsl(var(--success) / 0.05))"
-                                : "linear-gradient(135deg, hsl(var(--warning) / 0.3), hsl(var(--warning) / 0.05))"
-                              : "linear-gradient(135deg, hsl(220 22% 96%), hsl(220 22% 92%))",
-                            borderColor: result
-                              ? result.atingeMeta
-                                ? "hsl(var(--success) / 0.35)"
-                                : "hsl(var(--warning) / 0.35)"
-                              : "hsl(220 13% 88%)",
-                            boxShadow: result
-                              ? result.atingeMeta
-                                ? "0 8px 20px -8px hsl(var(--success) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)"
-                                : "0 8px 20px -8px hsl(var(--warning) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)"
-                              : "inset 0 1px 0 hsl(0 0% 100% / 0.6)",
-                          }}
-                        >
-                          <Target
-                            className={`h-5 w-5 ${result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-muted-foreground/80"}`}
-                            strokeWidth={2.5}
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-bold">Meta de Renda</p>
-                          <p className="text-[10px] text-muted-foreground/80 mt-0.5">
-                            {result?.rendaDesejadaNum ? `Alvo: ${formatCompactBRL(result.rendaDesejadaNum)}/mês` : "Defina sua meta"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <motion.p
-                        className={`text-xl md:text-2xl font-black tracking-tight ${
-                          result ? (result.atingeMeta ? "text-success" : "text-warning") : "text-muted-foreground/60"
-                        }`}
-                        key={result ? String(result.atingeMeta) : "empty"}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.2 }}
-                      >
-                        {result ? (result.atingeMeta ? "✓ Meta atingida!" : "Ajuste aportes ou prazo") : "Simule primeiro"}
-                      </motion.p>
-
-                      {result && result.rendaDesejadaNum > 0 && (
-                        <div className="mt-4 space-y-2">
-                          <div className="flex items-center justify-between text-[11px] gap-3">
-                            <span className="calc-num text-muted-foreground truncate pr-2">
-                              {formatCompactBRL(result.rendaMensalLiquidaNum)} <span className="text-muted-foreground/60">de</span>{" "}
-                              {formatCompactBRL(result.rendaDesejadaNum)}
-                            </span>
-                            <span
-                              className={`calc-num font-black shrink-0 text-base md:text-lg ${
-                                result.atingeMeta ? "text-success" : "text-warning"
-                              }`}
-                            >
-                              {result.rendaVsDesejada >= 1000
-                                ? `${(result.rendaVsDesejada / 100).toFixed(0)}×`
-                                : `${result.rendaVsDesejada.toFixed(0)}%`}
-                            </span>
-                          </div>
-                          <div className="h-2.5 w-full rounded-full bg-muted/60 overflow-hidden border border-border/40 shadow-[inset_0_1px_2px_hsl(215_50%_23%/0.08)]">
-                            <motion.div
-                              className="h-full rounded-full relative overflow-hidden"
-                              style={{
-                                background: result.atingeMeta
-                                  ? "linear-gradient(90deg, hsl(var(--success)), hsl(var(--success) / 0.75))"
-                                  : "linear-gradient(90deg, hsl(var(--warning)), hsl(var(--warning) / 0.75))",
-                                boxShadow: result.atingeMeta
-                                  ? "0 0 14px hsl(var(--success) / 0.65)"
-                                  : "0 0 14px hsl(var(--warning) / 0.65)",
-                              }}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${Math.max(2, Math.min(100, result.rendaVsDesejada))}%` }}
-                              transition={{ duration: 1, ease: "easeOut" }}
-                            >
-                              {/* shimmer */}
-                              <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                                animate={{ x: ["-100%", "200%"] }}
-                                transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
-                              />
-                            </motion.div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Botão destaque: Ver rendimento mensal em PDF (logo abaixo da Meta de Renda) */}
-                      {result && (
-                        <motion.button
-                          onClick={() => generateRendimentoPDF(result, {
-                            idadeAtual: sim.idadeAtual,
-                            idadeAposent: sim.idadeAposent,
-                            patrimonioAtual: sim.patrimonioAtual,
-                            aporte: sim.aporte,
-                            rendaDesejada: sim.rendaDesejada,
-                            rentabilidadeAnual: rentAnual,
-                          })}
-                          whileTap={{ scale: 0.98 }}
-                          className="calc-btn-secondary mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-xs md:text-sm group cursor-pointer"
-                        >
-                          <FileDown className="h-4 w-4" />
-                          <span>Ver rendimento mensal em PDF</span>
-                          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-                        </motion.button>
-                      )}
-                    </div>
-
-
+                      );
+                    })}
                   </div>
+                </div>
 
-                  {/* Results panel — superfície clara com tinta azul/laranja */}
-                  <div
-                    className="flex flex-col min-w-0 lg:h-full p-5 md:p-7 gap-5 md:gap-6 relative overflow-hidden border-t lg:border-t-0 lg:border-l border-border/60"
-                    style={{
-                      background:
-                        "radial-gradient(120% 80% at 100% 0%, hsl(16 80% 55% / 0.05), transparent 60%), radial-gradient(120% 80% at 0% 100%, hsl(215 50% 23% / 0.05), transparent 60%), linear-gradient(160deg, hsl(220 30% 99%), hsl(220 25% 97%))",
-                    }}
-                  >
-                    {/* Floating ambient orbs */}
-                    <motion.div
-                      className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 rounded-full bg-accent/15 blur-[100px]"
-                      animate={{ scale: [1, 1.25, 1], opacity: [0.3, 0.55, 0.3] }}
-                      transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-                    />
-                    <motion.div
-                      className="pointer-events-none absolute -bottom-24 -left-16 w-56 h-56 rounded-full blur-[100px]"
-                      style={{ background: "hsl(var(--accent) / 0.12)" }}
-                      animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.45, 0.25] }}
-                      transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                    />
-
-                    {/* Card "Sua escolha aplicada" removido — informação já visível nos 3 cards seletores acima */}
-
-                    {/* Fallback: cliente usou taxa custom */}
-                    {result && !resultFaixa && sim.rentabilidade > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="relative z-10 rounded-2xl p-3 border border-border/60 flex items-center gap-3"
-                        style={{
-                          background: "linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(var(--primary) / 0.3))",
-                          boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.5)",
-                        }}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-muted/70 flex items-center justify-center shrink-0">
-                          <Percent className="h-4 w-4 text-foreground/80" strokeWidth={2.5} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground font-bold">Taxa personalizada</p>
-                          <p className="text-sm font-bold text-foreground tracking-tight tabular-nums mt-0.5">
-                            {sim.rentabilidade.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% {rentPeriodo === "mensal" ? "a.m." : "a.a."}
-                            <span className="text-muted-foreground/80 text-[11px] font-medium ml-2">
-                              · {rentAnual.toFixed(2)}% ao ano
-                            </span>
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* === Patrimônio Bruto — branco premium com tinta accent === */}
-                    <div
-                      className="calc-card-light relative z-10 rounded-2xl p-5 md:p-6 overflow-hidden ring-1 ring-accent/15 group"
-                    >
-                      {/* shine sweep on hover */}
-                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-accent/[0.05] to-transparent pointer-events-none" />
-
-                      <div className="relative flex items-start justify-between gap-3 mb-4">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-accent/30"
-                            style={{
-                              background: "linear-gradient(135deg, hsl(var(--accent) / 0.25), hsl(var(--accent) / 0.05))",
-                              boxShadow: "0 8px 20px -8px hsl(var(--accent) / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.6)",
-                            }}
-                          >
-                            <DollarSign className="h-5 w-5 text-accent" strokeWidth={2.5} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs md:text-sm uppercase tracking-[0.15em] text-accent font-extrabold">Patrimônio Bruto</p>
-                            <p className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">acumulado ao final</p>
+                {/* Grupo 2 — INVESTIMENTOS ATUAIS */}
+                <div className="space-y-3">
+                  <p className="sim-group-label">
+                    <PiggyBank className="h-3.5 w-3.5" />
+                    Investimentos Atuais
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                    {([
+                      { label: "Quanto já tem guardado/investido?", key: "patrimonioAtual", placeholder: "ex: 100.000,00" },
+                      { label: "Quanto consegue investir por mês?", key: "aporte", placeholder: "ex: 1.500,00" },
+                    ]).map((f) => {
+                      const numVal = (sim as any)[f.key] as number;
+                      const display = numVal ? numVal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
+                      return (
+                        <div key={f.key} className="space-y-1.5">
+                          <label className="text-xs font-semibold text-foreground/85 leading-tight block">{f.label}</label>
+                          <div className="relative">
+                            <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${numVal ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground/80"}`}>R$</span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={display}
+                              placeholder={f.placeholder}
+                              onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, "");
+                                const cents = digits ? parseInt(digits, 10) : 0;
+                                setSim({ ...sim, [f.key]: cents / 100 });
+                              }}
+                              className="calc-input pl-11 pr-4"
+                            />
                           </div>
                         </div>
-                        {result && (
-                          <div className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-novare-blue-bright/15 border border-novare-blue-bright/30">
-                            <TrendingUp className="h-3 w-3 text-novare-blue-bright" />
-                            <span className="text-[10px] font-bold text-novare-blue-bright tabular-nums">
-                              {Number.isFinite(result.multiploInvestido) ? `${result.multiploInvestido.toFixed(1)}×` : "—"}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                      <motion.p
-                        className="calc-num text-[1.75rem] md:text-[2.1rem] lg:text-[2.25rem] leading-[1.05] font-black text-foreground break-words"
-                        key={result?.patrimonioNum}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4 }}
-                        title={result?.patrimonio}
-                        style={{ textShadow: "0 2px 20px hsl(var(--accent) / 0.22)" }}
-                      >
-                        {result ? formatCompactBRL(result.patrimonioNum) : "—"}
-                      </motion.p>
-
-                      {!result && (
-                        <p className="text-xs text-muted-foreground/80 mt-2 font-medium italic">aguardando simulação</p>
-                      )}
-
-                      {result && result.mesesAcumulo > 0 && (
-                        <div className="mt-4 pt-4 border-t border-border/40 grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-novare-blue-bright font-bold inline-flex items-center gap-1.5">
-                              <Calendar className="h-3 w-3" /> Período
-                            </p>
-                            <p className="text-lg md:text-xl font-extrabold text-foreground mt-1 calc-num">{result.anosAcumulo} <span className="text-sm text-muted-foreground font-bold">anos</span></p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{result.mesesAcumulo} meses</p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[11px] md:text-xs uppercase tracking-wider text-success font-bold inline-flex items-center gap-1.5">
-                              <Receipt className="h-3 w-3" /> Líquido após IR
-                            </p>
-                            <p className="text-lg md:text-xl font-extrabold text-success mt-1 calc-num truncate" title={result.patrimonioLiquido}>
-                              {formatCompactBRL(result.patrimonioLiquidoNum)}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">IR de {result.aliquotaIR}%</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {result && result.mesesAcumulo === 0 && (
-                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warning/10 border border-warning/30">
-                          <span className="text-[11px] font-semibold text-warning">
-                            Defina <span className="font-extrabold">idade futura</span> maior que a atual para projetar o crescimento
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* === Mini KPIs grid === */}
-                    <div className="relative z-10 grid grid-cols-3 gap-3 md:gap-4">
-                      {[
-                        {
-                          label: "Investido",
-                          value: result ? formatCompactBRL(result.totalInvestidoNum) : "—",
-                          full: result?.totalInvestido,
-                          sub: "Aportes somados",
-                          icon: PiggyBank,
-                          tone: "blue" as const,
-                        },
-                        {
-                          label: "Ganho líq.",
-                          value: result ? formatCompactBRL(result.ganhoLiquidoNum) : "—",
-                          full: result?.ganhoLiquido,
-                          sub: result ? `Bruto ${formatCompactBRL(result.patrimonioNum - result.totalInvestidoNum)}` : "—",
-                          icon: TrendingUp,
-                          tone: "success" as const,
-                        },
-                        {
-                          label: "Imposto",
-                          value: result ? `${result.aliquotaIR}%` : "—",
-                          full: undefined,
-                          sub: result ? `IR ${formatCompactBRL(result.patrimonioNum - result.patrimonioLiquidoNum)}` : "—",
-                          icon: Receipt,
-                          tone: "accent" as const,
-                        },
-                      ].map((k) => {
-                        const Icon = k.icon;
-                        const tone = {
-                          blue: {
-                            card: "calc-kpi-blue",
-                            iconBg: "linear-gradient(135deg, hsl(var(--novare-blue-bright) / 0.22), hsl(var(--novare-blue-bright) / 0.06))",
-                            iconColor: "text-novare-blue-bright",
-                            label: "text-novare-blue-bright",
-                            value: "text-novare-blue",
-                            valueDark: "dark:text-novare-blue-bright",
-                          },
-                          success: {
-                            card: "calc-kpi-success",
-                            iconBg: "linear-gradient(135deg, hsl(var(--success) / 0.22), hsl(var(--success) / 0.05))",
-                            iconColor: "text-success",
-                            label: "text-success",
-                            value: "text-success",
-                            valueDark: "",
-                          },
-                          accent: {
-                            card: "calc-kpi-accent",
-                            iconBg: "linear-gradient(135deg, hsl(var(--accent) / 0.22), hsl(var(--accent) / 0.05))",
-                            iconColor: "text-accent",
-                            label: "text-accent-strong",
-                            value: "text-accent-strong",
-                            valueDark: "",
-                          },
-                        }[k.tone];
-                        return (
-                          <motion.div
-                            key={k.label}
-                            className={`calc-kpi ${tone.card} p-3.5 md:p-5 min-w-0`}
-                            whileHover={{ y: -4 }}
-                            transition={{ type: "spring", stiffness: 320, damping: 24 }}
-                          >
-                            <div
-                              className="calc-kpi-icon mb-2.5 md:mb-3"
-                              style={{ background: tone.iconBg }}
-                            >
-                              <Icon className={`h-4 w-4 md:h-5 md:w-5 ${tone.iconColor}`} strokeWidth={2.5} />
-                            </div>
-                            <p className={`text-[10px] md:text-[11px] uppercase tracking-[0.12em] ${tone.label} font-extrabold mb-1 truncate`}>
-                              {k.label}
-                            </p>
-                            <p
-                              className={`calc-num text-[1.05rem] md:text-2xl lg:text-[1.55rem] font-black ${tone.value} ${tone.valueDark} leading-[1.05] truncate`}
-                              title={k.full}
-                            >
-                              {k.value}
-                            </p>
-                            <p className="text-[10px] md:text-xs text-muted-foreground mt-1.5 truncate font-medium">
-                              {k.sub}
-                            </p>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-
-            {/* ── CTA: Fale com especialista Novare (aparece após simulação) ── */}
-            {result && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="relative z-10 lg:mt-auto lg:pt-2"
-              >
-                <div
-                  className="relative rounded-2xl p-5 md:p-6 overflow-hidden border-t-2 border-accent/40"
-                  style={{
-                    background:
-                      "radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / 0.18), transparent 60%), linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)))",
-                    borderLeft: "1px solid hsl(var(--accent) / 0.25)",
-                    borderRight: "1px solid hsl(var(--accent) / 0.25)",
-                    borderBottom: "1px solid hsl(var(--accent) / 0.25)",
-                    boxShadow:
-                      "0 16px 40px -15px hsl(var(--accent) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.5)",
-                  }}
-                >
-                  {/* Orbs animados de fundo */}
-                  <motion.div
-                    className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full blur-[80px]"
-                    style={{ background: "hsl(var(--accent) / 0.25)" }}
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <motion.div
-                    className="pointer-events-none absolute -bottom-12 -left-12 w-40 h-40 rounded-full blur-[70px]"
-                    style={{ background: "hsl(var(--accent) / 0.3)" }}
-                    animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.6, 0.3] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  />
-
-                  <div className="relative z-10 flex flex-col gap-3">
-                    <div className="space-y-1.5 min-w-0">
-                      <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-accent/15 border border-accent/30">
-                        <motion.span
-                          className="w-1.5 h-1.5 rounded-full bg-accent"
-                          animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
-                          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                {/* Grupo 3 — RENDIMENTOS E TAXAS */}
+                <div className="space-y-3">
+                  <p className="sim-group-label">
+                    <BarChart3 className="h-3.5 w-3.5" />
+                    Rendimentos e Taxas
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Qual renda mensal deseja no futuro?</label>
+                      <div className="relative">
+                        <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold transition-colors ${sim.rendaDesejada ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground/80"}`}>R$</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={sim.rendaDesejada ? sim.rendaDesejada.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""}
+                          placeholder="ex: 10.000,00"
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, "");
+                            const cents = digits ? parseInt(digits, 10) : 0;
+                            setSim({ ...sim, rendaDesejada: cents / 100 });
+                          }}
+                          className="calc-input pl-11 pr-4"
                         />
-                        <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">
-                          Próximo passo
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Taxa de juros dos seus investimentos</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="ex: 8,5"
+                          value={
+                            sim.rentabilidade
+                              ? sim.rentabilidade.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
+                            const n = parseFloat(raw);
+                            const max = rentPeriodo === "mensal" ? 50 : 200;
+                            const clamped = Number.isFinite(n) ? Math.min(n, max) : 0;
+                            setSim({ ...sim, rentabilidade: clamped });
+                            setSelectedFaixa(null);
+                          }}
+                          className="calc-input pl-4 pr-16"
+                        />
+                        <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold transition-colors ${sim.rentabilidade ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground/50"}`}>
+                          {rentPeriodo === "mensal" ? "% a.m." : "% a.a."}
                         </span>
                       </div>
-                      <h3 className="text-base md:text-lg font-black text-foreground leading-tight">
-                        {result.atingeMeta
-                          ? "Pronto para sair do papel?"
-                          : "Quer ajustar essa estratégia?"}
-                      </h3>
-                      <p className="text-xs text-muted-foreground leading-snug">
-                        Um especialista <span className="text-accent font-semibold">Novare</span> analisa seu perfil e monta uma carteira personalizada — sem custo e sem compromisso.
+                      <p className="text-[10px] text-muted-foreground/70">
+                        {rentPeriodo === "mensal"
+                          ? `≈ ${rentAnual.toFixed(1)}% ao ano`
+                          : `≈ ${((Math.pow(1 + sim.rentabilidade / 100, 1 / 12) - 1) * 100).toFixed(2)}% ao mês`}
+                        {" · "}Selic atual ~14,75% a.a.
                       </p>
                     </div>
+                  </div>
+                </div>
 
-                    {/* Botão Falar com especialista — limpo e elegante */}
-                    <motion.button
-                      onClick={() => window.open(whatsappUrl, "_blank")}
-                      whileTap={{ scale: 0.98 }}
-                      className="calc-btn-primary relative z-10 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm md:text-base group whitespace-nowrap"
-                    >
-                      <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
-                      <span>Falar com especialista</span>
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-                    </motion.button>
+                {/* Grupo 4 — IMPOSTO DE RENDA NA APLICAÇÃO */}
+                <div className="space-y-3">
+                  <p className="sim-group-label">
+                    <Receipt className="h-3.5 w-3.5" />
+                    Imposto de Renda na Aplicação
+                  </p>
+                  <p className="text-[11px] text-muted-foreground -mt-1">Simule o impacto do IR sobre seus rendimentos</p>
+                  <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Alíquota de IR estimada</label>
+                      <div className="relative">
+                        <select
+                          value={result?.aliquotaIR ?? 15}
+                          onChange={() => { /* informativo: alíquota é derivada do prazo */ }}
+                          className="calc-input pl-4 pr-10 appearance-none cursor-not-allowed opacity-90"
+                          disabled
+                        >
+                          {[22.5, 20, 17.5, 15].map((a) => (
+                            <option key={a} value={a}>{a.toString().replace(".", ",")}%</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/70">Calculada automaticamente pela tabela regressiva.</p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground/85 leading-tight block">Rendimento líquido após IR</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          readOnly
+                          value={
+                            result
+                              ? `${(rentAnual * (1 - (result.aliquotaIR / 100))).toFixed(2).replace(".", ",")}%`
+                              : "—"
+                          }
+                          className="calc-input pl-4 pr-16 font-bold text-novare-blue dark:text-novare-blue-bright bg-novare-blue-light/60 dark:bg-novare-blue/15"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-novare-blue/70 dark:text-novare-blue-bright/70">a.a.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[10.5px] text-muted-foreground/70 leading-relaxed border-t border-border/40 pt-3">
+                  <span className="font-bold text-foreground/70">*</span> Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
+                </p>
+              </motion.div>
+
+              {/* ====== COLUNA DIREITA — Cenário projetado + KPIs + Gráfico ====== */}
+              <motion.div variants={fadeUp} custom={2} className="flex flex-col gap-5 md:gap-6 min-w-0">
+
+                {/* Painel escuro — Seu cenário projetado */}
+                <div className="sim-hero-dark relative rounded-3xl p-6 md:p-7 overflow-hidden">
+                  <div className="flex items-start justify-between gap-3 mb-5">
+                    <div>
+                      <p className="text-xs md:text-sm uppercase tracking-[0.18em] text-white/70 font-bold">Seu cenário projetado</p>
+                    </div>
+                    {result && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-novare-blue-bright/25 border border-novare-blue-bright/40 text-novare-blue-bright text-[11px] font-bold uppercase tracking-wider">
+                        aos {sim.idadeAposent} anos
+                      </span>
+                    )}
                   </div>
 
-                  {/* Selos de confiança */}
-                  <div className="relative z-10 mt-3 pt-3 border-t border-border/40 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-foreground/65 font-medium">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Shield className="h-3 w-3 text-accent" />
-                      Gratuito
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Check className="h-3 w-3 text-success" />
-                      Sem compromisso
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Phone className="h-3 w-3 text-accent" />
-                      Resposta em até 1h útil
+                  <div className="grid sm:grid-cols-2 gap-5 md:gap-6 relative">
+                    <div className="min-w-0 sm:pr-5 sm:border-r border-white/10">
+                      <p className="text-[11px] md:text-xs uppercase tracking-wider text-white/65 font-semibold mb-2">Patrimônio bruto estimado</p>
+                      <motion.p
+                        key={result?.patrimonioNum ?? "empty-bruto"}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="calc-num text-[1.7rem] md:text-[2.1rem] lg:text-[2.4rem] font-black text-novare-blue-bright leading-[1] break-words"
+                        style={{ textShadow: "0 2px 24px hsl(var(--novare-blue-bright) / 0.45)" }}
+                        title={result?.patrimonio}
+                      >
+                        {result ? formatCompactBRL(result.patrimonioNum) : "R$ —"}
+                      </motion.p>
+                      <p className="text-[11px] text-white/55 mt-2 font-medium">Valor acumulado ao final do período</p>
+                    </div>
+                    <div className="min-w-0 sm:pl-1">
+                      <p className="text-[11px] md:text-xs uppercase tracking-wider text-white/65 font-semibold mb-2">Patrimônio líquido após IR</p>
+                      <motion.p
+                        key={result?.patrimonioLiquidoNum ?? "empty-liq"}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.05 }}
+                        className="calc-num text-[1.7rem] md:text-[2.1rem] lg:text-[2.4rem] font-black text-white leading-[1] break-words"
+                        title={result?.patrimonioLiquido}
+                      >
+                        {result ? formatCompactBRL(result.patrimonioLiquidoNum) : "R$ —"}
+                      </motion.p>
+                      <p className="text-[11px] text-white/55 mt-2 font-medium">Valor líquido acumulado ao final do período</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3 KPIs laterais */}
+                <div className="grid sm:grid-cols-3 gap-4 md:gap-5">
+                  {[
+                    {
+                      label: "Renda mensal",
+                      icon: Wallet,
+                      value: result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "R$ —",
+                      sub: "em valores de hoje",
+                    },
+                    {
+                      label: "Renda anual",
+                      icon: Calendar,
+                      value: result ? formatCompactBRL(result.rendaMensalLiquidaNum * 12) : "R$ —",
+                      sub: "em valores de hoje",
+                    },
+                    {
+                      label: "Taxa de reposição",
+                      icon: Percent,
+                      value: result && result.rendaDesejadaNum > 0
+                        ? `${Math.min(999, Math.round(result.rendaVsDesejada))}%`
+                        : "—",
+                      sub: "da renda desejada\nem valores de hoje",
+                    },
+                  ].map((k) => {
+                    const Icon = k.icon;
+                    return (
+                      <div key={k.label} className="sim-kpi min-w-0">
+                        <div className="flex items-center gap-2.5 mb-3">
+                          <div
+                            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                            style={{
+                              background: "linear-gradient(135deg, hsl(var(--novare-blue) / 0.18), hsl(var(--novare-blue-bright) / 0.06))",
+                              border: "1px solid hsl(var(--novare-blue) / 0.20)",
+                              boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.7)",
+                            }}
+                          >
+                            <Icon className="h-[18px] w-[18px] text-novare-blue dark:text-novare-blue-bright" strokeWidth={2.25} />
+                          </div>
+                          <p className="text-[11px] md:text-xs uppercase tracking-[0.12em] text-foreground/75 font-bold leading-tight">{k.label}</p>
+                        </div>
+                        <p className="calc-num text-lg md:text-xl lg:text-[1.4rem] font-black text-novare-blue dark:text-novare-blue-bright leading-tight truncate" title={k.value}>
+                          {k.value}
+                        </p>
+                        <p className="text-[10.5px] text-muted-foreground mt-1.5 leading-snug whitespace-pre-line font-medium">
+                          {k.sub}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Gráfico de evolução do patrimônio líquido */}
+                <div className="calc-card-light rounded-3xl p-5 md:p-6 relative overflow-hidden">
+                  <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+                    <div className="min-w-0">
+                      <h3 className="text-base md:text-lg font-bold text-foreground tracking-tight leading-tight">
+                        Evolução do patrimônio líquido após IR
+                      </h3>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-novare-blue-light/70 dark:bg-novare-blue/20 text-novare-blue dark:text-novare-blue-bright text-xs font-bold border border-novare-blue/20">
+                      Cenário base
+                      <ChevronDown className="h-3.5 w-3.5" />
                     </span>
                   </div>
+
+                  {result && result.timeline.length > 1 ? (
+                    <div className="relative h-[260px] md:h-[300px] -ml-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={result.timeline} margin={{ top: 30, right: 16, left: 0, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="gradNetBlue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="hsl(var(--novare-blue-bright))" stopOpacity={0.45} />
+                              <stop offset="100%" stopColor="hsl(var(--novare-blue))" stopOpacity={0.02} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 6" stroke="hsl(220 13% 88%)" vertical={false} />
+                          <XAxis
+                            dataKey="age"
+                            tick={{ fill: "hsl(220 9% 38%)", fontSize: 11 }}
+                            tickLine={false}
+                            axisLine={{ stroke: "hsl(220 13% 88%)" }}
+                            tickFormatter={(v) => `${v} anos`}
+                            interval="preserveStartEnd"
+                            minTickGap={32}
+                          />
+                          <YAxis
+                            tick={{ fill: "hsl(220 9% 38%)", fontSize: 11 }}
+                            tickLine={false}
+                            axisLine={false}
+                            tickFormatter={(v: number) => {
+                              if (v >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(1)}M`;
+                              if (v >= 1_000) return `R$ ${Math.round(v / 1_000)}k`;
+                              return `R$ ${v}`;
+                            }}
+                            width={60}
+                          />
+                          <RTooltip
+                            contentStyle={{
+                              background: "hsl(0 0% 100%)",
+                              border: "1px solid hsl(var(--novare-blue) / 0.2)",
+                              borderRadius: 12,
+                              color: "hsl(220 20% 12%)",
+                              fontSize: 12,
+                              boxShadow: "0 12px 32px -12px hsl(var(--novare-blue) / 0.25)",
+                            }}
+                            labelFormatter={(label, payload) => {
+                              const p = payload?.[0]?.payload as YearPoint | undefined;
+                              return p ? `Ano ${p.year} · ${p.age} anos` : `${label} anos`;
+                            }}
+                            formatter={(value: number) => [
+                              value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }),
+                              "Patrimônio líquido",
+                            ]}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="net"
+                            stroke="hsl(var(--novare-blue-bright))"
+                            strokeWidth={2.75}
+                            fill="url(#gradNetBlue)"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+
+                      {/* Badge final flutuante */}
+                      <div className="absolute top-1 right-3 sim-chart-badge text-[11px] md:text-xs font-bold leading-tight">
+                        <p className="calc-num text-sm md:text-base font-black">
+                          {formatCompactBRL(result.patrimonioLiquidoNum)}
+                        </p>
+                        <p className="text-[10px] font-semibold text-white/85">aos {sim.idadeAposent} anos</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-[260px] md:h-[300px] flex flex-col items-center justify-center text-center px-6 rounded-2xl border border-dashed border-border/60 bg-muted/30">
+                      <BarChart3 className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                      <p className="text-sm text-muted-foreground font-medium">
+                        Preencha os campos ao lado e clique em <span className="font-bold text-novare-blue dark:text-novare-blue-bright">Recalcular simulação</span>
+                      </p>
+                      <p className="text-[11px] text-muted-foreground/70 mt-1">para visualizar a evolução do seu patrimônio.</p>
+                    </div>
+                  )}
                 </div>
               </motion.div>
-            )}
+            </div>
 
+            {/* ─── 3 CTAs FINAIS ─── */}
+            <motion.div
+              variants={fadeUp}
+              custom={3}
+              className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6 md:mt-8"
+            >
+              <button
+                onClick={handleSimulate}
+                disabled={isSimulating}
+                className="sim-btn-blue group inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-70 disabled:cursor-wait"
+              >
+                <BarChart3 className="h-[18px] w-[18px]" />
+                <span>Recalcular simulação</span>
+                <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
+              </button>
 
-                  </div>
-                </div>
-              </div>
+              <button
+                onClick={() => window.open(whatsappUrl, "_blank")}
+                className="sim-btn-blue group inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base"
+              >
+                <MessageCircle className="h-[18px] w-[18px]" />
+                <span>Falar com um especialista</span>
+                <ArrowRight className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1" />
+              </button>
+
+              <button
+                onClick={() => result && generateRendimentoPDF(result, {
+                  idadeAtual: sim.idadeAtual,
+                  idadeAposent: sim.idadeAposent,
+                  patrimonioAtual: sim.patrimonioAtual,
+                  aporte: sim.aporte,
+                  rendaDesejada: sim.rendaDesejada,
+                  rentabilidadeAnual: rentAnual,
+                })}
+                disabled={!result}
+                title={!result ? "Simule primeiro para gerar o relatório" : undefined}
+                className="sim-btn-outline inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FileDown className="h-[18px] w-[18px]" />
+                <span>Baixar relatório em PDF</span>
+              </button>
             </motion.div>
+
+            {/* Selo de segurança */}
+            <p className="text-center text-[11px] text-muted-foreground mt-4 inline-flex items-center justify-center gap-2 w-full">
+              <Lock className="h-3 w-3 text-novare-blue dark:text-novare-blue-bright" />
+              Seus dados estão seguros e protegidos conosco.
+            </p>
 
             {/* ── DETALHAMENTO DO CÁLCULO DO IR ───── */}
             {result && result.totalInvestidoNum > 0 && (() => {
