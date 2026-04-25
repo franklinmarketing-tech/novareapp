@@ -758,7 +758,7 @@ const YieldGuide = () => {
       </motion.nav>
 
       {/* ── HERO ────────────────────────────────── */}
-      <section className="pt-20 pb-8 md:pt-28 md:pb-10">
+      <section className="pt-16 pb-6 md:pt-24 md:pb-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-5 lg:px-6 text-center">
           <motion.div initial="hidden" animate="visible" className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-widest">
@@ -805,7 +805,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── BENTO STATS ─────────────────────────── */}
-      <section className="py-8 md:py-12">
+      <section className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
@@ -831,7 +831,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── INTRO / ABOUT ───────────────────────── */}
-      <section id="intro" className="py-8 md:py-12">
+      <section id="intro" className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <div className="grid lg:grid-cols-2 gap-8 items-center">
@@ -884,7 +884,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── RENDA FIXA TABLE ────────────────────── */}
-      <section id="renda-fixa" className="py-8 md:py-12 bg-muted/40">
+      <section id="renda-fixa" className="py-6 md:py-9 bg-muted/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
@@ -935,7 +935,7 @@ const YieldGuide = () => {
       {/* ── SIMULATOR (image-faithful, Novare blue) ─────────── */}
       <section
         id="simulador"
-        className="py-8 md:py-12 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
+        className="py-6 md:py-9 relative overflow-hidden bg-gradient-to-b from-background via-muted/30 to-background"
       >
         {/* Background orbs sutis (azul Novare) */}
         <motion.div
@@ -1925,7 +1925,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── TESTIMONIALS ────────────────────────── */}
-      <section className="py-8 md:py-12 bg-muted/40">
+      <section className="py-6 md:py-9 bg-muted/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
@@ -1965,7 +1965,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── CTA BENTO ───────────────────────────── */}
-      <section id="contato" className="py-8 md:py-12">
+      <section id="contato" className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden bg-primary text-primary-foreground">
@@ -2151,7 +2151,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FAQ ──────────────────────────────────── */}
-      <section id="faq" className="py-8 md:py-12 bg-muted/40">
+      <section id="faq" className="py-6 md:py-9 bg-muted/40">
         <div className="max-w-3xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4">
@@ -2180,7 +2180,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── QUEM SOMOS ──────────────────────────── */}
-      <section id="quem-somos" className="py-8 md:py-12">
+      <section id="quem-somos" className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-5">
             <motion.div variants={fadeUp} custom={0} className="text-center space-y-4 max-w-2xl mx-auto">
@@ -2363,7 +2363,7 @@ const YieldGuide = () => {
       </AnimatePresence>
 
       {/* ── NEWSLETTER — immersive bento ────────── */}
-      <section className="py-8 md:py-12">
+      <section className="py-6 md:py-9">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
             <Card className="rounded-3xl border-border/40 shadow-soft overflow-hidden">
@@ -2487,7 +2487,7 @@ const YieldGuide = () => {
       </section>
 
       {/* ── FOOTER ──────────────────────────────── */}
-      <footer className="py-6 md:py-8 border-t border-border/40">
+      <footer className="py-5 md:py-6 border-t border-border/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <img src={logoPreta} alt="Novare" className="h-6" />
           <p className="text-xs text-muted-foreground">
