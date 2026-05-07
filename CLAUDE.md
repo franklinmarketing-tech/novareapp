@@ -194,3 +194,15 @@ chore: adiciona permissões pré-aprovadas ao settings.json
 ```
 
 Sempre fazer `git push` para a branch `main` após o commit, sem pedir confirmação ao usuário.
+
+## Protocolo de edição visual (OBRIGATÓRIO)
+
+Sempre que for editar qualquer arquivo do projeto, você DEVE seguir este protocolo:
+
+1. ANTES de editar, abra o arquivo no editor central do VS Code usando a ferramenta apropriada
+2. Aplique a edição de forma visível (str_replace ou edit), nunca recriando o arquivo inteiro
+3. Mantenha o arquivo aberto após editar
+4. Se for editar múltiplos arquivos, abra e edite UM POR VEZ, sequencialmente
+5. Após editar, mostre um resumo curto do que foi alterado
+
+Esta regra é prioritária sobre velocidade de execução. O usuário precisa acompanhar visualmente cada mudança.
