@@ -21,15 +21,14 @@ import { computeProfile, PROFILE_INFO } from "@/components/onboarding/StepCompor
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { ClientFinancialSidebar, type ClientFinancials } from "@/components/parecer/ClientFinancialSidebar";
-import { SystemRecommendationsPanel, type SystemRecommendation, type RiskProfile } from "@/components/parecer/SystemRecommendations";
 import type { BehavioralProfile } from "@/components/onboarding/StepComportamental";
 import {
   Pencil, Save, X,
   User, Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain,
   TrendingUp, TrendingDown, Landmark, type LucideIcon,
-  PiggyBank, Lightbulb,
+  PiggyBank,
 } from "lucide-react";
 
 const formatCurrency = (v: string | number) => {
@@ -334,20 +333,7 @@ const ClientOnboarding = () => {
     };
   }, [totalRenda, totalDespesas, totalPatrimonio, totalDividas, rendas, despesas, dividas, objetivos, seguros]);
 
-  const riskProfile: RiskProfile = useMemo(() => {
-    const profileMap: Record<string, RiskProfile> = {
-      Explorador: "radical", Construtor: "balanceado", Guardião: "ponderado", Despreocupado: "balanceado",
-    };
-    const behavProfile = computeProfile(comportamental) as BehavioralProfile;
-    const mapped = profileMap[behavProfile] || "balanceado";
-    // Adjust based on risk_tolerance_score
-    const riskScore = comportamental.risk_tolerance_score;
-    if (riskScore >= 7) return "radical";
-    if (riskScore <= 3) return "ponderado";
-    return mapped;
-  }, [comportamental]);
 
-  // Recommendations are now fetched by the panel component via AI
 
   if (loading) {
     return (
@@ -569,10 +555,8 @@ const ClientOnboarding = () => {
 
 
       {/* Main content */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Left: All sections in a single clean card */}
-        <div className="xl:col-span-2">
-          <Card className="border-border/40 shadow-soft rounded-2xl overflow-hidden">
+      <div>
+        <Card className="border-border/40 shadow-soft rounded-2xl overflow-hidden">
             <Accordion type="multiple" defaultValue={[]}>
               {sections.map((s, i) => {
                 const Icon = sectionIcons[s.key];
@@ -618,26 +602,6 @@ const ClientOnboarding = () => {
               })}
             </Accordion>
           </Card>
-        </div>
-
-        {/* Right column: Recommendations */}
-        <div className="xl:col-span-1">
-          <Card className="border-border/40 shadow-soft rounded-2xl sticky top-16">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <div className="p-1.5 rounded-lg bg-accent/10">
-                  <Lightbulb className="h-6 w-6 text-accent" />
-                </div>
-                Recomendações IA
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {clientId && (
-                <SystemRecommendationsPanel clientId={clientId} riskProfile={riskProfile} />
-              )}
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );

@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SystemRecommendationsPanel } from "@/components/parecer/SystemRecommendations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +16,7 @@ import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { sendClientEmail } from "@/lib/sendClientEmail";
-import { ArrowLeft, Plus, Pencil, Trash2, ClipboardList, CheckCircle2, ChevronDown, ChevronRight, ArchiveRestore, History, Target, Flame, TrendingUp, Shield, PiggyBank, Banknote, GraduationCap, Home, Heart, Plane, Car } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, ClipboardList, CheckCircle2, ChevronDown, ChevronRight, ArchiveRestore, History, Target, Flame, TrendingUp, Shield, PiggyBank, Banknote, GraduationCap, Home, Heart, Plane, Car, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadingState } from "@/components/ui/loading-state";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -585,6 +586,23 @@ const AdminActionPlan = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── RECOMENDAÇÕES IA ─────────────────────────── */}
+      {clientId && (
+        <Card className="border-border/40 shadow-soft rounded-2xl mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <Lightbulb className="h-5 w-5 text-accent" />
+              </div>
+              Recomendações IA
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SystemRecommendationsPanel clientId={clientId} />
+          </CardContent>
+        </Card>
       )}
 
       {/* ── TAREFAS PAI + FILHOS ────────────────────── */}
