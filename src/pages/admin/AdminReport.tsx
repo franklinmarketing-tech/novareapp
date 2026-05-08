@@ -167,6 +167,7 @@ const AdminReport = () => {
   const [goals, setGoals] = useState<ReportGoal[]>([]);
   const [actionItems, setActionItems] = useState<ReportActionItem[]>([]);
   const [snapshots, setSnapshots] = useState<ReportSnapshot[]>([]);
+  const [parecerNote, setParecerNote] = useState<{ title: string; content: string } | null>(null);
 
   useEffect(() => {
     if (!clientId) return;
@@ -206,6 +207,14 @@ const AdminReport = () => {
         const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id).order("created_at");
         setActionItems((items ?? []) as ReportActionItem[]);
       }
+      const { data: notes } = await supabase
+        .from("consultant_notes")
+        .select("title, content")
+        .eq("client_id", clientId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (notes) setParecerNote(notes);
       setLoading(false);
     };
     load();
@@ -916,6 +925,73 @@ const AdminReport = () => {
             </Card>
           </section>
         )}
+
+        {/* ══════ PARECER TÉCNICO ══════ */}
+        {parecerNote && (
+          <section>
+            <SectionHeader number={sectionNumber()} title="Parecer Técnico" subtitle="Análise e recomendações do consultor" />
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold text-foreground">{parecerNote.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="prose prose-sm max-w-none text-foreground [&_p]:mb-2 [&_ul]:pl-4 [&_li]:mb-1 [&_strong]:font-semibold text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: parecerNote.content }}
+                />
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* ══════ 3 VERTENTES DO PLANO DE AÇÃO ══════ */}
+        <section>
+          <SectionHeader number={sectionNumber()} title="Opções de Plano de Ação" subtitle="3 vertentes estratégicas geradas pela IA Novare" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {([
+              {
+                label: "Plano Equilibrado",
+                color: "border-blue-400/40 bg-blue-500/5",
+                badge: "bg-blue-500/10 text-blue-700 border-blue-400/30",
+                desc: "Sugestão baseada em ajustes sustentáveis de longo prazo. Foco em equilíbrio entre proteção patrimonial e crescimento gradual.",
+                points: ["Revisão de despesas recorrentes", "Formação de reserva de emergência", "Início de carteira diversificada", "Redução progressiva de dívidas"],
+              },
+              {
+                label: "Plano Conservador",
+                color: "border-emerald-400/40 bg-emerald-500/5",
+                badge: "bg-emerald-500/10 text-emerald-700 border-emerald-400/30",
+                desc: "Foco total em segurança, quitação de dívidas e reserva. Ideal para quem prioriza estabilidade antes de qualquer crescimento.",
+                points: ["Quitação antecipada de dívidas", "Reserva de emergência de 6 meses", "Corte agressivo de despesas variáveis", "Apenas renda fixa conservadora"],
+              },
+              {
+                label: "Plano Agressivo",
+                color: "border-orange-400/40 bg-orange-500/5",
+                badge: "bg-orange-500/10 text-orange-700 border-orange-400/30",
+                desc: "Otimização máxima para aceleração de metas e independência financeira. Aceita maior volatilidade em troca de retornos superiores.",
+                points: ["Renegociação imediata de todas as dívidas", "Reinvestimento de 100% da sobra mensal", "Diversificação em renda variável", "Revisão tributária e otimização fiscal"],
+              },
+            ]).map((plan) => (
+              <Card key={plan.label} className={`border-2 ${plan.color} rounded-2xl`}>
+                <CardHeader className="pb-3">
+                  <Badge className={`self-start text-[11px] font-bold px-2.5 py-1 border ${plan.badge}`}>
+                    {plan.label}
+                  </Badge>
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{plan.desc}</p>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-1.5">
+                    {plan.points.map((p, i) => (
+                      <li key={i} className="flex items-start gap-2 text-xs text-foreground">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
 
         {/* ══════ CRONOGRAMA ══════ */}
         <section>

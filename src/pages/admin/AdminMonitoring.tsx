@@ -10,11 +10,12 @@ import { toast } from "@/hooks/use-toast";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
 import {
   Plus, TrendingUp, TrendingDown, Minus, Camera, Loader2,
   Wallet, PiggyBank, Shield, Target, Calendar, ChevronRight,
   Banknote, CreditCard, BarChart3, ArrowUpRight, ArrowDownRight,
-  CheckCircle2,
+  CheckCircle2, Save,
 } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
 import { sendClientEmail } from "@/lib/sendClientEmail";
@@ -99,8 +100,27 @@ const AdminMonitoring = () => {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [creating, setCreating] = useState(false);
   const [clientName, setClientName] = useState("");
-
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
+  const [trackingRows, setTrackingRows] = useState<Record<string, { valorAtual: string; valorRealizado: string }>>({});
+  const [savingTracking, setSavingTracking] = useState(false);
+
+  const updateTracking = (goalId: string, field: "valorAtual" | "valorRealizado", value: string) =>
+    setTrackingRows((prev) => ({ ...prev, [goalId]: { ...prev[goalId], valorAtual: prev[goalId]?.valorAtual ?? "", valorRealizado: prev[goalId]?.valorRealizado ?? "", [field]: value } }));
+
+  const saveTracking = async () => {
+    if (!clientId) return;
+    setSavingTracking(true);
+    const latest = snapshots.at(-1);
+    const payload = JSON.stringify({ goal_tracking: trackingRows });
+    if (latest) {
+      await supabase.from("monitoring_snapshots").update({ notes: payload }).eq("id", latest.id);
+    } else {
+      const today = new Date().toISOString().slice(0, 10);
+      await supabase.from("monitoring_snapshots").insert({ client_id: clientId, snapshot_date: today, notes: payload });
+    }
+    toast({ title: "Metas salvas!", description: "Valores de acompanhamento registrados." });
+    setSavingTracking(false);
+  };
 
   const loadData = async (silent = false) => {
     if (!clientId) return;
@@ -143,6 +163,15 @@ const AdminMonitoring = () => {
       };
     });
     setGoals(goalsWithProgress);
+
+    // Restore saved tracking values from latest snapshot notes
+    const latestSnap = (snapRes.data as Snapshot[])?.at(-1);
+    if (latestSnap?.notes) {
+      try {
+        const parsed = JSON.parse(latestSnap.notes);
+        if (parsed?.goal_tracking) setTrackingRows(parsed.goal_tracking);
+      } catch { /* ignore malformed notes */ }
+    }
 
     if (!silent) setLoading(false);
   };
@@ -307,6 +336,82 @@ const AdminMonitoring = () => {
             color="bg-accent/10 text-accent"
           />
         </div>
+      )}
+
+      {/* ── Tabela de Metas ────────────────────── */}
+      {goals.length > 0 && (
+        <Card className="border-border/40 shadow-soft rounded-2xl">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Target className="h-4 w-4 text-accent" />
+                  Edição de Metas
+                </CardTitle>
+                <CardDescription className="text-xs mt-0.5">Preencha os valores realizados. Uso exclusivo do consultor.</CardDescription>
+              </div>
+              <Button size="sm" onClick={saveTracking} disabled={savingTracking} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-1.5">
+                <Save className="h-4 w-4" />
+                {savingTracking ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border/40 bg-muted/30">
+                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Descrição</th>
+                    <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground">Valor Atual</th>
+                    <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground">Meta Estabelecida</th>
+                    <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground">% Redução</th>
+                    <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground">Valor Realizado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {goals.map((g) => {
+                    const row = trackingRows[g.id] || { valorAtual: "", valorRealizado: "" };
+                    const atual = parseFloat(row.valorAtual) || 0;
+                    const meta = g.target_amount || 0;
+                    const realizado = parseFloat(row.valorRealizado) || 0;
+                    const pctReducao = atual > 0 && meta > 0 && meta < atual ? ((atual - meta) / atual * 100).toFixed(1) : null;
+                    return (
+                      <tr key={g.id} className="border-b border-border/30 last:border-0 hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-2.5 font-medium text-foreground max-w-[180px] truncate">{g.description}</td>
+                        <td className="px-4 py-2.5 text-right">
+                          <Input
+                            value={row.valorAtual}
+                            onChange={(e) => updateTracking(g.id, "valorAtual", e.target.value)}
+                            placeholder="R$"
+                            className="h-7 w-28 text-right text-xs ml-auto"
+                          />
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-semibold text-foreground">
+                          {meta > 0 ? fmt(meta) : <span className="text-muted-foreground">—</span>}
+                        </td>
+                        <td className="px-4 py-2.5 text-right">
+                          {pctReducao ? (
+                            <span className="text-emerald-600 font-semibold">↓ {pctReducao}%</span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 text-right">
+                          <Input
+                            value={row.valorRealizado}
+                            onChange={(e) => updateTracking(g.id, "valorRealizado", e.target.value)}
+                            placeholder="R$"
+                            className={`h-7 w-28 text-right text-xs ml-auto ${realizado > 0 && realizado <= meta ? "border-emerald-400 focus:ring-emerald-400" : ""}`}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* ── Snapshot History (Accordion) ────────── */}
