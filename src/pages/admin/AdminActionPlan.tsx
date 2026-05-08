@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SystemRecommendationsPanel } from "@/components/parecer/SystemRecommendations";
+import { SystemRecommendationsPanel, type RiskProfile } from "@/components/parecer/SystemRecommendations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -99,6 +99,7 @@ const fmt = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigi
 const AdminActionPlan = () => {
   const { clientId } = useClientId();
   const navigate = useNavigate();
+  const [selectedPlan, setSelectedPlan] = useState<RiskProfile>("balanceado");
   const [loading, setLoading] = useState(true);
   const [planId, setPlanId] = useState<string | null>(null);
   const [items, setItems] = useState<ActionItem[]>([]);
@@ -588,7 +589,7 @@ const AdminActionPlan = () => {
         </div>
       )}
 
-      {/* ── RECOMENDAÇÕES IA ─────────────────────────── */}
+      {/* ── RECOMENDAÇÕES IA — 3 VERTENTES ──────────── */}
       {clientId && (
         <Card className="border-border/40 shadow-soft rounded-2xl mb-6">
           <CardHeader className="pb-3">
@@ -600,7 +601,28 @@ const AdminActionPlan = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <SystemRecommendationsPanel clientId={clientId} />
+            {/* Seletor de vertente */}
+            <div className="flex gap-2 mb-5 flex-wrap">
+              {([
+                { key: "balanceado" as RiskProfile, label: "Equilibrado", desc: "Ajustes sustentáveis de longo prazo", color: "bg-blue-500/10 border-blue-400/40 text-blue-700 dark:text-blue-300" },
+                { key: "ponderado" as RiskProfile, label: "Conservador", desc: "Segurança, quitação de dívidas e reserva", color: "bg-emerald-500/10 border-emerald-400/40 text-emerald-700 dark:text-emerald-300" },
+                { key: "radical" as RiskProfile, label: "Agressivo", desc: "Aceleração máxima de metas", color: "bg-orange-500/10 border-orange-400/40 text-orange-700 dark:text-orange-300" },
+              ] as const).map((plan) => (
+                <button
+                  key={plan.key}
+                  onClick={() => setSelectedPlan(plan.key)}
+                  className={`flex-1 min-w-[140px] text-left px-4 py-3 rounded-xl border-2 transition-all duration-150 ${
+                    selectedPlan === plan.key
+                      ? `${plan.color} border-current shadow-sm`
+                      : "border-border/40 bg-muted/30 text-muted-foreground hover:bg-muted/60"
+                  }`}
+                >
+                  <p className="text-xs font-bold uppercase tracking-wide">{plan.label}</p>
+                  <p className="text-[11px] mt-0.5 opacity-80">{plan.desc}</p>
+                </button>
+              ))}
+            </div>
+            <SystemRecommendationsPanel clientId={clientId} riskProfile={selectedPlan} />
           </CardContent>
         </Card>
       )}

@@ -7,10 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   ClipboardList,
   BarChart3,
-  Target,
   LineChart,
   FileText,
-  TrendingUp,
   PenLine,
   UserCheck,
 } from "lucide-react";
@@ -34,9 +32,7 @@ const tabs = [
   { path: "onboarding", label: "Onboarding", icon: ClipboardList },
   { path: "diagnostico", label: "Diagnóstico", icon: BarChart3 },
   { path: "parecer", label: "Parecer", icon: PenLine },
-  { path: "objetivos", label: "Objetivos", icon: Target },
   { path: "plano-acao", label: "Plano de Ação", icon: ClipboardList },
-  { path: "investimentos", label: "Investimentos", icon: TrendingUp },
   { path: "acompanhamento", label: "Acompanhamento", icon: LineChart },
   { path: "relatorio", label: "Relatório", icon: FileText },
 ];

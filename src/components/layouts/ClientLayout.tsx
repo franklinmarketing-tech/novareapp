@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   User,
   ClipboardList,
-  BarChart3,
   LogOut,
   Menu,
   X,
@@ -31,7 +30,6 @@ const navItems = [
   { to: "/cliente", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/cliente/meus-dados", icon: User, label: "Meus Dados", badgeKey: "meus-dados" },
   { to: "/cliente/plano-acao", icon: ClipboardList, label: "Plano de Ação" },
-  { to: "/cliente/acompanhamento", icon: BarChart3, label: "Acompanhamento" },
 ];
 
 interface Props {

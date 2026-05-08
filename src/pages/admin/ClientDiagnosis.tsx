@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import {
 import {
   ArrowLeft, Save, TrendingUp, TrendingDown, Wallet, Shield,
   AlertTriangle, ArrowUpRight, ArrowDownRight, Banknote, PiggyBank,
-  Scale, CircleDollarSign, FileText, Activity, Gauge,
+  Scale, CircleDollarSign, FileText, Activity, Gauge, Target,
 } from "lucide-react";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 
@@ -185,6 +185,7 @@ const MetricCard = ({
 const ClientDiagnosis = () => {
   const { clientId } = useClientId();
   const navigate = useNavigate();
+  const { clientSlug } = useParams<{ clientSlug: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
@@ -326,10 +327,16 @@ const ClientDiagnosis = () => {
             <p className="text-xs text-muted-foreground mt-0.5">Análise calculada automaticamente a partir dos dados do onboarding</p>
           </div>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 w-full sm:w-auto shrink-0">
-          <Save className="h-6 w-6" />
-          {saving ? "Salvando..." : "Salvar Diagnóstico"}
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={() => navigate(`/admin/cliente/${clientSlug}/objetivos`)} className="gap-2 flex-1 sm:flex-none">
+            <Target className="h-4 w-4" />
+            Objetivos de Vida
+          </Button>
+          <Button onClick={handleSave} disabled={saving} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 flex-1 sm:flex-none">
+            <Save className="h-6 w-6" />
+            {saving ? "Salvando..." : "Salvar Diagnóstico"}
+          </Button>
+        </div>
       </div>
 
       {/* ── 1. Classification Hero ──────────────── */}
@@ -382,10 +389,10 @@ const ClientDiagnosis = () => {
       {/* ── Actionable Insight ("E daí?") ──────── */}
       {(() => {
         const insights: { text: string; severity: "warning" | "destructive" | "success"; action?: string; actionLabel?: string }[] = [];
-        if (diagnosis.savingsCapacity < 0) insights.push({ text: `O cliente gasta ${Math.abs(diagnosis.savingsCapacity).toFixed(0)}% mais do que ganha. Priorize corte de despesas.`, severity: "destructive", action: "plano-acao", actionLabel: "Criar plano de corte" });
-        if (diagnosis.debtRatio > 30) insights.push({ text: `${fmtPct(diagnosis.debtRatio)} da renda comprometida com dívidas — acima do limite saudável de 30%.`, severity: "warning", action: "plano-acao", actionLabel: "Planejar renegociação" });
+        if (diagnosis.savingsCapacity < 0) insights.push({ text: `O cliente gasta ${Math.abs(diagnosis.savingsCapacity).toFixed(0)}% mais do que ganha. Priorize corte de despesas.`, severity: "destructive" });
+        if (diagnosis.debtRatio > 30) insights.push({ text: `${fmtPct(diagnosis.debtRatio)} da renda comprometida com dívidas — acima do limite saudável de 30%.`, severity: "warning" });
         if (expenseRatio > 80 && diagnosis.savingsCapacity >= 0) insights.push({ text: `Despesas consomem ${fmtPct(expenseRatio)} da renda. Margem de segurança perigosamente baixa.`, severity: "warning" });
-        if (diagnosis.savingsCapacity >= 20) insights.push({ text: `Excelente capacidade de poupança de ${fmtPct(diagnosis.savingsCapacity)}. Foque em otimizar investimentos.`, severity: "success", action: "investimentos", actionLabel: "Ver investimentos" });
+        if (diagnosis.savingsCapacity >= 20) insights.push({ text: `Excelente capacidade de poupança de ${fmtPct(diagnosis.savingsCapacity)}. Continue desenvolvendo sua estratégia no Parecer.`, severity: "success" });
         if (insights.length === 0 && diagnosis.savingsCapacity >= 0) insights.push({ text: `Situação estável com ${fmtPct(diagnosis.savingsCapacity)} de poupança. Há espaço para crescer.`, severity: "success" });
 
         return insights.slice(0, 2).map((ins, i) => {
@@ -396,11 +403,6 @@ const ClientDiagnosis = () => {
             <div key={i} className={`flex items-center gap-3 rounded-2xl border ${colors[ins.severity]} px-5 py-4`}>
               <InsIcon className={`h-6 w-6 ${iconColor[ins.severity]} shrink-0`} />
               <p className="text-sm text-foreground flex-1 font-medium">{ins.text}</p>
-              {ins.action && (
-                <Button size="sm" variant="ghost" onClick={() => navigate(`../../../admin/cliente/${window.location.pathname.split("/")[3]}/${ins.action}`)} className={`shrink-0 ${iconColor[ins.severity]} gap-1`}>
-                  {ins.actionLabel} <ArrowUpRight className="h-6 w-6" />
-                </Button>
-              )}
             </div>
           );
         });
