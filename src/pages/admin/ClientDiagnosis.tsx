@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import AdminObjetivos from "@/pages/admin/AdminObjetivos";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
@@ -185,12 +187,12 @@ const MetricCard = ({
 const ClientDiagnosis = () => {
   const { clientId } = useClientId();
   const navigate = useNavigate();
-  const { clientSlug } = useParams<{ clientSlug: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
   const [diagnosis, setDiagnosis] = useState<DiagnosisData | null>(null);
   const [existingDiagnosisId, setExistingDiagnosisId] = useState<string | null>(null);
+  const [objetivosOpen, setObjetivosOpen] = useState(false);
 
   useEffect(() => {
     if (!clientId) return;
@@ -328,9 +330,13 @@ const ClientDiagnosis = () => {
           </div>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button variant="outline" onClick={() => navigate(`/admin/cliente/${clientSlug}/objetivos`)} className="gap-2 flex-1 sm:flex-none">
+          <Button
+            variant="outline"
+            onClick={() => setObjetivosOpen(true)}
+            className="gap-2 flex-1 sm:flex-none border-accent/40 text-accent hover:bg-accent/10 hover:text-accent"
+          >
             <Target className="h-4 w-4" />
-            Objetivos de Vida
+            Objetivos de Vida / Desejos
           </Button>
           <Button onClick={handleSave} disabled={saving} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 flex-1 sm:flex-none">
             <Save className="h-6 w-6" />
@@ -733,6 +739,21 @@ const ClientDiagnosis = () => {
         )}
       </div>
 
+      {/* V9: Objetivos integrado ao Diagnostico via Dialog (substitui rota separada) */}
+      <Dialog open={objetivosOpen} onOpenChange={setObjetivosOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Target className="h-5 w-5 text-accent" />
+              Objetivos de Vida / Desejos
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Cadastre e priorize os objetivos do cliente. Eles serao cruzados pela IA no Plano de Acao.
+            </DialogDescription>
+          </DialogHeader>
+          <AdminObjetivos />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

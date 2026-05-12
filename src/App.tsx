@@ -32,7 +32,6 @@ import AdminReport from "@/pages/admin/AdminReport";
 import AdminFinanceiro from "@/pages/admin/AdminFinanceiro";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminParecer from "@/pages/admin/AdminParecer";
-import AdminObjetivos from "@/pages/admin/AdminObjetivos";
 import AdminWorkspace from "@/pages/admin/AdminWorkspace";
 import AdminAjuda from "@/pages/admin/AdminAjuda";
 import AdminLeadsNewsletter from "@/pages/AdminLeadsNewsletter";
@@ -117,7 +116,7 @@ const App = () => (
                   <Route path="diagnostico" element={<ClientDiagnosis />} />
                   <Route path="parecer" element={<AdminParecer />} />
                   <Route path="plano-acao" element={<AdminActionPlan />} />
-                  <Route path="objetivos" element={<AdminObjetivos />} />
+                  {/* V9: Objetivos integrado como Dialog dentro do Diagnostico (sem rota propria) */}
                   {/* V9: card Investimentos EXCLUIDO permanentemente do fluxo */}
                   <Route path="acompanhamento" element={<AdminMonitoring />} />
                   <Route path="relatorio" element={<AdminReport />} />
