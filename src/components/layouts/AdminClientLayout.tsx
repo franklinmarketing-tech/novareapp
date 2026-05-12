@@ -73,13 +73,16 @@ const AdminClientLayout = () => {
     pct: number;
   } | null>(null);
 
+  // V9: timestamps de quando cada etapa foi efetivamente concluida/iniciada
+  const [stageTimestamps, setStageTimestamps] = useState<Record<string, string | null>>({});
+
   useEffect(() => {
     if (!clientSlug) return;
     const fetchData = async () => {
       setLoading(true);
       const { data: client } = await supabase
         .from("clients")
-        .select("id, status, user_id, assigned_consultant")
+        .select("id, status, user_id, assigned_consultant, created_at, updated_at")
         .eq("slug", clientSlug)
         .maybeSingle();
       if (!client) { setLoading(false); return; }
@@ -94,12 +97,46 @@ const AdminClientLayout = () => {
         .maybeSingle();
       if (profile) setClientName(profile.full_name);
 
-      // V9: carrega resumo do plano em andamento
-      const { data: plan } = await supabase
-        .from("action_plans")
-        .select("id, applied_variant")
-        .eq("client_id", client.id)
-        .maybeSingle();
+      // V9: carrega timestamps de cada etapa (de varias tabelas em paralelo)
+      const [planRes, diagRes, parecerRes, snapRes] = await Promise.all([
+        supabase
+          .from("action_plans")
+          .select("id, applied_variant, applied_at")
+          .eq("client_id", client.id)
+          .maybeSingle(),
+        supabase
+          .from("diagnosis")
+          .select("updated_at")
+          .eq("client_id", client.id)
+          .maybeSingle(),
+        supabase
+          .from("consultant_notes")
+          .select("updated_at")
+          .eq("client_id", client.id)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("monthly_closings")
+          .select("closed_at")
+          .eq("client_id", client.id)
+          .eq("status", "fechado")
+          .order("closed_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+      const plan = planRes.data;
+
+      setStageTimestamps({
+        onboarding: (client as any).created_at || null,
+        diagnostico: diagRes.data?.updated_at || null,
+        parecer: parecerRes.data?.updated_at || null,
+        "plano-acao": plan?.applied_at || null,
+        acompanhamento: snapRes.data?.closed_at || null,
+        relatorio: null,
+      });
+
       if (plan?.applied_variant && plan.id) {
         const { data: items } = await supabase
           .from("action_items")
@@ -140,9 +177,8 @@ const AdminClientLayout = () => {
   return (
     <ClientProvider value={{ clientId, clientSlug: clientSlug || "" }}>
       <div>
-        {/* V9 PREMIUM: Client header — slim, profissional, uma linha */}
         <div
-          className="relative mb-3 overflow-hidden rounded-xl"
+          className="relative mb-4 overflow-hidden rounded-xl"
           style={{
             background:
               "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 60%, hsl(var(--muted) / 0.25) 100%)",
@@ -199,6 +235,25 @@ const AdminClientLayout = () => {
               <Badge variant={st.variant as any} className="text-[10px] shrink-0">
                 {st.label}
               </Badge>
+              {/* V9: progresso global da jornada (X/6 etapas) */}
+              {(() => {
+                const completedGlobal = completedByStatus[clientStatus] || [];
+                const pct = Math.round((completedGlobal.length / 6) * 100);
+                return (
+                  <span
+                    className="hidden sm:inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-muted-foreground/85 shrink-0"
+                    title="Progresso da Jornada da Consultoria"
+                  >
+                    <span className="inline-block h-1 w-14 rounded-full bg-muted overflow-hidden">
+                      <span
+                        className="block h-full rounded-full bg-accent transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </span>
+                    <span className="tabular-nums">{completedGlobal.length}/6 · {pct}%</span>
+                  </span>
+                );
+              })()}
               {activePlanInfo && (
                 <Badge
                   variant="outline"
@@ -236,7 +291,33 @@ const AdminClientLayout = () => {
               </SelectContent>
             </Select>
           </div>
-        </div>
+
+          {/* V9: Divisor sutil entre Header e Stepper + barra linear de progresso */}
+          {(() => {
+            const completedGlobal = completedByStatus[clientStatus] || [];
+            const pct = Math.round((completedGlobal.length / 6) * 100);
+            return (
+              <div className="relative">
+                <div
+                  className="h-px"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.12), transparent)",
+                  }}
+                />
+                {/* Linha de progresso accent — preenche conforme avanca */}
+                <div
+                  className="absolute top-0 left-0 h-[2px] rounded-r-full transition-all duration-700 ease-out"
+                  style={{
+                    width: `${pct}%`,
+                    background:
+                      "linear-gradient(90deg, hsl(var(--accent) / 0.85) 0%, hsl(var(--accent)) 100%)",
+                    boxShadow: "0 0 6px hsl(var(--accent) / 0.5)",
+                  }}
+                />
+              </div>
+            );
+          })()}
 
         {/* V9: Jornada da Consultoria — stepper consultivo 3+3 */}
         {(() => {
@@ -323,7 +404,7 @@ const AdminClientLayout = () => {
             cn(
               "group relative flex items-center gap-2.5 w-full h-full",
               "rounded-lg px-3 py-2 transition-all duration-300 ease-out overflow-hidden",
-              "min-h-[58px] min-w-0 select-none will-change-transform",
+              "min-h-[66px] min-w-0 select-none will-change-transform",
               state === "active" && "text-accent-foreground -translate-y-0.5",
               state === "completed" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01]",
               state === "available" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01] cursor-pointer",
@@ -413,6 +494,24 @@ const AdminClientLayout = () => {
               state === "locked" && "text-muted-foreground/55",
             );
 
+          // V9: formata um timestamp como "10/05" (curto) ou "há X dias"
+          const formatStageTime = (iso: string | null, state: JourneyState): string | null => {
+            if (state === "locked") return "Aguardando";
+            if (!iso) return null;
+            const date = new Date(iso);
+            if (isNaN(date.getTime())) return null;
+            const diffMs = Date.now() - date.getTime();
+            const diffDays = Math.floor(diffMs / 86400000);
+            if (state === "active") {
+              if (diffDays === 0) return "Iniciada hoje";
+              if (diffDays === 1) return "há 1 dia";
+              if (diffDays < 30) return `há ${diffDays} dias`;
+              return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+            }
+            // completed
+            return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
+          };
+
           const renderCard = (tab: (typeof tabs)[number]) => {
             const isLocked = disabled.includes(tab.path);
             return (
@@ -433,6 +532,7 @@ const AdminClientLayout = () => {
                       : state === "locked"
                         ? "Bloqueado"
                         : `Etapa ${String(tab.step).padStart(2, "0")}`;
+                  const stageTime = formatStageTime(stageTimestamps[tab.path] || null, state);
                   return (
                     <div
                       className={cardClasses(state)}
@@ -498,6 +598,19 @@ const AdminClientLayout = () => {
                       <div className="min-w-0 flex-1 relative">
                         <span className={stepLabelClasses(state)}>{stepText}</span>
                         <span className={cn(titleClasses(state), "block")}>{tab.label}</span>
+                        {stageTime && (
+                          <span
+                            className={cn(
+                              "block text-[9.5px] leading-none mt-0.5 tabular-nums",
+                              state === "active" && "text-accent-foreground/70",
+                              state === "completed" && "text-success/85",
+                              state === "available" && "text-muted-foreground/65",
+                              state === "locked" && "text-muted-foreground/45",
+                            )}
+                          >
+                            {stageTime}
+                          </span>
+                        )}
                       </div>
 
                       {/* Status chip a direita (3D) */}
@@ -622,23 +735,9 @@ const AdminClientLayout = () => {
             completed.includes("parecer") || completed.includes("plano-acao");
 
           return (
-            <div
-              className="relative mb-4 rounded-xl px-2 py-2 lg:px-2.5 lg:py-2.5"
-              style={{
-                background:
-                  "linear-gradient(145deg, hsl(var(--muted) / 0.25) 0%, hsl(var(--card)) 60%, hsl(var(--muted) / 0.18) 100%)",
-                border: "1px solid hsl(var(--foreground) / 0.12)",
-                borderTopColor: "hsl(var(--foreground) / 0.18)",
-                boxShadow: [
-                  "0 1px 0 hsl(0 0% 100% / 0.55) inset",
-                  "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
-                  "0 1px 2px hsl(0 0% 0% / 0.04)",
-                  "0 4px 10px -6px hsl(0 0% 0% / 0.08)",
-                ].join(", "),
-              }}
-            >
-              {/* Label do menu */}
-              <div className="hidden md:flex items-center gap-2 mb-2 pl-1">
+            <div className="px-3 py-2.5 sm:px-4 sm:py-3">
+              {/* Label do menu — mais discreto agora que esta dentro do mesmo container */}
+              <div className="hidden md:flex items-center gap-2 mb-2.5 pl-0.5">
                 <span className="h-[2px] w-3 rounded-full bg-accent/60" />
                 <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-muted-foreground/85">
                   Jornada da Consultoria
@@ -739,6 +838,9 @@ const AdminClientLayout = () => {
             </div>
           );
         })()}
+
+        </div>
+        {/* /Painel unificado: Header + Stepper */}
 
         {/* Page content with transition */}
         <PageTransition>
