@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useParams, NavLink, Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,11 @@ import {
   FileText,
   PenLine,
   UserCheck,
+  Target,
+  Check,
+  Lock,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { ClientProvider } from "@/contexts/ClientContext";
@@ -28,20 +33,30 @@ const getInitials = (name?: string | null) => {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
+// V9: jornada da consultoria em 6 etapas
 const tabs = [
-  { path: "onboarding", label: "Onboarding", icon: ClipboardList },
-  { path: "diagnostico", label: "Diagnóstico", icon: BarChart3 },
-  { path: "parecer", label: "Parecer", icon: PenLine },
-  { path: "plano-acao", label: "Plano de Ação", icon: ClipboardList },
-  { path: "acompanhamento", label: "Acompanhamento", icon: LineChart },
-  { path: "relatorio", label: "Relatório", icon: FileText },
+  { path: "onboarding",     label: "Onboarding",     icon: ClipboardList, step: 1 },
+  { path: "diagnostico",    label: "Diagnóstico",    icon: BarChart3,     step: 2 },
+  { path: "parecer",        label: "Parecer",        icon: PenLine,       step: 3 },
+  { path: "plano-acao",     label: "Plano de Ação",  icon: Target,        step: 4 },
+  { path: "acompanhamento", label: "Acompanhamento", icon: LineChart,     step: 5 },
+  { path: "relatorio",      label: "Relatório",      icon: FileText,      step: 6 },
 ];
 
 const CONSULTANTS = ["Leonardo", "Jefferson"];
 
 const disabledByStatus: Record<string, string[]> = {
-  onboarding_pendente: ["diagnostico", "plano-acao", "acompanhamento", "relatorio"],
+  onboarding_pendente: ["diagnostico", "parecer", "plano-acao", "acompanhamento", "relatorio"],
 };
+
+// Etapas marcadas como concluidas com base no status do cliente
+const completedByStatus: Record<string, string[]> = {
+  onboarding_pendente: [],
+  em_diagnostico: ["onboarding"],
+  em_acompanhamento: ["onboarding", "diagnostico", "parecer", "plano-acao"],
+};
+
+type JourneyState = "active" | "completed" | "available" | "locked";
 
 const AdminClientLayout = () => {
   const { clientSlug } = useParams();
@@ -168,48 +183,151 @@ const AdminClientLayout = () => {
           </div>
         </div>
 
-        {/* Tabs — modern pill-style with bottom indicator */}
-        <div className="relative mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-          <div className="border-b border-border/60">
-            <nav className="flex gap-1 overflow-x-auto scrollbar-none overscroll-x-contain">
-              {tabs.map((tab) => {
-                const isDisabled = disabled.includes(tab.path);
-                return (
-                  <NavLink
-                    key={tab.path}
-                    to={`/admin/cliente/${clientSlug}/${tab.path}`}
-                    onClick={(e) => isDisabled && e.preventDefault()}
-                    className={({ isActive }) =>
-                      cn(
-                        "group relative flex items-center gap-1.5 px-3.5 py-2.5 text-[0.8125rem] font-medium transition-all duration-200 whitespace-nowrap rounded-t-lg",
-                        isActive && !isDisabled
-                          ? "text-accent"
-                          : isDisabled
-                            ? "text-muted-foreground/30 cursor-not-allowed"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                      )
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <tab.icon
-                          className={cn(
-                            "h-4 w-4 shrink-0 transition-transform",
-                            isActive && !isDisabled && "scale-110"
-                          )}
-                        />
-                         <span className="truncate">{tab.label}</span>
-                        {isActive && !isDisabled && (
-                          <span className="absolute inset-x-2 -bottom-px h-0.5 bg-accent rounded-full" />
+        {/* V9: Jornada da Consultoria — cards 3+3 com setas de sequencia */}
+        {(() => {
+          const completed = completedByStatus[clientStatus] || [];
+
+          const stateOf = (path: string, isActive: boolean): JourneyState => {
+            if (isActive) return "active";
+            if (disabled.includes(path)) return "locked";
+            if (completed.includes(path)) return "completed";
+            return "available";
+          };
+
+          const cardClasses = (state: JourneyState) =>
+            cn(
+              "group relative flex flex-col items-center justify-center gap-2 w-full h-full",
+              "rounded-2xl px-3 py-4 transition-all duration-300 ease-out",
+              "min-w-0 text-center select-none",
+              state === "active" &&
+                "bg-gradient-to-br from-accent via-accent to-accent/85 text-accent-foreground shadow-[0_10px_30px_-10px_hsl(var(--accent)/0.55)] ring-2 ring-accent/30 scale-[1.02]",
+              state === "completed" &&
+                "bg-card border-2 border-success/45 text-foreground hover:border-success/65 hover:-translate-y-0.5 hover:shadow-md",
+              state === "available" &&
+                "bg-card border border-border/60 text-foreground hover:border-accent/50 hover:bg-muted/30 hover:-translate-y-0.5 hover:shadow-sm",
+              state === "locked" &&
+                "bg-muted/25 border border-border/30 text-muted-foreground/40 cursor-not-allowed",
+            );
+
+          const badgeClasses = (state: JourneyState) =>
+            cn(
+              "absolute -top-2.5 left-1/2 -translate-x-1/2",
+              "h-6 w-6 rounded-full flex items-center justify-center",
+              "text-[10px] font-bold ring-2 ring-background z-10 shadow-sm",
+              state === "active" && "bg-accent-foreground text-accent",
+              state === "completed" && "bg-success text-white",
+              state === "available" && "bg-foreground/85 text-background",
+              state === "locked" && "bg-muted text-muted-foreground/40",
+            );
+
+          const iconClasses = (state: JourneyState) =>
+            cn(
+              "h-6 w-6 transition-transform duration-300",
+              state === "active" && "scale-110",
+              state === "completed" && "text-success",
+              state === "available" && "text-muted-foreground group-hover:text-foreground",
+              state === "locked" && "opacity-50",
+            );
+
+          const labelClasses = (state: JourneyState) =>
+            cn(
+              "text-[11px] sm:text-xs font-semibold leading-tight w-full tracking-tight",
+              state === "active" && "text-accent-foreground",
+              state === "locked" && "text-muted-foreground/50",
+            );
+
+          const renderCard = (tab: (typeof tabs)[number]) => {
+            const isLocked = disabled.includes(tab.path);
+            return (
+              <NavLink
+                key={tab.path}
+                to={`/admin/cliente/${clientSlug}/${tab.path}`}
+                onClick={(e) => isLocked && e.preventDefault()}
+                aria-disabled={isLocked}
+                className="flex-1 min-w-0 outline-none rounded-2xl focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                {({ isActive }) => {
+                  const state = stateOf(tab.path, isActive && !isLocked);
+                  const Icon = tab.icon;
+                  return (
+                    <div className={cardClasses(state)}>
+                      <div className={badgeClasses(state)}>
+                        {state === "completed" ? (
+                          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                        ) : state === "locked" ? (
+                          <Lock className="h-3 w-3" strokeWidth={2.5} />
+                        ) : (
+                          tab.step
                         )}
-                      </>
-                    )}
-                  </NavLink>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+                      </div>
+                      <Icon className={iconClasses(state)} />
+                      <span className={labelClasses(state)}>{tab.label}</span>
+                    </div>
+                  );
+                }}
+              </NavLink>
+            );
+          };
+
+          const HArrow = () => (
+            <div className="shrink-0 self-center flex items-center justify-center px-1">
+              <ChevronRight
+                className="h-5 w-5 text-muted-foreground/45"
+                strokeWidth={2.5}
+              />
+            </div>
+          );
+
+          return (
+            <div className="mb-7">
+              {/* Desktop / tablet: 2 linhas de 3 cards com seta vertical no centro */}
+              <div className="hidden md:block">
+                <div className="flex items-stretch gap-2 lg:gap-3">
+                  {renderCard(tabs[0])}
+                  <HArrow />
+                  {renderCard(tabs[1])}
+                  <HArrow />
+                  {renderCard(tabs[2])}
+                </div>
+                <div className="flex justify-center my-3" aria-hidden>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <div className="h-3 w-px bg-muted-foreground/30" />
+                    <ChevronDown
+                      className="h-5 w-5 text-muted-foreground/55"
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-stretch gap-2 lg:gap-3">
+                  {renderCard(tabs[3])}
+                  <HArrow />
+                  {renderCard(tabs[4])}
+                  <HArrow />
+                  {renderCard(tabs[5])}
+                </div>
+              </div>
+
+              {/* Mobile: scroll horizontal continuo dos 6 cards */}
+              <div className="md:hidden -mx-4 px-4">
+                <div className="flex items-stretch gap-2 overflow-x-auto pb-3 scrollbar-none overscroll-x-contain">
+                  {tabs.map((tab, i) => (
+                    <Fragment key={tab.path}>
+                      <div className="shrink-0 w-[118px]">{renderCard(tab)}</div>
+                      {i < tabs.length - 1 && (
+                        <div className="shrink-0 self-center">
+                          <ChevronRight
+                            className="h-4 w-4 text-muted-foreground/45"
+                            strokeWidth={2.5}
+                          />
+                        </div>
+                      )}
+                    </Fragment>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Page content with transition */}
         <PageTransition>
