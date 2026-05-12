@@ -202,7 +202,7 @@ const AdminClientLayout = () => {
             }}
           />
 
-          <div className="relative flex items-center gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2">
+          <div className="relative flex items-center gap-2.5 px-3 py-2 sm:px-4 sm:py-2.5">
             {/* Avatar — quadrado pequeno com status dot */}
             <div
               className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center shrink-0"
@@ -731,11 +731,11 @@ const AdminClientLayout = () => {
             completed.includes("parecer") || completed.includes("plano-acao");
 
           return (
-            <div className="px-2 py-1.5 sm:px-2.5 sm:py-2">
+            <div className="px-2.5 py-2 sm:px-3 sm:py-2.5">
 
               {/* Desktop / tablet: 2 linhas de 3 cards com bridge vertical */}
               <div className="hidden md:block">
-                <div className="flex items-stretch gap-1 lg:gap-1.5">
+                <div className="flex items-stretch gap-2 lg:gap-2.5">
                   {renderCard(tabs[0])}
                   <HArrow flowing={flowsAfter("onboarding")} />
                   {renderCard(tabs[1])}
@@ -744,10 +744,10 @@ const AdminClientLayout = () => {
                 </div>
 
                 {/* Bridge vertical ultra compacto entre as duas linhas */}
-                <div className="flex justify-center py-px" aria-hidden>
+                <div className="flex justify-center py-1.5" aria-hidden>
                   <div className="flex flex-col items-center">
                     <div
-                      className="h-1.5 w-[2px] rounded-full transition-colors"
+                      className="h-1 w-[2px] rounded-full transition-colors"
                       style={{
                         background: verticalFlows
                           ? "linear-gradient(180deg, hsl(var(--primary) / 0.7) 0%, hsl(var(--primary) / 0.35) 100%)"
@@ -793,7 +793,7 @@ const AdminClientLayout = () => {
                   </div>
                 </div>
 
-                <div className="flex items-stretch gap-1 lg:gap-1.5">
+                <div className="flex items-stretch gap-2 lg:gap-2.5">
                   {renderCard(tabs[3])}
                   <HArrow flowing={flowsAfter("plano-acao")} />
                   {renderCard(tabs[4])}
