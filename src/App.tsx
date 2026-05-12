@@ -44,7 +44,6 @@ import ClientOnboardingPage from "@/pages/cliente/ClientOnboarding";
 
 import MyData from "@/pages/cliente/MyData";
 import ActionPlan from "@/pages/cliente/ActionPlan";
-import Monitoring from "@/pages/cliente/Monitoring";
 import ClientSettings from "@/pages/cliente/ClientSettings";
 import YieldGuide from "@/pages/YieldGuide";
 
@@ -131,7 +130,7 @@ const App = () => (
                 
                 <Route path="/cliente/meus-dados" element={<ProtectedRoute requiredRole="client"><ClientLayout><MyData /></ClientLayout></ProtectedRoute>} />
                 <Route path="/cliente/plano-acao" element={<ProtectedRoute requiredRole="client"><ClientLayout><ActionPlan /></ClientLayout></ProtectedRoute>} />
-                <Route path="/cliente/acompanhamento" element={<ProtectedRoute requiredRole="client"><ClientLayout><Monitoring /></ClientLayout></ProtectedRoute>} />
+                {/* V9: /cliente/acompanhamento removida — bloqueio de seguranca, acesso exclusivo do consultor */}
                 <Route path="/cliente/configuracoes" element={<ProtectedRoute requiredRole="client"><ClientLayout><ClientSettings /></ClientLayout></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />

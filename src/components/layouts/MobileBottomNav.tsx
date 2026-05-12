@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, User, ClipboardList, BarChart3 } from "lucide-react";
+import { LayoutDashboard, User, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -7,11 +7,11 @@ interface Props {
   dataPending?: boolean;
 }
 
+// V9: aba "Acompanhamento" REMOVIDA do acesso do cliente — uso exclusivo do consultor
 const items = [
   { to: "/cliente", icon: LayoutDashboard, label: "Início", end: true },
   { to: "/cliente/meus-dados", icon: User, label: "Meus dados", key: "meus-dados" },
   { to: "/cliente/plano-acao", icon: ClipboardList, label: "Plano" },
-  { to: "/cliente/acompanhamento", icon: BarChart3, label: "Acompanh." },
 ];
 
 /**
