@@ -659,6 +659,84 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     y += 18;
   }
 
+  // ── 8.5 Opções de Plano de Ação — 3 Vertentes (V9 § 5)
+  newPage();
+  sectionHeader("Opções de Plano de Ação", "3 vertentes estratégicas geradas pela IA Novare");
+
+  const PLANOS_V9: Array<{
+    label: string;
+    color: [number, number, number];
+    desc: string;
+    pontos: string[];
+  }> = [
+    {
+      label: "Plano Equilibrado",
+      color: [37, 99, 235],
+      desc: "Sugestão baseada em ajustes sustentáveis de longo prazo. Foco em equilíbrio entre proteção patrimonial e crescimento gradual.",
+      pontos: [
+        "Revisão de despesas recorrentes",
+        "Formação de reserva de emergência",
+        "Início de carteira diversificada",
+        "Redução progressiva de dívidas",
+      ],
+    },
+    {
+      label: "Plano Conservador",
+      color: C.success,
+      desc: "Foco total em segurança, quitação de dívidas e reserva. Ideal para quem prioriza estabilidade antes de qualquer crescimento.",
+      pontos: [
+        "Quitação antecipada de dívidas",
+        "Reserva de emergência de 6 meses",
+        "Corte agressivo de despesas variáveis",
+        "Apenas renda fixa conservadora",
+      ],
+    },
+    {
+      label: "Plano Agressivo",
+      color: C.accent,
+      desc: "Otimização máxima para aceleração de metas e independência financeira. Aceita maior volatilidade em troca de retornos superiores.",
+      pontos: [
+        "Renegociação imediata de todas as dívidas",
+        "Reinvestimento de 100% da sobra mensal",
+        "Diversificação em renda variável",
+        "Revisão tributária e otimização fiscal",
+      ],
+    },
+  ];
+
+  for (const plano of PLANOS_V9) {
+    const boxH = 42;
+    ensureSpace(boxH + 4);
+
+    pdf.setFillColor(...C.bgSoft);
+    pdf.roundedRect(MARGIN, y, CONTENT_W, boxH, 2, 2, "F");
+    pdf.setFillColor(...plano.color);
+    pdf.rect(MARGIN, y, 1.5, boxH, "F");
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.setTextColor(...plano.color);
+    pdf.text(plano.label, MARGIN + 6, y + 7);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(...C.muted);
+    const descLines = pdf.splitTextToSize(plano.desc, CONTENT_W - 12);
+    pdf.text(descLines, MARGIN + 6, y + 12);
+
+    const ptStartY = y + 12 + descLines.length * 3.6 + 2.5;
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(...C.text);
+    plano.pontos.forEach((p, i) => {
+      const py = ptStartY + i * 4.4;
+      pdf.setFillColor(...plano.color);
+      pdf.circle(MARGIN + 8, py - 1.3, 0.7, "F");
+      pdf.text(p, MARGIN + 11, py);
+    });
+
+    y += boxH + 4;
+  }
+
   // ── 9. Evolução Patrimonial (gráfico)
   if (data.snapshots && data.snapshots.length >= 2) {
     newPage();
