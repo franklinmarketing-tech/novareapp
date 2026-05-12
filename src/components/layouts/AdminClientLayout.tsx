@@ -140,81 +140,98 @@ const AdminClientLayout = () => {
   return (
     <ClientProvider value={{ clientId, clientSlug: clientSlug || "" }}>
       <div>
-        {/* Client header — modern, professional */}
-        <div className="relative mb-5 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-muted/30 shadow-sm">
-          {/* Decorative accent ribbon */}
+        {/* V9 PREMIUM: Client header — slim, profissional, uma linha */}
+        <div
+          className="relative mb-3 overflow-hidden rounded-xl"
+          style={{
+            background:
+              "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 60%, hsl(var(--muted) / 0.25) 100%)",
+            border: "1.5px solid hsl(var(--foreground) / 0.16)",
+            borderTopColor: "hsl(var(--foreground) / 0.22)",
+            boxShadow: [
+              "0 1px 0 hsl(0 0% 100% / 0.55) inset",
+              "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
+              "0 2px 4px -1px hsl(0 0% 0% / 0.05)",
+              "0 6px 14px -8px hsl(0 0% 0% / 0.08)",
+            ].join(", "),
+          }}
+        >
+          {/* Accent ribbon top */}
           <div
+            aria-hidden
             className="absolute inset-x-0 top-0 h-px"
             style={{
               background:
-                "linear-gradient(90deg, transparent, hsl(var(--accent) / 0.5), transparent)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full opacity-40 blur-3xl"
-            style={{
-              background:
-                "radial-gradient(circle, hsl(var(--accent) / 0.18), transparent 70%)",
+                "linear-gradient(90deg, transparent, hsl(var(--accent) / 0.55), transparent)",
             }}
           />
 
-          <div className="relative flex flex-col xl:flex-row xl:items-center gap-4 p-4 sm:p-5">
-            <div className="flex items-center gap-4 flex-1 min-w-0">
-              <div
-                className="relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+          <div className="relative flex items-center gap-3 px-3 py-2.5 sm:px-4 sm:py-3">
+            {/* Avatar — quadrado pequeno com status dot */}
+            <div
+              className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-lg flex items-center justify-center shrink-0"
+              style={{
+                background:
+                  "linear-gradient(145deg, hsl(var(--accent) / 0.32) 0%, hsl(var(--accent) / 0.1) 100%)",
+                border: "1px solid hsl(var(--accent) / 0.32)",
+                borderTopColor: "hsl(var(--accent) / 0.5)",
+                boxShadow:
+                  "0 1px 0 hsl(0 0% 100% / 0.4) inset, 0 1px 3px hsl(var(--accent) / 0.18)",
+              }}
+            >
+              <span className="text-[13px] sm:text-sm font-bold text-accent tracking-tight">
+                {getInitials(clientName)}
+              </span>
+              <span
+                className={cn(
+                  "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card",
+                  st.dot,
+                )}
+                title={st.label}
+              />
+            </div>
+
+            {/* Nome + badges em linha unica */}
+            <div className="min-w-0 flex-1 flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-sm sm:text-base font-bold text-foreground tracking-tight leading-tight truncate max-w-[280px] sm:max-w-none">
+                {clientName || "Carregando..."}
+              </h1>
+              <Badge variant={st.variant as any} className="text-[10px] shrink-0">
+                {st.label}
+              </Badge>
+              {activePlanInfo && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] gap-1 border-accent/40 text-accent shrink-0"
+                >
+                  <Target className="h-3 w-3" />
+                  Plano {activePlanInfo.variant} · {activePlanInfo.done}/{activePlanInfo.total}
+                </Badge>
+              )}
+            </div>
+
+            {/* Consultor dropdown — compacto */}
+            <Select value={consultant || "__none__"} onValueChange={handleConsultantChange}>
+              <SelectTrigger
+                className="h-8 w-auto min-w-[120px] sm:min-w-[140px] rounded-lg text-xs font-medium shrink-0 gap-1.5 px-2.5 [&>svg]:text-primary-foreground"
                 style={{
                   background:
-                    "linear-gradient(145deg, hsl(var(--accent) / 0.28), hsl(var(--accent) / 0.08))",
-                  border: "1px solid hsl(var(--accent) / 0.22)",
+                    "linear-gradient(145deg, hsl(var(--primary) / 1) 0%, hsl(var(--primary) / 0.88) 100%)",
+                  border: "1px solid hsl(var(--primary))",
+                  color: "hsl(var(--primary-foreground))",
+                  boxShadow:
+                    "0 1px 0 hsl(0 0% 100% / 0.18) inset, 0 1px 3px hsl(var(--primary) / 0.18)",
                 }}
               >
-                <span className="text-base font-bold text-accent tracking-tight">
-                  {getInitials(clientName)}
-                </span>
-                <span
-                  className={cn(
-                    "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full ring-2 ring-card",
-                    st.dot
-                  )}
-                  title={st.label}
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground/85 mb-1">
-                  Cliente
-                </p>
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-tight truncate">
-                  {clientName || "Carregando..."}
-                </h1>
-                <div className="mt-2 flex items-center gap-2 flex-wrap">
-                  <Badge variant={st.variant as any} className="text-[10px]">
-                    {st.label}
-                  </Badge>
-                  {activePlanInfo && (
-                    <Badge variant="outline" className="text-[10px] gap-1 border-accent/40 text-accent">
-                      <Target className="h-3 w-3" />
-                      Plano {activePlanInfo.variant} · {activePlanInfo.done}/{activePlanInfo.total} · {activePlanInfo.pct}%
-                    </Badge>
-                  )}
-                  {consultant && (
-                    <span className="text-[0.6875rem] text-muted-foreground inline-flex items-center gap-1">
-                      <UserCheck className="h-3 w-3" />
-                      {consultant}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <Select value={consultant || "__none__"} onValueChange={handleConsultantChange}>
-              <SelectTrigger className="h-9 w-full xl:w-auto xl:min-w-[170px] rounded-xl bg-primary text-primary-foreground border-primary hover:bg-primary/90 text-xs font-medium shadow-sm [&>svg]:text-primary-foreground">
-                <UserCheck className="h-4 w-4 mr-1.5 shrink-0" />
+                <UserCheck className="h-3.5 w-3.5 shrink-0" />
                 <SelectValue placeholder="Consultor" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">Sem consultor</SelectItem>
                 {CONSULTANTS.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
