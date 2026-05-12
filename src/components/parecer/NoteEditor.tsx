@@ -138,6 +138,13 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     setHistoryOpen(false);
   };
 
+  // Detecta se o erro do Supabase eh por coluna 'snapshots' nao existir
+  // (migration ainda nao aplicada no projeto remoto)
+  const isSnapshotsColumnMissing = (err: any) => {
+    const msg = (err?.message || err?.details || "").toLowerCase();
+    return msg.includes("snapshots") && (msg.includes("does not exist") || msg.includes("column"));
+  };
+
   const saveNote = async (silent = false) => {
     if (!content.trim() && !getPlainText()) {
       if (!silent) toast({ title: "Escreva algo antes de salvar", variant: "destructive" });
@@ -145,39 +152,82 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     }
     if (silent) setAutoSaving(true);
     else setSaving(true);
-    try {
-      const snapshots = extractSnapshots();
+
+    const snapshots = extractSnapshots();
+    const noteTitle = title.trim() || `Parecer ${format(new Date(), "dd/MM/yyyy HH:mm")}`;
+
+    // Tenta com snapshots; se a coluna nao existir no banco, retenta sem
+    const attemptSave = async (withSnapshots: boolean) => {
       if (activeNote) {
-        await supabase
+        const payload: any = { title: noteTitle, content };
+        if (withSnapshots) payload.snapshots = snapshots;
+        const { error } = await supabase
           .from("consultant_notes")
-          .update({ title, content, snapshots: snapshots as any })
+          .update(payload)
           .eq("id", activeNote.id);
-        if (!silent) toast({ title: "Parecer atualizado" });
+        return { error, data: null };
       } else {
-        const { data } = await supabase
+        const payload: any = { client_id: clientId, title: noteTitle, content };
+        if (withSnapshots) payload.snapshots = snapshots;
+        const res = await supabase
           .from("consultant_notes")
-          .insert({ client_id: clientId, title, content, snapshots: snapshots as any })
+          .insert(payload)
           .select()
           .single();
-        if (data) setActiveNote(data as Note);
-        if (!silent) toast({ title: "Parecer salvo" });
+        return { error: res.error, data: res.data };
+      }
+    };
+
+    try {
+      let { error, data } = await attemptSave(true);
+      // Se a coluna snapshots ainda nao existe, retenta sem ela e avisa
+      if (error && isSnapshotsColumnMissing(error)) {
+        if (!silent) {
+          toast({
+            title: "Migration pendente",
+            description: "A coluna 'snapshots' não existe no banco — salvando sem chips. Rode a migration para preservar referências.",
+            variant: "destructive",
+          });
+        }
+        const retry = await attemptSave(false);
+        error = retry.error;
+        data = retry.data;
+      }
+      if (error) throw error;
+
+      if (!activeNote && data) {
+        setActiveNote(data as Note);
+        setTitle((data as Note).title || noteTitle);
       }
       await loadNotes();
       setLastSavedAt(new Date());
-    } catch {
-      if (!silent) toast({ title: "Erro ao salvar", variant: "destructive" });
+      if (!silent) toast({ title: activeNote ? "Parecer atualizado" : "Parecer salvo" });
+    } catch (e: any) {
+      if (import.meta.env.DEV) console.error("[NoteEditor.saveNote]", e);
+      const desc = e?.message || e?.details || e?.hint || "Verifique sua conexão e tente novamente.";
+      toast({
+        title: silent ? "Auto-save falhou" : "Erro ao salvar",
+        description: desc,
+        variant: "destructive",
+      });
     }
     if (silent) setAutoSaving(false);
     else setSaving(false);
   };
 
-  // V9: auto-save com debounce de 2s — so dispara se ja existe nota ativa
-  // (evita criar nota fantasma enquanto o consultor ainda nao decidiu)
+  // V9: auto-save com debounce — cria nota nova se ainda nao existe,
+  // mas apenas quando ha conteudo significativo (>=10 caracteres de texto)
   useEffect(() => {
-    if (!activeNote || !isDirty) return;
+    if (!isDirty) return;
+    const hasSignificantContent = getPlainText().length >= 10;
+    // Em nota nova precisa de conteudo minimo para nao criar fantasma
+    if (!activeNote && !hasSignificantContent) return;
+
+    // Debounce maior para nota nova (evita criar dezenas enquanto digita rapido)
+    const delay = activeNote ? 2000 : 5000;
     const t = setTimeout(() => {
       saveNote(true);
-    }, 2000);
+    }, delay);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, title, isDirty, activeNote?.id]);
@@ -467,52 +517,6 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     const sec = draft.sections[idx];
     insertHtmlIntoEditor(`<h3>${sec.title}</h3>${sec.content}`);
     setInsertedSections((prev) => new Set(prev).add(idx));
-  };
-
-  // Anexa um trecho ao parecer atual e persiste no banco (auto-save)
-  const appendToParecer = async (snippet: string) => {
-    const separator = content.trim() ? "\n\n" : "";
-    const newContent = `${content}${separator}${snippet}`.trimStart();
-    setContent(newContent);
-
-    try {
-      const snapshots = extractSnapshots();
-      if (activeNote) {
-        // Atualiza nota existente
-        const { error } = await supabase
-          .from("consultant_notes")
-          .update({ title: title || activeNote.title, content: newContent, snapshots: snapshots as any })
-          .eq("id", activeNote.id);
-        if (error) throw error;
-        setActiveNote({ ...activeNote, title: title || activeNote.title, content: newContent });
-        setNotes((prev) =>
-          prev.map((n) =>
-            n.id === activeNote.id ? { ...n, title: title || activeNote.title, content: newContent } : n
-          )
-        );
-      } else {
-        // Cria nova nota se ainda não existe
-        const noteTitle = title.trim() || `Parecer ${format(new Date(), "dd/MM/yyyy")}`;
-        const { data: created, error } = await supabase
-          .from("consultant_notes")
-          .insert({ client_id: clientId, title: noteTitle, content: newContent, snapshots: snapshots as any })
-          .select()
-          .single();
-        if (error) throw error;
-        if (created) {
-          setActiveNote(created as Note);
-          setTitle(created.title);
-          setNotes((prev) => [created as Note, ...prev]);
-        }
-      }
-    } catch (e) {
-      // Falha de auto-save não impede a inclusão visual; apenas avisa
-      toast({
-        title: "Sugestão adicionada ao texto, mas não salva",
-        description: "Clique em Salvar para persistir o parecer.",
-        variant: "destructive",
-      });
-    }
   };
 
   // V9: toolbar de formatacao — operacoes em contenteditable
