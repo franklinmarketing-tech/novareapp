@@ -26,6 +26,7 @@ export type Database = {
           id: string
           objective: string | null
           parent_id: string | null
+          realized_impact: number | null
           responsible: string | null
           status: Database["public"]["Enums"]["action_status"]
           updated_at: string
@@ -41,6 +42,7 @@ export type Database = {
           id?: string
           objective?: string | null
           parent_id?: string | null
+          realized_impact?: number | null
           responsible?: string | null
           status?: Database["public"]["Enums"]["action_status"]
           updated_at?: string
@@ -56,6 +58,7 @@ export type Database = {
           id?: string
           objective?: string | null
           parent_id?: string | null
+          realized_impact?: number | null
           responsible?: string | null
           status?: Database["public"]["Enums"]["action_status"]
           updated_at?: string

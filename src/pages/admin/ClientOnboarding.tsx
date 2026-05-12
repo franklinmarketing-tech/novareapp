@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ClientFinancialSidebar, type ClientFinancials } from "@/components/parecer/ClientFinancialSidebar";
+import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import type { BehavioralProfile } from "@/components/onboarding/StepComportamental";
 import {
   Pencil, Save, X,
@@ -602,6 +603,15 @@ const ClientOnboarding = () => {
               })}
             </Accordion>
           </Card>
+
+          {/* V9: CTA para proxima etapa */}
+          <div className="mt-6">
+            <JourneyFooterNav
+              current="onboarding"
+              message="Dados do cliente coletados. Avance para o Diagnóstico — a IA analisará automaticamente."
+              hideBack
+            />
+          </div>
       </div>
     </div>
   );

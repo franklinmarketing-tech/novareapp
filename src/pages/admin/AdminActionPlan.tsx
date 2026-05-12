@@ -48,6 +48,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/loading-state";
 import { EmptyState } from "@/components/ui/empty-state";
+import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ── Tipos ───────────────────────────────────────────────
@@ -564,6 +565,14 @@ const AdminActionPlan = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* V9: CTA para proxima etapa */}
+      {hasActivePlan && (
+        <JourneyFooterNav
+          current="plano-acao"
+          message="Plano aplicado. Acompanhe a evolução do cliente — a IA analisa pareceres e ações automaticamente."
+        />
+      )}
     </div>
   );
 };

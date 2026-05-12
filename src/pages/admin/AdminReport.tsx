@@ -19,6 +19,7 @@ import {
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import { toast } from "@/hooks/use-toast";
 import { ScrollableTable } from "@/components/ui/scrollable-table";
+import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 
 // ── Palette ──────────────────────────────────────────
 const CHART_COLORS = [
@@ -1149,6 +1150,14 @@ const AdminReport = () => {
           </p>
           <p className="text-[10px] text-muted-foreground/50 mt-1">Este documento é confidencial e de uso exclusivo do cliente.</p>
         </div>
+      </div>
+
+      {/* V9: marcador de jornada concluida (etapa 6, final) */}
+      <div className="mt-6 print:hidden">
+        <JourneyFooterNav
+          current="relatorio"
+          message="Jornada de análise concluída — o cliente recebe o relatório final."
+        />
       </div>
     </div>
   );

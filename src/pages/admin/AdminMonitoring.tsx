@@ -25,6 +25,7 @@ import {
   CreditCard,
   Loader2,
   Lightbulb,
+  Lock,
   Minus,
   PiggyBank,
   Sparkles,
@@ -39,6 +40,7 @@ import { toast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/loading-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import MonthlyClosings from "@/components/monitoring/MonthlyClosings";
+import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ── Tipos ───────────────────────────────────────────────
@@ -64,8 +66,12 @@ interface ActionItem {
   id: string;
   goal_id: string | null;
   financial_impact: number | null;
+  realized_impact: number | null;
   status: string;
   parent_id: string | null;
+  description: string;
+  area: string;
+  objective: string | null;
 }
 
 interface ActivePlan {
@@ -197,7 +203,7 @@ const AdminMonitoring = () => {
     if (planRes.data?.id) {
       const { data: items } = await supabase
         .from("action_items")
-        .select("id, goal_id, financial_impact, status, parent_id")
+        .select("id, goal_id, financial_impact, realized_impact, status, parent_id, description, area, objective")
         .eq("action_plan_id", planRes.data.id);
       setActions((items as ActionItem[]) || []);
     }
@@ -279,6 +285,19 @@ const AdminMonitoring = () => {
   }, [parentActions]);
 
   // ── Acoes ─────────────────────────────────────────
+  // V9 item 11: salva o valor realizado de uma acao (apenas consultor pode preencher)
+  const saveRealized = async (actionId: string, raw: string) => {
+    const trimmed = raw.trim();
+    const value = trimmed
+      ? Number.parseFloat(trimmed.replace(/[^\d.,-]/g, "").replace(",", "."))
+      : null;
+    const finalValue = value != null && !Number.isNaN(value) ? value : null;
+    await supabase.from("action_items").update({ realized_impact: finalValue }).eq("id", actionId);
+    setActions((prev) =>
+      prev.map((a) => (a.id === actionId ? { ...a, realized_impact: finalValue } : a)),
+    );
+  };
+
   const runAnalyze = async (silent = false) => {
     if (!clientId) return;
     if (!silent) setAnalyzing(true);
@@ -502,6 +521,123 @@ const AdminMonitoring = () => {
         </CardContent>
       </Card>
 
+      {/* TABELA DE METAS (V9 item 11): Descricao | Area | Meta | Realizado | % Atingido */}
+      {parentActions.length > 0 && (
+        <Card className="border-border/50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-amber-500/10">
+                  <ClipboardList className="h-4 w-4 text-amber-600" />
+                </div>
+                Tabela de Metas e Realizado
+                <Badge variant="outline" className="text-[10px]">
+                  {parentActions.length}
+                </Badge>
+              </CardTitle>
+              <span className="text-[10.5px] text-muted-foreground inline-flex items-center gap-1">
+                <Lock className="h-3 w-3" />
+                Coluna "Realizado" é de uso exclusivo do consultor
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 sm:p-3">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[640px]">
+                <thead>
+                  <tr className="border-b border-border/60">
+                    <th className="py-2.5 px-3 text-left text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Descrição</th>
+                    <th className="py-2.5 px-3 text-left text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Área</th>
+                    <th className="py-2.5 px-3 text-right text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Meta (R$/mês)</th>
+                    <th className="py-2.5 px-3 text-right text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Realizado (R$/mês)</th>
+                    <th className="py-2.5 px-3 text-right text-[10px] uppercase tracking-wider text-muted-foreground font-medium">% Atingido</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {parentActions.map((a) => {
+                    const meta = a.financial_impact || 0;
+                    const realized = a.realized_impact || 0;
+                    const pct = meta > 0 ? Math.round((realized / meta) * 100) : 0;
+                    const reached = pct >= 100;
+                    const partial = pct > 0 && pct < 100;
+                    const areaTone =
+                      a.area === "dividas" ? "bg-orange-500/10 text-orange-600 border-orange-500/25" :
+                      a.area === "despesas" ? "bg-red-500/10 text-red-600 border-red-500/25" :
+                      a.area === "renda" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/25" :
+                      a.area === "investimentos" ? "bg-blue-500/10 text-blue-600 border-blue-500/25" :
+                      a.area === "protecao" ? "bg-purple-500/10 text-purple-600 border-purple-500/25" :
+                      "bg-amber-500/10 text-amber-600 border-amber-500/25";
+                    return (
+                      <tr key={a.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                        <td className="py-2.5 px-3 align-top">
+                          <p className="text-[12.5px] text-foreground leading-snug font-medium">{a.description}</p>
+                          {a.objective && (
+                            <p className="text-[10.5px] text-muted-foreground mt-0.5 leading-relaxed">
+                              → {a.objective}
+                            </p>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 align-top">
+                          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", areaTone)}>
+                            {a.area}
+                          </Badge>
+                        </td>
+                        <td className="py-2.5 px-3 text-right tabular-nums text-foreground font-semibold align-top">
+                          {meta > 0 ? `R$ ${meta.toLocaleString("pt-BR")}` : "—"}
+                        </td>
+                        <td className="py-2.5 px-3 text-right align-top">
+                          <input
+                            type="number"
+                            step="any"
+                            defaultValue={a.realized_impact ?? ""}
+                            placeholder="0"
+                            onBlur={(e) => saveRealized(a.id, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                            }}
+                            className="w-24 h-8 text-right tabular-nums text-sm bg-card border border-border/60 rounded-md px-2 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50"
+                          />
+                        </td>
+                        <td className="py-2.5 px-3 text-right align-top">
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 text-[11.5px] font-semibold tabular-nums",
+                              reached && "text-success",
+                              partial && "text-foreground",
+                              !partial && !reached && "text-muted-foreground/60",
+                            )}
+                          >
+                            {meta > 0 ? `${pct}%` : "—"}
+                            {reached && <CheckCircle2 className="h-3.5 w-3.5" />}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {/* Linha de totais */}
+                  {(() => {
+                    const totalMeta = parentActions.reduce((s, a) => s + (a.financial_impact || 0), 0);
+                    const totalReal = parentActions.reduce((s, a) => s + (a.realized_impact || 0), 0);
+                    const totalPct = totalMeta > 0 ? Math.round((totalReal / totalMeta) * 100) : 0;
+                    return (
+                      <tr className="bg-muted/30 font-bold">
+                        <td className="py-2.5 px-3 text-[11px] text-foreground uppercase tracking-wider">Total</td>
+                        <td className="py-2.5 px-3"></td>
+                        <td className="py-2.5 px-3 text-right tabular-nums text-foreground">R$ {totalMeta.toLocaleString("pt-BR")}</td>
+                        <td className="py-2.5 px-3 text-right tabular-nums text-success">R$ {totalReal.toLocaleString("pt-BR")}</td>
+                        <td className="py-2.5 px-3 text-right tabular-nums">
+                          <span className={cn(totalPct >= 100 ? "text-success" : "text-foreground")}>{totalPct}%</span>
+                        </td>
+                      </tr>
+                    );
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* INSIGHTS DA IA */}
       <Card className="border-accent/20 bg-gradient-to-br from-accent/[0.03] via-card to-card">
         <CardHeader className="pb-3">
@@ -558,6 +694,12 @@ const AdminMonitoring = () => {
       {clientId && (
         <MonthlyClosings clientId={clientId} clientName={clientName} isAdmin={true} />
       )}
+
+      {/* V9: CTA para proxima etapa */}
+      <JourneyFooterNav
+        current="acompanhamento"
+        message="Acompanhamento atualizado. Gere o Relatório consolidado para entregar ao cliente."
+      />
     </div>
   );
 };

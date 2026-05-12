@@ -65,6 +65,13 @@ const AdminClientLayout = () => {
   const [clientStatus, setClientStatus] = useState("onboarding_pendente");
   const [consultant, setConsultant] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  // V9: progresso do plano em andamento (mostrado no header)
+  const [activePlanInfo, setActivePlanInfo] = useState<{
+    variant: string;
+    done: number;
+    total: number;
+    pct: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!clientSlug) return;
@@ -86,6 +93,31 @@ const AdminClientLayout = () => {
         .eq("user_id", client.user_id)
         .maybeSingle();
       if (profile) setClientName(profile.full_name);
+
+      // V9: carrega resumo do plano em andamento
+      const { data: plan } = await supabase
+        .from("action_plans")
+        .select("id, applied_variant")
+        .eq("client_id", client.id)
+        .maybeSingle();
+      if (plan?.applied_variant && plan.id) {
+        const { data: items } = await supabase
+          .from("action_items")
+          .select("status")
+          .eq("action_plan_id", plan.id)
+          .is("parent_id", null);
+        const rows = items || [];
+        const done = rows.filter((i) => i.status === "concluido").length;
+        const total = rows.length;
+        setActivePlanInfo({
+          variant: plan.applied_variant,
+          done,
+          total,
+          pct: total > 0 ? Math.round((done / total) * 100) : 0,
+        });
+      } else {
+        setActivePlanInfo(null);
+      }
       setLoading(false);
     };
     fetchData();
@@ -159,6 +191,12 @@ const AdminClientLayout = () => {
                   <Badge variant={st.variant as any} className="text-[10px]">
                     {st.label}
                   </Badge>
+                  {activePlanInfo && (
+                    <Badge variant="outline" className="text-[10px] gap-1 border-accent/40 text-accent">
+                      <Target className="h-3 w-3" />
+                      Plano {activePlanInfo.variant} · {activePlanInfo.done}/{activePlanInfo.total} · {activePlanInfo.pct}%
+                    </Badge>
+                  )}
                   {consultant && (
                     <span className="text-[0.6875rem] text-muted-foreground inline-flex items-center gap-1">
                       <UserCheck className="h-3 w-3" />

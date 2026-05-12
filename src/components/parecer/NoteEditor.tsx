@@ -118,6 +118,10 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     : Boolean(title.trim() || content.trim());
   const isEditing = Boolean(activeNote) && isDirty;
 
+  // V9: auto-save state
+  const [autoSaving, setAutoSaving] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+
   // Load notes on mount
   useEffect(() => {
     loadNotes();
@@ -155,12 +159,13 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     setHistoryOpen(false);
   };
 
-  const saveNote = async () => {
+  const saveNote = async (silent = false) => {
     if (!content.trim() && !getPlainText()) {
-      toast({ title: "Escreva algo antes de salvar", variant: "destructive" });
+      if (!silent) toast({ title: "Escreva algo antes de salvar", variant: "destructive" });
       return;
     }
-    setSaving(true);
+    if (silent) setAutoSaving(true);
+    else setSaving(true);
     try {
       const snapshots = extractSnapshots();
       if (activeNote) {
@@ -168,7 +173,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
           .from("consultant_notes")
           .update({ title, content, snapshots: snapshots as any })
           .eq("id", activeNote.id);
-        toast({ title: "Parecer atualizado" });
+        if (!silent) toast({ title: "Parecer atualizado" });
       } else {
         const { data } = await supabase
           .from("consultant_notes")
@@ -176,14 +181,27 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
           .select()
           .single();
         if (data) setActiveNote(data as Note);
-        toast({ title: "Parecer salvo" });
+        if (!silent) toast({ title: "Parecer salvo" });
       }
       await loadNotes();
+      setLastSavedAt(new Date());
     } catch {
-      toast({ title: "Erro ao salvar", variant: "destructive" });
+      if (!silent) toast({ title: "Erro ao salvar", variant: "destructive" });
     }
-    setSaving(false);
+    if (silent) setAutoSaving(false);
+    else setSaving(false);
   };
+
+  // V9: auto-save com debounce de 2s — so dispara se ja existe nota ativa
+  // (evita criar nota fantasma enquanto o consultor ainda nao decidiu)
+  useEffect(() => {
+    if (!activeNote || !isDirty) return;
+    const t = setTimeout(() => {
+      saveNote(true);
+    }, 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content, title, isDirty, activeNote?.id]);
 
   const deleteNote = async (id: string) => {
     await supabase.from("consultant_notes").delete().eq("id", id);
@@ -226,12 +244,23 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
         : "";
     const text = `${cfg.emoji} ${chip.label}${countPart}${valuePart}`;
 
+    // V9: tooltip nativo com detalhe completo do snapshot
+    const tooltipParts = [
+      `${cfg.label}${chip.kind === "group" ? " (grupo)" : ""}: ${chip.label}`,
+      chip.value != null && chip.value > 0 ? `Valor: ${fmtBRL(chip.value)}` : null,
+      chip.kind === "group" && typeof chip.meta?.count === "number"
+        ? `${chip.meta.count} itens`
+        : null,
+      `Capturado em ${new Date(chip.capturedAt).toLocaleDateString("pt-BR")}`,
+    ].filter(Boolean) as string[];
+
     const chipEl = document.createElement("span");
     chipEl.className = "parecer-chip";
     chipEl.setAttribute("contenteditable", "false");
     chipEl.setAttribute("data-chip", JSON.stringify(chip));
     chipEl.setAttribute("data-chip-id", chip.chipId);
     chipEl.setAttribute("data-chip-source", chip.source);
+    chipEl.setAttribute("title", tooltipParts.join(" • "));
 
     const labelEl = document.createElement("span");
     labelEl.className = "parecer-chip-label";
@@ -718,19 +747,27 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
               <CardTitle className="text-lg truncate">
                 {activeNote ? "Editar Parecer" : "Novo Parecer"}
               </CardTitle>
-              {isEditing && (
+              {isEditing && autoSaving && (
+                <Badge variant="outline" className="gap-1.5 ml-1 animate-fade-in border-accent/40 text-accent">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Salvando...
+                </Badge>
+              )}
+              {isEditing && !autoSaving && (
                 <Badge variant="warning" className="gap-1.5 ml-1 animate-fade-in">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-warning opacity-75 animate-ping" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-warning" />
                   </span>
-                  Editando — alterações não salvas
+                  Editando — auto-save em 2s
                 </Badge>
               )}
               {activeNote && !isEditing && (
                 <Badge variant="success" className="gap-1 ml-1">
                   <CheckCircle2 className="h-3 w-3" />
-                  Salvo
+                  {lastSavedAt
+                    ? `Salvo há ${Math.max(0, Math.floor((Date.now() - lastSavedAt.getTime()) / 1000))}s`
+                    : "Salvo"}
                 </Badge>
               )}
             </div>
@@ -738,7 +775,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
               <Button
                 variant={isEditing ? "default" : "outline"}
                 size="sm"
-                onClick={saveNote}
+                onClick={() => saveNote(false)}
                 disabled={saving || !isDirty}
                 className="gap-1.5"
               >

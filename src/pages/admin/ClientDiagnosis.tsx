@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
 import AdminObjetivos from "@/pages/admin/AdminObjetivos";
+import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   PieChart,
@@ -747,23 +748,10 @@ const ClientDiagnosis = () => {
       </div>
 
       {/* ── 6. CTA RODAPÉ ──────────────────────────── */}
-      <Card className="border-accent/25 bg-gradient-to-br from-accent/[0.05] via-card to-card">
-        <CardContent className="py-5 px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-foreground">Diagnóstico concluído</p>
-            <p className="text-xs text-muted-foreground">
-              Avance para o Parecer e refine os pontos identificados pela IA junto com o cliente.
-            </p>
-          </div>
-          <Button
-            onClick={() => navigate(`/admin/cliente/${clientSlug}/parecer`)}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
-          >
-            Avançar para Parecer
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </CardContent>
-      </Card>
+      <JourneyFooterNav
+        current="diagnostico"
+        message="Diagnóstico concluído. Refine os pontos identificados pela IA junto com o cliente no Parecer."
+      />
 
       {/* ── DIALOG OBJETIVOS ───────────────────────── */}
       <Dialog open={objetivosOpen} onOpenChange={setObjetivosOpen}>

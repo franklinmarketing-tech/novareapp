@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useClientId } from "@/contexts/ClientContext";
 import { NoteEditor, type NoteEditorHandle } from "@/components/parecer/NoteEditor";
 import { AlinhamentoConsultivo } from "@/components/parecer/AlinhamentoConsultivo";
+import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import type { SnapshotChip } from "@/components/parecer/snapshotTypes";
 
 const AdminParecer = () => {
@@ -13,13 +14,21 @@ const AdminParecer = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-      <div className="xl:col-span-1">
-        <AlinhamentoConsultivo clientId={clientId} onInsertChip={handleInsertChip} />
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-1">
+          <AlinhamentoConsultivo clientId={clientId} onInsertChip={handleInsertChip} />
+        </div>
+        <div className="xl:col-span-2">
+          <NoteEditor ref={editorRef} clientId={clientId} />
+        </div>
       </div>
-      <div className="xl:col-span-2">
-        <NoteEditor ref={editorRef} clientId={clientId} />
-      </div>
+
+      {/* V9: CTA para proxima etapa */}
+      <JourneyFooterNav
+        current="parecer"
+        message="Parecer pronto. Use-o como referência no Plano de Ação — a IA gerará 3 variantes A/B/C com base nele."
+      />
     </div>
   );
 };
