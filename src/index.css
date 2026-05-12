@@ -1602,3 +1602,11 @@
   outline: 2px solid hsl(var(--accent));
   outline-offset: 1px;
 }
+
+/* ──────────────────────────────────────────────────────────
+   V9: shimmer sweep para card ativo da Jornada
+   ────────────────────────────────────────────────────────── */
+@keyframes shimmerSweep {
+  0% { left: -3rem; }
+  100% { left: 110%; }
+}
