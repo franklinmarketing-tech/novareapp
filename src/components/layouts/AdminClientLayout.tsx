@@ -235,32 +235,13 @@ const AdminClientLayout = () => {
               <Badge variant={st.variant as any} className="text-[10px] shrink-0">
                 {st.label}
               </Badge>
-              {/* V9: progresso global da jornada (X/6 etapas) */}
-              {(() => {
-                const completedGlobal = completedByStatus[clientStatus] || [];
-                const pct = Math.round((completedGlobal.length / 6) * 100);
-                return (
-                  <span
-                    className="hidden sm:inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-muted-foreground/85 shrink-0"
-                    title="Progresso da Jornada da Consultoria"
-                  >
-                    <span className="inline-block h-1 w-14 rounded-full bg-muted overflow-hidden">
-                      <span
-                        className="block h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </span>
-                    <span className="tabular-nums">{completedGlobal.length}/6 · {pct}%</span>
-                  </span>
-                );
-              })()}
               {activePlanInfo && (
                 <Badge
                   variant="outline"
                   className="text-[10px] gap-1 border-primary/40 text-primary shrink-0"
                 >
                   <Target className="h-3 w-3" />
-                  Plano {activePlanInfo.variant} · {activePlanInfo.done}/{activePlanInfo.total}
+                  Plano {activePlanInfo.variant}
                 </Badge>
               )}
             </div>
@@ -292,32 +273,14 @@ const AdminClientLayout = () => {
             </Select>
           </div>
 
-          {/* V9: Divisor sutil entre Header e Stepper + barra linear de progresso */}
-          {(() => {
-            const completedGlobal = completedByStatus[clientStatus] || [];
-            const pct = Math.round((completedGlobal.length / 6) * 100);
-            return (
-              <div className="relative">
-                <div
-                  className="h-px"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.12), transparent)",
-                  }}
-                />
-                {/* Linha de progresso azul Novare — preenche conforme avanca */}
-                <div
-                  className="absolute top-0 left-0 h-[2px] rounded-r-full transition-all duration-700 ease-out"
-                  style={{
-                    width: `${pct}%`,
-                    background:
-                      "linear-gradient(90deg, hsl(var(--primary) / 0.85) 0%, hsl(var(--primary)) 100%)",
-                    boxShadow: "0 0 6px hsl(var(--primary) / 0.5)",
-                  }}
-                />
-              </div>
-            );
-          })()}
+          {/* Divisor sutil entre Header e Stepper */}
+          <div
+            className="h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.12), transparent)",
+            }}
+          />
 
         {/* V9: Jornada da Consultoria — stepper consultivo 3+3 */}
         {(() => {
@@ -330,81 +293,45 @@ const AdminClientLayout = () => {
             return "available";
           };
 
-          // V9 PREMIUM: cards de menu profissional com profundidade real
+          // V9 CLEAN: cards minimalistas — sem glow nem sombras pesadas
           const cardStyle = (state: JourneyState): React.CSSProperties => {
             switch (state) {
               case "active":
-                // V9: azul Novare (primary) — cor da identidade
                 return {
-                  background:
-                    "linear-gradient(140deg, hsl(215 55% 32%) 0%, hsl(var(--primary)) 45%, hsl(215 55% 18%) 100%)",
-                  border: "1px solid hsl(215 55% 14%)",
-                  borderTopColor: "hsl(215 50% 42%)",
-                  borderLeftColor: "hsl(215 50% 36%)",
-                  boxShadow: [
-                    "0 1.5px 0 hsl(0 0% 100% / 0.22) inset",
-                    "0 -2px 0 hsl(0 0% 0% / 0.22) inset",
-                    "1px 0 0 hsl(0 0% 100% / 0.12) inset",
-                    "-1px 0 0 hsl(0 0% 0% / 0.15) inset",
-                    "0 0 0 1px hsl(var(--primary) / 0.5)",
-                    "0 0 0 4px hsl(var(--primary) / 0.14)",
-                    "0 4px 10px -3px hsl(var(--primary) / 0.45)",
-                    "0 10px 22px -6px hsl(var(--primary) / 0.35)",
-                  ].join(", "),
+                  background: "hsl(var(--primary))",
+                  border: "1px solid hsl(var(--primary))",
+                  boxShadow: "none",
                 };
               case "completed":
                 return {
-                  background:
-                    "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 55%, hsl(var(--success) / 0.08) 100%)",
-                  border: "1.5px solid hsl(var(--success) / 0.55)",
-                  borderTopColor: "hsl(var(--success) / 0.7)",
-                  borderLeftColor: "hsl(var(--success) / 0.62)",
-                  boxShadow: [
-                    "0 1px 0 hsl(0 0% 100% / 0.7) inset",
-                    "0 -1px 0 hsl(var(--success) / 0.12) inset",
-                    "0 2px 4px -1px hsl(var(--success) / 0.15)",
-                    "0 8px 18px -6px hsl(var(--success) / 0.22)",
-                    "0 14px 28px -12px hsl(var(--success) / 0.18)",
-                  ].join(", "),
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--success) / 0.4)",
+                  boxShadow: "none",
                 };
               case "available":
                 return {
-                  background:
-                    "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, hsl(var(--muted) / 0.35) 100%)",
-                  border: "1.5px solid hsl(var(--foreground) / 0.22)",
-                  borderTopColor: "hsl(var(--foreground) / 0.3)",
-                  borderLeftColor: "hsl(var(--foreground) / 0.24)",
-                  boxShadow: [
-                    "0 1px 0 hsl(0 0% 100% / 0.8) inset",
-                    "0 -1px 0 hsl(0 0% 0% / 0.08) inset",
-                    "0 1px 2px hsl(0 0% 0% / 0.06)",
-                    "0 4px 8px -2px hsl(0 0% 0% / 0.08)",
-                    "0 10px 20px -6px hsl(0 0% 0% / 0.1)",
-                  ].join(", "),
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  boxShadow: "none",
                 };
               case "locked":
                 return {
-                  background:
-                    "linear-gradient(145deg, hsl(var(--muted) / 0.4) 0%, hsl(var(--muted) / 0.18) 100%)",
-                  border: "1.5px solid hsl(var(--foreground) / 0.14)",
-                  boxShadow: [
-                    "0 1px 2px hsl(0 0% 0% / 0.06) inset",
-                    "0 2px 4px hsl(0 0% 0% / 0.04) inset",
-                    "0 -1px 0 hsl(0 0% 100% / 0.4) inset",
-                  ].join(", "),
+                  background: "hsl(var(--muted) / 0.3)",
+                  border: "1px solid hsl(var(--border) / 0.6)",
+                  boxShadow: "none",
                 };
             }
           };
 
           const cardClasses = (state: JourneyState) =>
             cn(
-              "group relative flex items-center gap-1.5 w-full h-full",
-              "rounded-md px-1.5 py-1 transition-all duration-300 ease-out overflow-hidden",
-              "min-h-[40px] min-w-0 select-none will-change-transform",
-              state === "active" && "text-primary-foreground -translate-y-0.5",
-              state === "completed" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01]",
-              state === "available" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01] cursor-pointer",
-              state === "locked" && "text-muted-foreground/40 cursor-not-allowed",
+              "group relative flex items-center gap-2 w-full h-full",
+              "rounded-md px-2 py-1.5 transition-colors duration-200 overflow-hidden",
+              "min-h-[44px] min-w-0 select-none",
+              state === "active" && "text-primary-foreground",
+              state === "completed" && "text-foreground hover:bg-muted/30 cursor-pointer",
+              state === "available" && "text-foreground hover:bg-muted/30 cursor-pointer",
+              state === "locked" && "text-muted-foreground/50 cursor-not-allowed",
             );
 
           const stepLabelClasses = (state: JourneyState) =>
@@ -420,57 +347,33 @@ const AdminClientLayout = () => {
             switch (state) {
               case "active":
                 return {
-                  background:
-                    "linear-gradient(145deg, hsl(0 0% 100% / 0.32) 0%, hsl(0 0% 100% / 0.14) 60%, hsl(0 0% 100% / 0.06) 100%)",
-                  border: "1px solid hsl(0 0% 100% / 0.32)",
-                  borderTopColor: "hsl(0 0% 100% / 0.5)",
-                  boxShadow: [
-                    "0 1px 0 hsl(0 0% 100% / 0.42) inset",
-                    "0 -1px 0 hsl(0 0% 0% / 0.18) inset",
-                    "0 2px 6px hsl(0 0% 0% / 0.16)",
-                    "0 4px 10px -2px hsl(0 0% 0% / 0.18)",
-                  ].join(", "),
+                  background: "hsl(0 0% 100% / 0.16)",
+                  border: "1px solid hsl(0 0% 100% / 0.22)",
+                  boxShadow: "none",
                 };
               case "completed":
                 return {
-                  background:
-                    "linear-gradient(145deg, hsl(var(--success) / 0.22) 0%, hsl(var(--success) / 0.08) 100%)",
-                  border: "1px solid hsl(var(--success) / 0.32)",
-                  borderTopColor: "hsl(var(--success) / 0.5)",
-                  boxShadow: [
-                    "0 1px 0 hsl(0 0% 100% / 0.55) inset",
-                    "0 -1px 0 hsl(var(--success) / 0.15) inset",
-                    "0 2px 5px -1px hsl(var(--success) / 0.18)",
-                  ].join(", "),
+                  background: "hsl(var(--success) / 0.12)",
+                  border: "1px solid hsl(var(--success) / 0.25)",
+                  boxShadow: "none",
                 };
               case "available":
                 return {
-                  background:
-                    "linear-gradient(145deg, hsl(var(--muted) / 0.85) 0%, hsl(var(--muted) / 0.5) 100%)",
-                  border: "1px solid hsl(var(--border) / 0.7)",
-                  borderTopColor: "hsl(var(--border) / 1)",
-                  boxShadow: [
-                    "0 1px 0 hsl(0 0% 100% / 0.5) inset",
-                    "0 -1px 0 hsl(0 0% 0% / 0.07) inset",
-                    "0 2px 4px -1px hsl(0 0% 0% / 0.08)",
-                  ].join(", "),
+                  background: "hsl(var(--muted) / 0.5)",
+                  border: "1px solid hsl(var(--border))",
+                  boxShadow: "none",
                 };
               case "locked":
                 return {
-                  background: "hsl(var(--muted) / 0.55)",
+                  background: "hsl(var(--muted) / 0.4)",
                   border: "1px solid hsl(var(--border) / 0.4)",
-                  boxShadow: "0 1px 2px hsl(0 0% 0% / 0.05) inset",
+                  boxShadow: "none",
                 };
             }
           };
 
-          const iconBoxClasses = (state: JourneyState) =>
-            cn(
-              "h-7 w-7 rounded flex items-center justify-center transition-all duration-300 shrink-0",
-              state === "active" && "group-hover:rotate-3",
-              state === "available" && "group-hover:scale-110 group-hover:rotate-3",
-              state === "completed" && "group-hover:scale-105",
-            );
+          const iconBoxClasses = (_state: JourneyState) =>
+            "h-7 w-7 rounded flex items-center justify-center shrink-0";
 
           const iconClasses = (state: JourneyState) =>
             cn(
@@ -522,91 +425,18 @@ const AdminClientLayout = () => {
                 {({ isActive }) => {
                   const state = stateOf(tab.path, isActive && !isLocked);
                   const Icon = tab.icon;
-                  const stepText =
-                    state === "completed"
-                      ? "Concluído"
-                      : state === "locked"
-                        ? "Bloqueado"
-                        : `Etapa ${String(tab.step).padStart(2, "0")}`;
-                  const stageTime = formatStageTime(stageTimestamps[tab.path] || null, state);
                   return (
                     <div
                       className={cardClasses(state)}
                       style={{ ...cardStyle(state), transformStyle: "preserve-3d" }}
                     >
-                      {/* Highlight top horizontal (luz vinda do topo) */}
-                      {(state === "active" || state === "available" || state === "completed") && (
-                        <span
-                          aria-hidden
-                          className="pointer-events-none absolute inset-x-3 top-0 h-px"
-                          style={{
-                            background:
-                              state === "active"
-                                ? "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.55), hsl(0 0% 100% / 0.3), transparent)"
-                                : state === "completed"
-                                  ? "linear-gradient(90deg, transparent, hsl(var(--success) / 0.45), transparent)"
-                                  : "linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.12), transparent)",
-                          }}
-                        />
-                      )}
-
-                      {/* Glow esferico difuso no canto sup-direito do ativo */}
-                      {state === "active" && (
-                        <>
-                          <span
-                            aria-hidden
-                            className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full"
-                            style={{
-                              background:
-                                "radial-gradient(circle, hsl(0 0% 100% / 0.25) 0%, transparent 65%)",
-                              filter: "blur(8px)",
-                            }}
-                          />
-                          {/* Pequeno glow inferior — efeito de profundidade */}
-                          <span
-                            aria-hidden
-                            className="pointer-events-none absolute -bottom-10 -left-10 h-28 w-28 rounded-full"
-                            style={{
-                              background:
-                                "radial-gradient(circle, hsl(0 0% 0% / 0.18) 0%, transparent 70%)",
-                              filter: "blur(12px)",
-                            }}
-                          />
-                          {/* Glow externo pulsante (anel azul Novare) */}
-                          <span
-                            aria-hidden
-                            className="pointer-events-none absolute -inset-2 rounded-2xl opacity-50"
-                            style={{
-                              background:
-                                "radial-gradient(ellipse 80% 60% at center, hsl(var(--primary) / 0.4), transparent 70%)",
-                              filter: "blur(16px)",
-                              animation: "journeyGlowPulse 2.8s ease-in-out infinite",
-                            }}
-                          />
-                        </>
-                      )}
-
-                      {/* Icon box 3D */}
+                      {/* Icon box */}
                       <div className={iconBoxClasses(state)} style={iconBoxStyle(state)}>
                         <Icon className={iconClasses(state)} strokeWidth={2} />
                       </div>
 
                       <div className="min-w-0 flex-1 relative">
-                        <span className={stepLabelClasses(state)}>{stepText}</span>
                         <span className={cn(titleClasses(state), "block")}>{tab.label}</span>
-                        {stageTime && (
-                          <span
-                            className={cn(
-                              "block text-[9.5px] leading-none mt-0.5 tabular-nums",
-                              state === "active" && "text-accent-foreground/70",
-                              state === "completed" && "text-success/85",
-                              state === "available" && "text-muted-foreground/65",
-                              state === "locked" && "text-muted-foreground/45",
-                            )}
-                          >
-                            {stageTime}
-                          </span>
-                        )}
                       </div>
 
                       {/* Status chip a direita (3D) */}
@@ -635,34 +465,6 @@ const AdminClientLayout = () => {
                         </span>
                       )}
 
-                      {/* Barra lateral 3D do card ativo */}
-                      {state === "active" && (
-                        <span
-                          aria-hidden
-                          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
-                          style={{
-                            background: "linear-gradient(180deg, hsl(var(--accent-foreground) / 0.5), hsl(var(--accent-foreground) / 0.2))",
-                            boxShadow: "0 0 8px hsl(var(--accent-foreground) / 0.3)",
-                          }}
-                        />
-                      )}
-
-                      {/* Shine sweep no card ativo (animacao) */}
-                      {state === "active" && (
-                        <span
-                          aria-hidden
-                          className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl"
-                        >
-                          <span
-                            className="absolute inset-y-0 w-12 -skew-x-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                            style={{
-                              background: "linear-gradient(90deg, transparent, hsl(var(--accent-foreground) / 0.18), transparent)",
-                              animation: "shimmerSweep 2.4s ease-in-out infinite",
-                              animationDelay: "0.5s",
-                            }}
-                          />
-                        </span>
-                      )}
                     </div>
                   );
                 }}
