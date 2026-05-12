@@ -246,7 +246,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     savingLockRef.current = false;
   };
 
-  // V9: auto-save com debounce — cria nota nova se ainda nao existe,
+  // V9: auto-save com debounce de 30s — cria nota nova se ainda nao existe,
   // mas apenas quando ha conteudo significativo (>=10 caracteres de texto)
   useEffect(() => {
     if (!isDirty) return;
@@ -254,11 +254,10 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     // Em nota nova precisa de conteudo minimo para nao criar fantasma
     if (!activeNote && !hasSignificantContent) return;
 
-    // Debounce maior para nota nova (evita criar dezenas enquanto digita rapido)
-    const delay = activeNote ? 2000 : 5000;
+    // Debounce de 30s — consultor escreve com calma sem chamadas desnecessarias
     const t = setTimeout(() => {
       saveNote(true);
-    }, delay);
+    }, 30000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, title, isDirty, activeNote?.id]);
@@ -822,7 +821,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
                     <span className="absolute inline-flex h-full w-full rounded-full bg-warning opacity-75 animate-ping" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-warning" />
                   </span>
-                  Editando — auto-save em 2s
+                  Editando — auto-save em 30s
                 </Badge>
               )}
               {activeNote && !isEditing && (
