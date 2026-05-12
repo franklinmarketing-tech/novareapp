@@ -23,7 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   PenLine, Save, Sparkles, Plus, Clock, FileText, Trash2,
   Target, TrendingUp, CheckCircle2, Loader2, ChevronRight,
-  ChevronDown, History, Zap,
+  ChevronDown, History, Zap, X, ArrowLeft,
   Bold, Italic, Underline, List, ListOrdered, Quote, Minus, Eraser,
 } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -108,6 +108,8 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
   const [wordCount, setWordCount] = useState(0);
   // V9: lock para evitar race condition entre auto-save e save manual
   const savingLockRef = useRef(false);
+  // V9: lightbox de imagem do parecer
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   // Load notes on mount
   useEffect(() => {
@@ -425,9 +427,19 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
   }, []);
 
   // V9: click no botao "×" do chip remove a referencia + colapsa espacos
+  // OU click numa imagem abre lightbox
   const handleEditorClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const target = e.target as HTMLElement;
+      // Click em imagem -> abre lightbox
+      if (target.tagName === "IMG") {
+        const src = (target as HTMLImageElement).src;
+        if (src) {
+          e.preventDefault();
+          setLightboxSrc(src);
+        }
+        return;
+      }
       if (target.classList.contains("parecer-chip-remove")) {
         e.preventDefault();
         e.stopPropagation();
@@ -457,6 +469,40 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
   // Expoe insertChip para o pai (AdminParecer + AlinhamentoConsultivo)
   useImperativeHandle(ref, () => ({ insertChip }), [insertChip]);
 
+  // V9: insere uma <img> no editor com classes de miniatura clicavel
+  const insertImageAt = useCallback((src: string) => {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "Imagem do parecer";
+    img.className = "parecer-img-thumb";
+
+    const selection = window.getSelection();
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    if (selection && selection.rangeCount > 0 && editor.contains(selection.anchorNode)) {
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(img);
+      range.setStartAfter(img);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    } else {
+      editor.appendChild(img);
+    }
+    setTimeout(() => handleEditorInput(), 0);
+  }, [handleEditorInput]);
+
+  // Helper: arquivo -> data URL base64
+  const fileToDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+
   const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLDivElement>) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -469,46 +515,34 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
         if (!file) continue;
 
         setUploadingImage(true);
+        let uploadedUrl: string | null = null;
+
+        // Tenta upload no bucket parecer-images; se falhar usa data URL
         try {
           const ext = file.type.split("/")[1] || "png";
           const fileName = `${clientId}/${Date.now()}.${ext}`;
           const { data, error } = await supabase.storage
             .from("parecer-images")
             .upload(fileName, file, { contentType: file.type });
-
           if (error) throw error;
-
           const { data: urlData } = supabase.storage
             .from("parecer-images")
             .getPublicUrl(data.path);
-
-          // Insert image at cursor position
-          const img = document.createElement("img");
-          img.src = urlData.publicUrl;
-          img.alt = "image";
-          img.style.maxWidth = "100%";
-          img.style.borderRadius = "8px";
-          img.style.margin = "8px 0";
-          img.style.display = "block";
-
-          const selection = window.getSelection();
-          if (selection && selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            range.deleteContents();
-            range.insertNode(img);
-            range.setStartAfter(img);
-            range.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(range);
-          } else {
-            editorRef.current?.appendChild(img);
+          uploadedUrl = urlData.publicUrl;
+        } catch {
+          // Fallback: data URL embutido na nota
+          try {
+            uploadedUrl = await fileToDataUrl(file);
+          } catch {
+            uploadedUrl = null;
           }
+        }
 
-          // Update content state
-          setTimeout(() => handleEditorInput(), 0);
-          toast({ title: "Imagem inserida!" });
-        } catch (err: any) {
-          toast({ title: "Erro ao fazer upload da imagem", variant: "destructive" });
+        if (uploadedUrl) {
+          insertImageAt(uploadedUrl);
+          toast({ title: "Imagem inserida" });
+        } else {
+          toast({ title: "Erro ao processar a imagem", variant: "destructive" });
         }
         setUploadingImage(false);
         return;
@@ -805,7 +839,27 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <PenLine className={`h-6 w-6 ${isEditing ? "text-warning" : "text-accent"}`} />
+              {/* V9: botao Voltar — limpa nota ativa quando esta editando uma do historico */}
+              {activeNote && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    if (
+                      isDirty &&
+                      !confirm("Há alterações não salvas. Deseja voltar mesmo assim?")
+                    ) return;
+                    newNote();
+                    setHistoryOpen(true);
+                  }}
+                  className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                  title="Voltar ao histórico"
+                  aria-label="Voltar ao histórico"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              )}
+              <PenLine className={`h-5 w-5 shrink-0 ${isEditing ? "text-warning" : "text-accent"}`} />
               <CardTitle className="text-lg truncate">
                 {activeNote ? "Editar Parecer" : "Novo Parecer"}
               </CardTitle>
@@ -1063,6 +1117,30 @@ Dicas:
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* V9: Lightbox de imagens do parecer */}
+      {lightboxSrc && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setLightboxSrc(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-background/80 backdrop-blur-sm animate-fade-in cursor-zoom-out"
+        >
+          <button
+            onClick={() => setLightboxSrc(null)}
+            className="absolute top-4 right-4 h-9 w-9 rounded-full bg-card/90 border border-border/60 hover:bg-card flex items-center justify-center text-foreground shadow-md"
+            aria-label="Fechar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <img
+            src={lightboxSrc}
+            alt="Visualização ampliada"
+            className="max-w-full max-h-[88vh] rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
     </div>
   );

@@ -1673,10 +1673,33 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.parecer-editor img {
-  max-width: 100%;
+/* V9: imagens do parecer ficam como miniaturas clicaveis (lightbox) */
+.parecer-editor img,
+.parecer-editor .parecer-img-thumb {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 220px;
+  max-height: 140px;
+  width: auto;
+  height: auto;
   border-radius: 0.5rem;
-  margin: 0.5rem 0;
+  margin: 0.25rem 0.35rem;
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 3px hsl(0 0% 0% / 0.08), 0 4px 10px -4px hsl(0 0% 0% / 0.1);
+  cursor: zoom-in;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+  object-fit: cover;
+}
+.parecer-editor img:hover,
+.parecer-editor .parecer-img-thumb:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 6px hsl(0 0% 0% / 0.12), 0 8px 18px -4px hsl(0 0% 0% / 0.15);
+}
+/* Quando o atributo src nao carrega (URL quebrada), mostra fallback texto */
+.parecer-editor img:not([src]),
+.parecer-editor img[src=""] {
+  display: none;
 }
 /* Placeholder aparece quando :empty OU quando so tem <br>/<p></p> vazios */
 .parecer-editor:empty::before,
