@@ -1,15 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   ClipboardCheck,
   Plus,
   ChevronDown,
-  Search,
   User,
   TrendingUp,
   TrendingDown,
@@ -98,7 +96,6 @@ export const AlinhamentoConsultivo = ({ clientId, onInsertChip }: Props) => {
   const [expanded, setExpanded] = useState<Set<SnapshotSource>>(
     new Set<SnapshotSource>(["expense", "debt", "asset"]),
   );
-  const [search, setSearch] = useState("");
 
   // ── Carga dos dados do onboarding ──────────────────
   useEffect(() => {
@@ -294,23 +291,7 @@ export const AlinhamentoConsultivo = ({ clientId, onInsertChip }: Props) => {
     };
   }, [clientId]);
 
-  // ── Filtragem por busca ───────────────────────────
-  const filtered = useMemo(() => {
-    if (!search.trim()) return data;
-    const q = search.toLowerCase();
-    const next = {} as Record<SnapshotSource, SourceData>;
-    for (const src of ALL_SOURCES) {
-      const d = data[src];
-      if (!d) continue;
-      next[src] = {
-        ...d,
-        items: d.items.filter((i) =>
-          (i.label + " " + JSON.stringify(i.meta || {})).toLowerCase().includes(q),
-        ),
-      };
-    }
-    return next;
-  }, [data, search]);
+  // V9: busca removida — consultor agora navega direto por categoria
 
   // ── Acoes ─────────────────────────────────────────
   const toggleVisible = (src: SnapshotSource) => {
@@ -407,17 +388,6 @@ export const AlinhamentoConsultivo = ({ clientId, onInsertChip }: Props) => {
             );
           })}
         </div>
-
-        {/* Busca */}
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar item..."
-            className="h-8 pl-7 text-xs"
-          />
-        </div>
       </CardHeader>
 
       <CardContent className="space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
@@ -429,7 +399,7 @@ export const AlinhamentoConsultivo = ({ clientId, onInsertChip }: Props) => {
 
         {!loading &&
           ALL_SOURCES.filter((src) => visible.has(src)).map((src) => {
-            const d = filtered[src];
+            const d = data[src];
             if (!d) return null;
             const cfg = SOURCE_CONFIG[src];
             const Icon = ICONS[src];
