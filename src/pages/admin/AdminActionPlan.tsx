@@ -259,7 +259,11 @@ const AdminActionPlan = () => {
   const total = items.length;
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
   const totalImpact = items.reduce((s, i) => s + (i.financial_impact || 0), 0);
-  const hasActivePlan = Boolean(plan?.applied_variant && plan?.objective);
+  // V9: o plano esta em andamento sempre que existe uma variante aplicada.
+  // O objective eh opcional (pode ser preenchido depois) — antes a checagem
+  // tambem exigia objective != null o que jogava a UI no EmptyHero quando o
+  // applyPlan rodava sem o goal correspondente no estado local.
+  const hasActivePlan = Boolean(plan?.applied_variant);
 
   // ── Acoes do popup de geracao ─────────────────────
   const openGenerate = () => {
@@ -403,19 +407,32 @@ const AdminActionPlan = () => {
   };
 
   const applyPlan = async (variant: AIPlan) => {
-    if (!plan?.id || !clientId || !genGoalId) return;
+    if (!plan?.id || !clientId) {
+      toast({
+        title: "Não foi possível aplicar",
+        description: "Cliente ou plano não encontrado. Recarregue a página.",
+        variant: "destructive",
+      });
+      return;
+    }
+    // Fallback inteligente do goal_id: usa o do estado de geração, OU o que já
+    // estava persistido no plano (caso o usuário tenha recarregado a página)
+    const effectiveGoalId = genGoalId || plan.goal_id || null;
     setApplyingVariant(variant.letter);
     try {
-      const selectedGoal = goalsList.find((g) => g.id === genGoalId);
+      const selectedGoal = effectiveGoalId
+        ? goalsList.find((g) => g.id === effectiveGoalId)
+        : null;
 
       // Limpa acoes pendentes do plano anterior (mantem concluidas como historico)
-      await supabase
+      const { error: delErr } = await supabase
         .from("action_items")
         .delete()
         .eq("action_plan_id", plan.id)
         .neq("status", "concluido");
+      if (delErr) throw delErr;
 
-      // Cria novas acoes — todas vinculadas ao goal escolhido
+      // Cria novas acoes — todas vinculadas ao goal escolhido (se houver)
       const now = Date.now();
       const newRows = variant.actions.map((a) => ({
         action_plan_id: plan.id,
@@ -428,34 +445,64 @@ const AdminActionPlan = () => {
           : null,
         status: "pendente" as const,
         responsible: "Novare",
-        goal_id: genGoalId,
+        goal_id: effectiveGoalId,
       }));
       if (newRows.length > 0) {
-        await supabase.from("action_items").insert(newRows);
+        const { error: insErr } = await supabase.from("action_items").insert(newRows);
+        if (insErr) throw insErr;
       }
 
-      // Atualiza plano (objective = descricao do goal, com refinamento opcional)
-      const objectiveText = genRefinement.trim()
-        ? `${selectedGoal?.description ?? ""} — ${genRefinement.trim()}`
-        : selectedGoal?.description ?? null;
+      // Texto do objective: prioriza descricao do goal + refinamento; se nada
+      // disso existir, usa o título do plano A/B/C como descritivo do objetivo
+      const refinement = genRefinement.trim();
+      const goalDesc = selectedGoal?.description?.trim() || "";
+      const objectiveText =
+        goalDesc && refinement
+          ? `${goalDesc} — ${refinement}`
+          : goalDesc || refinement || variant.title;
 
-      await supabase
+      // Preserva o cache de planos: se o estado local 'generatedPlans' estiver
+      // vazio (página recarregada), reutiliza o que já está no banco.
+      const cachedFromDb = Array.isArray(plan.ai_generated_plans)
+        ? (plan.ai_generated_plans as AIPlan[])
+        : [];
+      const plansToPersist =
+        generatedPlans.length > 0 ? generatedPlans : cachedFromDb;
+
+      const { error: updErr } = await supabase
         .from("action_plans")
         .update({
           objective: objectiveText,
-          goal_id: genGoalId,
+          goal_id: effectiveGoalId,
           applied_variant: variant.letter,
           applied_at: new Date().toISOString(),
           source_parecer_id: genParecerId === "__none__" ? null : genParecerId,
           custom_instructions: genInstructions.trim() || null,
-          ai_generated_plans: generatedPlans as any,
+          ai_generated_plans: plansToPersist as any,
         })
         .eq("id", plan.id);
+      if (updErr) throw updErr;
+
+      // Atualiza o estado local IMEDIATAMENTE para a UI mostrar o card aplicado
+      // sem depender do loadAll terminar (mesmo padrão do runGenerate).
+      setPlan((prev) =>
+        prev
+          ? {
+              ...prev,
+              objective: objectiveText,
+              goal_id: effectiveGoalId,
+              applied_variant: variant.letter,
+              applied_at: new Date().toISOString(),
+              ai_generated_plans: plansToPersist,
+            }
+          : prev,
+      );
 
       toast({ title: `Plano ${variant.letter} aplicado`, description: variant.title });
       setGenOpen(false);
       await loadAll(true);
     } catch (e: any) {
+      console.error("[AdminActionPlan] applyPlan erro:", e);
       toast({
         title: "Erro ao aplicar plano",
         description: e?.message || "Tente novamente",
@@ -468,14 +515,40 @@ const AdminActionPlan = () => {
   // ── CRUD manual ───────────────────────────────────
   const toggleItem = async (item: ActionItem) => {
     const next = item.status === "concluido" ? "pendente" : "concluido";
-    await supabase.from("action_items").update({ status: next as any }).eq("id", item.id);
+    const prevStatus = item.status;
+    // Otimista
     setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, status: next } : i)));
+    const { error } = await supabase
+      .from("action_items")
+      .update({ status: next as any })
+      .eq("id", item.id);
+    if (error) {
+      // rollback
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, status: prevStatus } : i)));
+      toast({
+        title: "Falha ao atualizar tarefa",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const removeItem = async (id: string) => {
-    await supabase.from("action_items").delete().eq("id", id);
+    const removed = items.find((i) => i.id === id);
+    // Otimista
     setItems((prev) => prev.filter((i) => i.id !== id));
-    toast({ title: "Ação removida" });
+    const { error } = await supabase.from("action_items").delete().eq("id", id);
+    if (error) {
+      // rollback
+      if (removed) setItems((prev) => [...prev, removed].sort((a, b) => a.id.localeCompare(b.id)));
+      toast({
+        title: "Falha ao remover tarefa",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({ title: "Tarefa removida" });
   };
 
   const updateItem = async (
@@ -514,13 +587,20 @@ const AdminActionPlan = () => {
 
   const discardActivePlan = async () => {
     if (!plan?.id) return;
-    if (!confirm("Descartar o plano em andamento? As ações pendentes serão removidas (concluídas viram histórico).")) return;
-    await supabase
+    if (!confirm("Excluir o plano em andamento? Todas as tarefas pendentes serão removidas (concluídas viram histórico). Você poderá gerar um novo plano em seguida.")) return;
+    const { error: delErr } = await supabase
       .from("action_items")
       .delete()
       .eq("action_plan_id", plan.id)
       .neq("status", "concluido");
-    await supabase
+    if (delErr) {
+      toast({ title: "Erro ao remover tarefas", description: delErr.message, variant: "destructive" });
+      return;
+    }
+    // Zera tudo, inclusive ai_generated_plans, para nao voltar ao InlinePlansSelector
+    // (consultor pode achar confuso ver os 3 cards reaparecerem depois de excluir).
+    // Se quiser revisitar os 3 cards, é só gerar de novo — barato e mais coerente.
+    const { error: updErr } = await supabase
       .from("action_plans")
       .update({
         objective: null,
@@ -528,9 +608,31 @@ const AdminActionPlan = () => {
         applied_variant: null,
         applied_at: null,
         custom_instructions: null,
+        ai_generated_plans: null,
       })
       .eq("id", plan.id);
-    toast({ title: "Plano descartado" });
+    if (updErr) {
+      toast({ title: "Erro ao zerar plano", description: updErr.message, variant: "destructive" });
+      return;
+    }
+    // Estado otimista — UI volta ao EmptyHero imediatamente
+    setPlan((prev) =>
+      prev
+        ? {
+            ...prev,
+            objective: null,
+            goal_id: null,
+            applied_variant: null,
+            applied_at: null,
+            custom_instructions: null,
+            ai_generated_plans: null,
+          }
+        : prev,
+    );
+    setItems((prev) => prev.filter((i) => i.status === "concluido"));
+    setGeneratedPlans([]);
+    setGenGoalId("");
+    toast({ title: "Plano excluído" });
     await loadAll(true);
   };
 
@@ -882,9 +984,6 @@ const AppliedPlanCard = ({
       <div className={cn("px-5 py-4 border-b border-border/50", headerBg)}>
         <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge className={cn("text-[10px] font-bold px-2 py-0.5 border", info.tone)}>
-              Plano {variant}
-            </Badge>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">
               {info.label}
             </span>
