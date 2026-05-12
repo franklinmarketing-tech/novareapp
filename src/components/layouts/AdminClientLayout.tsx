@@ -192,30 +192,30 @@ const AdminClientLayout = () => {
             ].join(", "),
           }}
         >
-          {/* Accent ribbon top */}
+          {/* Accent ribbon top (azul Novare) */}
           <div
             aria-hidden
             className="absolute inset-x-0 top-0 h-px"
             style={{
               background:
-                "linear-gradient(90deg, transparent, hsl(var(--accent) / 0.55), transparent)",
+                "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.6), transparent)",
             }}
           />
 
-          <div className="relative flex items-center gap-3 px-3 py-2.5 sm:px-4 sm:py-3">
+          <div className="relative flex items-center gap-2.5 px-3 py-2 sm:px-4 sm:py-2.5">
             {/* Avatar — quadrado pequeno com status dot */}
             <div
-              className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-lg flex items-center justify-center shrink-0"
+              className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center shrink-0"
               style={{
                 background:
-                  "linear-gradient(145deg, hsl(var(--accent) / 0.32) 0%, hsl(var(--accent) / 0.1) 100%)",
-                border: "1px solid hsl(var(--accent) / 0.32)",
-                borderTopColor: "hsl(var(--accent) / 0.5)",
+                  "linear-gradient(145deg, hsl(var(--primary) / 0.18) 0%, hsl(var(--primary) / 0.06) 100%)",
+                border: "1px solid hsl(var(--primary) / 0.3)",
+                borderTopColor: "hsl(var(--primary) / 0.45)",
                 boxShadow:
-                  "0 1px 0 hsl(0 0% 100% / 0.4) inset, 0 1px 3px hsl(var(--accent) / 0.18)",
+                  "0 1px 0 hsl(0 0% 100% / 0.4) inset, 0 1px 3px hsl(var(--primary) / 0.15)",
               }}
             >
-              <span className="text-[13px] sm:text-sm font-bold text-accent tracking-tight">
+              <span className="text-[13px] sm:text-sm font-bold text-primary tracking-tight">
                 {getInitials(clientName)}
               </span>
               <span
@@ -246,7 +246,7 @@ const AdminClientLayout = () => {
                   >
                     <span className="inline-block h-1 w-14 rounded-full bg-muted overflow-hidden">
                       <span
-                        className="block h-full rounded-full bg-accent transition-all"
+                        className="block h-full rounded-full bg-primary transition-all"
                         style={{ width: `${pct}%` }}
                       />
                     </span>
@@ -257,7 +257,7 @@ const AdminClientLayout = () => {
               {activePlanInfo && (
                 <Badge
                   variant="outline"
-                  className="text-[10px] gap-1 border-accent/40 text-accent shrink-0"
+                  className="text-[10px] gap-1 border-primary/40 text-primary shrink-0"
                 >
                   <Target className="h-3 w-3" />
                   Plano {activePlanInfo.variant} · {activePlanInfo.done}/{activePlanInfo.total}
@@ -305,14 +305,14 @@ const AdminClientLayout = () => {
                       "linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.12), transparent)",
                   }}
                 />
-                {/* Linha de progresso accent — preenche conforme avanca */}
+                {/* Linha de progresso azul Novare — preenche conforme avanca */}
                 <div
                   className="absolute top-0 left-0 h-[2px] rounded-r-full transition-all duration-700 ease-out"
                   style={{
                     width: `${pct}%`,
                     background:
-                      "linear-gradient(90deg, hsl(var(--accent) / 0.85) 0%, hsl(var(--accent)) 100%)",
-                    boxShadow: "0 0 6px hsl(var(--accent) / 0.5)",
+                      "linear-gradient(90deg, hsl(var(--primary) / 0.85) 0%, hsl(var(--primary)) 100%)",
+                    boxShadow: "0 0 6px hsl(var(--primary) / 0.5)",
                   }}
                 />
               </div>
@@ -334,26 +334,22 @@ const AdminClientLayout = () => {
           const cardStyle = (state: JourneyState): React.CSSProperties => {
             switch (state) {
               case "active":
+                // V9: azul Novare (primary) — cor da identidade
                 return {
                   background:
-                    "linear-gradient(140deg, hsl(16 88% 60%) 0%, hsl(var(--accent)) 45%, hsl(16 75% 48%) 100%)",
-                  border: "1px solid hsl(16 70% 42%)",
-                  borderTopColor: "hsl(16 95% 70%)",
-                  borderLeftColor: "hsl(16 90% 65%)",
+                    "linear-gradient(140deg, hsl(215 55% 32%) 0%, hsl(var(--primary)) 45%, hsl(215 55% 18%) 100%)",
+                  border: "1px solid hsl(215 55% 14%)",
+                  borderTopColor: "hsl(215 50% 42%)",
+                  borderLeftColor: "hsl(215 50% 36%)",
                   boxShadow: [
-                    // inset highlights — luz no topo + sombra no fundo (3D real)
-                    "0 1.5px 0 hsl(0 0% 100% / 0.32) inset",
-                    "0 -2px 0 hsl(0 0% 0% / 0.18) inset",
-                    "1px 0 0 hsl(0 0% 100% / 0.18) inset",
-                    "-1px 0 0 hsl(0 0% 0% / 0.1) inset",
-                    // outer glow accent (anel halo)
-                    "0 0 0 1px hsl(var(--accent) / 0.45)",
-                    "0 0 0 5px hsl(var(--accent) / 0.16)",
-                    // sombras ambientais em camadas (depth)
-                    "0 6px 14px -4px hsl(var(--accent) / 0.55)",
-                    "0 14px 32px -8px hsl(var(--accent) / 0.45)",
-                    "0 24px 48px -16px hsl(var(--accent) / 0.4)",
-                    "0 32px 64px -24px hsl(0 0% 0% / 0.2)",
+                    "0 1.5px 0 hsl(0 0% 100% / 0.22) inset",
+                    "0 -2px 0 hsl(0 0% 0% / 0.22) inset",
+                    "1px 0 0 hsl(0 0% 100% / 0.12) inset",
+                    "-1px 0 0 hsl(0 0% 0% / 0.15) inset",
+                    "0 0 0 1px hsl(var(--primary) / 0.5)",
+                    "0 0 0 4px hsl(var(--primary) / 0.14)",
+                    "0 4px 10px -3px hsl(var(--primary) / 0.45)",
+                    "0 10px 22px -6px hsl(var(--primary) / 0.35)",
                   ].join(", "),
                 };
               case "completed":
@@ -402,10 +398,10 @@ const AdminClientLayout = () => {
 
           const cardClasses = (state: JourneyState) =>
             cn(
-              "group relative flex items-center gap-2.5 w-full h-full",
-              "rounded-lg px-3 py-2 transition-all duration-300 ease-out overflow-hidden",
-              "min-h-[66px] min-w-0 select-none will-change-transform",
-              state === "active" && "text-accent-foreground -translate-y-0.5",
+              "group relative flex items-center gap-2 w-full h-full",
+              "rounded-md px-2 py-1.5 transition-all duration-300 ease-out overflow-hidden",
+              "min-h-[48px] min-w-0 select-none will-change-transform",
+              state === "active" && "text-primary-foreground -translate-y-0.5",
               state === "completed" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01]",
               state === "available" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01] cursor-pointer",
               state === "locked" && "text-muted-foreground/40 cursor-not-allowed",
@@ -414,7 +410,7 @@ const AdminClientLayout = () => {
           const stepLabelClasses = (state: JourneyState) =>
             cn(
               "text-[9px] font-semibold uppercase tracking-[0.14em] leading-none mb-0.5",
-              state === "active" && "text-accent-foreground/80",
+              state === "active" && "text-primary-foreground/80",
               state === "completed" && "text-success",
               state === "available" && "text-muted-foreground/75",
               state === "locked" && "text-muted-foreground/40",
@@ -470,7 +466,7 @@ const AdminClientLayout = () => {
 
           const iconBoxClasses = (state: JourneyState) =>
             cn(
-              "h-10 w-10 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0",
+              "h-8 w-8 rounded-md flex items-center justify-center transition-all duration-300 shrink-0",
               state === "active" && "group-hover:rotate-3",
               state === "available" && "group-hover:scale-110 group-hover:rotate-3",
               state === "completed" && "group-hover:scale-105",
@@ -478,17 +474,17 @@ const AdminClientLayout = () => {
 
           const iconClasses = (state: JourneyState) =>
             cn(
-              "h-[18px] w-[18px] transition-all duration-300",
-              state === "active" && "text-accent-foreground drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.25)]",
+              "h-[16px] w-[16px] transition-all duration-300",
+              state === "active" && "text-primary-foreground drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.3)]",
               state === "completed" && "text-success",
-              state === "available" && "text-foreground/70 group-hover:text-accent group-hover:scale-105",
+              state === "available" && "text-foreground/70 group-hover:text-primary group-hover:scale-105",
               state === "locked" && "text-muted-foreground/45",
             );
 
           const titleClasses = (state: JourneyState) =>
             cn(
-              "text-[12.5px] font-semibold tracking-tight leading-tight truncate",
-              state === "active" && "text-accent-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)]",
+              "text-[12px] font-semibold tracking-tight leading-tight truncate",
+              state === "active" && "text-primary-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]",
               state === "completed" && "text-foreground",
               state === "available" && "text-foreground",
               state === "locked" && "text-muted-foreground/55",
@@ -520,7 +516,7 @@ const AdminClientLayout = () => {
                 to={`/admin/cliente/${clientSlug}/${tab.path}`}
                 onClick={(e) => isLocked && e.preventDefault()}
                 aria-disabled={isLocked}
-                className="flex-1 min-w-0 outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="flex-1 min-w-0 outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 style={{ perspective: "800px" }}
               >
                 {({ isActive }) => {
@@ -576,13 +572,13 @@ const AdminClientLayout = () => {
                               filter: "blur(12px)",
                             }}
                           />
-                          {/* Glow externo pulsante (anel ao redor do card) */}
+                          {/* Glow externo pulsante (anel azul Novare) */}
                           <span
                             aria-hidden
                             className="pointer-events-none absolute -inset-2 rounded-2xl opacity-50"
                             style={{
                               background:
-                                "radial-gradient(ellipse 80% 60% at center, hsl(var(--accent) / 0.4), transparent 70%)",
+                                "radial-gradient(ellipse 80% 60% at center, hsl(var(--primary) / 0.4), transparent 70%)",
                               filter: "blur(16px)",
                               animation: "journeyGlowPulse 2.8s ease-in-out infinite",
                             }}
@@ -683,7 +679,7 @@ const AdminClientLayout = () => {
                   className="absolute h-px w-full"
                   style={{
                     background:
-                      "linear-gradient(90deg, hsl(var(--accent) / 0.05), hsl(var(--accent) / 0.45) 50%, hsl(var(--accent) / 0.05))",
+                      "linear-gradient(90deg, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.45) 50%, hsl(var(--primary) / 0.05))",
                   }}
                 />
               )}
@@ -693,14 +689,14 @@ const AdminClientLayout = () => {
                   flowing
                     ? {
                         background:
-                          "linear-gradient(145deg, hsl(var(--accent) / 0.22) 0%, hsl(var(--accent) / 0.08) 100%)",
-                        border: "1px solid hsl(var(--accent) / 0.45)",
-                        borderTopColor: "hsl(var(--accent) / 0.6)",
+                          "linear-gradient(145deg, hsl(var(--primary) / 0.22) 0%, hsl(var(--primary) / 0.08) 100%)",
+                        border: "1px solid hsl(var(--primary) / 0.45)",
+                        borderTopColor: "hsl(var(--primary) / 0.6)",
                         boxShadow: [
                           "0 1px 0 hsl(0 0% 100% / 0.5) inset",
-                          "0 -1px 0 hsl(var(--accent) / 0.15) inset",
-                          "0 2px 4px -1px hsl(var(--accent) / 0.22)",
-                          "0 0 0 1px hsl(var(--accent) / 0.12)",
+                          "0 -1px 0 hsl(var(--primary) / 0.15) inset",
+                          "0 2px 4px -1px hsl(var(--primary) / 0.22)",
+                          "0 0 0 1px hsl(var(--primary) / 0.12)",
                         ].join(", "),
                       }
                     : {
@@ -720,7 +716,7 @@ const AdminClientLayout = () => {
                   className={cn(
                     "h-3 w-3 transition-all",
                     flowing
-                      ? "text-accent drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
+                      ? "text-primary drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
                       : "text-muted-foreground/65",
                   )}
                   strokeWidth={2.75}
@@ -735,15 +731,7 @@ const AdminClientLayout = () => {
             completed.includes("parecer") || completed.includes("plano-acao");
 
           return (
-            <div className="px-3 py-2.5 sm:px-4 sm:py-3">
-              {/* Label do menu — mais discreto agora que esta dentro do mesmo container */}
-              <div className="hidden md:flex items-center gap-2 mb-2.5 pl-0.5">
-                <span className="h-[2px] w-3 rounded-full bg-accent/60" />
-                <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-muted-foreground/85">
-                  Jornada da Consultoria
-                </span>
-                <span className="h-px flex-1 bg-gradient-to-r from-border/60 to-transparent" />
-              </div>
+            <div className="px-2.5 py-2 sm:px-3 sm:py-2.5">
 
               {/* Desktop / tablet: 2 linhas de 3 cards com bridge vertical */}
               <div className="hidden md:block">
@@ -756,16 +744,16 @@ const AdminClientLayout = () => {
                 </div>
 
                 {/* Bridge vertical compacto entre as duas linhas */}
-                <div className="flex justify-center py-1" aria-hidden>
+                <div className="flex justify-center py-0.5" aria-hidden>
                   <div className="flex flex-col items-center">
                     <div
                       className="h-2.5 w-[2px] rounded-full transition-colors"
                       style={{
                         background: verticalFlows
-                          ? "linear-gradient(180deg, hsl(var(--accent) / 0.7) 0%, hsl(var(--accent) / 0.35) 100%)"
+                          ? "linear-gradient(180deg, hsl(var(--primary) / 0.7) 0%, hsl(var(--primary) / 0.35) 100%)"
                           : "linear-gradient(180deg, hsl(var(--foreground) / 0.3) 0%, hsl(var(--foreground) / 0.12) 100%)",
                         boxShadow: verticalFlows
-                          ? "0 0 6px hsl(var(--accent) / 0.4)"
+                          ? "0 0 6px hsl(var(--primary) / 0.4)"
                           : undefined,
                       }}
                     />
@@ -775,12 +763,12 @@ const AdminClientLayout = () => {
                         verticalFlows
                           ? {
                               background:
-                                "linear-gradient(145deg, hsl(var(--accent) / 0.25) 0%, hsl(var(--accent) / 0.08) 100%)",
-                              border: "1px solid hsl(var(--accent) / 0.45)",
-                              borderTopColor: "hsl(var(--accent) / 0.6)",
+                                "linear-gradient(145deg, hsl(var(--primary) / 0.25) 0%, hsl(var(--primary) / 0.08) 100%)",
+                              border: "1px solid hsl(var(--primary) / 0.45)",
+                              borderTopColor: "hsl(var(--primary) / 0.6)",
                               boxShadow: [
                                 "0 1px 0 hsl(0 0% 100% / 0.5) inset",
-                                "0 2px 5px -1px hsl(var(--accent) / 0.25)",
+                                "0 2px 5px -1px hsl(var(--primary) / 0.25)",
                               ].join(", "),
                             }
                           : {
@@ -796,7 +784,7 @@ const AdminClientLayout = () => {
                         className={cn(
                           "h-3 w-3 transition-all",
                           verticalFlows
-                            ? "text-accent drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
+                            ? "text-primary drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
                             : "text-muted-foreground/65",
                         )}
                         strokeWidth={2.75}
