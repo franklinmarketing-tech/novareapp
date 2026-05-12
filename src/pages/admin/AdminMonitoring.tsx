@@ -1,657 +1,841 @@
-import { useEffect, useState, useMemo } from "react";
-import { Icon3D } from "@/components/ui/Icon3D";
+// V9: Acompanhamento (admin) — dados sempre atuais + comparativo + IA + fechamento mensal
+import { useEffect, useMemo, useState } from "react";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Input } from "@/components/ui/input";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
-  Plus, TrendingUp, TrendingDown, Minus, Camera, Loader2,
-  Wallet, PiggyBank, Shield, Target, Calendar, ChevronRight,
-  Banknote, CreditCard, BarChart3, ArrowUpRight, ArrowDownRight,
-  CheckCircle2, Save,
+  Activity,
+  ArrowDownRight,
+  ArrowUpRight,
+  Calendar,
+  Camera,
+  ChevronRight,
+  ClipboardList,
+  CreditCard,
+  Loader2,
+  Lightbulb,
+  Minus,
+  PiggyBank,
+  Sparkles,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/loading-state";
-import { sendClientEmail } from "@/lib/sendClientEmail";
+import { EmptyState } from "@/components/ui/empty-state";
 import MonthlyClosings from "@/components/monitoring/MonthlyClosings";
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
-  ResponsiveContainer, Area, AreaChart, Legend,
-} from "recharts";
+import { motion, AnimatePresence } from "framer-motion";
+
+// ── Tipos ───────────────────────────────────────────────
 
 interface Snapshot {
-  id: string;
   snapshot_date: string;
   total_income: number | null;
   total_expenses: number | null;
   total_assets: number | null;
   total_debts: number | null;
   savings_rate: number | null;
-  emergency_reserve_months: number | null;
-  plan_completion_pct: number | null;
-  notes: string | null;
 }
 
-interface GoalWithProgress {
+interface GoalRow {
   id: string;
   description: string;
   target_amount: number | null;
   deadline: string | null;
   priority: string | null;
-  tasksDone: number;
-  tasksTotal: number;
-  pct: number;
 }
 
-const fmt = (v: number | null) =>
-  v != null ? `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}` : "—";
-const pct = (v: number | null) => (v != null ? `${v.toFixed(1)}%` : "—");
+interface ActionItem {
+  id: string;
+  goal_id: string | null;
+  financial_impact: number | null;
+  status: string;
+  parent_id: string | null;
+}
 
-// ── KPI card ──────────────────────────────────────
-const KpiCard = ({
-  label, value, icon: Icon, trend, color,
-}: {
-  label: string;
-  value: string;
-  icon: React.ElementType;
-  trend?: "up" | "down" | "neutral";
-  color: string;
-}) => {
-  const trendColor = trend === "up" ? "text-emerald-500" : trend === "down" ? "text-red-500" : "text-muted-foreground";
-  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : Minus;
+interface ActivePlan {
+  id: string;
+  objective: string | null;
+  applied_variant: string | null;
+  applied_at: string | null;
+}
 
-  return (
-    <Card className="group hover:shadow-md transition-all duration-300">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className={`p-2 rounded-xl ${color}`}>
-            <Icon className="h-6 w-6" />
-          </div>
-          <TrendIcon className={`h-6 w-6 ${trendColor}`} />
-        </div>
-        <p className="text-xl font-bold text-foreground tracking-tight leading-none mb-1">{value}</p>
-        <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
-      </CardContent>
-    </Card>
-  );
+interface MonthlyClosingLite {
+  id: string;
+  month_ref: string;
+  status: string;
+  total_income: number | null;
+  total_expenses: number | null;
+  total_assets: number | null;
+  total_debts: number | null;
+  monthly_debt_payments: number | null;
+  net_worth: number | null;
+  savings_rate: number | null;
+}
+
+interface Insight {
+  kind: "evolution" | "attention" | "next_step";
+  title: string;
+  description: string;
+  financial_impact?: number;
+  source_label?: string;
+}
+
+// ── Helpers ─────────────────────────────────────────────
+
+const fmtBRL = (v?: number | null) =>
+  typeof v === "number"
+    ? `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+    : "—";
+
+const fmtPct = (v?: number | null) => (typeof v === "number" ? `${v.toFixed(1)}%` : "—");
+
+const monthRefLabel = (ref: string) => {
+  const d = new Date(ref + "T12:00:00");
+  return d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 };
 
-// ── Snapshot row ──────────────────────────────────
-const SnapshotRow = ({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) => (
-  <div className="flex items-center gap-3 py-2">
-    <div className="p-1.5 rounded-lg bg-muted/50">
-      <Icon className="h-6 w-6 text-muted-foreground" />
-    </div>
-    <span className="text-xs text-muted-foreground flex-1">{label}</span>
-    <span className="text-sm font-semibold text-foreground tabular-nums">{value}</span>
-  </div>
-);
+const deltaInfo = (a: number, b: number) => {
+  const diff = b - a;
+  const pct = a !== 0 ? (diff / Math.abs(a)) * 100 : 0;
+  return { diff, pct };
+};
 
-// ── Main ──────────────────────────────────────────
+// ── Componente principal ────────────────────────────────
+
 const AdminMonitoring = () => {
   const { clientId } = useClientId();
   const [loading, setLoading] = useState(true);
-  const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
-  const [creating, setCreating] = useState(false);
   const [clientName, setClientName] = useState("");
-  const [goals, setGoals] = useState<GoalWithProgress[]>([]);
-  const [trackingRows, setTrackingRows] = useState<Record<string, { valorAtual: string; valorRealizado: string }>>({});
-  const [savingTracking, setSavingTracking] = useState(false);
 
-  const updateTracking = (goalId: string, field: "valorAtual" | "valorRealizado", value: string) =>
-    setTrackingRows((prev) => ({ ...prev, [goalId]: { ...prev[goalId], valorAtual: prev[goalId]?.valorAtual ?? "", valorRealizado: prev[goalId]?.valorRealizado ?? "", [field]: value } }));
+  const [goals, setGoals] = useState<GoalRow[]>([]);
+  const [actions, setActions] = useState<ActionItem[]>([]);
+  const [plan, setPlan] = useState<ActivePlan | null>(null);
+  const [closings, setClosings] = useState<MonthlyClosingLite[]>([]);
 
-  const saveTracking = async () => {
-    if (!clientId) return;
-    setSavingTracking(true);
-    const latest = snapshots.at(-1);
-    const payload = JSON.stringify({ goal_tracking: trackingRows });
-    if (latest) {
-      await supabase.from("monitoring_snapshots").update({ notes: payload }).eq("id", latest.id);
-    } else {
-      const today = new Date().toISOString().slice(0, 10);
-      await supabase.from("monitoring_snapshots").insert({ client_id: clientId, snapshot_date: today, notes: payload });
-    }
-    toast({ title: "Metas salvas!", description: "Valores de acompanhamento registrados." });
-    setSavingTracking(false);
-  };
+  // Totais atuais (calculados em tempo real, nao snapshot)
+  const [current, setCurrent] = useState({
+    totalIncome: 0,
+    totalExpenses: 0,
+    totalDebts: 0,
+    totalAssets: 0,
+    monthlyDebtPayments: 0,
+  });
 
-  const loadData = async (silent = false) => {
+  // Comparativo
+  const [compareA, setCompareA] = useState<string>("__previous__");
+  const [compareB, setCompareB] = useState<string>("__now__");
+
+  // IA insights
+  const [insights, setInsights] = useState<Insight[] | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+
+  // ── Carga ─────────────────────────────────────────
+  const loadAll = async (silent = false) => {
     if (!clientId) return;
     if (!silent) setLoading(true);
 
-    const [snapRes, goalsRes, planRes, clientRes] = await Promise.all([
-      supabase.from("monitoring_snapshots").select("*").eq("client_id", clientId).order("snapshot_date", { ascending: true }),
-      supabase.from("goals").select("*").eq("client_id", clientId),
-      supabase.from("action_plans").select("id").eq("client_id", clientId).maybeSingle(),
+    const [clientRes, incomeRes, expensesRes, debtsRes, assetsRes, goalsRes, planRes, closingsRes] = await Promise.all([
       supabase.from("clients").select("user_id").eq("id", clientId).maybeSingle(),
+      supabase.from("income").select("amount, frequency").eq("client_id", clientId),
+      supabase.from("expenses").select("amount").eq("client_id", clientId),
+      supabase.from("debts").select("total_amount, monthly_payment").eq("client_id", clientId),
+      supabase.from("assets").select("estimated_value").eq("client_id", clientId),
+      supabase.from("goals").select("id, description, target_amount, deadline, priority").eq("client_id", clientId).order("priority"),
+      supabase.from("action_plans").select("id, objective, applied_variant, applied_at").eq("client_id", clientId).maybeSingle(),
+      supabase
+        .from("monthly_closings")
+        .select(
+          "id, month_ref, status, total_income, total_expenses, total_assets, total_debts, monthly_debt_payments, net_worth, savings_rate",
+        )
+        .eq("client_id", clientId)
+        .order("month_ref", { ascending: false }),
     ]);
 
-    setSnapshots((snapRes.data as Snapshot[]) || []);
     if (clientRes.data?.user_id) {
-      const { data: prof } = await supabase.from("profiles").select("full_name").eq("user_id", clientRes.data.user_id).maybeSingle();
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", clientRes.data.user_id)
+        .maybeSingle();
       if (prof?.full_name) setClientName(prof.full_name);
     }
 
-    // Load action items for goal progress
-    let items: any[] = [];
-    if (planRes.data) {
-      const { data } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id);
-      items = data || [];
-    }
-    const parentItems = items.filter((a: any) => !a.parent_id);
+    const totalIncome = (incomeRes.data || []).reduce((s, r) => {
+      const a = Number(r.amount) || 0;
+      return s + (r.frequency === "anual" ? a / 12 : a);
+    }, 0);
+    const totalExpenses = (expensesRes.data || []).reduce((s, r) => s + (Number(r.amount) || 0), 0);
+    const totalDebts = (debtsRes.data || []).reduce((s, r) => s + (Number(r.total_amount) || 0), 0);
+    const totalAssets = (assetsRes.data || []).reduce((s, r) => s + (Number(r.estimated_value) || 0), 0);
+    const monthlyDebtPayments = (debtsRes.data || []).reduce(
+      (s, r) => s + (Number(r.monthly_payment) || 0),
+      0,
+    );
 
-    const goalsWithProgress: GoalWithProgress[] = (goalsRes.data || []).map((g: any) => {
-      const goalTasks = parentItems.filter((a: any) => a.goal_id === g.id);
-      const done = goalTasks.filter((a: any) => a.status === "concluido").length;
-      const total = goalTasks.length;
-      return {
-        id: g.id,
-        description: g.description,
-        target_amount: g.target_amount,
-        deadline: g.deadline,
-        priority: g.priority,
-        tasksDone: done,
-        tasksTotal: total,
-        pct: total > 0 ? Math.round((done / total) * 100) : 0,
-      };
-    });
-    setGoals(goalsWithProgress);
+    setCurrent({ totalIncome, totalExpenses, totalDebts, totalAssets, monthlyDebtPayments });
+    setGoals((goalsRes.data as GoalRow[]) || []);
+    setClosings((closingsRes.data as MonthlyClosingLite[]) || []);
+    setPlan(planRes.data as ActivePlan | null);
 
-    // Restore saved tracking values from latest snapshot notes
-    const latestSnap = (snapRes.data as Snapshot[])?.at(-1);
-    if (latestSnap?.notes) {
-      try {
-        const parsed = JSON.parse(latestSnap.notes);
-        if (parsed?.goal_tracking) setTrackingRows(parsed.goal_tracking);
-      } catch { /* ignore malformed notes */ }
+    if (planRes.data?.id) {
+      const { data: items } = await supabase
+        .from("action_items")
+        .select("id, goal_id, financial_impact, status, parent_id")
+        .eq("action_plan_id", planRes.data.id);
+      setActions((items as ActionItem[]) || []);
     }
 
     if (!silent) setLoading(false);
   };
 
-  useEffect(() => { loadData(); }, [clientId]);
+  useEffect(() => {
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientId]);
 
-  const handleNewSnapshot = async () => {
-    if (!clientId) return;
-    setCreating(true);
+  // ── Derivados ─────────────────────────────────────
+  const netCashFlow = current.totalIncome - current.totalExpenses - current.monthlyDebtPayments;
+  const savingsRate = current.totalIncome > 0 ? (netCashFlow / current.totalIncome) * 100 : 0;
+  const netWorth = current.totalAssets - current.totalDebts;
 
-    // Auto-fetch all data
-    const [incRes, expRes, assRes, debRes] = await Promise.all([
-      supabase.from("income").select("amount, frequency").eq("client_id", clientId),
-      supabase.from("expenses").select("amount").eq("client_id", clientId),
-      supabase.from("assets").select("estimated_value").eq("client_id", clientId),
-      supabase.from("debts").select("total_amount, monthly_payment").eq("client_id", clientId),
-    ]);
+  // Progresso por objetivo (baseado em acoes-pai concluidas vinculadas)
+  const parentActions = actions.filter((a) => !a.parent_id);
+  const goalsWithProgress = useMemo(() => {
+    return goals.map((g) => {
+      const linked = parentActions.filter((a) => a.goal_id === g.id);
+      const done = linked.filter((a) => a.status === "concluido").length;
+      const total = linked.length;
+      const completedImpact = linked
+        .filter((a) => a.status === "concluido")
+        .reduce((s, a) => s + (a.financial_impact || 0), 0);
+      const totalImpact = linked.reduce((s, a) => s + (a.financial_impact || 0), 0);
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
-    const totalIncome = (incRes.data || []).reduce((s, r) => {
-      const amt = Number(r.amount) || 0;
-      return s + (r.frequency === "anual" ? amt / 12 : amt);
-    }, 0);
-    const totalExpenses = (expRes.data || []).reduce((s, r) => s + (Number(r.amount) || 0), 0);
-    const totalAssets = (assRes.data || []).reduce((s, r) => s + (Number(r.estimated_value) || 0), 0);
-    const totalDebts = (debRes.data || []).reduce((s, r) => s + (Number(r.total_amount) || 0), 0);
-    const monthlyDebtPayments = (debRes.data || []).reduce((s, r) => s + (Number(r.monthly_payment) || 0), 0);
-    const netCashFlow = totalIncome - totalExpenses - monthlyDebtPayments;
-    const savingsRate = totalIncome > 0 ? (netCashFlow / totalIncome) * 100 : 0;
-    const emergencyMonths = totalExpenses > 0 ? totalAssets / totalExpenses : 0;
+      const daysToDeadline = g.deadline
+        ? Math.ceil((new Date(g.deadline + "T12:00:00").getTime() - Date.now()) / 86400000)
+        : null;
 
-    // Plan completion
-    const { data: plan } = await supabase.from("action_plans").select("id").eq("client_id", clientId).maybeSingle();
-    let planPct = 0;
-    if (plan) {
-      const { data: items } = await supabase.from("action_items").select("status").eq("action_plan_id", plan.id);
-      if (items && items.length > 0) {
-        planPct = Math.round((items.filter(i => i.status === "concluido").length / items.length) * 100);
-      }
+      return {
+        ...g,
+        linkedCount: total,
+        doneCount: done,
+        pct,
+        completedImpact,
+        totalImpact,
+        daysToDeadline,
+      };
+    });
+  }, [goals, parentActions]);
+
+  // Comparativo: resolve datasets A e B
+  const datasetA = useMemo(() => {
+    if (compareA === "__now__") return buildCurrentDataset(current);
+    if (compareA === "__previous__") {
+      const sorted = [...closings].sort((a, b) => b.month_ref.localeCompare(a.month_ref));
+      const prev = sorted.find((c) => c.status === "fechado");
+      return prev ? buildClosingDataset(prev) : null;
     }
+    const found = closings.find((c) => c.id === compareA);
+    return found ? buildClosingDataset(found) : null;
+  }, [compareA, closings, current]);
 
-    const today = new Date().toISOString().slice(0, 10);
+  const datasetB = useMemo(() => {
+    if (compareB === "__now__") return buildCurrentDataset(current);
+    if (compareB === "__previous__") {
+      const sorted = [...closings].sort((a, b) => b.month_ref.localeCompare(a.month_ref));
+      const prev = sorted.find((c) => c.status === "fechado");
+      return prev ? buildClosingDataset(prev) : null;
+    }
+    const found = closings.find((c) => c.id === compareB);
+    return found ? buildClosingDataset(found) : null;
+  }, [compareB, closings, current]);
 
-    await supabase.from("monitoring_snapshots").insert({
-      client_id: clientId,
-      snapshot_date: today,
-      total_income: totalIncome,
-      total_expenses: totalExpenses,
-      total_assets: totalAssets,
-      total_debts: totalDebts,
-      savings_rate: savingsRate,
-      emergency_reserve_months: emergencyMonths,
-      plan_completion_pct: planPct,
-      notes: null,
-    });
+  const actionPlanCompletion = useMemo(() => {
+    if (parentActions.length === 0) return null;
+    const done = parentActions.filter((a) => a.status === "concluido").length;
+    return {
+      done,
+      total: parentActions.length,
+      pct: Math.round((done / parentActions.length) * 100),
+      totalImpact: parentActions.reduce((s, a) => s + (a.financial_impact || 0), 0),
+    };
+  }, [parentActions]);
 
-    const patrimonio = totalAssets - totalDebts;
-    sendClientEmail(clientId, "snapshot-update", {
-      patrimonio,
-      savingsRate: savingsRate.toFixed(1),
-      date: new Date(today).toLocaleDateString("pt-BR"),
-    });
-
-    
-    toast({ title: "Registro criado!", description: "Dados capturados automaticamente a partir do perfil do cliente." });
-    await loadData(true);
-    setCreating(false);
+  // ── Acoes ─────────────────────────────────────────
+  const runAnalyze = async () => {
+    if (!clientId) return;
+    setAnalyzing(true);
+    setInsights(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-progress", {
+        body: { clientId },
+      });
+      if (error) throw error;
+      const arr = (data?.insights || []) as Insight[];
+      if (!arr.length) throw new Error("IA não retornou insights");
+      setInsights(arr);
+      toast({
+        title: "Análise concluída",
+        description: `${arr.length} insights gerados pela IA.`,
+      });
+    } catch (e: any) {
+      toast({
+        title: "Erro ao analisar",
+        description: e?.message || "Tente novamente",
+        variant: "destructive",
+      });
+    }
+    setAnalyzing(false);
   };
 
-  // ── Derived data ──────────────────────────────
-  const latest = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
-  const prev = snapshots.length > 1 ? snapshots[snapshots.length - 2] : null;
-
-  const getTrend = (cur: number | null | undefined, prv: number | null | undefined): "up" | "down" | "neutral" => {
-    if (cur == null || prv == null) return "neutral";
-    if (cur > prv) return "up";
-    if (cur < prv) return "down";
-    return "neutral";
-  };
-
-  const chartData = snapshots.map(s => ({
-    date: new Date(s.snapshot_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
-    fullDate: new Date(s.snapshot_date).toLocaleDateString("pt-BR"),
-    patrimonio: (s.total_assets || 0) - (s.total_debts || 0),
-    ativos: s.total_assets || 0,
-    dividas: s.total_debts || 0,
-    poupanca: s.savings_rate || 0,
-    reserva: s.emergency_reserve_months || 0,
-    plano: s.plan_completion_pct || 0,
-  }));
-
-  const overallGoalPct = useMemo(() => {
-    if (goals.length === 0) return 0;
-    const totalTasks = goals.reduce((s, g) => s + g.tasksTotal, 0);
-    const doneTasks = goals.reduce((s, g) => s + g.tasksDone, 0);
-    return totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-  }, [goals]);
-
-  const priorityConfig: Record<string, { label: string; color: string }> = {
-    alta: { label: "Alta", color: "bg-red-500/10 text-red-600 border-red-500/20" },
-    media: { label: "Média", color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
-    baixa: { label: "Baixa", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
-  };
-
-  if (loading) {
-    return <LoadingState variant="page" rows={3} />;
-  }
+  // ── Render ────────────────────────────────────────
+  if (loading) return <LoadingState variant="page" rows={4} />;
 
   return (
     <div className="space-y-6">
-      {/* ── Header ─────────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Icon3D name="snapshot" size="lg" floating lazy={false} alt="Acompanhamento" />
-          <div>
-            <h1 className="text-lg font-semibold text-foreground tracking-tight">Acompanhamento</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Registros periódicos da situação financeira do cliente</p>
-          </div>
+      {/* HEADER */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight flex items-center gap-2">
+            <Activity className="h-5 w-5 text-accent" />
+            Acompanhamento
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Os dados abaixo refletem o estado <span className="font-semibold text-foreground">atual</span> do cliente.
+            Para preservar o histórico, feche o mês quando concluir um ciclo.
+          </p>
         </div>
-        <Button
-          onClick={handleNewSnapshot}
-          disabled={creating}
-          className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
-        >
-          {creating ? <Loader2 className="h-6 w-6 animate-spin" /> : <Camera className="h-6 w-6" />}
-          {creating ? "Registrando..." : "Registrar Posição Atual"}
-        </Button>
       </div>
 
+      {/* KPIs ATUAIS */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <KpiCard
+          label="Renda mensal"
+          value={fmtBRL(current.totalIncome)}
+          icon={TrendingUp}
+          tone="bg-emerald-500/10 text-emerald-600"
+        />
+        <KpiCard
+          label="Despesas mensais"
+          value={fmtBRL(current.totalExpenses)}
+          icon={TrendingDown}
+          tone="bg-red-500/10 text-red-600"
+          sub={current.monthlyDebtPayments > 0 ? `+ ${fmtBRL(current.monthlyDebtPayments)} parcelas` : undefined}
+        />
+        <KpiCard
+          label="Dívida total"
+          value={fmtBRL(current.totalDebts)}
+          icon={CreditCard}
+          tone="bg-orange-500/10 text-orange-600"
+        />
+        <KpiCard
+          label="Patrimônio líquido"
+          value={fmtBRL(netWorth)}
+          icon={Wallet}
+          tone={netWorth >= 0 ? "bg-blue-500/10 text-blue-600" : "bg-red-500/10 text-red-600"}
+          sub={`Ativos ${fmtBRL(current.totalAssets)}`}
+        />
+      </div>
 
-      {/* ── KPIs (latest) ──────────────────────── */}
-      {latest && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <KpiCard
-            label="Patrimônio Líquido"
-            value={fmt((latest.total_assets || 0) - (latest.total_debts || 0))}
-            icon={Wallet}
-            trend={getTrend(
-              (latest.total_assets || 0) - (latest.total_debts || 0),
-              prev ? (prev.total_assets || 0) - (prev.total_debts || 0) : null
-            )}
-            color="bg-primary/10 text-primary"
-          />
-          <KpiCard
-            label="Cap. de Poupança"
-            value={pct(latest.savings_rate)}
-            icon={PiggyBank}
-            trend={getTrend(latest.savings_rate, prev?.savings_rate)}
-            color="bg-emerald-500/10 text-emerald-600"
-          />
-          <KpiCard
-            label="Reserva de Emergência"
-            value={`${(latest.emergency_reserve_months || 0).toFixed(1)} meses`}
-            icon={Shield}
-            trend={getTrend(latest.emergency_reserve_months, prev?.emergency_reserve_months)}
-            color="bg-blue-500/10 text-blue-600"
-          />
-          <KpiCard
-            label="Cumprimento do Plano"
-            value={pct(latest.plan_completion_pct)}
-            icon={Target}
-            trend={getTrend(latest.plan_completion_pct, prev?.plan_completion_pct)}
-            color="bg-accent/10 text-accent"
-          />
-        </div>
-      )}
+      {/* SALDO + SAVINGS RATE em destaque */}
+      <Card className="border-border/50 overflow-hidden">
+        <CardContent className="py-5 px-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/85 mb-1">
+                Saldo líquido mensal
+              </p>
+              <p
+                className={cn(
+                  "text-2xl font-bold tracking-tight",
+                  netCashFlow >= 0 ? "text-success" : "text-destructive",
+                )}
+              >
+                {netCashFlow >= 0 ? "+" : ""}
+                {fmtBRL(netCashFlow)}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Receitas − Despesas − Parcelas</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/85 mb-1">
+                Taxa de poupança
+              </p>
+              <p
+                className={cn(
+                  "text-2xl font-bold tracking-tight",
+                  savingsRate >= 20
+                    ? "text-success"
+                    : savingsRate >= 0
+                      ? "text-foreground"
+                      : "text-destructive",
+                )}
+              >
+                {fmtPct(savingsRate)}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">% da renda que sobra</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/85 mb-1">
+                Plano em andamento
+              </p>
+              {plan?.applied_variant ? (
+                <>
+                  <p className="text-base font-bold tracking-tight text-foreground truncate">
+                    Plano {plan.applied_variant}
+                    {plan.objective ? <> · <span className="text-muted-foreground font-medium">{plan.objective}</span></> : null}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {actionPlanCompletion
+                      ? `${actionPlanCompletion.done}/${actionPlanCompletion.total} ações · impacto ${fmtBRL(actionPlanCompletion.totalImpact)}/mês`
+                      : "Sem ações"}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">Nenhum plano aplicado</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* ── Tabela de Metas ────────────────────── */}
-      {goals.length > 0 && (
-        <Card className="border-border/40 shadow-soft rounded-2xl">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Target className="h-4 w-4 text-accent" />
-                  Edição de Metas
-                </CardTitle>
-                <CardDescription className="text-xs mt-0.5">Preencha os valores realizados. Uso exclusivo do consultor.</CardDescription>
+      {/* COMPARATIVO */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-blue-500/10">
+                <Activity className="h-4 w-4 text-blue-600" />
               </div>
-              <Button size="sm" onClick={saveTracking} disabled={savingTracking} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-1.5">
-                <Save className="h-4 w-4" />
-                {savingTracking ? "Salvando..." : "Salvar"}
-              </Button>
+              Comparar evolução
+            </CardTitle>
+            <div className="flex items-center gap-2 text-xs">
+              <DateSelect value={compareA} onChange={setCompareA} closings={closings} />
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <DateSelect value={compareB} onChange={setCompareB} closings={closings} />
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border/40 bg-muted/30">
-                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Descrição</th>
-                    <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground">Valor Atual</th>
-                    <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground">Meta Estabelecida</th>
-                    <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground">% Redução</th>
-                    <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground">Valor Realizado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {goals.map((g) => {
-                    const row = trackingRows[g.id] || { valorAtual: "", valorRealizado: "" };
-                    const atual = parseFloat(row.valorAtual) || 0;
-                    const meta = g.target_amount || 0;
-                    const realizado = parseFloat(row.valorRealizado) || 0;
-                    const pctReducao = atual > 0 && meta > 0 && meta < atual ? ((atual - meta) / atual * 100).toFixed(1) : null;
-                    return (
-                      <tr key={g.id} className="border-b border-border/30 last:border-0 hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-2.5 font-medium text-foreground max-w-[180px] truncate">{g.description}</td>
-                        <td className="px-4 py-2.5 text-right">
-                          <Input
-                            value={row.valorAtual}
-                            onChange={(e) => updateTracking(g.id, "valorAtual", e.target.value)}
-                            placeholder="R$"
-                            className="h-7 w-28 text-right text-xs ml-auto"
-                          />
-                        </td>
-                        <td className="px-4 py-2.5 text-right font-semibold text-foreground">
-                          {meta > 0 ? fmt(meta) : <span className="text-muted-foreground">—</span>}
-                        </td>
-                        <td className="px-4 py-2.5 text-right">
-                          {pctReducao ? (
-                            <span className="text-emerald-600 font-semibold">↓ {pctReducao}%</span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-2.5 text-right">
-                          <Input
-                            value={row.valorRealizado}
-                            onChange={(e) => updateTracking(g.id, "valorRealizado", e.target.value)}
-                            placeholder="R$"
-                            className={`h-7 w-28 text-right text-xs ml-auto ${realizado > 0 && realizado <= meta ? "border-emerald-400 focus:ring-emerald-400" : ""}`}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {datasetA && datasetB ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              <DeltaRow label="Renda mensal" a={datasetA.totalIncome} b={datasetB.totalIncome} positiveGood />
+              <DeltaRow label="Despesas mensais" a={datasetA.totalExpenses} b={datasetB.totalExpenses} positiveGood={false} />
+              <DeltaRow label="Parcelas dívidas" a={datasetA.monthlyDebtPayments} b={datasetB.monthlyDebtPayments} positiveGood={false} />
+              <DeltaRow label="Dívida total" a={datasetA.totalDebts} b={datasetB.totalDebts} positiveGood={false} />
+              <DeltaRow label="Patrimônio total" a={datasetA.totalAssets} b={datasetB.totalAssets} positiveGood />
+              <DeltaRow label="Patrimônio líquido" a={datasetA.netWorth} b={datasetB.netWorth} positiveGood />
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ── Snapshot History (Accordion) ────────── */}
-      {snapshots.length === 0 ? (
-        <Card>
-          <CardContent className="py-16 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-              <Camera className="h-8 w-8 text-accent/40" />
-            </div>
-            <p className="text-foreground font-semibold mb-1">Comece a acompanhar a evolução</p>
-            <p className="text-muted-foreground text-sm max-w-md mx-auto mb-5">
-              Cada registro é uma fotografia financeira do cliente. Com o tempo, você verá tendências claras 
-              — patrimônio crescendo, dívidas diminuindo, poupança aumentando.
+          ) : (
+            <p className="text-xs text-muted-foreground py-6 text-center">
+              {closings.length === 0
+                ? "Feche pelo menos 1 mês para comparar evoluções."
+                : "Selecione 2 datas válidas para ver o comparativo."}
             </p>
-            <Button
-              onClick={handleNewSnapshot}
-              disabled={creating}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 rounded-xl"
-            >
-              {creating ? <Loader2 className="h-6 w-6 animate-spin" /> : <Camera className="h-6 w-6" />}
-              Registrar posição atual
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-muted">
-                  <Calendar className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">Histórico de Registros</CardTitle>
-                  <CardDescription className="text-[11px]">
-                    {snapshots.length} registro{snapshots.length !== 1 ? "s" : ""} — mais recente primeiro
-                  </CardDescription>
-                </div>
-              </div>
-              <Badge variant="outline" className="text-[10px]">
-                {snapshots.length} registro{snapshots.length !== 1 ? "s" : ""}
-              </Badge>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* PROGRESSO DOS OBJETIVOS */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-violet-500/10">
+              <Target className="h-4 w-4 text-violet-600" />
             </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Accordion type="single" collapsible className="space-y-1">
-              {[...snapshots].reverse().map((s, idx) => {
-                const patrimonio = (s.total_assets || 0) - (s.total_debts || 0);
-                const isLatest = idx === 0;
+            Progresso dos objetivos
+            <Badge variant="outline" className="text-[10px]">
+              {goalsWithProgress.length}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {goalsWithProgress.length === 0 ? (
+            <EmptyState
+              icon={Target}
+              title="Sem objetivos cadastrados"
+              description="Cadastre objetivos no Diagnóstico para acompanhar a progressão aqui."
+              variant="compact"
+              tone="neutral"
+            />
+          ) : (
+            <div className="space-y-3">
+              {goalsWithProgress.map((g) => (
+                <GoalRowCard key={g.id} goal={g} />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-                return (
-                  <AccordionItem
-                    key={s.id}
-                    value={s.id}
-                    className={`border rounded-xl px-4 transition-colors ${isLatest ? "border-accent/30 bg-accent/[0.03]" : "border-border/50"}`}
-                  >
-                    <AccordionTrigger className="py-3 hover:no-underline">
-                      <div className="flex items-center gap-3 w-full pr-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-sm font-semibold text-foreground">
-                            {new Date(s.snapshot_date).toLocaleDateString("pt-BR")}
-                          </span>
-                          {isLatest && (
-                            <Badge className="bg-accent/10 text-accent border-accent/20 text-[9px] px-1.5">
-                              Atual
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex-1" />
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-                          <span className="tabular-nums">Patrimônio: <span className={`font-semibold ${patrimonio >= 0 ? "text-emerald-600" : "text-red-500"}`}>{fmt(patrimonio)}</span></span>
-                          <span className="tabular-nums">Poupança: <span className="font-semibold text-foreground">{pct(s.savings_rate)}</span></span>
-                          <span className="tabular-nums">Plano: <span className="font-semibold text-foreground">{pct(s.plan_completion_pct)}</span></span>
-                        </div>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0 pt-2">
-                        <SnapshotRow label="Renda Mensal" value={fmt(s.total_income)} icon={Banknote} />
-                        <SnapshotRow label="Despesas Mensais" value={fmt(s.total_expenses)} icon={CreditCard} />
-                        <SnapshotRow label="Ativos Totais" value={fmt(s.total_assets)} icon={Wallet} />
-                        <SnapshotRow label="Dívidas Totais" value={fmt(s.total_debts)} icon={TrendingDown} />
-                        <SnapshotRow label="Patrimônio Líquido" value={fmt(patrimonio)} icon={BarChart3} />
-                        <SnapshotRow label="Cap. de Poupança" value={pct(s.savings_rate)} icon={PiggyBank} />
-                        <SnapshotRow label="Reserva de Emergência" value={`${(s.emergency_reserve_months || 0).toFixed(1)} meses`} icon={Shield} />
-                        <SnapshotRow label="Cumprimento do Plano" value={pct(s.plan_completion_pct)} icon={Target} />
-                      </div>
-                      {s.notes && (
-                        <div className="mt-3 pt-3 border-t border-border/40">
-                          <p className="text-xs text-muted-foreground italic">💬 {s.notes}</p>
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ── Fechamentos Mensais ─────────────────── */}
-      <MonthlyClosings clientId={clientId} clientName={clientName} isAdmin />
-
-      {/* ── Charts (below snapshots) ───────────── */}
-      {chartData.length >= 2 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Evolução Patrimonial */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <BarChart3 className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">Evolução Patrimonial</CardTitle>
-                  <CardDescription className="text-[11px]">Ativos, dívidas e patrimônio líquido</CardDescription>
-                </div>
+      {/* INSIGHTS DA IA */}
+      <Card className="border-accent/20 bg-gradient-to-br from-accent/[0.03] via-card to-card">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <Sparkles className="h-4 w-4 text-accent" />
               </div>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <ResponsiveContainer width="100%" height={240}>
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="gradAtivos" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(215, 50%, 45%)" stopOpacity={0.15} />
-                      <stop offset="95%" stopColor="hsl(215, 50%, 45%)" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="gradPatrimonio" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(152, 55%, 41%)" stopOpacity={0.15} />
-                      <stop offset="95%" stopColor="hsl(152, 55%, 41%)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                  <RTooltip
-                    formatter={(value: number, name: string) => [fmt(value), name]}
-                    contentStyle={{
-                      borderRadius: "10px",
-                      border: "1px solid hsl(var(--border))",
-                      fontSize: "12px",
-                      padding: "8px 12px",
-                      boxShadow: "0 4px 12px hsl(0 0% 0% / 0.08)",
-                      backgroundColor: "hsl(var(--card))",
-                    }}
-                  />
-                  <Legend iconSize={8} wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
-                  <Area type="monotone" dataKey="ativos" name="Ativos" stroke="hsl(215, 50%, 45%)" fill="url(#gradAtivos)" strokeWidth={2} dot={{ r: 3, fill: "hsl(215, 50%, 45%)", strokeWidth: 0 }} />
-                  <Area type="monotone" dataKey="dividas" name="Dívidas" stroke="hsl(0, 72%, 51%)" fill="transparent" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: "hsl(0, 72%, 51%)", strokeWidth: 0 }} />
-                  <Area type="monotone" dataKey="patrimonio" name="Patrimônio Líquido" stroke="hsl(152, 55%, 41%)" fill="url(#gradPatrimonio)" strokeWidth={2.5} dot={{ r: 3.5, fill: "hsl(152, 55%, 41%)", strokeWidth: 0 }} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Taxa de Poupança + Reserva */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-emerald-500/10">
-                  <PiggyBank className="h-6 w-6 text-emerald-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">Indicadores de Saúde</CardTitle>
-                  <CardDescription className="text-[11px]">Taxa de poupança e reserva de emergência</CardDescription>
-                </div>
+              <div>
+                <CardTitle className="text-sm font-semibold">Evolução pela IA</CardTitle>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Analisa os pareceres recentes e as ações concluídas para narrar a progressão.
+                </p>
               </div>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="poup" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-                  <YAxis yAxisId="res" orientation="right" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} />
-                  <RTooltip
-                    formatter={(value: number, name: string) =>
-                      name === "Poupança" ? [`${value.toFixed(1)}%`, name] : [`${value.toFixed(1)} meses`, name]
-                    }
-                    contentStyle={{
-                      borderRadius: "10px",
-                      border: "1px solid hsl(var(--border))",
-                      fontSize: "12px",
-                      padding: "8px 12px",
-                      boxShadow: "0 4px 12px hsl(0 0% 0% / 0.08)",
-                      backgroundColor: "hsl(var(--card))",
-                    }}
-                  />
-                  <Legend iconSize={8} wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
-                  <Line yAxisId="poup" type="monotone" dataKey="poupanca" name="Poupança" stroke="hsl(152, 55%, 41%)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(var(--card))", stroke: "hsl(152, 55%, 41%)", strokeWidth: 2 }} />
-                  <Line yAxisId="res" type="monotone" dataKey="reserva" name="Reserva (meses)" stroke="hsl(215, 50%, 45%)" strokeWidth={2} strokeDasharray="6 3" dot={{ r: 3, fill: "hsl(215, 50%, 45%)", strokeWidth: 0 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            </div>
+            <Button
+              onClick={runAnalyze}
+              disabled={analyzing}
+              size="sm"
+              className="gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"
+            >
+              {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              {analyzing ? "Analisando..." : insights ? "Reanalisar" : "Analisar evolução"}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!insights && !analyzing && (
+            <p className="text-xs text-muted-foreground py-2 text-center">
+              Clique em <span className="font-semibold text-foreground">Analisar evolução</span> para a IA gerar uma timeline dos avanços e pontos de atenção.
+            </p>
+          )}
+          {analyzing && (
+            <div className="flex flex-col items-center justify-center py-6 gap-2">
+              <Loader2 className="h-5 w-5 animate-spin text-accent" />
+              <p className="text-xs text-muted-foreground">
+                Lendo os últimos pareceres e ações concluídas...
+              </p>
+            </div>
+          )}
+          {insights && insights.length > 0 && (
+            <div className="space-y-2">
+              <AnimatePresence initial={false}>
+                {insights.map((it, i) => (
+                  <InsightCard key={i} insight={it} index={i} />
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-          {/* Evolução do Plano de Ação */}
-          <Card className="lg:col-span-2">
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-accent/10">
-                  <Target className="h-6 w-6 text-accent" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">Evolução do Plano</CardTitle>
-                  <CardDescription className="text-[11px]">Cumprimento do plano de ação ao longo do tempo</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="gradPlano" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
-                  <RTooltip
-                    formatter={(value: number) => [`${value.toFixed(0)}%`, "Plano Concluído"]}
-                    contentStyle={{
-                      borderRadius: "10px",
-                      border: "1px solid hsl(var(--border))",
-                      fontSize: "12px",
-                      padding: "8px 12px",
-                      backgroundColor: "hsl(var(--card))",
-                    }}
-                  />
-                  <Area type="monotone" dataKey="plano" name="Plano Concluído" stroke="hsl(var(--accent))" fill="url(#gradPlano)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(var(--card))", stroke: "hsl(var(--accent))", strokeWidth: 2 }} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
+      {/* FECHAMENTOS MENSAIS (componente existente) */}
+      {clientId && (
+        <MonthlyClosings clientId={clientId} clientName={clientName} isAdmin={true} />
       )}
     </div>
+  );
+};
+
+// ── Subcomponentes ─────────────────────────────────────
+
+const KpiCard = ({
+  label,
+  value,
+  icon: Icon,
+  tone,
+  sub,
+}: {
+  label: string;
+  value: string;
+  icon: React.ElementType;
+  tone: string;
+  sub?: string;
+}) => (
+  <Card className="overflow-hidden border-border/50">
+    <CardContent className="p-3.5">
+      <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", tone)}>
+        <Icon className="h-4 w-4" strokeWidth={1.75} />
+      </div>
+      <p className="text-base sm:text-lg font-bold text-foreground tabular-nums tracking-tight leading-none">
+        {value}
+      </p>
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">{label}</p>
+      {sub && <p className="text-[10.5px] text-muted-foreground/85 mt-1 truncate">{sub}</p>}
+    </CardContent>
+  </Card>
+);
+
+const DateSelect = ({
+  value,
+  onChange,
+  closings,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  closings: MonthlyClosingLite[];
+}) => {
+  const closed = closings.filter((c) => c.status === "fechado");
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="h-8 text-xs w-[180px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="__now__" className="text-xs">
+          Hoje (dados atuais)
+        </SelectItem>
+        <SelectItem value="__previous__" className="text-xs">
+          Último fechamento
+        </SelectItem>
+        {closed.length > 0 && <div className="my-1 border-t border-border" />}
+        {closed.map((c) => (
+          <SelectItem key={c.id} value={c.id} className="text-xs capitalize">
+            {monthRefLabel(c.month_ref)}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+type Dataset = {
+  totalIncome: number;
+  totalExpenses: number;
+  totalDebts: number;
+  totalAssets: number;
+  monthlyDebtPayments: number;
+  netWorth: number;
+};
+
+const buildCurrentDataset = (c: {
+  totalIncome: number;
+  totalExpenses: number;
+  totalDebts: number;
+  totalAssets: number;
+  monthlyDebtPayments: number;
+}): Dataset => ({
+  ...c,
+  netWorth: c.totalAssets - c.totalDebts,
+});
+
+const buildClosingDataset = (c: MonthlyClosingLite): Dataset => ({
+  totalIncome: Number(c.total_income || 0),
+  totalExpenses: Number(c.total_expenses || 0),
+  totalDebts: Number(c.total_debts || 0),
+  totalAssets: Number(c.total_assets || 0),
+  monthlyDebtPayments: Number(c.monthly_debt_payments || 0),
+  netWorth: Number(c.net_worth || 0),
+});
+
+const DeltaRow = ({
+  label,
+  a,
+  b,
+  positiveGood,
+}: {
+  label: string;
+  a: number;
+  b: number;
+  /** se true, aumento eh bom (renda, patrimonio); se false, aumento eh ruim (despesas, dividas) */
+  positiveGood: boolean;
+}) => {
+  const { diff, pct } = deltaInfo(a, b);
+  const isUp = diff > 0;
+  const isDown = diff < 0;
+  const isGood = positiveGood ? isUp : isDown;
+  const isBad = positiveGood ? isDown : isUp;
+  const TrendIcon = isUp ? ArrowUpRight : isDown ? ArrowDownRight : Minus;
+  const color = isGood ? "text-success" : isBad ? "text-destructive" : "text-muted-foreground";
+
+  return (
+    <div className="rounded-xl border border-border/50 bg-card p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/85 mb-1.5">
+        {label}
+      </p>
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[11px] text-muted-foreground tabular-nums truncate">{fmtBRL(a)}</p>
+          <p className="text-sm font-bold text-foreground tabular-nums truncate">{fmtBRL(b)}</p>
+        </div>
+        <div className={cn("flex items-center gap-0.5 text-[11px] font-semibold tabular-nums", color)}>
+          <TrendIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
+          {Math.abs(pct).toFixed(1)}%
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const GoalRowCard = ({
+  goal,
+}: {
+  goal: {
+    id: string;
+    description: string;
+    target_amount: number | null;
+    deadline: string | null;
+    priority: string | null;
+    pct: number;
+    doneCount: number;
+    linkedCount: number;
+    completedImpact: number;
+    totalImpact: number;
+    daysToDeadline: number | null;
+  };
+}) => {
+  const overdue = goal.daysToDeadline != null && goal.daysToDeadline < 0 && goal.pct < 100;
+  const remaining =
+    goal.target_amount && goal.completedImpact
+      ? Math.max(0, goal.target_amount - goal.completedImpact)
+      : goal.target_amount || 0;
+
+  return (
+    <div className="rounded-xl border border-border/50 bg-card p-4">
+      <div className="flex items-start justify-between gap-3 mb-2.5">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground tracking-tight leading-snug">
+            {goal.description}
+          </p>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            {goal.target_amount != null && goal.target_amount > 0 && (
+              <Badge variant="outline" className="text-[10px] gap-1">
+                <Target className="h-3 w-3" />
+                Meta {fmtBRL(goal.target_amount)}
+              </Badge>
+            )}
+            {goal.deadline && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[10px] gap-1",
+                  overdue && "border-destructive/40 text-destructive",
+                )}
+              >
+                <Calendar className="h-3 w-3" />
+                {new Date(goal.deadline + "T12:00:00").toLocaleDateString("pt-BR")}
+                {goal.daysToDeadline != null && (
+                  <span className="ml-0.5">
+                    ({overdue ? `${Math.abs(goal.daysToDeadline)}d atraso` : goal.daysToDeadline === 0 ? "hoje" : `${goal.daysToDeadline}d`})
+                  </span>
+                )}
+              </Badge>
+            )}
+            {goal.priority && (
+              <Badge variant="outline" className="text-[10px] capitalize">
+                {goal.priority}
+              </Badge>
+            )}
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <p className={cn("text-xl font-black tabular-nums", goal.pct === 100 ? "text-success" : "text-foreground")}>
+            {goal.pct}%
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            {goal.doneCount}/{goal.linkedCount || 0} ações
+          </p>
+        </div>
+      </div>
+      <Progress value={goal.pct} className={cn("h-1.5", goal.pct === 100 && "[&>div]:bg-success")} />
+      <div className="mt-2 flex items-center justify-between text-[11px]">
+        <span className="text-muted-foreground">
+          {goal.completedImpact > 0 ? (
+            <>Impacto já conquistado: <span className="font-semibold text-success">{fmtBRL(goal.completedImpact)}</span>/mês</>
+          ) : (
+            <span className="italic">Sem ações concluídas vinculadas ainda</span>
+          )}
+        </span>
+        {goal.target_amount != null && goal.target_amount > 0 && remaining > 0 && (
+          <span className="text-muted-foreground">
+            Falta <span className="font-semibold text-foreground">{fmtBRL(remaining)}</span>
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const InsightCard = ({ insight, index }: { insight: Insight; index: number }) => {
+  const tone = {
+    evolution: {
+      bg: "bg-success/[0.06]",
+      border: "border-success/30",
+      icon: TrendingUp,
+      iconBg: "bg-success/15 text-success",
+      label: "Evolução",
+      labelTone: "bg-success/10 text-success border-success/30",
+    },
+    attention: {
+      bg: "bg-warning/[0.06]",
+      border: "border-warning/35",
+      icon: AlertTriangle,
+      iconBg: "bg-warning/15 text-warning",
+      label: "Atenção",
+      labelTone: "bg-warning/10 text-warning border-warning/30",
+    },
+    next_step: {
+      bg: "bg-accent/[0.04]",
+      border: "border-accent/30",
+      icon: Lightbulb,
+      iconBg: "bg-accent/15 text-accent",
+      label: "Próximo passo",
+      labelTone: "bg-accent/10 text-accent border-accent/30",
+    },
+  }[insight.kind];
+
+  const Icon = tone.icon;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ delay: Math.min(index * 0.04, 0.3) }}
+      className={cn("rounded-xl border p-3.5", tone.bg, tone.border)}
+    >
+      <div className="flex items-start gap-3">
+        <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", tone.iconBg)}>
+          <Icon className="h-4 w-4" strokeWidth={2} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <Badge variant="outline" className={cn("text-[10px] border px-1.5 py-0", tone.labelTone)}>
+              {tone.label}
+            </Badge>
+            {typeof insight.financial_impact === "number" && insight.financial_impact !== 0 && (
+              <span
+                className={cn(
+                  "text-[10.5px] font-semibold tabular-nums",
+                  insight.financial_impact > 0 ? "text-success" : "text-destructive",
+                )}
+              >
+                {insight.financial_impact > 0 ? "+" : ""}
+                {fmtBRL(insight.financial_impact)}/mês
+              </span>
+            )}
+            {insight.source_label && (
+              <span className="text-[10px] text-muted-foreground/85">
+                · {insight.source_label}
+              </span>
+            )}
+          </div>
+          <p className="text-sm font-semibold text-foreground tracking-tight leading-snug">
+            {insight.title}
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+            {insight.description}
+          </p>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
