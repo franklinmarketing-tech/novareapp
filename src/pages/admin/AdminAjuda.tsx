@@ -119,7 +119,7 @@ const sections: Section[] = [
       },
       {
         q: "Como abro a ficha completa?",
-        a: "Clique no nome do cliente na lista. Você verá abas para Onboarding, Diagnóstico, Parecer, Plano de Ação, Objetivos, Investimentos, Acompanhamento e Relatório.",
+        a: "Clique no nome do cliente na lista. Você verá a Jornada da Consultoria em 6 etapas: Onboarding → Diagnóstico → Parecer → Plano de Ação → Acompanhamento → Relatório. O botão 'Objetivos de Vida' fica no cabeçalho do Diagnóstico (abre como Dialog).",
       },
       {
         q: "Posso exportar a lista?",
@@ -248,30 +248,6 @@ const sections: Section[] = [
       {
         q: "Posso priorizar?",
         a: "Sim, defina alta/média/baixa prioridade para ordenar a execução.",
-      },
-    ],
-  },
-  {
-    id: "investimentos",
-    title: "Investimentos",
-    icon: TrendingUp,
-    description: "Carteira recomendada por perfil.",
-    items: [
-      {
-        q: "Como funcionam as recomendações?",
-        a: "O sistema sugere produtos (renda fixa, variável, internacionais) com alocação em % baseada no perfil. Você ajusta valores e prioridades.",
-      },
-      {
-        q: "O que cada coluna mostra?",
-        a: "Produto, tipo, alocação %, retorno esperado, liquidez, investimento mínimo, racional e status (sugerido/aceito/recusado).",
-      },
-      {
-        q: "Posso usar o simulador de rentabilidade?",
-        a: (
-          <>
-            Sim, abra a <Link className="text-primary underline" to="/ferramentas/calculadora-de-investimentos">calculadora de investimentos</Link> para projetar valores futuros.
-          </>
-        ),
       },
     ],
   },

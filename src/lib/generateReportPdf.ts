@@ -53,6 +53,26 @@ export interface ReportData {
   totalActions: number;
   planPct: number;
   snapshots?: Array<{ snapshot_date: string; total_assets?: number; total_debts?: number; savings_rate?: number }>;
+  // V9: plano aplicado e variantes geradas pela IA
+  activePlan?: {
+    objective: string | null;
+    appliedVariant: string | null;
+    appliedAt: string | null;
+    variants: Array<{
+      letter: "A" | "B" | "C";
+      title: string;
+      approach: string;
+      horizon_months: number;
+      monthly_impact: number;
+      actions: Array<{
+        area: string;
+        description: string;
+        objective: string;
+        financial_impact: number;
+        deadline_offset_days: number;
+      }>;
+    }> | null;
+  } | null;
 }
 
 // ──────────────────────────────────────────────────────────
@@ -659,82 +679,195 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     y += 18;
   }
 
-  // ── 8.5 Opções de Plano de Ação — 3 Vertentes (V9 § 5)
-  newPage();
-  sectionHeader("Opções de Plano de Ação", "3 vertentes estratégicas geradas pela IA Novare");
+  // ── 8.5 Plano de Ação Aplicado (V9 — dinâmico baseado em action_plans.ai_generated_plans)
+  if (
+    data.activePlan &&
+    data.activePlan.appliedVariant &&
+    data.activePlan.variants &&
+    data.activePlan.variants.length > 0
+  ) {
+    const applied = data.activePlan.variants.find(
+      (v) => v.letter === data.activePlan!.appliedVariant,
+    );
+    const alternatives = data.activePlan.variants.filter(
+      (v) => v.letter !== data.activePlan!.appliedVariant,
+    );
 
-  const PLANOS_V9: Array<{
-    label: string;
-    color: [number, number, number];
-    desc: string;
-    pontos: string[];
-  }> = [
-    {
-      label: "Plano Equilibrado",
-      color: [37, 99, 235],
-      desc: "Sugestão baseada em ajustes sustentáveis de longo prazo. Foco em equilíbrio entre proteção patrimonial e crescimento gradual.",
-      pontos: [
-        "Revisão de despesas recorrentes",
-        "Formação de reserva de emergência",
-        "Início de carteira diversificada",
-        "Redução progressiva de dívidas",
-      ],
-    },
-    {
-      label: "Plano Conservador",
-      color: C.success,
-      desc: "Foco total em segurança, quitação de dívidas e reserva. Ideal para quem prioriza estabilidade antes de qualquer crescimento.",
-      pontos: [
-        "Quitação antecipada de dívidas",
-        "Reserva de emergência de 6 meses",
-        "Corte agressivo de despesas variáveis",
-        "Apenas renda fixa conservadora",
-      ],
-    },
-    {
-      label: "Plano Agressivo",
-      color: C.accent,
-      desc: "Otimização máxima para aceleração de metas e independência financeira. Aceita maior volatilidade em troca de retornos superiores.",
-      pontos: [
-        "Renegociação imediata de todas as dívidas",
-        "Reinvestimento de 100% da sobra mensal",
-        "Diversificação em renda variável",
-        "Revisão tributária e otimização fiscal",
-      ],
-    },
-  ];
+    // cores por variante
+    const variantColor: Record<"A" | "B" | "C", [number, number, number]> = {
+      A: [37, 99, 235],   // azul cauteloso
+      B: C.success,       // verde equilibrado
+      C: C.accent,        // terracota acelerado
+    };
+    const variantLabel: Record<"A" | "B" | "C", string> = {
+      A: "Cauteloso",
+      B: "Equilibrado",
+      C: "Acelerado",
+    };
 
-  for (const plano of PLANOS_V9) {
-    const boxH = 42;
-    ensureSpace(boxH + 4);
+    const areaLabels: Record<string, string> = {
+      renda: "Renda",
+      despesas: "Despesas",
+      dividas: "Dívidas",
+      investimentos: "Investimentos",
+      protecao: "Proteção",
+      impostos: "Impostos",
+    };
 
-    pdf.setFillColor(...C.bgSoft);
-    pdf.roundedRect(MARGIN, y, CONTENT_W, boxH, 2, 2, "F");
-    pdf.setFillColor(...plano.color);
-    pdf.rect(MARGIN, y, 1.5, boxH, "F");
+    if (applied) {
+      newPage();
+      sectionHeader(
+        "Plano de Ação Aplicado",
+        data.activePlan.objective
+          ? `Objetivo entrelaçado: ${data.activePlan.objective}`
+          : `Plano ${applied.letter} · ${variantLabel[applied.letter]}`,
+      );
 
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(11);
-    pdf.setTextColor(...plano.color);
-    pdf.text(plano.label, MARGIN + 6, y + 7);
+      // Card grande com o plano aplicado
+      const headerH = 26;
+      ensureSpace(headerH + 6);
+      pdf.setFillColor(...C.bgSoft);
+      pdf.roundedRect(MARGIN, y, CONTENT_W, headerH, 2, 2, "F");
+      pdf.setFillColor(...variantColor[applied.letter]);
+      pdf.rect(MARGIN, y, 2.5, headerH, "F");
 
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8.5);
-    pdf.setTextColor(...C.muted);
-    const descLines = pdf.splitTextToSize(plano.desc, CONTENT_W - 12);
-    pdf.text(descLines, MARGIN + 6, y + 12);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(12);
+      pdf.setTextColor(...variantColor[applied.letter]);
+      pdf.text(`Plano ${applied.letter} · ${variantLabel[applied.letter]}`, MARGIN + 6, y + 7);
 
-    const ptStartY = y + 12 + descLines.length * 3.6 + 2.5;
-    pdf.setFontSize(8.5);
-    pdf.setTextColor(...C.text);
-    plano.pontos.forEach((p, i) => {
-      const py = ptStartY + i * 4.4;
-      pdf.setFillColor(...plano.color);
-      pdf.circle(MARGIN + 8, py - 1.3, 0.7, "F");
-      pdf.text(p, MARGIN + 11, py);
-    });
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      pdf.setTextColor(...C.text);
+      pdf.text(applied.title, MARGIN + 6, y + 13);
 
-    y += boxH + 4;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(...C.muted);
+      const approachLines = pdf.splitTextToSize(applied.approach, CONTENT_W - 12);
+      pdf.text(approachLines, MARGIN + 6, y + 18);
+
+      y += headerH + 2;
+
+      // Metricas (horizonte + impacto)
+      const metaH = 10;
+      ensureSpace(metaH + 4);
+      pdf.setFontSize(8);
+      pdf.setTextColor(...C.muted);
+      pdf.text(
+        `Horizonte: ${applied.horizon_months} ${applied.horizon_months === 1 ? "mês" : "meses"}   ·   Impacto estimado: ${fmt(applied.monthly_impact)}/mês   ·   ${applied.actions.length} ações`,
+        MARGIN,
+        y + 4,
+      );
+      y += metaH;
+
+      // Lista de acoes
+      ensureSpace(10);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(...C.text);
+      pdf.text("Ações do plano", MARGIN, y);
+      y += 4;
+      pdf.setDrawColor(...C.border);
+      pdf.line(MARGIN, y, PAGE_W - MARGIN, y);
+      y += 4;
+
+      applied.actions.forEach((a) => {
+        const descLines = pdf.splitTextToSize(a.description, CONTENT_W - 14);
+        const objLines = a.objective
+          ? pdf.splitTextToSize(`→ ${a.objective}`, CONTENT_W - 14)
+          : [];
+        const blockH = 5 + descLines.length * 3.5 + objLines.length * 3.2 + 3;
+        ensureSpace(blockH);
+
+        // bullet colorido
+        pdf.setFillColor(...variantColor[applied.letter]);
+        pdf.circle(MARGIN + 1.5, y + 2.5, 0.8, "F");
+
+        // area badge
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(7);
+        pdf.setTextColor(...C.muted);
+        const areaText = (areaLabels[a.area] || a.area).toUpperCase();
+        pdf.text(areaText, MARGIN + 4, y + 2.5);
+
+        // impacto a direita
+        if (a.financial_impact && a.financial_impact > 0) {
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(8);
+          pdf.setTextColor(...C.success);
+          pdf.text(
+            `${fmt(a.financial_impact)}/mês`,
+            PAGE_W - MARGIN,
+            y + 2.5,
+            { align: "right" },
+          );
+        }
+
+        // descricao
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(...C.text);
+        pdf.text(descLines, MARGIN + 4, y + 6);
+
+        // objetivo
+        if (objLines.length > 0) {
+          pdf.setFontSize(8);
+          pdf.setTextColor(...C.muted);
+          pdf.text(objLines, MARGIN + 4, y + 6 + descLines.length * 3.5);
+        }
+
+        y += blockH;
+      });
+
+      y += 4;
+    }
+
+    // Alternativas consideradas (mais compactas)
+    if (alternatives.length > 0) {
+      ensureSpace(20);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...C.text);
+      pdf.text("Alternativas consideradas pela IA", MARGIN, y);
+      y += 6;
+
+      for (const alt of alternatives) {
+        const altH = 18;
+        ensureSpace(altH + 3);
+
+        pdf.setFillColor(...C.bgSoft);
+        pdf.roundedRect(MARGIN, y, CONTENT_W, altH, 2, 2, "F");
+        pdf.setFillColor(...variantColor[alt.letter]);
+        pdf.rect(MARGIN, y, 1.5, altH, "F");
+
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9);
+        pdf.setTextColor(...variantColor[alt.letter]);
+        pdf.text(`Plano ${alt.letter} · ${variantLabel[alt.letter]}`, MARGIN + 5, y + 5);
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.setTextColor(...C.text);
+        pdf.text(alt.title, MARGIN + 5, y + 10);
+
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text(
+          `${alt.horizon_months}m · ${fmt(alt.monthly_impact)}/mês · ${alt.actions.length} ações`,
+          PAGE_W - MARGIN,
+          y + 10,
+          { align: "right" },
+        );
+
+        const approachLines = pdf.splitTextToSize(alt.approach, CONTENT_W - 10);
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text(approachLines.slice(0, 1), MARGIN + 5, y + 15);
+
+        y += altH + 2;
+      }
+    }
   }
 
   // ── 9. Evolução Patrimonial (gráfico)

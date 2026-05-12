@@ -606,15 +606,14 @@ const ClientDashboard = () => {
       })()}
 
 
-      {/* ── Quick Actions ── */}
+      {/* ── Quick Actions ── (V9: Acompanhamento removido — uso exclusivo do consultor) */}
       <motion.div
         initial="hidden" whileInView="visible" viewport={{ once: true }}
-        className="grid grid-cols-3 gap-3"
+        className="grid grid-cols-2 gap-3"
       >
         {[
           { label: "Meus Dados", icon: ClipboardList, to: "/cliente/meus-dados", color: "bg-primary/10 text-primary" },
           { label: "Plano de Ação", icon: Target, to: "/cliente/plano-acao", color: "bg-accent/10 text-accent" },
-          { label: "Acompanhamento", icon: TrendingUp, to: "/cliente/acompanhamento", color: "bg-success/10 text-success" },
         ].map((action, i) => (
           <motion.div key={action.label} variants={fadeUp} custom={i}>
             <Card3D

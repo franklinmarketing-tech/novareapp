@@ -149,6 +149,22 @@ type ReportSnapshot = {
 };
 type GoalProgress = ReportGoal & { tasksDone: number; tasksTotal: number; pct: number };
 
+// V9: variantes do plano (geradas pela IA, cache em action_plans.ai_generated_plans)
+type AIPlanVariant = {
+  letter: "A" | "B" | "C";
+  title: string;
+  approach: string;
+  horizon_months: number;
+  monthly_impact: number;
+  actions: Array<{
+    area: string;
+    description: string;
+    objective: string;
+    financial_impact: number;
+    deadline_offset_days: number;
+  }>;
+};
+
 // ── Main ─────────────────────────────────────────────
 const AdminReport = () => {
   const { clientId } = useClientId();
@@ -168,6 +184,14 @@ const AdminReport = () => {
   const [actionItems, setActionItems] = useState<ReportActionItem[]>([]);
   const [snapshots, setSnapshots] = useState<ReportSnapshot[]>([]);
   const [parecerNote, setParecerNote] = useState<{ title: string; content: string } | null>(null);
+  // V9: plano aplicado e variantes geradas pela IA
+  const [activePlan, setActivePlan] = useState<{
+    objective: string | null;
+    applied_variant: string | null;
+    applied_at: string | null;
+    goal_id: string | null;
+    ai_generated_plans: AIPlanVariant[] | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!clientId) return;
@@ -182,7 +206,11 @@ const AdminReport = () => {
         supabase.from("assets").select("*").eq("client_id", clientId),
         supabase.from("insurance").select("*").eq("client_id", clientId),
         supabase.from("goals").select("*").eq("client_id", clientId),
-        supabase.from("action_plans").select("id").eq("client_id", clientId).maybeSingle(),
+        supabase
+          .from("action_plans")
+          .select("id, objective, applied_variant, applied_at, goal_id, ai_generated_plans, source_parecer_id")
+          .eq("client_id", clientId)
+          .maybeSingle(),
         supabase.from("monitoring_snapshots").select("*").eq("client_id", clientId).order("snapshot_date", { ascending: true }),
       ]);
 
@@ -206,6 +234,15 @@ const AdminReport = () => {
       if (planRes.data) {
         const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id).order("created_at");
         setActionItems((items ?? []) as ReportActionItem[]);
+        // V9: guarda info do plano aplicado e as 3 variantes geradas pela IA
+        const rawVariants = (planRes.data as any).ai_generated_plans;
+        setActivePlan({
+          objective: (planRes.data as any).objective ?? null,
+          applied_variant: (planRes.data as any).applied_variant ?? null,
+          applied_at: (planRes.data as any).applied_at ?? null,
+          goal_id: (planRes.data as any).goal_id ?? null,
+          ai_generated_plans: Array.isArray(rawVariants) ? (rawVariants as AIPlanVariant[]) : null,
+        });
       }
       const { data: notes } = await supabase
         .from("consultant_notes")
@@ -314,6 +351,15 @@ const AdminReport = () => {
         totalActions,
         planPct,
         snapshots,
+        // V9: plano aplicado + variantes geradas pela IA
+        activePlan: activePlan
+          ? {
+              objective: activePlan.objective,
+              appliedVariant: activePlan.applied_variant,
+              appliedAt: activePlan.applied_at,
+              variants: activePlan.ai_generated_plans || null,
+            }
+          : null,
       });
       toast({ title: "PDF gerado com sucesso!" });
     } catch (err) {
@@ -944,54 +990,119 @@ const AdminReport = () => {
           </section>
         )}
 
-        {/* ══════ 3 VERTENTES DO PLANO DE AÇÃO ══════ */}
-        <section>
-          <SectionHeader number={sectionNumber()} title="Opções de Plano de Ação" subtitle="3 vertentes estratégicas geradas pela IA Novare" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {([
-              {
-                label: "Plano Equilibrado",
-                color: "border-blue-400/40 bg-blue-500/5",
-                badge: "bg-blue-500/10 text-blue-700 border-blue-400/30",
-                desc: "Sugestão baseada em ajustes sustentáveis de longo prazo. Foco em equilíbrio entre proteção patrimonial e crescimento gradual.",
-                points: ["Revisão de despesas recorrentes", "Formação de reserva de emergência", "Início de carteira diversificada", "Redução progressiva de dívidas"],
-              },
-              {
-                label: "Plano Conservador",
-                color: "border-emerald-400/40 bg-emerald-500/5",
-                badge: "bg-emerald-500/10 text-emerald-700 border-emerald-400/30",
-                desc: "Foco total em segurança, quitação de dívidas e reserva. Ideal para quem prioriza estabilidade antes de qualquer crescimento.",
-                points: ["Quitação antecipada de dívidas", "Reserva de emergência de 6 meses", "Corte agressivo de despesas variáveis", "Apenas renda fixa conservadora"],
-              },
-              {
-                label: "Plano Agressivo",
-                color: "border-orange-400/40 bg-orange-500/5",
-                badge: "bg-orange-500/10 text-orange-700 border-orange-400/30",
-                desc: "Otimização máxima para aceleração de metas e independência financeira. Aceita maior volatilidade em troca de retornos superiores.",
-                points: ["Renegociação imediata de todas as dívidas", "Reinvestimento de 100% da sobra mensal", "Diversificação em renda variável", "Revisão tributária e otimização fiscal"],
-              },
-            ]).map((plan) => (
-              <Card key={plan.label} className={`border-2 ${plan.color} rounded-2xl`}>
-                <CardHeader className="pb-3">
-                  <Badge className={`self-start text-[11px] font-bold px-2.5 py-1 border ${plan.badge}`}>
-                    {plan.label}
-                  </Badge>
-                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{plan.desc}</p>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-1.5">
-                    {plan.points.map((p, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-foreground">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                        {p}
-                      </li>
+        {/* ══════ PLANO DE AÇÃO APLICADO + ALTERNATIVAS (V9) ══════ */}
+        {(() => {
+          const variants = activePlan?.ai_generated_plans || [];
+          const appliedLetter = activePlan?.applied_variant || null;
+          if (!appliedLetter || variants.length === 0) return null;
+
+          const variantInfo: Record<"A" | "B" | "C", { label: string; cardCls: string; badgeCls: string; dotCls: string }> = {
+            A: { label: "Cauteloso",   cardCls: "border-blue-400/40 bg-blue-500/5",       badgeCls: "bg-blue-500/10 text-blue-700 border-blue-400/30",       dotCls: "bg-blue-500" },
+            B: { label: "Equilibrado", cardCls: "border-emerald-400/40 bg-emerald-500/5", badgeCls: "bg-emerald-500/10 text-emerald-700 border-emerald-400/30", dotCls: "bg-emerald-500" },
+            C: { label: "Acelerado",   cardCls: "border-orange-400/40 bg-orange-500/5",   badgeCls: "bg-orange-500/10 text-orange-700 border-orange-400/30",     dotCls: "bg-orange-500" },
+          };
+
+          const applied = variants.find((v) => v.letter === appliedLetter);
+          const alternatives = variants.filter((v) => v.letter !== appliedLetter);
+
+          return (
+            <section className="print:break-before-page">
+              <SectionHeader
+                number={sectionNumber()}
+                title="Plano de Ação Aplicado"
+                subtitle={
+                  activePlan?.objective
+                    ? `Objetivo entrelaçado: ${activePlan.objective}`
+                    : "Estratégia escolhida pelo consultor"
+                }
+              />
+
+              {/* Plano APLICADO em destaque */}
+              {applied && (
+                <Card className={`border-2 ${variantInfo[applied.letter].cardCls} rounded-2xl mb-4`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <Badge className={`text-[11px] font-bold px-2.5 py-1 border ${variantInfo[applied.letter].badgeCls}`}>
+                        Plano {applied.letter} · {variantInfo[applied.letter].label}
+                      </Badge>
+                      <div className="flex items-center gap-3 text-[10.5px] text-muted-foreground">
+                        <span>Horizonte: <span className="font-semibold text-foreground">{applied.horizon_months} {applied.horizon_months === 1 ? "mês" : "meses"}</span></span>
+                        <span>Impacto/mês: <span className="font-semibold text-emerald-600">{fmt(applied.monthly_impact)}</span></span>
+                      </div>
+                    </div>
+                    <CardTitle className="text-sm font-bold text-foreground mt-2">
+                      {applied.title}
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {applied.approach}
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/85 mb-2">
+                      Ações do plano ({applied.actions.length})
+                    </p>
+                    <ul className="space-y-1.5">
+                      {applied.actions.map((a, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-foreground">
+                          <span className={`shrink-0 mt-1 h-1.5 w-1.5 rounded-full ${variantInfo[applied.letter].dotCls}`} />
+                          <div className="flex-1">
+                            <p className="leading-snug">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mr-1.5">
+                                {AREA_LABELS[a.area] || a.area}
+                              </span>
+                              {a.description}
+                            </p>
+                            {a.objective && (
+                              <p className="text-[10.5px] text-muted-foreground mt-0.5">→ {a.objective}</p>
+                            )}
+                          </div>
+                          {a.financial_impact > 0 && (
+                            <span className="text-emerald-600 text-[11px] font-semibold tabular-nums shrink-0">
+                              {fmt(a.financial_impact)}/mês
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Alternativas consideradas */}
+              {alternatives.length > 0 && (
+                <>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/85 mb-2">
+                    Alternativas consideradas
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {alternatives.map((plan) => (
+                      <Card key={plan.letter} className={`border ${variantInfo[plan.letter].cardCls} rounded-xl`}>
+                        <CardHeader className="pb-2">
+                          <Badge className={`self-start text-[10px] font-bold px-2 py-0.5 border ${variantInfo[plan.letter].badgeCls}`}>
+                            Plano {plan.letter} · {variantInfo[plan.letter].label}
+                          </Badge>
+                          <CardTitle className="text-xs font-bold text-foreground mt-1.5">
+                            {plan.title}
+                          </CardTitle>
+                          <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            {plan.approach}
+                          </p>
+                          <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-1">
+                            <span>{plan.horizon_months} {plan.horizon_months === 1 ? "mês" : "meses"}</span>
+                            <span>·</span>
+                            <span>Impacto/mês: {fmt(plan.monthly_impact)}</span>
+                            <span>·</span>
+                            <span>{plan.actions.length} ações</span>
+                          </div>
+                        </CardHeader>
+                      </Card>
                     ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+                  </div>
+                </>
+              )}
+            </section>
+          );
+        })()}
 
         {/* ══════ CRONOGRAMA ══════ */}
         <section>
