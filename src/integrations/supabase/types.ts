@@ -86,23 +86,41 @@ export type Database = {
       }
       action_plans: {
         Row: {
+          ai_generated_plans: Json | null
+          applied_at: string | null
+          applied_variant: string | null
           client_id: string
           created_at: string
+          custom_instructions: string | null
           id: string
+          objective: string | null
+          source_parecer_id: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          ai_generated_plans?: Json | null
+          applied_at?: string | null
+          applied_variant?: string | null
           client_id: string
           created_at?: string
+          custom_instructions?: string | null
           id?: string
+          objective?: string | null
+          source_parecer_id?: string | null
           title?: string
           updated_at?: string
         }
         Update: {
+          ai_generated_plans?: Json | null
+          applied_at?: string | null
+          applied_variant?: string | null
           client_id?: string
           created_at?: string
+          custom_instructions?: string | null
           id?: string
+          objective?: string | null
+          source_parecer_id?: string | null
           title?: string
           updated_at?: string
         }

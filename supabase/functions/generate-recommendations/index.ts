@@ -12,6 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ── AUTH ──
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -48,7 +49,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { clientId, riskProfile } = await req.json();
+    // ── INPUT (V9: novo contrato) ──
+    const body = await req.json().catch(() => ({}));
+    const clientId: string | undefined = body.clientId;
+    const objective: string = (body.objective ?? "").toString().trim().slice(0, 500);
+    const parecerId: string | null = body.parecerId || null;
+    const customInstructions: string = (body.customInstructions ?? "").toString().trim().slice(0, 2000);
 
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!clientId || !uuidRegex.test(clientId)) {
@@ -57,10 +63,24 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (parecerId && !uuidRegex.test(parecerId)) {
+      return new Response(JSON.stringify({ error: "parecerId inválido" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!objective) {
+      return new Response(JSON.stringify({ error: "Defina um objetivo para o plano" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-    const [incomeRes, expensesRes, debtsRes, assetsRes, goalsRes, insuranceRes, diagRes, clientRes] = await Promise.all([
+    const [
+      incomeRes, expensesRes, debtsRes, assetsRes, goalsRes, insuranceRes, diagRes, clientRes, parecerRes,
+    ] = await Promise.all([
       serviceClient.from("income").select("amount, description, frequency, stability").eq("client_id", clientId),
       serviceClient.from("expenses").select("amount, category, is_fixed, description").eq("client_id", clientId),
       serviceClient.from("debts").select("total_amount, type, monthly_payment, interest_rate, remaining_months, creditor").eq("client_id", clientId),
@@ -68,7 +88,10 @@ Deno.serve(async (req) => {
       serviceClient.from("goals").select("description, target_amount, priority, deadline").eq("client_id", clientId),
       serviceClient.from("insurance").select("type, monthly_premium, coverage_amount, provider").eq("client_id", clientId),
       serviceClient.from("diagnosis").select("*").eq("client_id", clientId).maybeSingle(),
-      serviceClient.from("clients").select("marital_status, dependents_count, profession, date_of_birth, behavioral_profile").eq("id", clientId).maybeSingle(),
+      serviceClient.from("clients").select("marital_status, dependents_count, profession, date_of_birth").eq("id", clientId).maybeSingle(),
+      parecerId
+        ? serviceClient.from("consultant_notes").select("title, content, snapshots").eq("id", parecerId).eq("client_id", clientId).maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
     const incomes = incomeRes.data || [];
@@ -79,6 +102,7 @@ Deno.serve(async (req) => {
     const insurance = insuranceRes.data || [];
     const diagnosis = diagRes.data;
     const clientData = clientRes.data;
+    const parecer = parecerRes.data as { title?: string; content?: string; snapshots?: unknown } | null;
 
     const totalIncome = incomes.reduce((s, i) => {
       const amt = Number(i.amount);
@@ -88,21 +112,18 @@ Deno.serve(async (req) => {
     const totalDebts = debts.reduce((s, d) => s + Number(d.total_amount), 0);
     const totalAssets = assets.reduce((s, a) => s + Number(a.estimated_value), 0);
     const monthlyDebtPayments = debts.reduce((s, d) => s + Number(d.monthly_payment || 0), 0);
-    const netCashFlow = totalIncome - totalExpenses;
+    const netCashFlow = totalIncome - totalExpenses - monthlyDebtPayments;
     const savingsRate = totalIncome > 0 ? (netCashFlow / totalIncome * 100) : 0;
     const emergencyMonths = totalExpenses > 0 ? totalAssets / totalExpenses : 0;
-
-    // Check if there's enough data to generate meaningful recommendations
-    const hasMinData = totalIncome > 0 || totalAssets > 0 || totalDebts > 0 || expenses.length > 0;
-    if (!hasMinData) {
-      return new Response(JSON.stringify({ recommendations: [], message: "Dados insuficientes" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const age = clientData?.date_of_birth
       ? Math.floor((Date.now() - new Date(clientData.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
       : null;
+
+    // Extrai texto puro do parecer (HTML do contentEditable)
+    const stripHtml = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const parecerText = parecer?.content ? stripHtml(parecer.content).slice(0, 3000) : "";
+    const parecerSnapshots = Array.isArray(parecer?.snapshots) ? (parecer!.snapshots as any[]).slice(0, 40) : [];
 
     const financialContext = `
 PERFIL DO CLIENTE:
@@ -110,11 +131,9 @@ PERFIL DO CLIENTE:
 - Estado civil: ${clientData?.marital_status || "N/A"}
 - Dependentes: ${clientData?.dependents_count ?? "N/A"}
 - Profissão: ${clientData?.profession || "N/A"}
-- Perfil comportamental: ${clientData?.behavioral_profile ? JSON.stringify(clientData.behavioral_profile) : "N/A"}
-- Perfil de risco: ${riskProfile || "balanceado"}
 
 SITUAÇÃO FINANCEIRA:
-- Renda mensal: R$ ${totalIncome.toFixed(0)}
+- Renda mensal líquida: R$ ${totalIncome.toFixed(0)}
 - Despesas mensais: R$ ${totalExpenses.toFixed(0)}
 - Parcelas de dívidas: R$ ${monthlyDebtPayments.toFixed(0)}
 - Fluxo de caixa líquido: R$ ${netCashFlow.toFixed(0)}
@@ -122,7 +141,7 @@ SITUAÇÃO FINANCEIRA:
 - Patrimônio total: R$ ${totalAssets.toFixed(0)}
 - Dívidas totais: R$ ${totalDebts.toFixed(0)}
 - Patrimônio líquido: R$ ${(totalAssets - totalDebts).toFixed(0)}
-- Reserva de emergência: ${emergencyMonths.toFixed(1)} meses de despesas
+- Reserva atual: ${emergencyMonths.toFixed(1)} meses de despesas
 ${diagnosis?.risk_classification ? `- Classificação de risco: ${diagnosis.risk_classification}` : ""}
 
 DETALHAMENTO DE RENDAS:
@@ -138,37 +157,53 @@ PATRIMÔNIO:
 ${assets.map(a => `- ${a.type}${a.description ? ` (${a.description})` : ""}: R$ ${Number(a.estimated_value).toFixed(0)}`).join("\n") || "- Sem patrimônio"}
 
 SEGUROS:
-${insurance.map(i => `- ${i.type}${i.provider ? ` (${i.provider})` : ""}: R$ ${Number(i.monthly_premium || 0).toFixed(0)}/mês`).join("\n") || "- Sem seguros"}
+${insurance.map(i => `- ${i.type}${i.provider ? ` (${i.provider})` : ""}: prêmio R$ ${Number(i.monthly_premium || 0).toFixed(0)}/mês, cobertura R$ ${Number(i.coverage_amount || 0).toFixed(0)}`).join("\n") || "- Sem seguros"}
 
-OBJETIVOS:
-${goals.map(g => `- ${g.description}: R$ ${Number(g.target_amount || 0).toFixed(0)}, prioridade ${g.priority || "N/A"}, prazo ${g.deadline || "N/A"}`).join("\n") || "- Sem objetivos"}
+OBJETIVOS DO CLIENTE:
+${goals.map(g => `- ${g.description}: R$ ${Number(g.target_amount || 0).toFixed(0)}, prioridade ${g.priority || "N/A"}, prazo ${g.deadline || "N/A"}`).join("\n") || "- Sem objetivos cadastrados"}
 `.trim();
 
-    const hasGoals = goals.length > 0;
+    const parecerBlock = parecer
+      ? `
 
-    const systemPrompt = `Você é um consultor financeiro sênior brasileiro especializado em planejamento financeiro pessoal. Sua função é analisar os dados financeiros reais do cliente e gerar recomendações personalizadas e acionáveis.
+PARECER TÉCNICO DO CONSULTOR (referência):
+Título: ${parecer.title || "(sem título)"}
+${parecerText || "(parecer sem texto)"}
+${parecerSnapshots.length > 0
+  ? `\nItens marcados no parecer:\n${parecerSnapshots
+      .map((s: any, i: number) => `  ${i + 1}. [${s.source || "?"}] ${s.label || ""}${s.value ? ` · R$ ${Number(s.value).toFixed(0)}` : ""}`)
+      .join("\n")}`
+  : ""}`
+      : "";
 
-REGRAS CRÍTICAS:
-1. Cada recomendação DEVE ser fundamentada em dados reais do cliente — nunca genérica
-2. Cite números específicos do cliente na descrição (ex: "Suas despesas com moradia consomem 45% da renda")
-3. O objetivo deve ser concreto e mensurável
-4. O impacto financeiro deve ser calculado com base nos dados reais
-5. Priorize ações de maior impacto financeiro primeiro
-6. Considere o perfil de risco do cliente: ${riskProfile || "balanceado"}
-7. Gere entre 3 e 6 recomendações
-8. A severity deve refletir urgência real: "alta" = precisa agir agora, "media" = importante mas não urgente, "baixa" = oportunidade de otimização
-9. Para cada recomendação, inclua 2 a 4 sub-tarefas concretas e sequenciais que detalham COMO executar a ação principal
+    const instructionsBlock = customInstructions
+      ? `\n\nINSTRUÇÕES ADICIONAIS DO CONSULTOR:\n${customInstructions}`
+      : "";
 
-ALINHAMENTO COM OBJETIVOS DO CLIENTE (REGRA PRINCIPAL):
-${hasGoals
-  ? `10. O cliente possui objetivos cadastrados (listados abaixo). PRIORIZE recomendações que ajudem a atingi-los. Para cada uma:
-    - Se a recomendação avança um objetivo existente, copie em "goal_description" a descrição EXATA do objetivo do cliente (sem reformular).
-    - Se você identificar uma oportunidade financeira relevante (ex: dívida cara, falta de reserva de emergência, ausência de seguro essencial, oportunidade tributária) que NÃO está coberta pelos objetivos atuais e cuja não-ação prejudica o cliente, gere a recomendação mesmo assim e em "goal_description" proponha um NOVO objetivo curto, claro e mensurável (ex: "Quitar cartão de crédito em 12 meses", "Construir reserva de emergência de 6 meses").
-11. Tente cobrir TODOS os objetivos importantes do cliente — não deixe um objetivo prioritário sem pelo menos uma recomendação.`
-  : `10. O cliente NÃO possui objetivos cadastrados. Para cada recomendação, proponha em "goal_description" um objetivo financeiro novo, claro e mensurável que faça sentido com a ação sugerida (ex: "Quitar cartão em 12 meses", "Construir reserva de 6 meses de despesas", "Investir 20% da renda mensal").`}
-12. As recomendações devem sempre focar em COMO atingir os objetivos (existentes ou propostos).
+    const systemPrompt = `Você é um consultor financeiro sênior brasileiro. Sua missão é gerar EXATAMENTE TRÊS planos de ação completos e DISTINTOS para alcançar o objetivo definido pelo consultor.
 
-${financialContext}`;
+Cada plano deve ser uma estratégia coerente e auto-suficiente, com 5 a 10 ações concretas que, executadas em ordem, levam ao objetivo. As três variantes devem representar três ângulos diferentes do mesmo objetivo:
+
+- PLANO A — Cauteloso: caminho sustentável, sem grandes sacrifícios, prioriza segurança e estabilidade. Aceita prazo maior.
+- PLANO B — Equilibrado: mix balanceado entre velocidade e conforto. Atinge o objetivo num prazo médio com ajustes moderados.
+- PLANO C — Acelerado: foco máximo no objetivo, aceita cortes mais agressivos e maior empenho. Prazo curto.
+
+REGRAS:
+1. Cada ação DEVE citar dados reais do cliente (valores específicos das despesas, dívidas, renda)
+2. financial_impact é o impacto MENSAL estimado em reais (positivo se libera caixa, negativo se exige novo aporte)
+3. deadline_offset_days é dias a contar de hoje para concluir a ação (ex: 30, 60, 90)
+4. area: "renda" | "despesas" | "dividas" | "investimentos" | "protecao" | "impostos"
+5. NÃO repita a mesma ação entre os 3 planos — cada plano tem ações específicas para sua estratégia
+6. O title do plano deve ser curto (3-6 palavras) refletindo a estratégia
+7. O approach deve explicar em 2-3 frases COMO a estratégia atinge o objetivo
+8. O horizon_months é o prazo realista (em meses) para concluir o plano
+
+OBJETIVO DEFINIDO PELO CONSULTOR:
+"${objective}"
+
+${financialContext}${parecerBlock}${instructionsBlock}
+
+Retorne APENAS via a função return_plans com os 3 planos.`;
 
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     if (!OPENAI_API_KEY) {
@@ -188,54 +223,59 @@ ${financialContext}`;
         model: "gpt-4o",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: "Analise os dados financeiros acima e gere recomendações personalizadas e acionáveis para este cliente." },
+          { role: "user", content: "Gere os 3 planos para o objetivo acima." },
         ],
         tools: [
           {
             type: "function",
             function: {
-              name: "return_recommendations",
-              description: "Return personalized financial recommendations based on client data",
+              name: "return_plans",
+              description: "Returns exactly 3 complete action plans (A, B, C) for the given objective",
               parameters: {
                 type: "object",
                 properties: {
-                  recommendations: {
+                  plans: {
                     type: "array",
+                    minItems: 3,
+                    maxItems: 3,
                     items: {
                       type: "object",
                       properties: {
-                        area: { type: "string", enum: ["renda", "despesas", "dividas", "investimentos", "protecao", "impostos"] },
-                        description: { type: "string", description: "Descrição específica citando dados reais do cliente" },
-                        objective: { type: "string", description: "Resultado esperado concreto e mensurável" },
-                        financial_impact: { type: "number", description: "Impacto financeiro mensal estimado em reais" },
-                        goal_description: { type: "string", description: "Descrição exata do objetivo do cliente ao qual esta recomendação se vincula" },
-                        severity: { type: "string", enum: ["alta", "media", "baixa"] },
-                        subtasks: {
+                        letter: { type: "string", enum: ["A", "B", "C"] },
+                        title: { type: "string", description: "Resumo curto da estratégia (3-6 palavras)" },
+                        approach: { type: "string", description: "Descrição da estratégia em 2-3 frases" },
+                        horizon_months: { type: "number", description: "Prazo realista do plano em meses" },
+                        monthly_impact: { type: "number", description: "Impacto financeiro mensal médio (R$)" },
+                        actions: {
                           type: "array",
-                          description: "2 a 4 sub-tarefas concretas e sequenciais para executar esta recomendação",
+                          minItems: 5,
+                          maxItems: 10,
                           items: {
                             type: "object",
                             properties: {
-                              description: { type: "string", description: "Ação concreta e específica" },
-                              objective: { type: "string", description: "Resultado esperado desta sub-tarefa" },
+                              area: { type: "string", enum: ["renda", "despesas", "dividas", "investimentos", "protecao", "impostos"] },
+                              description: { type: "string" },
+                              objective: { type: "string", description: "Resultado esperado desta ação" },
+                              financial_impact: { type: "number" },
+                              deadline_offset_days: { type: "number", description: "Dias a partir de hoje para concluir" },
                             },
-                            required: ["description"],
+                            required: ["area", "description", "objective", "financial_impact", "deadline_offset_days"],
                             additionalProperties: false,
                           },
                         },
                       },
-                      required: ["area", "description", "objective", "financial_impact", "severity", "subtasks", "goal_description"],
+                      required: ["letter", "title", "approach", "horizon_months", "monthly_impact", "actions"],
                       additionalProperties: false,
                     },
                   },
                 },
-                required: ["recommendations"],
+                required: ["plans"],
                 additionalProperties: false,
               },
             },
           },
         ],
-        tool_choice: { type: "function", function: { name: "return_recommendations" } },
+        tool_choice: { type: "function", function: { name: "return_plans" } },
       }),
     });
 
@@ -251,7 +291,7 @@ ${financialContext}`;
         });
       }
       console.error("AI gateway error:", response.status);
-      return new Response(JSON.stringify({ error: "Erro ao gerar recomendações" }), {
+      return new Response(JSON.stringify({ error: "Erro ao gerar planos" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -260,7 +300,7 @@ ${financialContext}`;
     const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
 
     if (!toolCall?.function?.arguments) {
-      return new Response(JSON.stringify({ error: "IA não retornou recomendações" }), {
+      return new Response(JSON.stringify({ error: "IA não retornou planos" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
