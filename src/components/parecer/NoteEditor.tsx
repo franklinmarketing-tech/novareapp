@@ -220,7 +220,18 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
       }
       await loadNotes();
       setLastSavedAt(new Date());
-      if (!silent) toast({ title: activeNote ? "Parecer atualizado" : "Parecer salvo" });
+      if (!silent) {
+        toast({
+          title: "Parecer arquivado",
+          description: "O parecer foi salvo no histórico. Iniciando um novo rascunho.",
+        });
+        // V9: save manual = arquiva no historico + abre novo parecer em branco
+        // Limpa o editor explicitamente (DOM) — newNote() so reseta state
+        if (editorRef.current) editorRef.current.innerHTML = "";
+        newNote();
+        setWordCount(0);
+        setHistoryOpen(true); // mostra o historico com a nota recem arquivada
+      }
     } catch (e: any) {
       if (import.meta.env.DEV) console.error("[NoteEditor.saveNote]", e);
       const desc = e?.message || e?.details || e?.hint || "Verifique sua conexão e tente novamente.";
