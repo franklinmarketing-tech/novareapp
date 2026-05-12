@@ -232,51 +232,52 @@ const AdminClientLayout = () => {
             return "available";
           };
 
+          // V9 slim: card horizontal compacto (icon + texto lado a lado)
           const cardClasses = (state: JourneyState) =>
             cn(
-              "group relative flex flex-col items-center justify-center gap-2 w-full h-full",
-              "rounded-xl px-3.5 py-3 transition-all duration-300 ease-out overflow-hidden",
-              "min-h-[104px] min-w-0 text-center select-none",
+              "group relative flex items-center gap-2.5 w-full h-full",
+              "rounded-lg px-3 py-2 transition-all duration-200 ease-out overflow-hidden",
+              "min-h-[56px] min-w-0 select-none",
               state === "active" &&
-                "bg-gradient-to-br from-accent via-accent to-accent/90 text-accent-foreground shadow-[0_10px_28px_-12px_hsl(var(--accent)/0.55)]",
+                "bg-gradient-to-br from-accent via-accent to-accent/90 text-accent-foreground shadow-[0_6px_18px_-8px_hsl(var(--accent)/0.5)]",
               state === "completed" &&
-                "bg-card border border-success/35 text-foreground hover:border-success/55 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_-12px_hsl(var(--success)/0.4)]",
+                "bg-card border border-success/30 text-foreground hover:border-success/50 hover:bg-success/[0.03]",
               state === "available" &&
-                "bg-card border border-border/60 text-foreground hover:border-accent/45 hover:-translate-y-0.5 hover:shadow-[0_6px_18px_-12px_hsl(var(--foreground)/0.16)]",
+                "bg-card border border-border/55 text-foreground hover:border-accent/45 hover:bg-muted/30",
               state === "locked" &&
-                "bg-muted/20 border border-border/30 text-muted-foreground/40 cursor-not-allowed",
+                "bg-muted/15 border border-border/25 text-muted-foreground/40 cursor-not-allowed",
             );
 
           const stepLabelClasses = (state: JourneyState) =>
             cn(
-              "text-[9px] font-semibold uppercase tracking-[0.18em] leading-none",
+              "text-[9px] font-semibold uppercase tracking-[0.12em] leading-none mb-0.5",
               state === "active" && "text-accent-foreground/75",
               state === "completed" && "text-success",
-              state === "available" && "text-muted-foreground/75",
-              state === "locked" && "text-muted-foreground/40",
+              state === "available" && "text-muted-foreground/70",
+              state === "locked" && "text-muted-foreground/35",
             );
 
           const iconBoxClasses = (state: JourneyState) =>
             cn(
-              "h-9 w-9 rounded-lg flex items-center justify-center transition-all duration-300",
-              state === "active" && "bg-accent-foreground/15 backdrop-blur-sm ring-1 ring-accent-foreground/20",
-              state === "completed" && "bg-success/10 ring-1 ring-success/20 group-hover:bg-success/15",
-              state === "available" && "bg-muted/50 ring-1 ring-border/40 group-hover:bg-accent/10 group-hover:ring-accent/30",
-              state === "locked" && "bg-muted/40 ring-1 ring-border/30",
+              "h-8 w-8 rounded-md flex items-center justify-center transition-colors shrink-0",
+              state === "active" && "bg-accent-foreground/15 ring-1 ring-accent-foreground/15",
+              state === "completed" && "bg-success/10 ring-1 ring-success/20",
+              state === "available" && "bg-muted/50 ring-1 ring-border/40 group-hover:bg-accent/10 group-hover:ring-accent/25",
+              state === "locked" && "bg-muted/40 ring-1 ring-border/25",
             );
 
           const iconClasses = (state: JourneyState) =>
             cn(
-              "h-[18px] w-[18px] transition-colors duration-300",
+              "h-[15px] w-[15px] transition-colors",
               state === "active" && "text-accent-foreground",
               state === "completed" && "text-success",
-              state === "available" && "text-foreground/70 group-hover:text-accent",
+              state === "available" && "text-foreground/65 group-hover:text-accent",
               state === "locked" && "text-muted-foreground/40",
             );
 
           const titleClasses = (state: JourneyState) =>
             cn(
-              "text-[13px] font-semibold tracking-tight leading-tight",
+              "text-[12.5px] font-semibold tracking-tight leading-tight truncate",
               state === "active" && "text-accent-foreground",
               state === "completed" && "text-foreground",
               state === "available" && "text-foreground",
@@ -291,7 +292,7 @@ const AdminClientLayout = () => {
                 to={`/admin/cliente/${clientSlug}/${tab.path}`}
                 onClick={(e) => isLocked && e.preventDefault()}
                 aria-disabled={isLocked}
-                className="flex-1 min-w-0 outline-none rounded-2xl focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="flex-1 min-w-0 outline-none rounded-lg focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 {({ isActive }) => {
                   const state = stateOf(tab.path, isActive && !isLocked);
@@ -308,34 +309,36 @@ const AdminClientLayout = () => {
                       {state === "active" && (
                         <span
                           aria-hidden
-                          className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-accent-foreground/10 blur-2xl"
+                          className="pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full bg-accent-foreground/10 blur-2xl"
                         />
                       )}
-                      {/* Chip de status no canto superior direito */}
-                      {state === "completed" && (
-                        <span className="absolute top-2 right-2 inline-flex items-center justify-center h-[18px] w-[18px] rounded-full bg-success/15 ring-1 ring-success/30">
-                          <Check className="h-[11px] w-[11px] text-success" strokeWidth={3} />
-                        </span>
-                      )}
-                      {state === "locked" && (
-                        <span className="absolute top-2 right-2 inline-flex items-center justify-center h-[18px] w-[18px] rounded-full bg-muted/60">
-                          <Lock className="h-2.5 w-2.5 text-muted-foreground/55" strokeWidth={2.5} />
-                        </span>
-                      )}
-
-                      <span className={stepLabelClasses(state)}>{stepText}</span>
 
                       <div className={iconBoxClasses(state)}>
                         <Icon className={iconClasses(state)} strokeWidth={1.75} />
                       </div>
 
-                      <span className={titleClasses(state)}>{tab.label}</span>
+                      <div className="min-w-0 flex-1 relative">
+                        <span className={stepLabelClasses(state)}>{stepText}</span>
+                        <span className={cn(titleClasses(state), "block")}>{tab.label}</span>
+                      </div>
 
-                      {/* Underline de progresso no card ativo */}
+                      {/* Status chip a direita */}
+                      {state === "completed" && (
+                        <span className="inline-flex items-center justify-center h-[18px] w-[18px] rounded-full bg-success/15 ring-1 ring-success/30 shrink-0">
+                          <Check className="h-[11px] w-[11px] text-success" strokeWidth={3} />
+                        </span>
+                      )}
+                      {state === "locked" && (
+                        <span className="inline-flex items-center justify-center h-[18px] w-[18px] rounded-full bg-muted/60 shrink-0">
+                          <Lock className="h-2.5 w-2.5 text-muted-foreground/55" strokeWidth={2.5} />
+                        </span>
+                      )}
+
+                      {/* Indicador discreto na lateral esquerda do card ativo */}
                       {state === "active" && (
                         <span
                           aria-hidden
-                          className="absolute bottom-0 inset-x-6 h-[2px] rounded-full bg-accent-foreground/40"
+                          className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-accent-foreground/40"
                         />
                       )}
                     </div>
@@ -345,13 +348,13 @@ const AdminClientLayout = () => {
             );
           };
 
-          // Seta horizontal entre cards (estilo "fluxo")
+          // Seta horizontal slim entre cards
           const HArrow = ({ flowing = false }: { flowing?: boolean }) => (
-            <div className="shrink-0 self-center flex items-center justify-center w-6 lg:w-8" aria-hidden>
+            <div className="shrink-0 self-center flex items-center justify-center w-4 lg:w-5" aria-hidden>
               <ChevronRight
                 className={cn(
-                  "h-5 w-5 transition-colors",
-                  flowing ? "text-accent/70" : "text-muted-foreground/35",
+                  "h-4 w-4 transition-colors",
+                  flowing ? "text-accent/70" : "text-muted-foreground/30",
                 )}
                 strokeWidth={2.5}
               />
@@ -364,10 +367,10 @@ const AdminClientLayout = () => {
             completed.includes("parecer") || completed.includes("plano-acao");
 
           return (
-            <div className="mb-7">
+            <div className="mb-5">
               {/* Desktop / tablet: 2 linhas de 3 cards com bridge vertical */}
               <div className="hidden md:block">
-                <div className="flex items-stretch gap-2 lg:gap-3">
+                <div className="flex items-stretch gap-1.5 lg:gap-2">
                   {renderCard(tabs[0])}
                   <HArrow flowing={flowsAfter("onboarding")} />
                   {renderCard(tabs[1])}
@@ -375,26 +378,26 @@ const AdminClientLayout = () => {
                   {renderCard(tabs[2])}
                 </div>
 
-                {/* Bridge vertical entre as duas linhas */}
-                <div className="flex justify-center py-3" aria-hidden>
+                {/* Bridge vertical slim entre as duas linhas */}
+                <div className="flex justify-center py-1.5" aria-hidden>
                   <div className="flex flex-col items-center">
                     <div
                       className={cn(
-                        "h-5 w-[2px] rounded-full transition-colors",
-                        verticalFlows ? "bg-accent/70" : "bg-muted-foreground/25",
+                        "h-3 w-px transition-colors",
+                        verticalFlows ? "bg-accent/60" : "bg-muted-foreground/25",
                       )}
                     />
                     <ChevronDown
                       className={cn(
-                        "h-5 w-5 -mt-1 transition-colors",
-                        verticalFlows ? "text-accent/70" : "text-muted-foreground/45",
+                        "h-3.5 w-3.5 -mt-0.5 transition-colors",
+                        verticalFlows ? "text-accent/70" : "text-muted-foreground/40",
                       )}
                       strokeWidth={2.5}
                     />
                   </div>
                 </div>
 
-                <div className="flex items-stretch gap-2 lg:gap-3">
+                <div className="flex items-stretch gap-1.5 lg:gap-2">
                   {renderCard(tabs[3])}
                   <HArrow flowing={flowsAfter("plano-acao")} />
                   {renderCard(tabs[4])}
@@ -405,16 +408,16 @@ const AdminClientLayout = () => {
 
               {/* Mobile: stepper horizontal compacto */}
               <div className="md:hidden -mx-4 px-4">
-                <div className="flex items-stretch gap-2 overflow-x-auto pb-3 scrollbar-none overscroll-x-contain">
+                <div className="flex items-stretch gap-1.5 overflow-x-auto pb-2 scrollbar-none overscroll-x-contain">
                   {tabs.map((tab, i) => (
                     <Fragment key={tab.path}>
-                      <div className="shrink-0 w-[132px]">{renderCard(tab)}</div>
+                      <div className="shrink-0 w-[180px]">{renderCard(tab)}</div>
                       {i < tabs.length - 1 && (
                         <div className="shrink-0 self-center">
                           <ChevronRight
                             className={cn(
-                              "h-4 w-4",
-                              flowsAfter(tab.path) ? "text-accent/70" : "text-muted-foreground/35",
+                              "h-3.5 w-3.5",
+                              flowsAfter(tab.path) ? "text-accent/70" : "text-muted-foreground/30",
                             )}
                             strokeWidth={2.5}
                           />
