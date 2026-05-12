@@ -232,59 +232,74 @@ const AdminClientLayout = () => {
             return "available";
           };
 
-          // V9 slim+3D: card horizontal com profundidade premium
+          // V9 PREMIUM: cards de menu profissional com profundidade real
           const cardStyle = (state: JourneyState): React.CSSProperties => {
             switch (state) {
               case "active":
                 return {
-                  background: "linear-gradient(145deg, hsl(var(--accent) / 1) 0%, hsl(var(--accent) / 0.88) 60%, hsl(var(--accent) / 0.78) 100%)",
-                  borderTop: "1px solid hsl(var(--accent-foreground) / 0.25)",
-                  borderLeft: "1px solid hsl(var(--accent-foreground) / 0.12)",
-                  borderRight: "1px solid hsl(var(--accent) / 0.6)",
-                  borderBottom: "1px solid hsl(var(--accent) / 0.4)",
+                  background:
+                    "linear-gradient(140deg, hsl(16 88% 60%) 0%, hsl(var(--accent)) 45%, hsl(16 75% 48%) 100%)",
+                  border: "1px solid hsl(16 70% 42%)",
+                  borderTopColor: "hsl(16 95% 70%)",
+                  borderLeftColor: "hsl(16 90% 65%)",
                   boxShadow: [
-                    "0 1px 0 hsl(var(--accent-foreground) / 0.22) inset",
-                    "0 -1px 0 hsl(0 0% 0% / 0.18) inset",
-                    "0 0 0 3px hsl(var(--accent) / 0.18)",
-                    "0 8px 22px -6px hsl(var(--accent) / 0.55)",
-                    "0 18px 38px -12px hsl(var(--accent) / 0.4)",
+                    // inset highlights — luz no topo + sombra no fundo (3D real)
+                    "0 1.5px 0 hsl(0 0% 100% / 0.32) inset",
+                    "0 -2px 0 hsl(0 0% 0% / 0.18) inset",
+                    "1px 0 0 hsl(0 0% 100% / 0.18) inset",
+                    "-1px 0 0 hsl(0 0% 0% / 0.1) inset",
+                    // outer glow accent (anel halo)
+                    "0 0 0 1px hsl(var(--accent) / 0.45)",
+                    "0 0 0 5px hsl(var(--accent) / 0.16)",
+                    // sombras ambientais em camadas (depth)
+                    "0 6px 14px -4px hsl(var(--accent) / 0.55)",
+                    "0 14px 32px -8px hsl(var(--accent) / 0.45)",
+                    "0 24px 48px -16px hsl(var(--accent) / 0.4)",
+                    "0 32px 64px -24px hsl(0 0% 0% / 0.2)",
                   ].join(", "),
                 };
               case "completed":
                 return {
-                  background: "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--success) / 0.04) 100%)",
-                  borderTop: "1px solid hsl(var(--success) / 0.4)",
-                  borderLeft: "1px solid hsl(var(--success) / 0.22)",
-                  borderRight: "1px solid hsl(var(--success) / 0.18)",
-                  borderBottom: "1px solid hsl(var(--success) / 0.28)",
+                  background:
+                    "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 55%, hsl(var(--success) / 0.08) 100%)",
+                  border: "1px solid hsl(var(--success) / 0.32)",
+                  borderTopColor: "hsl(var(--success) / 0.55)",
+                  borderLeftColor: "hsl(var(--success) / 0.4)",
                   boxShadow: [
-                    "0 1px 0 hsl(var(--success) / 0.12) inset",
-                    "0 -1px 0 hsl(0 0% 0% / 0.05) inset",
-                    "0 4px 10px -4px hsl(var(--success) / 0.2)",
-                    "0 8px 22px -8px hsl(var(--success) / 0.18)",
+                    "0 1px 0 hsl(0 0% 100% / 0.7) inset",
+                    "0 -1px 0 hsl(var(--success) / 0.08) inset",
+                    "0 0 0 1px hsl(var(--success) / 0.12)",
+                    "0 2px 4px -1px hsl(var(--success) / 0.12)",
+                    "0 8px 18px -6px hsl(var(--success) / 0.22)",
+                    "0 14px 28px -12px hsl(var(--success) / 0.18)",
+                    "0 22px 40px -18px hsl(0 0% 0% / 0.1)",
                   ].join(", "),
                 };
               case "available":
                 return {
-                  background: "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 60%, hsl(var(--muted) / 0.2) 100%)",
-                  borderTop: "1px solid hsl(var(--border) / 0.85)",
-                  borderLeft: "1px solid hsl(var(--border) / 0.55)",
-                  borderRight: "1px solid hsl(var(--border) / 0.55)",
-                  borderBottom: "1px solid hsl(var(--border) / 0.95)",
+                  background:
+                    "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, hsl(var(--muted) / 0.35) 100%)",
+                  border: "1px solid hsl(var(--border) / 0.55)",
+                  borderTopColor: "hsl(var(--border) / 0.9)",
+                  borderLeftColor: "hsl(var(--border) / 0.7)",
                   boxShadow: [
-                    "0 1px 0 hsl(var(--foreground) / 0.04) inset",
+                    "0 1px 0 hsl(0 0% 100% / 0.8) inset",
                     "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
-                    "0 2px 4px -1px hsl(0 0% 0% / 0.06)",
-                    "0 6px 14px -4px hsl(0 0% 0% / 0.08)",
+                    "0 1px 2px hsl(0 0% 0% / 0.04)",
+                    "0 4px 8px -2px hsl(0 0% 0% / 0.06)",
+                    "0 10px 20px -6px hsl(0 0% 0% / 0.08)",
+                    "0 18px 36px -14px hsl(0 0% 0% / 0.08)",
                   ].join(", "),
                 };
               case "locked":
                 return {
-                  background: "linear-gradient(145deg, hsl(var(--muted) / 0.35) 0%, hsl(var(--muted) / 0.2) 100%)",
-                  border: "1px solid hsl(var(--border) / 0.4)",
+                  background:
+                    "linear-gradient(145deg, hsl(var(--muted) / 0.4) 0%, hsl(var(--muted) / 0.18) 100%)",
+                  border: "1px solid hsl(var(--border) / 0.35)",
                   boxShadow: [
-                    "0 1px 2px hsl(0 0% 0% / 0.05) inset",
-                    "0 2px 4px hsl(0 0% 0% / 0.05) inset",
+                    "0 1px 2px hsl(0 0% 0% / 0.06) inset",
+                    "0 2px 4px hsl(0 0% 0% / 0.04) inset",
+                    "0 -1px 0 hsl(0 0% 100% / 0.4) inset",
                   ].join(", "),
                 };
             }
@@ -292,12 +307,12 @@ const AdminClientLayout = () => {
 
           const cardClasses = (state: JourneyState) =>
             cn(
-              "group relative flex items-center gap-2.5 w-full h-full",
-              "rounded-xl px-3 py-2 transition-all duration-300 ease-out overflow-hidden",
-              "min-h-[60px] min-w-0 select-none",
-              state === "active" && "text-accent-foreground",
-              state === "completed" && "text-foreground hover:-translate-y-0.5",
-              state === "available" && "text-foreground hover:-translate-y-0.5 cursor-pointer",
+              "group relative flex items-center gap-3 w-full h-full",
+              "rounded-xl px-3.5 py-2.5 transition-all duration-300 ease-out overflow-hidden",
+              "min-h-[66px] min-w-0 select-none will-change-transform",
+              state === "active" && "text-accent-foreground -translate-y-0.5",
+              state === "completed" && "text-foreground hover:-translate-y-1 hover:scale-[1.01]",
+              state === "available" && "text-foreground hover:-translate-y-1 hover:scale-[1.01] cursor-pointer",
               state === "locked" && "text-muted-foreground/40 cursor-not-allowed",
             );
 
@@ -314,52 +329,64 @@ const AdminClientLayout = () => {
             switch (state) {
               case "active":
                 return {
-                  background: "linear-gradient(145deg, hsl(var(--accent-foreground) / 0.28) 0%, hsl(var(--accent-foreground) / 0.12) 100%)",
-                  border: "1px solid hsl(var(--accent-foreground) / 0.22)",
+                  background:
+                    "linear-gradient(145deg, hsl(0 0% 100% / 0.32) 0%, hsl(0 0% 100% / 0.14) 60%, hsl(0 0% 100% / 0.06) 100%)",
+                  border: "1px solid hsl(0 0% 100% / 0.32)",
+                  borderTopColor: "hsl(0 0% 100% / 0.5)",
                   boxShadow: [
-                    "0 1px 0 hsl(var(--accent-foreground) / 0.2) inset",
-                    "0 -1px 0 hsl(0 0% 0% / 0.15) inset",
-                    "0 2px 4px hsl(0 0% 0% / 0.12)",
+                    "0 1px 0 hsl(0 0% 100% / 0.42) inset",
+                    "0 -1px 0 hsl(0 0% 0% / 0.18) inset",
+                    "0 2px 6px hsl(0 0% 0% / 0.16)",
+                    "0 4px 10px -2px hsl(0 0% 0% / 0.18)",
                   ].join(", "),
                 };
               case "completed":
                 return {
-                  background: "linear-gradient(145deg, hsl(var(--success) / 0.18) 0%, hsl(var(--success) / 0.08) 100%)",
-                  border: "1px solid hsl(var(--success) / 0.3)",
+                  background:
+                    "linear-gradient(145deg, hsl(var(--success) / 0.22) 0%, hsl(var(--success) / 0.08) 100%)",
+                  border: "1px solid hsl(var(--success) / 0.32)",
+                  borderTopColor: "hsl(var(--success) / 0.5)",
                   boxShadow: [
-                    "0 1px 0 hsl(0 0% 100% / 0.4) inset",
+                    "0 1px 0 hsl(0 0% 100% / 0.55) inset",
                     "0 -1px 0 hsl(var(--success) / 0.15) inset",
+                    "0 2px 5px -1px hsl(var(--success) / 0.18)",
                   ].join(", "),
                 };
               case "available":
                 return {
-                  background: "linear-gradient(145deg, hsl(var(--muted) / 0.7) 0%, hsl(var(--muted) / 0.45) 100%)",
-                  border: "1px solid hsl(var(--border) / 0.6)",
+                  background:
+                    "linear-gradient(145deg, hsl(var(--muted) / 0.85) 0%, hsl(var(--muted) / 0.5) 100%)",
+                  border: "1px solid hsl(var(--border) / 0.7)",
+                  borderTopColor: "hsl(var(--border) / 1)",
                   boxShadow: [
-                    "0 1px 0 hsl(0 0% 100% / 0.35) inset",
-                    "0 -1px 0 hsl(0 0% 0% / 0.06) inset",
+                    "0 1px 0 hsl(0 0% 100% / 0.5) inset",
+                    "0 -1px 0 hsl(0 0% 0% / 0.07) inset",
+                    "0 2px 4px -1px hsl(0 0% 0% / 0.08)",
                   ].join(", "),
                 };
               case "locked":
                 return {
-                  background: "hsl(var(--muted) / 0.5)",
+                  background: "hsl(var(--muted) / 0.55)",
                   border: "1px solid hsl(var(--border) / 0.4)",
+                  boxShadow: "0 1px 2px hsl(0 0% 0% / 0.05) inset",
                 };
             }
           };
 
           const iconBoxClasses = (state: JourneyState) =>
             cn(
-              "h-9 w-9 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0",
-              state === "available" && "group-hover:scale-105",
+              "h-10 w-10 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0",
+              state === "active" && "group-hover:rotate-3",
+              state === "available" && "group-hover:scale-110 group-hover:rotate-3",
+              state === "completed" && "group-hover:scale-105",
             );
 
           const iconClasses = (state: JourneyState) =>
             cn(
-              "h-[16px] w-[16px] transition-colors",
-              state === "active" && "text-accent-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.18)]",
+              "h-[18px] w-[18px] transition-all duration-300",
+              state === "active" && "text-accent-foreground drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.25)]",
               state === "completed" && "text-success",
-              state === "available" && "text-foreground/70 group-hover:text-accent",
+              state === "available" && "text-foreground/70 group-hover:text-accent group-hover:scale-105",
               state === "locked" && "text-muted-foreground/45",
             );
 
@@ -397,33 +424,56 @@ const AdminClientLayout = () => {
                       className={cardClasses(state)}
                       style={{ ...cardStyle(state), transformStyle: "preserve-3d" }}
                     >
-                      {/* Brilho top diagonal (highlight 3D) */}
+                      {/* Highlight top horizontal (luz vinda do topo) */}
                       {(state === "active" || state === "available" || state === "completed") && (
                         <span
                           aria-hidden
-                          className="pointer-events-none absolute inset-x-0 top-0 h-px"
+                          className="pointer-events-none absolute inset-x-3 top-0 h-px"
                           style={{
                             background:
                               state === "active"
-                                ? "linear-gradient(90deg, transparent, hsl(var(--accent-foreground) / 0.35), transparent)"
+                                ? "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.55), hsl(0 0% 100% / 0.3), transparent)"
                                 : state === "completed"
-                                  ? "linear-gradient(90deg, transparent, hsl(var(--success) / 0.3), transparent)"
-                                  : "linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.08), transparent)",
+                                  ? "linear-gradient(90deg, transparent, hsl(var(--success) / 0.45), transparent)"
+                                  : "linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.12), transparent)",
                           }}
                         />
                       )}
 
-                      {/* Glow esferico no canto do card ativo */}
+                      {/* Glow esferico difuso no canto sup-direito do ativo */}
                       {state === "active" && (
-                        <span
-                          aria-hidden
-                          className="pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full"
-                          style={{
-                            background:
-                              "radial-gradient(circle, hsl(var(--accent-foreground) / 0.18) 0%, transparent 65%)",
-                            filter: "blur(8px)",
-                          }}
-                        />
+                        <>
+                          <span
+                            aria-hidden
+                            className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full"
+                            style={{
+                              background:
+                                "radial-gradient(circle, hsl(0 0% 100% / 0.25) 0%, transparent 65%)",
+                              filter: "blur(8px)",
+                            }}
+                          />
+                          {/* Pequeno glow inferior — efeito de profundidade */}
+                          <span
+                            aria-hidden
+                            className="pointer-events-none absolute -bottom-10 -left-10 h-28 w-28 rounded-full"
+                            style={{
+                              background:
+                                "radial-gradient(circle, hsl(0 0% 0% / 0.18) 0%, transparent 70%)",
+                              filter: "blur(12px)",
+                            }}
+                          />
+                          {/* Glow externo pulsante (anel ao redor do card) */}
+                          <span
+                            aria-hidden
+                            className="pointer-events-none absolute -inset-2 rounded-2xl opacity-50"
+                            style={{
+                              background:
+                                "radial-gradient(ellipse 80% 60% at center, hsl(var(--accent) / 0.4), transparent 70%)",
+                              filter: "blur(16px)",
+                              animation: "journeyGlowPulse 2.8s ease-in-out infinite",
+                            }}
+                          />
+                        </>
                       )}
 
                       {/* Icon box 3D */}
@@ -497,29 +547,56 @@ const AdminClientLayout = () => {
             );
           };
 
-          // Seta horizontal slim entre cards (com profundidade sutil)
+          // Seta horizontal premium entre cards
           const HArrow = ({ flowing = false }: { flowing?: boolean }) => (
-            <div className="shrink-0 self-center flex items-center justify-center w-5 lg:w-6" aria-hidden>
+            <div className="shrink-0 self-center flex items-center justify-center w-7 lg:w-9" aria-hidden>
+              {/* Trilho horizontal opcional (apenas quando flowing) */}
+              {flowing && (
+                <div
+                  className="absolute h-px w-full"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, hsl(var(--accent) / 0.05), hsl(var(--accent) / 0.45) 50%, hsl(var(--accent) / 0.05))",
+                  }}
+                />
+              )}
               <div
-                className="h-6 w-6 rounded-full flex items-center justify-center transition-all"
+                className="relative h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300"
                 style={
                   flowing
                     ? {
-                        background: "linear-gradient(145deg, hsl(var(--accent) / 0.15) 0%, hsl(var(--accent) / 0.05) 100%)",
-                        border: "1px solid hsl(var(--accent) / 0.25)",
-                        boxShadow: "0 1px 0 hsl(0 0% 100% / 0.18) inset, 0 2px 4px -1px hsl(var(--accent) / 0.18)",
+                        background:
+                          "linear-gradient(145deg, hsl(var(--accent) / 0.22) 0%, hsl(var(--accent) / 0.08) 100%)",
+                        border: "1px solid hsl(var(--accent) / 0.35)",
+                        borderTopColor: "hsl(var(--accent) / 0.55)",
+                        boxShadow: [
+                          "0 1px 0 hsl(0 0% 100% / 0.5) inset",
+                          "0 -1px 0 hsl(var(--accent) / 0.15) inset",
+                          "0 2px 4px -1px hsl(var(--accent) / 0.2)",
+                          "0 4px 10px -3px hsl(var(--accent) / 0.18)",
+                          "0 0 0 1px hsl(var(--accent) / 0.12)",
+                        ].join(", "),
                       }
                     : {
-                        background: "linear-gradient(145deg, hsl(var(--muted) / 0.4) 0%, hsl(var(--muted) / 0.2) 100%)",
-                        border: "1px solid hsl(var(--border) / 0.5)",
-                        boxShadow: "0 1px 0 hsl(0 0% 100% / 0.12) inset",
+                        background:
+                          "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.4) 100%)",
+                        border: "1px solid hsl(var(--border) / 0.55)",
+                        borderTopColor: "hsl(var(--border) / 0.85)",
+                        boxShadow: [
+                          "0 1px 0 hsl(0 0% 100% / 0.6) inset",
+                          "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
+                          "0 1px 2px hsl(0 0% 0% / 0.05)",
+                          "0 3px 6px -2px hsl(0 0% 0% / 0.06)",
+                        ].join(", "),
                       }
                 }
               >
                 <ChevronRight
                   className={cn(
-                    "h-3.5 w-3.5 transition-colors",
-                    flowing ? "text-accent" : "text-muted-foreground/45",
+                    "h-4 w-4 transition-all",
+                    flowing
+                      ? "text-accent drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
+                      : "text-muted-foreground/55",
                   )}
                   strokeWidth={2.5}
                 />
@@ -533,10 +610,33 @@ const AdminClientLayout = () => {
             completed.includes("parecer") || completed.includes("plano-acao");
 
           return (
-            <div className="mb-5">
+            <div
+              className="relative mb-5 rounded-2xl px-3 py-3 lg:px-4 lg:py-4"
+              style={{
+                background:
+                  "linear-gradient(145deg, hsl(var(--muted) / 0.25) 0%, hsl(var(--card)) 60%, hsl(var(--muted) / 0.18) 100%)",
+                border: "1px solid hsl(var(--border) / 0.45)",
+                borderTopColor: "hsl(var(--border) / 0.75)",
+                boxShadow: [
+                  "0 1px 0 hsl(0 0% 100% / 0.55) inset",
+                  "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
+                  "0 1px 2px hsl(0 0% 0% / 0.03)",
+                  "0 6px 14px -8px hsl(0 0% 0% / 0.06)",
+                ].join(", "),
+              }}
+            >
+              {/* Label do menu */}
+              <div className="hidden md:flex items-center gap-2 mb-3 pl-1">
+                <span className="h-[2px] w-3 rounded-full bg-accent/60" />
+                <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-muted-foreground/85">
+                  Jornada da Consultoria
+                </span>
+                <span className="h-px flex-1 bg-gradient-to-r from-border/60 to-transparent" />
+              </div>
+
               {/* Desktop / tablet: 2 linhas de 3 cards com bridge vertical */}
               <div className="hidden md:block">
-                <div className="flex items-stretch gap-1.5 lg:gap-2">
+                <div className="flex items-stretch gap-2 lg:gap-2.5">
                   {renderCard(tabs[0])}
                   <HArrow flowing={flowsAfter("onboarding")} />
                   {renderCard(tabs[1])}
@@ -545,39 +645,56 @@ const AdminClientLayout = () => {
                 </div>
 
                 {/* Bridge vertical 3D entre as duas linhas */}
-                <div className="flex justify-center py-1.5" aria-hidden>
+                <div className="flex justify-center py-2.5" aria-hidden>
                   <div className="flex flex-col items-center">
                     <div
-                      className={cn("h-3 w-[2px] rounded-full transition-colors")}
+                      className="h-5 w-[2.5px] rounded-full transition-colors"
                       style={{
                         background: verticalFlows
-                          ? "linear-gradient(180deg, hsl(var(--accent) / 0.65), hsl(var(--accent) / 0.35))"
-                          : "linear-gradient(180deg, hsl(var(--muted-foreground) / 0.3), hsl(var(--muted-foreground) / 0.15))",
+                          ? "linear-gradient(180deg, hsl(var(--accent) / 0.75) 0%, hsl(var(--accent) / 0.4) 100%)"
+                          : "linear-gradient(180deg, hsl(var(--muted-foreground) / 0.35) 0%, hsl(var(--muted-foreground) / 0.15) 100%)",
                         boxShadow: verticalFlows
-                          ? "0 0 6px hsl(var(--accent) / 0.3)"
+                          ? "0 0 8px hsl(var(--accent) / 0.4), 0 0 16px hsl(var(--accent) / 0.2)"
                           : undefined,
                       }}
                     />
                     <div
-                      className="h-5 w-5 -mt-0.5 rounded-full flex items-center justify-center"
+                      className="h-7 w-7 -mt-1 rounded-full flex items-center justify-center transition-all"
                       style={
                         verticalFlows
                           ? {
-                              background: "linear-gradient(145deg, hsl(var(--accent) / 0.18) 0%, hsl(var(--accent) / 0.06) 100%)",
-                              border: "1px solid hsl(var(--accent) / 0.28)",
-                              boxShadow: "0 1px 0 hsl(0 0% 100% / 0.18) inset, 0 2px 5px -1px hsl(var(--accent) / 0.2)",
+                              background:
+                                "linear-gradient(145deg, hsl(var(--accent) / 0.25) 0%, hsl(var(--accent) / 0.08) 100%)",
+                              border: "1px solid hsl(var(--accent) / 0.38)",
+                              borderTopColor: "hsl(var(--accent) / 0.6)",
+                              boxShadow: [
+                                "0 1px 0 hsl(0 0% 100% / 0.5) inset",
+                                "0 -1px 0 hsl(var(--accent) / 0.15) inset",
+                                "0 2px 5px -1px hsl(var(--accent) / 0.25)",
+                                "0 6px 14px -4px hsl(var(--accent) / 0.22)",
+                                "0 0 0 1px hsl(var(--accent) / 0.15)",
+                              ].join(", "),
                             }
                           : {
-                              background: "linear-gradient(145deg, hsl(var(--muted) / 0.45) 0%, hsl(var(--muted) / 0.22) 100%)",
-                              border: "1px solid hsl(var(--border) / 0.5)",
-                              boxShadow: "0 1px 0 hsl(0 0% 100% / 0.14) inset",
+                              background:
+                                "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.4) 100%)",
+                              border: "1px solid hsl(var(--border) / 0.55)",
+                              borderTopColor: "hsl(var(--border) / 0.85)",
+                              boxShadow: [
+                                "0 1px 0 hsl(0 0% 100% / 0.6) inset",
+                                "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
+                                "0 1px 2px hsl(0 0% 0% / 0.05)",
+                                "0 3px 6px -2px hsl(0 0% 0% / 0.07)",
+                              ].join(", "),
                             }
                       }
                     >
                       <ChevronDown
                         className={cn(
-                          "h-3 w-3 transition-colors",
-                          verticalFlows ? "text-accent" : "text-muted-foreground/50",
+                          "h-3.5 w-3.5 transition-all",
+                          verticalFlows
+                            ? "text-accent drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
+                            : "text-muted-foreground/60",
                         )}
                         strokeWidth={2.5}
                       />
@@ -585,7 +702,7 @@ const AdminClientLayout = () => {
                   </div>
                 </div>
 
-                <div className="flex items-stretch gap-1.5 lg:gap-2">
+                <div className="flex items-stretch gap-2 lg:gap-2.5">
                   {renderCard(tabs[3])}
                   <HArrow flowing={flowsAfter("plano-acao")} />
                   {renderCard(tabs[4])}

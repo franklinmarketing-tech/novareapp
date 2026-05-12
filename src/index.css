@@ -1611,6 +1611,12 @@
   100% { left: 110%; }
 }
 
+/* V9 PREMIUM: glow pulsante do card ativo (anel terracota) */
+@keyframes journeyGlowPulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.04); }
+}
+
 /* ──────────────────────────────────────────────────────────
    V9: Tipografia do editor do Parecer (.parecer-editor)
    Aplicada apenas dentro do contentEditable, sem afetar o resto
