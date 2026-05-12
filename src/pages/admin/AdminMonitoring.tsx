@@ -1,10 +1,10 @@
-// V9: Acompanhamento (admin) — dados sempre atuais + comparativo + IA + fechamento mensal
+// V9: Acompanhamento (admin) — dados sempre atuais + comparativo + fechamento mensal
+// (card visual de IA removido em 2026-05-12 — IA segue rodando internamente via analyze-progress)
 import { useEffect, useMemo, useState } from "react";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -23,25 +23,19 @@ import {
   ChevronRight,
   ClipboardList,
   CreditCard,
-  Loader2,
-  Lightbulb,
   Lock,
   Minus,
   PiggyBank,
-  Sparkles,
   Target,
   TrendingDown,
   TrendingUp,
   Wallet,
-  AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/loading-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import MonthlyClosings from "@/components/monitoring/MonthlyClosings";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
-import { motion, AnimatePresence } from "framer-motion";
 
 // ── Tipos ───────────────────────────────────────────────
 
@@ -161,12 +155,14 @@ const AdminMonitoring = () => {
   });
 
   // Comparativo: default hoje vs ontem (mais granular do que mês-vs-mês)
-  const [compareA, setCompareA] = useState<string>("__yesterday__");
+  // V9: comparativo padrao = ultimo fechamento mensal vs. dados atuais.
+  // Assim que o consultor registra um fechamento, ja aparece o delta automaticamente.
+  const [compareA, setCompareA] = useState<string>("__previous__");
   const [compareB, setCompareB] = useState<string>("__now__");
 
-  // IA insights
-  const [insights, setInsights] = useState<Insight[] | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
+  // V9: IA interna — roda em background quando ha contexto util.
+  // Os insights ficam no state caso futuros consumidores (relatorio, alertas) precisem.
+  const [, setInsights] = useState<Insight[] | null>(null);
   const [autoTriggered, setAutoTriggered] = useState(false);
 
   // ── Carga ─────────────────────────────────────────
@@ -383,37 +379,20 @@ const AdminMonitoring = () => {
     );
   };
 
-  const runAnalyze = async (silent = false) => {
+  // V9: dispara silenciosamente a IA de evolucao (sem UI).
+  // Mantemos a chamada para popular o state de insights (consumido por relatorio futuro).
+  const runAnalyzeSilent = async () => {
     if (!clientId) return;
-    if (!silent) setAnalyzing(true);
-    if (!silent) setInsights(null);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-progress", {
         body: { clientId },
       });
-      if (error) throw error;
+      if (error) return;
       const arr = (data?.insights || []) as Insight[];
-      if (!arr.length) {
-        if (!silent) throw new Error("IA não retornou insights");
-        return;
-      }
-      setInsights(arr);
-      if (!silent) {
-        toast({
-          title: "Análise concluída",
-          description: `${arr.length} insights gerados pela IA.`,
-        });
-      }
-    } catch (e: any) {
-      if (!silent) {
-        toast({
-          title: "Erro ao analisar",
-          description: e?.message || "Tente novamente",
-          variant: "destructive",
-        });
-      }
+      if (arr.length) setInsights(arr);
+    } catch {
+      // silencioso por design — IA interna nao gera feedback visual
     }
-    if (!silent) setAnalyzing(false);
   };
 
   // Auto-dispara analise interna quando ja tem plano em andamento ou pareceres
@@ -422,7 +401,7 @@ const AdminMonitoring = () => {
     // So dispara automaticamente se houver contexto util (plano aplicado ou acoes)
     if (plan?.applied_variant || parentActions.length > 0) {
       setAutoTriggered(true);
-      runAnalyze(true);
+      runAnalyzeSilent();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, loading, plan?.applied_variant, parentActions.length]);
@@ -566,10 +545,10 @@ const AdminMonitoring = () => {
             </div>
           ) : (
             <p className="text-xs text-muted-foreground py-6 text-center">
-              {compareA === "__yesterday__" && dailySnapshots.length <= 1
-                ? "Ainda não há snapshot de ontem. Volte amanhã para comparar a evolução diária — os snapshots são salvos automaticamente todo dia que você abre esta tela."
-                : closings.length === 0 && dailySnapshots.length <= 1
-                  ? "Sem dados anteriores para comparar. Feche um mês ou acesse novamente amanhã."
+              {compareA === "__previous__" && closings.filter((c) => c.status === "fechado").length === 0
+                ? "Ainda não há fechamento mensal registrado. Registre o primeiro fechamento abaixo para comparar a evolução do mês com os dados atuais."
+                : compareA === "__yesterday__" && dailySnapshots.length <= 1
+                  ? "Ainda não há snapshot de ontem. Volte amanhã para comparar a evolução diária."
                   : "Selecione 2 datas válidas para ver o comparativo."}
             </p>
           )}
@@ -725,57 +704,9 @@ const AdminMonitoring = () => {
         </Card>
       )}
 
-      {/* INSIGHTS DA IA */}
-      <Card className="border-accent/20 bg-gradient-to-br from-accent/[0.03] via-card to-card">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-accent/10">
-                <Sparkles className="h-4 w-4 text-accent" />
-              </div>
-              <div>
-                <CardTitle className="text-sm font-semibold">Evolução pela IA</CardTitle>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Analisa os pareceres recentes e as ações concluídas para narrar a progressão.
-                </p>
-              </div>
-            </div>
-            <Button
-              onClick={() => runAnalyze(false)}
-              disabled={analyzing}
-              size="sm"
-              className="gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"
-            >
-              {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              {analyzing ? "Analisando..." : insights ? "Reanalisar" : "Analisar evolução"}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {!insights && !analyzing && (
-            <p className="text-xs text-muted-foreground py-2 text-center">
-              Clique em <span className="font-semibold text-foreground">Analisar evolução</span> para a IA gerar uma timeline dos avanços e pontos de atenção.
-            </p>
-          )}
-          {analyzing && (
-            <div className="flex flex-col items-center justify-center py-6 gap-2">
-              <Loader2 className="h-5 w-5 animate-spin text-accent" />
-              <p className="text-xs text-muted-foreground">
-                Lendo os últimos pareceres e ações concluídas...
-              </p>
-            </div>
-          )}
-          {insights && insights.length > 0 && (
-            <div className="space-y-2">
-              <AnimatePresence initial={false}>
-                {insights.map((it, i) => (
-                  <InsightCard key={i} insight={it} index={i} />
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* V9: card visual de IA removido a pedido do usuario.
+          A IA continua rodando internamente (analyze-progress) via auto-trigger,
+          deixando os insights disponiveis para futuros consumidores (relatorio, etc.). */}
 
       {/* FECHAMENTOS MENSAIS (componente existente) */}
       {clientId && (
@@ -1053,83 +984,6 @@ const GoalRowCard = ({
         )}
       </div>
     </div>
-  );
-};
-
-const InsightCard = ({ insight, index }: { insight: Insight; index: number }) => {
-  const tone = {
-    evolution: {
-      bg: "bg-success/[0.06]",
-      border: "border-success/30",
-      icon: TrendingUp,
-      iconBg: "bg-success/15 text-success",
-      label: "Evolução",
-      labelTone: "bg-success/10 text-success border-success/30",
-    },
-    attention: {
-      bg: "bg-warning/[0.06]",
-      border: "border-warning/35",
-      icon: AlertTriangle,
-      iconBg: "bg-warning/15 text-warning",
-      label: "Atenção",
-      labelTone: "bg-warning/10 text-warning border-warning/30",
-    },
-    next_step: {
-      bg: "bg-accent/[0.04]",
-      border: "border-accent/30",
-      icon: Lightbulb,
-      iconBg: "bg-accent/15 text-accent",
-      label: "Próximo passo",
-      labelTone: "bg-accent/10 text-accent border-accent/30",
-    },
-  }[insight.kind];
-
-  const Icon = tone.icon;
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ delay: Math.min(index * 0.04, 0.3) }}
-      className={cn("rounded-xl border p-3.5", tone.bg, tone.border)}
-    >
-      <div className="flex items-start gap-3">
-        <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", tone.iconBg)}>
-          <Icon className="h-4 w-4" strokeWidth={2} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <Badge variant="outline" className={cn("text-[10px] border px-1.5 py-0", tone.labelTone)}>
-              {tone.label}
-            </Badge>
-            {typeof insight.financial_impact === "number" && insight.financial_impact !== 0 && (
-              <span
-                className={cn(
-                  "text-[10.5px] font-semibold tabular-nums",
-                  insight.financial_impact > 0 ? "text-success" : "text-destructive",
-                )}
-              >
-                {insight.financial_impact > 0 ? "+" : ""}
-                {fmtBRL(insight.financial_impact)}/mês
-              </span>
-            )}
-            {insight.source_label && (
-              <span className="text-[10px] text-muted-foreground/85">
-                · {insight.source_label}
-              </span>
-            )}
-          </div>
-          <p className="text-sm font-semibold text-foreground tracking-tight leading-snug">
-            {insight.title}
-          </p>
-          <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-            {insight.description}
-          </p>
-        </div>
-      </div>
-    </motion.div>
   );
 };
 
