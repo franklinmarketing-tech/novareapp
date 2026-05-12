@@ -30,7 +30,6 @@ import AdminActionPlan from "@/pages/admin/AdminActionPlan";
 import AdminMonitoring from "@/pages/admin/AdminMonitoring";
 import AdminReport from "@/pages/admin/AdminReport";
 import AdminFinanceiro from "@/pages/admin/AdminFinanceiro";
-import AdminInvestments from "@/pages/admin/AdminInvestments";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminParecer from "@/pages/admin/AdminParecer";
 import AdminObjetivos from "@/pages/admin/AdminObjetivos";
@@ -119,7 +118,7 @@ const App = () => (
                   <Route path="parecer" element={<AdminParecer />} />
                   <Route path="plano-acao" element={<AdminActionPlan />} />
                   <Route path="objetivos" element={<AdminObjetivos />} />
-                  <Route path="investimentos" element={<AdminInvestments />} />
+                  {/* V9: card Investimentos EXCLUIDO permanentemente do fluxo */}
                   <Route path="acompanhamento" element={<AdminMonitoring />} />
                   <Route path="relatorio" element={<AdminReport />} />
                 </Route>
