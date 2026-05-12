@@ -291,24 +291,55 @@ const AdminActionPlan = () => {
 
       // V9: persiste imediatamente no banco — os 3 cards aparecem inline na tela
       // (sem precisar de phase=result no popup)
-      await supabase
+      const sourceParecer = genParecerId === "__none__" ? null : genParecerId;
+      const custom = genInstructions.trim() || null;
+      const { error: upErr } = await supabase
         .from("action_plans")
         .update({
           goal_id: genGoalId,
-          source_parecer_id: genParecerId === "__none__" ? null : genParecerId,
-          custom_instructions: genInstructions.trim() || null,
+          source_parecer_id: sourceParecer,
+          custom_instructions: custom,
           ai_generated_plans: plans as any,
         })
         .eq("id", plan.id);
 
+      if (upErr) {
+        console.error("[AdminActionPlan] Falha ao persistir planos:", upErr);
+        toast({
+          title: "Planos gerados, mas não foi possível salvar no banco",
+          description: upErr.message,
+          variant: "destructive",
+        });
+      }
+
+      // CORRECAO: atualiza o estado local IMEDIATAMENTE para que os 3 cards
+      // apareçam mesmo se loadAll() ainda nao tiver retornado (ou se o write
+      // for bloqueado por RLS). loadAll re-sincroniza em seguida.
+      setPlan((prev) =>
+        prev
+          ? {
+              ...prev,
+              goal_id: genGoalId,
+              source_parecer_id: sourceParecer,
+              custom_instructions: custom,
+              ai_generated_plans: plans,
+            }
+          : prev,
+      );
       setGeneratedPlans(plans);
       setGenOpen(false);
+      setGenPhase("form");
       toast({
         title: "3 planos gerados",
         description: "Escolha o plano que melhor se encaixa ou refine com a IA.",
       });
-      await loadAll(true);
+      // Re-sincroniza com o banco em background APENAS se o write deu certo
+      // (caso contrario o reload sobrescreveria o estado otimista com null)
+      if (!upErr) {
+        loadAll(true).catch((e) => console.error("[AdminActionPlan] loadAll pós-gen falhou:", e));
+      }
     } catch (e: any) {
+      console.error("[AdminActionPlan] runGenerate erro:", e);
       toast({
         title: "Erro ao gerar planos",
         description: e?.message || "Tente novamente",
