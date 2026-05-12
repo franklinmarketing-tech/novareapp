@@ -868,6 +868,9 @@ const AppliedPlanCard = ({
   const dotColor =
     variant === "A" ? "bg-blue-500" : variant === "B" ? "bg-emerald-500" : "bg-orange-500";
 
+  // Texto do "OBJETIVO" da tarefa pai — prioriza o goal vinculado, fallback no objective do plano
+  const parentLabel = goal?.description || plan.objective || aiPlan?.title || "Plano em andamento";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -875,12 +878,12 @@ const AppliedPlanCard = ({
       transition={{ duration: 0.3 }}
       className={cn("relative rounded-2xl border-2 bg-card overflow-hidden flex flex-col", accentBorder)}
     >
-      {/* HEADER */}
+      {/* HEADER — Tarefa Pai: [OBJETIVO] Plano X */}
       <div className={cn("px-5 py-4 border-b border-border/50", headerBg)}>
         <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge className={cn("text-[11px] font-bold px-2.5 py-0.5 border", info.tone)}>
-              Plano {variant} · Aplicado
+            <Badge className={cn("text-[10px] font-bold px-2 py-0.5 border", info.tone)}>
+              Plano {variant}
             </Badge>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">
               {info.label}
@@ -888,7 +891,7 @@ const AppliedPlanCard = ({
             {plan.applied_at && (
               <Badge variant="outline" className="text-[10px] gap-1">
                 <Calendar className="h-3 w-3" />
-                {fmtDate(plan.applied_at)}
+                Aplicado em {fmtDate(plan.applied_at)}
               </Badge>
             )}
           </div>
@@ -925,30 +928,91 @@ const AppliedPlanCard = ({
             </Button>
           </div>
         </div>
-        <h3 className="text-base font-bold text-foreground tracking-tight leading-snug">
-          {aiPlan?.title || plan.objective || "Plano em andamento"}
-        </h3>
-        {plan.objective && plan.objective !== aiPlan?.title && (
-          <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
-            <Target className="h-3 w-3 inline mr-1 -mt-0.5" />
-            {plan.objective}
-          </p>
-        )}
-        {goal && (
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            Objetivo vinculado: <span className="font-medium text-foreground">{goal.description}</span>
-          </p>
-        )}
+
+        {/* TAREFA PAI — formato [OBJETIVO] Plano X */}
+        <div className="flex items-start gap-3">
+          <div
+            className={cn(
+              "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
+              variant === "A" && "bg-blue-500/15 ring-1 ring-blue-500/30",
+              variant === "B" && "bg-emerald-500/15 ring-1 ring-emerald-500/30",
+              variant === "C" && "bg-orange-500/15 ring-1 ring-orange-500/30",
+            )}
+          >
+            <Target
+              className={cn(
+                "h-4.5 w-4.5",
+                variant === "A" && "text-blue-600",
+                variant === "B" && "text-emerald-600",
+                variant === "C" && "text-orange-600",
+              )}
+              strokeWidth={2}
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/85 mb-0.5 flex items-center gap-1.5">
+              <span>[OBJETIVO]</span>
+              <span className={cn(
+                "inline-flex items-center gap-1 px-1.5 py-0 rounded-full text-[9px] font-bold uppercase tracking-wide",
+                variant === "A" && "bg-blue-500/15 text-blue-700 ring-1 ring-blue-500/30",
+                variant === "B" && "bg-emerald-500/15 text-emerald-700 ring-1 ring-emerald-500/30",
+                variant === "C" && "bg-orange-500/15 text-orange-700 ring-1 ring-orange-500/30",
+              )}>
+                Plano {variant}
+              </span>
+            </p>
+            <h3 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-snug">
+              {parentLabel}
+            </h3>
+            {aiPlan?.title && aiPlan.title !== parentLabel && (
+              <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
+                Estratégia: <span className="font-medium text-foreground">{aiPlan.title}</span>
+              </p>
+            )}
+            {/* Progresso da tarefa pai — barra grande e bem visível */}
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/85">
+                  Progresso ({completed}/{total} ações)
+                </span>
+                <span className={cn(
+                  "text-sm font-bold tabular-nums",
+                  variant === "A" && "text-blue-600",
+                  variant === "B" && "text-emerald-600",
+                  variant === "C" && "text-orange-600",
+                )}>
+                  {pct}%
+                </span>
+              </div>
+              <div className={cn(
+                "h-2 rounded-full overflow-hidden",
+                variant === "A" && "bg-blue-500/15",
+                variant === "B" && "bg-emerald-500/15",
+                variant === "C" && "bg-orange-500/15",
+              )}>
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all duration-500 ease-out",
+                    variant === "A" && "bg-blue-500",
+                    variant === "B" && "bg-emerald-500",
+                    variant === "C" && "bg-orange-500",
+                  )}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* APPROACH + TILES */}
-      <div className="p-5 space-y-4 border-b border-border/50">
+      {/* APPROACH + TILES (sem progresso — ja esta na tarefa pai acima) */}
+      <div className="px-5 pt-4 pb-3 space-y-3 border-b border-border/50">
         {aiPlan?.approach && (
           <p className="text-[12.5px] text-muted-foreground leading-relaxed">
             {aiPlan.approach}
           </p>
         )}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <div className="rounded-lg bg-muted/40 px-3 py-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/85">Horizonte</p>
             <p className="text-sm font-bold text-foreground">
@@ -961,36 +1025,38 @@ const AppliedPlanCard = ({
               {fmtBRL(aiPlan?.monthly_impact ?? totalImpact)}
             </p>
           </div>
-          <div className="rounded-lg bg-muted/40 px-3 py-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/85">Progresso</p>
-            <p className="text-sm font-bold text-foreground tabular-nums">{pct}%</p>
-            <Progress value={pct} className="h-1 mt-1" />
-          </div>
         </div>
       </div>
 
-      {/* LISTA DE ACOES INTERATIVA */}
+      {/* LISTA DE ACOES INTERATIVA — tarefas filhas da tarefa pai acima */}
       <div className="p-5">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/85 flex items-center gap-1.5">
             <span className={cn("h-2 w-2 rounded-full", dotColor)} />
             <ClipboardList className="h-3.5 w-3.5" />
-            {total} {total === 1 ? "ação" : "ações"} · {completed} concluída{completed === 1 ? "" : "s"}
+            Tarefas · {completed} de {total} concluída{total === 1 ? "" : "s"}
           </p>
           <Button size="sm" variant="outline" onClick={onAddManual} className="gap-1.5 h-7 text-[11px]">
             <Plus className="h-3 w-3" />
-            Adicionar ação
+            Adicionar tarefa
           </Button>
         </div>
 
         {items.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border/60 px-4 py-6 text-center">
             <p className="text-[12px] text-muted-foreground">
-              Nenhuma ação no plano. Use "Adicionar ação" ou "Gerar novos".
+              Nenhuma tarefa no plano. Use "Adicionar tarefa" ou "Gerar novos".
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div
+            className={cn(
+              "space-y-2 pl-3 border-l-2",
+              variant === "A" && "border-blue-500/30",
+              variant === "B" && "border-emerald-500/30",
+              variant === "C" && "border-orange-500/30",
+            )}
+          >
             <AnimatePresence initial={false}>
               {items.map((item, idx) => (
                 <ActionRow

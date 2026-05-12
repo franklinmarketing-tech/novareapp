@@ -94,6 +94,22 @@ interface MonthlyClosingLite {
   savings_rate: number | null;
 }
 
+// V9: snapshot diario para comparacao fine-grained (hoje vs ontem)
+interface DailySnapshot {
+  id: string;
+  snapshot_date: string;
+  total_income: number | null;
+  total_expenses: number | null;
+  total_debts: number | null;
+  total_assets: number | null;
+  monthly_debt_payments: number | null;
+  net_worth: number | null;
+  savings_rate: number | null;
+  completed_actions: number | null;
+  total_actions: number | null;
+  completed_impact: number | null;
+}
+
 interface Insight {
   kind: "evolution" | "attention" | "next_step";
   title: string;
@@ -133,6 +149,7 @@ const AdminMonitoring = () => {
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [plan, setPlan] = useState<ActivePlan | null>(null);
   const [closings, setClosings] = useState<MonthlyClosingLite[]>([]);
+  const [dailySnapshots, setDailySnapshots] = useState<DailySnapshot[]>([]);
 
   // Totais atuais (calculados em tempo real, nao snapshot)
   const [current, setCurrent] = useState({
@@ -143,8 +160,8 @@ const AdminMonitoring = () => {
     monthlyDebtPayments: 0,
   });
 
-  // Comparativo
-  const [compareA, setCompareA] = useState<string>("__previous__");
+  // Comparativo: default hoje vs ontem (mais granular do que mês-vs-mês)
+  const [compareA, setCompareA] = useState<string>("__yesterday__");
   const [compareB, setCompareB] = useState<string>("__now__");
 
   // IA insights
@@ -157,7 +174,7 @@ const AdminMonitoring = () => {
     if (!clientId) return;
     if (!silent) setLoading(true);
 
-    const [clientRes, incomeRes, expensesRes, debtsRes, assetsRes, goalsRes, planRes, closingsRes] = await Promise.all([
+    const [clientRes, incomeRes, expensesRes, debtsRes, assetsRes, goalsRes, planRes, closingsRes, dailyRes] = await Promise.all([
       supabase.from("clients").select("user_id").eq("id", clientId).maybeSingle(),
       supabase.from("income").select("amount, frequency").eq("client_id", clientId),
       supabase.from("expenses").select("amount").eq("client_id", clientId),
@@ -172,6 +189,15 @@ const AdminMonitoring = () => {
         )
         .eq("client_id", clientId)
         .order("month_ref", { ascending: false }),
+      // V9: snapshots diarios — pega ate 30 dias para escolher comparativos
+      (supabase as any)
+        .from("daily_progress_snapshots")
+        .select(
+          "id, snapshot_date, total_income, total_expenses, total_debts, total_assets, monthly_debt_payments, net_worth, savings_rate, completed_actions, total_actions, completed_impact",
+        )
+        .eq("client_id", clientId)
+        .order("snapshot_date", { ascending: false })
+        .limit(30),
     ]);
 
     if (clientRes.data?.user_id) {
@@ -199,14 +225,67 @@ const AdminMonitoring = () => {
     setGoals((goalsRes.data as GoalRow[]) || []);
     setClosings((closingsRes.data as MonthlyClosingLite[]) || []);
     setPlan(planRes.data as ActivePlan | null);
+    setDailySnapshots((dailyRes?.data as DailySnapshot[]) || []);
 
+    let loadedActions: ActionItem[] = [];
     if (planRes.data?.id) {
       const { data: items } = await supabase
         .from("action_items")
         .select("id, goal_id, financial_impact, realized_impact, status, parent_id, description, area, objective")
         .eq("action_plan_id", planRes.data.id);
-      setActions((items as ActionItem[]) || []);
+      loadedActions = (items as ActionItem[]) || [];
+      setActions(loadedActions);
     }
+
+    // V9: upsert do snapshot diario de HOJE (sobrescreve se ja existir hoje)
+    // Faz em background — nao bloqueia o load
+    const parentActionsLocal = loadedActions.filter((a) => !a.parent_id);
+    const doneActions = parentActionsLocal.filter((a) => a.status === "concluido");
+    const completedImpactValue = doneActions.reduce(
+      (s, a) => s + (a.realized_impact ?? a.financial_impact ?? 0),
+      0,
+    );
+    const netCashFlowToday = totalIncome - totalExpenses - monthlyDebtPayments;
+    const savingsRateToday = totalIncome > 0 ? (netCashFlowToday / totalIncome) * 100 : 0;
+    const today = new Date().toISOString().slice(0, 10);
+    (supabase as any)
+      .from("daily_progress_snapshots")
+      .upsert(
+        {
+          client_id: clientId,
+          snapshot_date: today,
+          total_income: totalIncome,
+          total_expenses: totalExpenses,
+          total_debts: totalDebts,
+          total_assets: totalAssets,
+          monthly_debt_payments: monthlyDebtPayments,
+          net_worth: totalAssets - totalDebts,
+          savings_rate: savingsRateToday,
+          completed_actions: doneActions.length,
+          total_actions: parentActionsLocal.length,
+          completed_impact: completedImpactValue,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "client_id,snapshot_date" },
+      )
+      .then(({ error: snapErr }: { error: any }) => {
+        if (snapErr) {
+          console.warn("[AdminMonitoring] falha ao salvar snapshot diário:", snapErr.message);
+          return;
+        }
+        // Recarrega a lista de snapshots para incluir o de hoje (silencioso)
+        (supabase as any)
+          .from("daily_progress_snapshots")
+          .select(
+            "id, snapshot_date, total_income, total_expenses, total_debts, total_assets, monthly_debt_payments, net_worth, savings_rate, completed_actions, total_actions, completed_impact",
+          )
+          .eq("client_id", clientId)
+          .order("snapshot_date", { ascending: false })
+          .limit(30)
+          .then(({ data: refreshed }: { data: any }) => {
+            if (refreshed) setDailySnapshots(refreshed as DailySnapshot[]);
+          });
+      });
 
     if (!silent) setLoading(false);
   };
@@ -251,27 +330,33 @@ const AdminMonitoring = () => {
   }, [goals, parentActions]);
 
   // Comparativo: resolve datasets A e B
-  const datasetA = useMemo(() => {
-    if (compareA === "__now__") return buildCurrentDataset(current);
-    if (compareA === "__previous__") {
+  // Tokens especiais: __now__, __yesterday__ (snapshot D-1), __previous__ (ultimo fechamento mensal)
+  // ID com prefixo "d:" -> snapshot diario. ID puro UUID -> closing mensal.
+  const resolveDataset = (token: string): Dataset | null => {
+    if (token === "__now__") return buildCurrentDataset(current);
+    if (token === "__yesterday__") {
+      // Pega o snapshot mais recente que NAO seja hoje
+      const today = new Date().toISOString().slice(0, 10);
+      const sorted = [...dailySnapshots].sort((a, b) => b.snapshot_date.localeCompare(a.snapshot_date));
+      const yesterday = sorted.find((s) => s.snapshot_date < today);
+      return yesterday ? buildDailyDataset(yesterday) : null;
+    }
+    if (token === "__previous__") {
       const sorted = [...closings].sort((a, b) => b.month_ref.localeCompare(a.month_ref));
       const prev = sorted.find((c) => c.status === "fechado");
       return prev ? buildClosingDataset(prev) : null;
     }
-    const found = closings.find((c) => c.id === compareA);
+    if (token.startsWith("d:")) {
+      const date = token.slice(2);
+      const snap = dailySnapshots.find((s) => s.snapshot_date === date);
+      return snap ? buildDailyDataset(snap) : null;
+    }
+    const found = closings.find((c) => c.id === token);
     return found ? buildClosingDataset(found) : null;
-  }, [compareA, closings, current]);
+  };
 
-  const datasetB = useMemo(() => {
-    if (compareB === "__now__") return buildCurrentDataset(current);
-    if (compareB === "__previous__") {
-      const sorted = [...closings].sort((a, b) => b.month_ref.localeCompare(a.month_ref));
-      const prev = sorted.find((c) => c.status === "fechado");
-      return prev ? buildClosingDataset(prev) : null;
-    }
-    const found = closings.find((c) => c.id === compareB);
-    return found ? buildClosingDataset(found) : null;
-  }, [compareB, closings, current]);
+  const datasetA = useMemo(() => resolveDataset(compareA), [compareA, closings, current, dailySnapshots]);
+  const datasetB = useMemo(() => resolveDataset(compareB), [compareB, closings, current, dailySnapshots]);
 
   const actionPlanCompletion = useMemo(() => {
     if (parentActions.length === 0) return null;
@@ -463,9 +548,9 @@ const AdminMonitoring = () => {
               Comparar evolução
             </CardTitle>
             <div className="flex items-center gap-2 text-xs">
-              <DateSelect value={compareA} onChange={setCompareA} closings={closings} />
+              <DateSelect value={compareA} onChange={setCompareA} closings={closings} daily={dailySnapshots} />
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              <DateSelect value={compareB} onChange={setCompareB} closings={closings} />
+              <DateSelect value={compareB} onChange={setCompareB} closings={closings} daily={dailySnapshots} />
             </div>
           </div>
         </CardHeader>
@@ -481,9 +566,11 @@ const AdminMonitoring = () => {
             </div>
           ) : (
             <p className="text-xs text-muted-foreground py-6 text-center">
-              {closings.length === 0
-                ? "Feche pelo menos 1 mês para comparar evoluções."
-                : "Selecione 2 datas válidas para ver o comparativo."}
+              {compareA === "__yesterday__" && dailySnapshots.length <= 1
+                ? "Ainda não há snapshot de ontem. Volte amanhã para comparar a evolução diária — os snapshots são salvos automaticamente todo dia que você abre esta tela."
+                : closings.length === 0 && dailySnapshots.length <= 1
+                  ? "Sem dados anteriores para comparar. Feche um mês ou acesse novamente amanhã."
+                  : "Selecione 2 datas válidas para ver o comparativo."}
             </p>
           )}
         </CardContent>
@@ -737,30 +824,67 @@ const DateSelect = ({
   value,
   onChange,
   closings,
+  daily,
 }: {
   value: string;
   onChange: (v: string) => void;
   closings: MonthlyClosingLite[];
+  daily: DailySnapshot[];
 }) => {
   const closed = closings.filter((c) => c.status === "fechado");
+  const today = new Date().toISOString().slice(0, 10);
+  // Snapshots passados (sem incluir hoje), mais recentes primeiro
+  const pastDaily = [...daily]
+    .filter((d) => d.snapshot_date < today)
+    .sort((a, b) => b.snapshot_date.localeCompare(a.snapshot_date))
+    .slice(0, 14); // ate 2 semanas no menu
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="h-8 text-xs w-[180px]">
+      <SelectTrigger className="h-8 text-xs w-[200px]">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="__now__" className="text-xs">
           Hoje (dados atuais)
         </SelectItem>
-        <SelectItem value="__previous__" className="text-xs">
-          Último fechamento
+        <SelectItem value="__yesterday__" className="text-xs">
+          Ontem (último snapshot)
         </SelectItem>
-        {closed.length > 0 && <div className="my-1 border-t border-border" />}
-        {closed.map((c) => (
-          <SelectItem key={c.id} value={c.id} className="text-xs capitalize">
-            {monthRefLabel(c.month_ref)}
-          </SelectItem>
-        ))}
+        <SelectItem value="__previous__" className="text-xs">
+          Último fechamento mensal
+        </SelectItem>
+        {pastDaily.length > 0 && (
+          <>
+            <div className="my-1 border-t border-border" />
+            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/70 px-2 py-1 font-semibold">
+              Dias anteriores
+            </div>
+            {pastDaily.map((d) => {
+              const label = new Date(d.snapshot_date + "T12:00:00").toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "short",
+              });
+              return (
+                <SelectItem key={d.id} value={`d:${d.snapshot_date}`} className="text-xs">
+                  {label}
+                </SelectItem>
+              );
+            })}
+          </>
+        )}
+        {closed.length > 0 && (
+          <>
+            <div className="my-1 border-t border-border" />
+            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/70 px-2 py-1 font-semibold">
+              Fechamentos mensais
+            </div>
+            {closed.map((c) => (
+              <SelectItem key={c.id} value={c.id} className="text-xs capitalize">
+                {monthRefLabel(c.month_ref)}
+              </SelectItem>
+            ))}
+          </>
+        )}
       </SelectContent>
     </Select>
   );
@@ -793,6 +917,15 @@ const buildClosingDataset = (c: MonthlyClosingLite): Dataset => ({
   totalAssets: Number(c.total_assets || 0),
   monthlyDebtPayments: Number(c.monthly_debt_payments || 0),
   netWorth: Number(c.net_worth || 0),
+});
+
+const buildDailyDataset = (s: DailySnapshot): Dataset => ({
+  totalIncome: Number(s.total_income || 0),
+  totalExpenses: Number(s.total_expenses || 0),
+  totalDebts: Number(s.total_debts || 0),
+  totalAssets: Number(s.total_assets || 0),
+  monthlyDebtPayments: Number(s.monthly_debt_payments || 0),
+  netWorth: Number(s.net_worth || 0),
 });
 
 const DeltaRow = ({
