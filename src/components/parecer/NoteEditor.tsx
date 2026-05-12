@@ -102,11 +102,24 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
   // V9: auto-save state
   const [autoSaving, setAutoSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  // V9: tick que forca re-render a cada 5s para atualizar "Salvo ha Xs"
+  const [, setNow] = useState(Date.now());
+  // V9: word counter em state, atualizado via debounce no handleEditorInput
+  const [wordCount, setWordCount] = useState(0);
+  // V9: lock para evitar race condition entre auto-save e save manual
+  const savingLockRef = useRef(false);
 
   // Load notes on mount
   useEffect(() => {
     loadNotes();
   }, [clientId]);
+
+  // V9: tick a cada 5s para atualizar o badge "Salvo ha Xs"
+  useEffect(() => {
+    if (!lastSavedAt) return;
+    const id = setInterval(() => setNow(Date.now()), 5000);
+    return () => clearInterval(id);
+  }, [lastSavedAt]);
 
   const loadNotes = async () => {
     setLoading(true);
@@ -150,6 +163,12 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
       if (!silent) toast({ title: "Escreva algo antes de salvar", variant: "destructive" });
       return;
     }
+    // V9: lock anti-race — evita auto-save + save manual concorrentes
+    if (savingLockRef.current) {
+      if (!silent) toast({ title: "Aguarde, save em andamento..." });
+      return;
+    }
+    savingLockRef.current = true;
     if (silent) setAutoSaving(true);
     else setSaving(true);
 
@@ -213,6 +232,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     }
     if (silent) setAutoSaving(false);
     else setSaving(false);
+    savingLockRef.current = false;
   };
 
   // V9: auto-save com debounce — cria nota nova se ainda nao existe,
@@ -257,7 +277,18 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
 
   const handleEditorInput = useCallback(() => {
     setContent(getEditorText());
-  }, [getEditorText]);
+    // V9: atualiza word counter (sem chamar getPlainText em cada render)
+    const plain = getPlainText();
+    setWordCount(plain.split(/\s+/).filter(Boolean).length);
+    // V9: placeholder reaparece quando so ha <br>/<p></p> vazios
+    const editor = editorRef.current;
+    if (editor) {
+      const isVisuallyEmpty =
+        plain.length === 0 &&
+        editor.querySelectorAll(".parecer-chip, img").length === 0;
+      editor.setAttribute("data-placeholder-visible", isVisuallyEmpty ? "true" : "false");
+    }
+  }, [getEditorText, getPlainText]);
 
   // V9: Insere um chip de referencia na posicao do cursor
   const insertChip = useCallback((chip: SnapshotChip) => {
@@ -310,20 +341,57 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     const isSelectionInsideEditor =
       selection && selection.rangeCount > 0 && editor.contains(selection.anchorNode);
 
+    // V9 fix: garante espaco ANTES e DEPOIS do chip
+    const endsWithoutSpace = (node: Node | null | undefined): boolean => {
+      if (!node) return false;
+      if (node.nodeType === Node.TEXT_NODE) {
+        const t = node.textContent || "";
+        return t.length > 0 && !/\s$/.test(t);
+      }
+      if (
+        node.nodeType === Node.ELEMENT_NODE &&
+        (node as HTMLElement).classList?.contains("parecer-chip")
+      ) {
+        return true;
+      }
+      return false;
+    };
+
     if (isSelectionInsideEditor) {
       const range = selection.getRangeAt(0);
       range.deleteContents();
+
+      // Verifica se precisa de espaco ANTES do chip
+      const { startContainer, startOffset } = range;
+      let needSpaceBefore = false;
+      if (startContainer.nodeType === Node.TEXT_NODE) {
+        const before = (startContainer.textContent || "").slice(0, startOffset);
+        if (before.length > 0 && !/\s$/.test(before)) needSpaceBefore = true;
+      } else if (startContainer.nodeType === Node.ELEMENT_NODE && startOffset > 0) {
+        const prev = startContainer.childNodes[startOffset - 1];
+        if (prev) needSpaceBefore = endsWithoutSpace(prev);
+      }
+      if (needSpaceBefore) {
+        const leading = document.createTextNode(" ");
+        range.insertNode(leading);
+        range.setStartAfter(leading);
+        range.collapse(true);
+      }
+
       range.insertNode(chipEl);
-      const space = document.createTextNode(" ");
-      chipEl.parentNode?.insertBefore(space, chipEl.nextSibling);
-      range.setStartAfter(space);
+      const trailing = document.createTextNode(" ");
+      chipEl.parentNode?.insertBefore(trailing, chipEl.nextSibling);
+      range.setStartAfter(trailing);
       range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
     } else {
-      // Sem cursor dentro do editor: acrescenta no final
+      // Sem cursor dentro do editor: acrescenta no final, garantindo espaco antes
+      if (endsWithoutSpace(editor.lastChild)) {
+        editor.appendChild(document.createTextNode(" "));
+      }
       editor.appendChild(chipEl);
-      editor.appendChild(document.createTextNode(" "));
+      editor.appendChild(document.createTextNode(" "));
     }
 
     handleEditorInput();
@@ -346,7 +414,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     return out;
   }, []);
 
-  // V9: click no botao "×" do chip remove a referencia
+  // V9: click no botao "×" do chip remove a referencia + colapsa espacos
   const handleEditorClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const target = e.target as HTMLElement;
@@ -354,7 +422,22 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
         e.preventDefault();
         e.stopPropagation();
         const chip = target.closest(".parecer-chip");
-        chip?.remove();
+        if (!chip) return;
+
+        // Antes de remover, captura nodos adjacentes para colapsar espacos duplos
+        const prev = chip.previousSibling;
+        const next = chip.nextSibling;
+        chip.remove();
+
+        // Se sobraram dois nodos de texto com espacos adjacentes, colapsa
+        if (
+          prev?.nodeType === Node.TEXT_NODE &&
+          next?.nodeType === Node.TEXT_NODE
+        ) {
+          const merged = (prev.textContent || "") + (next.textContent || "");
+          prev.textContent = merged.replace(/\s{2,}/g, " ");
+          next.parentNode?.removeChild(next);
+        }
         handleEditorInput();
       }
     },
@@ -420,6 +503,25 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
         setUploadingImage(false);
         return;
       }
+    }
+
+    // V9: paste de texto/HTML — sanitiza HTML sujo (Word, Google Docs, etc)
+    // Se o clipboard tem HTML, limpamos via DOMPurify; senao, deixa o navegador
+    // inserir como texto plano via insertText.
+    const html = e.clipboardData?.getData("text/html");
+    const text = e.clipboardData?.getData("text/plain");
+    if (html && html.trim().length > 0) {
+      e.preventDefault();
+      const safe = DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ["p", "br", "strong", "b", "em", "i", "u", "ul", "ol", "li", "h2", "h3", "h4", "blockquote", "a"],
+        ALLOWED_ATTR: ["href", "target", "rel"],
+      });
+      document.execCommand("insertHTML", false, safe);
+      handleEditorInput();
+    } else if (text && text.trim().length > 0) {
+      e.preventDefault();
+      document.execCommand("insertText", false, text);
+      handleEditorInput();
     }
   }, [clientId, handleEditorInput, toast]);
 
@@ -488,12 +590,16 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
   };
 
   // V9: insere HTML do rascunho no editor (no final do conteudo atual)
+  // Sanitiza o output da IA antes de inserir — defesa contra prompt injection
   const insertHtmlIntoEditor = (html: string) => {
     const editor = editorRef.current;
     if (!editor) return;
+    const safe = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "b", "em", "i", "u", "ul", "ol", "li", "h2", "h3", "h4", "blockquote", "hr"],
+      ALLOWED_ATTR: [],
+    });
     const wrapper = document.createElement("div");
-    // wrapper temporario apenas para extrair os elementos limpos
-    wrapper.innerHTML = html;
+    wrapper.innerHTML = safe;
     // adiciona uma linha em branco se ja ha conteudo
     if (editor.innerHTML.trim().length > 0) {
       editor.appendChild(document.createElement("br"));
@@ -570,8 +676,14 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
             )}
             {notes.map((note) => {
               const isActive = activeNote?.id === note.id;
+              // V9: preview limpo — strip de chips, imagens, tags HTML e markdown
               const plainText = (note.content || "")
+                .replace(/<span\s+class="parecer-chip"[^>]*>.*?<\/span>/g, "")
+                .replace(/<img\b[^>]*>/g, "")
                 .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+                .replace(/<[^>]+>/g, " ")
+                .replace(/&nbsp;/g, " ")
+                .replace(/&[a-z]+;/g, " ")
                 .replace(/\s+/g, " ")
                 .trim();
               const preview = plainText.length > 220 ? plainText.slice(0, 220) + "…" : plainText;
@@ -776,7 +888,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
               <Eraser className="h-3.5 w-3.5" />
             </ToolbarBtn>
             <div className="ml-auto flex items-center gap-1.5 px-2 text-[10px] text-muted-foreground/85">
-              <span>{getPlainText().split(/\s+/).filter(Boolean).length} palavras</span>
+              <span>{wordCount} {wordCount === 1 ? "palavra" : "palavras"}</span>
             </div>
           </div>
 

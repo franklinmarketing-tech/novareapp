@@ -1672,8 +1672,12 @@
   border-radius: 0.5rem;
   margin: 0.5rem 0;
 }
-.parecer-editor:empty::before {
+/* Placeholder aparece quando :empty OU quando so tem <br>/<p></p> vazios */
+.parecer-editor:empty::before,
+.parecer-editor[data-placeholder-visible="true"]::before {
   content: attr(data-placeholder);
   color: hsl(var(--muted-foreground) / 0.5);
   white-space: pre-wrap;
+  pointer-events: none;
+  display: block;
 }
