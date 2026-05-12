@@ -24,6 +24,7 @@ import {
   PenLine, Save, Sparkles, Plus, Clock, FileText, Trash2,
   Target, TrendingUp, CheckCircle2, Loader2, ChevronRight,
   ChevronDown, History, Zap,
+  Bold, Italic, Underline, List, ListOrdered, Quote, Minus, Eraser,
 } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -51,41 +52,22 @@ export interface NoteEditorHandle {
   insertChip: (chip: SnapshotChip) => void;
 }
 
-interface SuggestedAction {
-  area: string;
-  description: string;
-  objective: string;
-  financial_impact: number;
-  goal_description?: string;
-  selected: boolean;
+// V9: IA agora gera RASCUNHO DE TEXTO (nao acoes — isso e do Plano de Acao)
+interface ParecerDraftSection {
+  title: string;
+  content: string; // HTML simples
 }
 
-interface SuggestedInvestment {
-  product_name: string;
-  product_type: string;
-  risk_level: string;
-  invested_amount: number;
-  rationale: string;
-  expected_return?: string;
-  selected: boolean;
+interface ParecerKeyFinding {
+  kind: "atencao" | "oportunidade" | "forte";
+  text: string;
 }
 
-const areaLabels: Record<string, string> = {
-  renda: "Renda", despesas: "Despesas", dividas: "Dívidas",
-  investimentos: "Investimentos", protecao: "Proteção", impostos: "Impostos",
-};
-
-const areaColors: Record<string, string> = {
-  renda: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
-  despesas: "bg-red-500/10 text-red-700 border-red-200",
-  dividas: "bg-orange-500/10 text-orange-700 border-orange-200",
-  investimentos: "bg-blue-500/10 text-blue-700 border-blue-200",
-  protecao: "bg-purple-500/10 text-purple-700 border-purple-200",
-  impostos: "bg-amber-500/10 text-amber-700 border-amber-200",
-};
-
-const fmt = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+interface ParecerDraft {
+  suggested_text: string;
+  sections: ParecerDraftSection[];
+  key_findings: ParecerKeyFinding[];
+}
 
 interface Props {
   clientId: string;
@@ -106,11 +88,10 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
   const [loading, setLoading] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(true);
 
-  const [suggestedActions, setSuggestedActions] = useState<SuggestedAction[]>([]);
-  const [suggestedInvestments, setSuggestedInvestments] = useState<SuggestedInvestment[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [appliedAiIds, setAppliedAiIds] = useState<Set<number>>(new Set());
-  const [applyingAiId, setApplyingAiId] = useState<number | null>(null);
+  // V9: rascunho de texto da IA (substitui as antigas sugestoes de acao)
+  const [draft, setDraft] = useState<ParecerDraft | null>(null);
+  const [showDraft, setShowDraft] = useState(false);
+  const [insertedSections, setInsertedSections] = useState<Set<number>>(new Set());
 
   // Detecta alterações não salvas (estado "em edição")
   const isDirty = activeNote
@@ -142,20 +123,18 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     setActiveNote(null);
     setTitle("");
     setContent("");
-    setSuggestedActions([]);
-    setSuggestedInvestments([]);
-    setShowSuggestions(false);
-    setAppliedAiIds(new Set());
+    setDraft(null);
+    setShowDraft(false);
+    setInsertedSections(new Set());
   };
 
   const selectNote = (note: Note) => {
     setActiveNote(note);
     setTitle(note.title);
     setContent(note.content);
-    setSuggestedActions([]);
-    setSuggestedInvestments([]);
-    setShowSuggestions(false);
-    setAppliedAiIds(new Set());
+    setDraft(null);
+    setShowDraft(false);
+    setInsertedSections(new Set());
     setHistoryOpen(false);
   };
 
@@ -404,7 +383,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
       );
       // Sanitize before injecting to prevent stored XSS via notes
       const safeHtml = DOMPurify.sanitize(htmlContent, {
-        ALLOWED_TAGS: ["img", "br", "p", "div", "b", "i", "u", "strong", "em", "ul", "ol", "li", "a", "span"],
+        ALLOWED_TAGS: ["img", "br", "p", "div", "b", "i", "u", "strong", "em", "ul", "ol", "li", "a", "span", "h2", "h3", "h4", "blockquote", "hr"],
         ALLOWED_ATTR: [
           "src",
           "alt",
@@ -432,7 +411,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
 
   const analyzeWithAI = async () => {
     setAnalyzing(true);
-    setShowSuggestions(false);
+    setShowDraft(false);
     try {
       const textOnly = getPlainText();
       const snapshots = extractSnapshots();
@@ -440,19 +419,54 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
         body: { content: textOnly || null, clientId, snapshots },
       });
       if (error) throw error;
-      setSuggestedActions(
-        (data.action_items || []).map((a: any) => ({ ...a, selected: true }))
-      );
-      setSuggestedInvestments(
-        (data.investment_recommendations || []).map((i: any) => ({ ...i, selected: true }))
-      );
-      setShowSuggestions(true);
-      setAppliedAiIds(new Set());
-      toast({ title: "Análise concluída!", description: `${(data.action_items || []).length} ações e ${(data.investment_recommendations || []).length} investimentos sugeridos.` });
+      const result: ParecerDraft = {
+        suggested_text: data?.suggested_text || "",
+        sections: Array.isArray(data?.sections) ? data.sections : [],
+        key_findings: Array.isArray(data?.key_findings) ? data.key_findings : [],
+      };
+      setDraft(result);
+      setInsertedSections(new Set());
+      setShowDraft(true);
+      toast({
+        title: "Rascunho de parecer gerado",
+        description: `${result.sections.length} seções e ${result.key_findings.length} pontos chave.`,
+      });
     } catch (e: any) {
-      toast({ title: e?.message || "Erro na análise com IA", variant: "destructive" });
+      toast({ title: e?.message || "Erro ao gerar parecer com IA", variant: "destructive" });
     }
     setAnalyzing(false);
+  };
+
+  // V9: insere HTML do rascunho no editor (no final do conteudo atual)
+  const insertHtmlIntoEditor = (html: string) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const wrapper = document.createElement("div");
+    // wrapper temporario apenas para extrair os elementos limpos
+    wrapper.innerHTML = html;
+    // adiciona uma linha em branco se ja ha conteudo
+    if (editor.innerHTML.trim().length > 0) {
+      editor.appendChild(document.createElement("br"));
+    }
+    while (wrapper.firstChild) {
+      editor.appendChild(wrapper.firstChild);
+    }
+    handleEditorInput();
+    editor.focus();
+  };
+
+  const insertFullDraft = () => {
+    if (!draft?.suggested_text) return;
+    insertHtmlIntoEditor(draft.suggested_text);
+    setInsertedSections(new Set(draft.sections.map((_, i) => i)));
+    toast({ title: "Rascunho completo inserido no editor" });
+  };
+
+  const insertSection = (idx: number) => {
+    if (!draft?.sections[idx]) return;
+    const sec = draft.sections[idx];
+    insertHtmlIntoEditor(`<h3>${sec.title}</h3>${sec.content}`);
+    setInsertedSections((prev) => new Set(prev).add(idx));
   };
 
   // Anexa um trecho ao parecer atual e persiste no banco (auto-save)
@@ -501,95 +515,17 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
     }
   };
 
-  const applyAiAction = async (action: SuggestedAction, idx: number) => {
-    setApplyingAiId(idx);
-    try {
-      // Match goal_description to a goal_id
-      let goalId: string | null = null;
-      if (action.goal_description) {
-        const { data: goalsData } = await supabase
-          .from("goals")
-          .select("id, description")
-          .eq("client_id", clientId);
-        if (goalsData) {
-          const match = goalsData.find(g =>
-            g.description.toLowerCase().includes(action.goal_description!.toLowerCase()) ||
-            action.goal_description!.toLowerCase().includes(g.description.toLowerCase())
-          );
-          if (match) goalId = match.id;
-        }
-      }
-
-      let { data: plan } = await supabase
-        .from("action_plans")
-        .select("id")
-        .eq("client_id", clientId)
-        .maybeSingle();
-      if (!plan) {
-        const { data: newPlan } = await supabase
-          .from("action_plans")
-          .insert({ client_id: clientId })
-          .select("id")
-          .single();
-        plan = newPlan;
-      }
-      if (plan) {
-        await supabase.from("action_items").insert({
-          action_plan_id: plan.id,
-          area: action.area as any,
-          description: action.description,
-          objective: action.objective,
-          financial_impact: action.financial_impact,
-          goal_id: goalId,
-        });
-      }
-
-      // Acrescenta a sugestão ao corpo do parecer
-      const areaLabel = areaLabels[action.area] || action.area;
-      const impactLine =
-        action.financial_impact && action.financial_impact > 0
-          ? ` _(impacto estimado: ${fmt(action.financial_impact)})_`
-          : "";
-      const snippet = `**[${areaLabel}] ${action.description}**${impactLine}\n→ ${action.objective}`;
-      await appendToParecer(snippet);
-
-      setAppliedAiIds(prev => new Set(prev).add(idx));
-      toast({ title: "Ação aplicada ao plano e ao parecer!" });
-    } catch {
-      toast({ title: "Erro ao aplicar ação", variant: "destructive" });
-    }
-    setApplyingAiId(null);
+  // V9: toolbar de formatacao — operacoes em contenteditable
+  const exec = (command: string, value?: string) => {
+    editorRef.current?.focus();
+    document.execCommand(command, false, value);
+    handleEditorInput();
   };
 
-  const applyAiInvestment = async (inv: SuggestedInvestment, idx: number) => {
-    const globalIdx = suggestedActions.length + idx;
-    setApplyingAiId(globalIdx);
-    try {
-      await supabase.from("investment_recommendations").insert({
-        client_id: clientId,
-        product_name: inv.product_name,
-        product_type: inv.product_type,
-        risk_level: inv.risk_level,
-        invested_amount: inv.invested_amount,
-        rationale: inv.rationale,
-        expected_return: inv.expected_return || null,
-      });
-
-      // Acrescenta a recomendação de investimento ao corpo do parecer
-      const valueLine =
-        inv.invested_amount && inv.invested_amount > 0
-          ? ` — ${fmt(inv.invested_amount)}`
-          : "";
-      const returnLine = inv.expected_return ? ` · Retorno esperado: ${inv.expected_return}` : "";
-      const snippet = `**[Investimento] ${inv.product_name}**${valueLine}\nRisco: ${inv.risk_level}${returnLine}\n→ ${inv.rationale}`;
-      await appendToParecer(snippet);
-
-      setAppliedAiIds(prev => new Set(prev).add(globalIdx));
-      toast({ title: "Investimento aplicado e adicionado ao parecer!" });
-    } catch {
-      toast({ title: "Erro ao aplicar investimento", variant: "destructive" });
-    }
-    setApplyingAiId(null);
+  const insertSeparator = () => {
+    editorRef.current?.focus();
+    document.execCommand("insertHTML", false, "<hr />");
+    handleEditorInput();
   };
 
   return (
@@ -788,8 +724,8 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
                 disabled={analyzing}
                 className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90"
               >
-                {analyzing ? <Loader2 className="h-6 w-6 animate-spin" /> : <Sparkles className="h-6 w-6" />}
-                Analisar com IA
+                {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                IA: rascunho do parecer
               </Button>
             </div>
           </div>
@@ -801,6 +737,45 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
             onChange={(e) => setTitle(e.target.value)}
             className="text-base font-medium"
           />
+
+          {/* V9: toolbar de formatacao do parecer */}
+          <div className="flex items-center gap-0.5 flex-wrap rounded-md border border-border/60 bg-muted/30 px-1.5 py-1">
+            <ToolbarBtn label="Título" onClick={() => exec("formatBlock", "h3")}>
+              <span className="text-[12px] font-bold tracking-tight">H</span>
+            </ToolbarBtn>
+            <ToolbarSep />
+            <ToolbarBtn label="Negrito (Ctrl+B)" onClick={() => exec("bold")}>
+              <Bold className="h-3.5 w-3.5" />
+            </ToolbarBtn>
+            <ToolbarBtn label="Itálico (Ctrl+I)" onClick={() => exec("italic")}>
+              <Italic className="h-3.5 w-3.5" />
+            </ToolbarBtn>
+            <ToolbarBtn label="Sublinhado (Ctrl+U)" onClick={() => exec("underline")}>
+              <Underline className="h-3.5 w-3.5" />
+            </ToolbarBtn>
+            <ToolbarSep />
+            <ToolbarBtn label="Lista" onClick={() => exec("insertUnorderedList")}>
+              <List className="h-3.5 w-3.5" />
+            </ToolbarBtn>
+            <ToolbarBtn label="Lista numerada" onClick={() => exec("insertOrderedList")}>
+              <ListOrdered className="h-3.5 w-3.5" />
+            </ToolbarBtn>
+            <ToolbarSep />
+            <ToolbarBtn label="Citação" onClick={() => exec("formatBlock", "blockquote")}>
+              <Quote className="h-3.5 w-3.5" />
+            </ToolbarBtn>
+            <ToolbarBtn label="Linha separadora" onClick={insertSeparator}>
+              <Minus className="h-3.5 w-3.5" />
+            </ToolbarBtn>
+            <ToolbarSep />
+            <ToolbarBtn label="Limpar formatação" onClick={() => exec("removeFormat")}>
+              <Eraser className="h-3.5 w-3.5" />
+            </ToolbarBtn>
+            <div className="ml-auto flex items-center gap-1.5 px-2 text-[10px] text-muted-foreground/85">
+              <span>{getPlainText().split(/\s+/).filter(Boolean).length} palavras</span>
+            </div>
+          </div>
+
           <div className="relative">
             <div
               ref={editorRef}
@@ -808,15 +783,15 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
               onInput={handleEditorInput}
               onPaste={handlePaste}
               onClick={handleEditorClick}
-              data-placeholder="Escreva suas observações e recomendações sobre o cliente aqui...
+              data-placeholder="Escreva o parecer técnico sobre o cliente aqui.
 
-Exemplos:
-• Recomendo que o cliente reduza gastos com alimentação em R$ 500/mês
-• Sugiro aplicar R$ 10.000 em CDB 120% CDI para reserva de emergência
-• O cliente deve quitar a dívida do cartão de crédito prioritariamente
+Dicas:
+• Clique no '+' do painel ao lado para inserir referências dos dados do onboarding
+• Use a toolbar acima para formatar (títulos, negrito, listas)
+• Clique em 'IA: rascunho do parecer' para a IA redigir um texto inicial pronto pra você revisar
 
 💡 Você pode colar imagens diretamente aqui (Ctrl+V)"
-              className="min-h-[250px] text-[0.9375rem] leading-relaxed resize-y p-3 rounded-md border border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-auto empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/50 empty:before:whitespace-pre-wrap"
+              className="parecer-editor min-h-[320px] text-[0.9375rem] leading-relaxed resize-y p-4 rounded-md border border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 overflow-auto empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/50 empty:before:whitespace-pre-wrap"
               suppressContentEditableWarning
             />
             {uploadingImage && (
@@ -827,9 +802,6 @@ Exemplos:
                 </div>
               </div>
             )}
-            <div className="absolute bottom-2 right-3 text-xs text-muted-foreground/50 pointer-events-none">
-              {getPlainText().split(/\s+/).filter(Boolean).length} palavras
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -839,112 +811,130 @@ Exemplos:
         <Card className="border-accent/20">
           <CardContent className="py-6 flex flex-col items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-accent" />
-            <p className="text-sm text-muted-foreground">Analisando parecer com IA...</p>
+            <p className="text-sm text-muted-foreground">A IA está redigindo um rascunho do parecer...</p>
+            <p className="text-[11px] text-muted-foreground/70">
+              Cruzando dados do onboarding, chips inseridos e suas observações.
+            </p>
           </CardContent>
         </Card>
       )}
 
-      {/* AI Suggestions */}
-      {showSuggestions && (suggestedActions.length > 0 || suggestedInvestments.length > 0) && (
-        <Card className="border-accent/20 bg-accent/[0.02]">
+      {/* V9: Rascunho de parecer da IA (substitui as antigas sugestoes de acao) */}
+      {showDraft && draft && (
+        <Card className="border-accent/20 bg-gradient-to-br from-accent/[0.04] via-card to-card">
           <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-accent" />
-              <CardTitle className="text-base">Sugestões da IA</CardTitle>
-              <Badge variant="secondary" className="text-xs">
-                {suggestedActions.length + suggestedInvestments.length} itens
-              </Badge>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="h-7 w-7 rounded-lg bg-accent/15 ring-1 ring-accent/30 flex items-center justify-center shrink-0">
+                  <Sparkles className="h-3.5 w-3.5 text-accent" />
+                </div>
+                <div className="min-w-0">
+                  <CardTitle className="text-base">Rascunho da IA</CardTitle>
+                  <p className="text-[11px] text-muted-foreground">
+                    Texto pronto para você revisar e inserir no parecer.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 h-8"
+                  onClick={insertFullDraft}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Inserir tudo
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="gap-1.5 h-8 text-muted-foreground"
+                  onClick={() => setShowDraft(false)}
+                >
+                  Fechar
+                </Button>
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {suggestedActions.map((action, idx) => {
-              const applied = appliedAiIds.has(idx);
-              return (
-                <div
-                  key={idx}
-                  className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
-                    applied ? "bg-emerald-500/5 border-emerald-200" : "bg-card border-border/40"
-                  }`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className={`text-[0.6875rem] px-1.5 py-0.5 rounded-full border ${areaColors[action.area] || "bg-muted"}`}>
-                        {areaLabels[action.area] || action.area}
-                      </span>
-                      {action.financial_impact > 0 && (
-                        <span className="text-xs font-medium text-emerald-600">{fmt(action.financial_impact)}</span>
-                      )}
-                      {applied && (
-                        <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-200 text-[0.6875rem]">
-                          <CheckCircle2 className="h-6 w-6 mr-1" /> Aplicada
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-foreground">{action.description}</p>
-                    {action.objective && (
-                      <p className="text-[0.6875rem] text-muted-foreground mt-0.5">→ {action.objective}</p>
-                    )}
-                  </div>
-                  {!applied && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs gap-1 shrink-0"
-                      onClick={() => applyAiAction(action, idx)}
-                      disabled={applyingAiId === idx}
-                    >
-                      {applyingAiId === idx ? <Loader2 className="h-6 w-6 animate-spin" /> : <Zap className="h-6 w-6" />}
-                      Aplicar
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
 
-            {suggestedActions.length > 0 && suggestedInvestments.length > 0 && <Separator />}
-
-            {suggestedInvestments.map((inv, idx) => {
-              const globalIdx = suggestedActions.length + idx;
-              const applied = appliedAiIds.has(globalIdx);
-              return (
-                <div
-                  key={idx}
-                  className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
-                    applied ? "bg-emerald-500/5 border-emerald-200" : "bg-card border-border/40"
-                  }`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-xs font-medium text-foreground">{inv.product_name}</span>
-                      <Badge variant="outline" className="text-[0.6875rem]">{inv.product_type.replace("_", " ")}</Badge>
-                      <Badge variant="secondary" className="text-[0.6875rem]">{inv.risk_level}</Badge>
-                      {applied && (
-                        <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-200 text-[0.6875rem]">
-                          <CheckCircle2 className="h-6 w-6 mr-1" /> Aplicada
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {fmt(inv.invested_amount)}
-                      {inv.expected_return && ` • Retorno: ${inv.expected_return}`}
-                    </p>
-                    <p className="text-[0.6875rem] text-muted-foreground mt-0.5">{inv.rationale}</p>
-                  </div>
-                  {!applied && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs gap-1 shrink-0"
-                      onClick={() => applyAiInvestment(inv, idx)}
-                      disabled={applyingAiId === globalIdx}
-                    >
-                      {applyingAiId === globalIdx ? <Loader2 className="h-6 w-6 animate-spin" /> : <Zap className="h-6 w-6" />}
-                      Aplicar
-                    </Button>
-                  )}
+          <CardContent className="space-y-4">
+            {/* Pontos chave (findings) */}
+            {draft.key_findings.length > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85 mb-2">
+                  Pontos chave identificados
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {draft.key_findings.map((f, i) => {
+                    const tone =
+                      f.kind === "atencao"
+                        ? "border-amber-500/35 bg-amber-500/[0.06] text-amber-700 dark:text-amber-300"
+                        : f.kind === "oportunidade"
+                          ? "border-accent/30 bg-accent/[0.05] text-accent"
+                          : "border-success/30 bg-success/[0.05] text-success";
+                    const label =
+                      f.kind === "atencao" ? "Atenção" : f.kind === "oportunidade" ? "Oportunidade" : "Ponto forte";
+                    return (
+                      <div key={i} className={`rounded-lg border px-2.5 py-2 ${tone}`}>
+                        <p className="text-[9.5px] font-bold uppercase tracking-wider mb-0.5 opacity-80">{label}</p>
+                        <p className="text-[11.5px] text-foreground leading-snug">{f.text}</p>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            )}
+
+            {/* Secoes com botao de inserir */}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/85 mb-2">
+                Estrutura do rascunho ({draft.sections.length} seções)
+              </p>
+              <div className="space-y-2">
+                {draft.sections.map((sec, i) => {
+                  const inserted = insertedSections.has(i);
+                  return (
+                    <div
+                      key={i}
+                      className={`rounded-lg border p-3 transition-colors ${
+                        inserted
+                          ? "border-success/35 bg-success/[0.04]"
+                          : "border-border/60 bg-card hover:border-accent/40"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <p className="text-[12.5px] font-semibold text-foreground tracking-tight">
+                          {sec.title}
+                        </p>
+                        <Button
+                          size="sm"
+                          variant={inserted ? "ghost" : "outline"}
+                          className="gap-1 h-7 text-[11px] shrink-0"
+                          onClick={() => insertSection(i)}
+                          disabled={inserted}
+                        >
+                          {inserted ? (
+                            <>
+                              <CheckCircle2 className="h-3 w-3 text-success" />
+                              Inserida
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="h-3 w-3" />
+                              Inserir
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <div
+                        className="text-[11.5px] text-muted-foreground leading-relaxed prose-sm max-w-none [&_p]:mb-1.5 [&_strong]:text-foreground [&_strong]:font-semibold"
+                        dangerouslySetInnerHTML={{ __html: sec.content }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -953,3 +943,29 @@ Exemplos:
 });
 
 NoteEditor.displayName = "NoteEditor";
+
+// V9: botoes da toolbar de formatacao
+const ToolbarBtn = ({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) => (
+  <button
+    type="button"
+    onMouseDown={(e) => e.preventDefault()} // nao perde o foco do editor
+    onClick={onClick}
+    title={label}
+    aria-label={label}
+    className="h-7 w-7 inline-flex items-center justify-center rounded text-foreground/70 hover:text-foreground hover:bg-muted/60 transition-colors"
+  >
+    {children}
+  </button>
+);
+
+const ToolbarSep = () => (
+  <span aria-hidden className="inline-block h-4 w-px bg-border/60 mx-0.5" />
+);
