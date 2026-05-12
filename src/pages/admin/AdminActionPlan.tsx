@@ -245,6 +245,15 @@ const AdminActionPlan = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
+  // Pre-popula genGoalId quando ja existe um goal_id no plano em cache
+  // (precisa ficar antes de qualquer early return para nao violar regras de hooks)
+  useEffect(() => {
+    if (plan?.ai_generated_plans && Array.isArray(plan.ai_generated_plans) && plan.ai_generated_plans.length > 0 && plan?.goal_id && !genGoalId) {
+      setGenGoalId(plan.goal_id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan?.goal_id, plan?.ai_generated_plans]);
+
   // ── Computado ─────────────────────────────────────
   const completed = items.filter((i) => i.status === "concluido").length;
   const total = items.length;
@@ -505,14 +514,6 @@ const AdminActionPlan = () => {
   const hasCachedPlans = cachedPlans.length > 0;
   const showInlinePlans = !hasActivePlan && hasCachedPlans;
   const targetGoal = plan?.goal_id ? goalsList.find((g) => g.id === plan.goal_id) : null;
-
-  // Pre-popula genGoalId quando o cache existe (para que applyPlan funcione)
-  useEffect(() => {
-    if (hasCachedPlans && plan?.goal_id && !genGoalId) {
-      setGenGoalId(plan.goal_id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasCachedPlans, plan?.goal_id]);
 
   return (
     <div className="space-y-6">
