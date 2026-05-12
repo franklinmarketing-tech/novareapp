@@ -183,7 +183,7 @@ const AdminClientLayout = () => {
           </div>
         </div>
 
-        {/* V9: Jornada da Consultoria — cards 3+3 com setas de sequencia */}
+        {/* V9: Jornada da Consultoria — stepper consultivo 3+3 */}
         {(() => {
           const completed = completedByStatus[clientStatus] || [];
 
@@ -196,44 +196,53 @@ const AdminClientLayout = () => {
 
           const cardClasses = (state: JourneyState) =>
             cn(
-              "group relative flex flex-col items-center justify-center gap-2 w-full h-full",
-              "rounded-2xl px-3 py-4 transition-all duration-300 ease-out",
-              "min-w-0 text-center select-none",
+              "group relative flex flex-col items-center justify-center gap-3.5 w-full h-full",
+              "rounded-2xl px-4 py-5 transition-all duration-300 ease-out overflow-hidden",
+              "min-h-[136px] min-w-0 text-center select-none",
               state === "active" &&
-                "bg-gradient-to-br from-accent via-accent to-accent/85 text-accent-foreground shadow-[0_10px_30px_-10px_hsl(var(--accent)/0.55)] ring-2 ring-accent/30 scale-[1.02]",
+                "bg-gradient-to-br from-accent via-accent to-accent/90 text-accent-foreground shadow-[0_14px_36px_-12px_hsl(var(--accent)/0.55)]",
               state === "completed" &&
-                "bg-card border-2 border-success/45 text-foreground hover:border-success/65 hover:-translate-y-0.5 hover:shadow-md",
+                "bg-card border border-success/35 text-foreground hover:border-success/60 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_hsl(var(--success)/0.4)]",
               state === "available" &&
-                "bg-card border border-border/60 text-foreground hover:border-accent/50 hover:bg-muted/30 hover:-translate-y-0.5 hover:shadow-sm",
+                "bg-card border border-border/60 text-foreground hover:border-accent/45 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-12px_hsl(var(--foreground)/0.18)]",
               state === "locked" &&
-                "bg-muted/25 border border-border/30 text-muted-foreground/40 cursor-not-allowed",
+                "bg-muted/20 border border-border/30 text-muted-foreground/40 cursor-not-allowed",
             );
 
-          const badgeClasses = (state: JourneyState) =>
+          const stepLabelClasses = (state: JourneyState) =>
             cn(
-              "absolute -top-2.5 left-1/2 -translate-x-1/2",
-              "h-6 w-6 rounded-full flex items-center justify-center",
-              "text-[10px] font-bold ring-2 ring-background z-10 shadow-sm",
-              state === "active" && "bg-accent-foreground text-accent",
-              state === "completed" && "bg-success text-white",
-              state === "available" && "bg-foreground/85 text-background",
-              state === "locked" && "bg-muted text-muted-foreground/40",
+              "text-[9px] font-semibold uppercase tracking-[0.18em] leading-none",
+              state === "active" && "text-accent-foreground/75",
+              state === "completed" && "text-success",
+              state === "available" && "text-muted-foreground/75",
+              state === "locked" && "text-muted-foreground/40",
+            );
+
+          const iconBoxClasses = (state: JourneyState) =>
+            cn(
+              "h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300",
+              state === "active" && "bg-accent-foreground/15 backdrop-blur-sm ring-1 ring-accent-foreground/20",
+              state === "completed" && "bg-success/10 ring-1 ring-success/20 group-hover:bg-success/15",
+              state === "available" && "bg-muted/50 ring-1 ring-border/40 group-hover:bg-accent/10 group-hover:ring-accent/30",
+              state === "locked" && "bg-muted/40 ring-1 ring-border/30",
             );
 
           const iconClasses = (state: JourneyState) =>
             cn(
-              "h-6 w-6 transition-transform duration-300",
-              state === "active" && "scale-110",
+              "h-5 w-5 transition-colors duration-300",
+              state === "active" && "text-accent-foreground",
               state === "completed" && "text-success",
-              state === "available" && "text-muted-foreground group-hover:text-foreground",
-              state === "locked" && "opacity-50",
+              state === "available" && "text-foreground/70 group-hover:text-accent",
+              state === "locked" && "text-muted-foreground/40",
             );
 
-          const labelClasses = (state: JourneyState) =>
+          const titleClasses = (state: JourneyState) =>
             cn(
-              "text-[11px] sm:text-xs font-semibold leading-tight w-full tracking-tight",
+              "text-sm font-semibold tracking-tight leading-tight",
               state === "active" && "text-accent-foreground",
-              state === "locked" && "text-muted-foreground/50",
+              state === "completed" && "text-foreground",
+              state === "available" && "text-foreground",
+              state === "locked" && "text-muted-foreground/55",
             );
 
           const renderCard = (tab: (typeof tabs)[number]) => {
@@ -249,19 +258,48 @@ const AdminClientLayout = () => {
                 {({ isActive }) => {
                   const state = stateOf(tab.path, isActive && !isLocked);
                   const Icon = tab.icon;
+                  const stepText =
+                    state === "completed"
+                      ? "Concluído"
+                      : state === "locked"
+                        ? "Bloqueado"
+                        : `Etapa ${String(tab.step).padStart(2, "0")}`;
                   return (
                     <div className={cardClasses(state)}>
-                      <div className={badgeClasses(state)}>
-                        {state === "completed" ? (
-                          <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                        ) : state === "locked" ? (
-                          <Lock className="h-3 w-3" strokeWidth={2.5} />
-                        ) : (
-                          tab.step
-                        )}
+                      {/* Brilho decorativo no card ativo */}
+                      {state === "active" && (
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-accent-foreground/10 blur-2xl"
+                        />
+                      )}
+                      {/* Chip de status no canto superior direito */}
+                      {state === "completed" && (
+                        <span className="absolute top-2.5 right-2.5 inline-flex items-center justify-center h-5 w-5 rounded-full bg-success/15 ring-1 ring-success/30">
+                          <Check className="h-3 w-3 text-success" strokeWidth={3} />
+                        </span>
+                      )}
+                      {state === "locked" && (
+                        <span className="absolute top-2.5 right-2.5 inline-flex items-center justify-center h-5 w-5 rounded-full bg-muted/60">
+                          <Lock className="h-2.5 w-2.5 text-muted-foreground/55" strokeWidth={2.5} />
+                        </span>
+                      )}
+
+                      <span className={stepLabelClasses(state)}>{stepText}</span>
+
+                      <div className={iconBoxClasses(state)}>
+                        <Icon className={iconClasses(state)} strokeWidth={1.75} />
                       </div>
-                      <Icon className={iconClasses(state)} />
-                      <span className={labelClasses(state)}>{tab.label}</span>
+
+                      <span className={titleClasses(state)}>{tab.label}</span>
+
+                      {/* Underline de progresso no card ativo */}
+                      {state === "active" && (
+                        <span
+                          aria-hidden
+                          className="absolute bottom-0 inset-x-6 h-[2px] rounded-full bg-accent-foreground/40"
+                        />
+                      )}
                     </div>
                   );
                 }}
@@ -269,54 +307,77 @@ const AdminClientLayout = () => {
             );
           };
 
-          const HArrow = () => (
-            <div className="shrink-0 self-center flex items-center justify-center px-1">
+          // Seta horizontal entre cards (estilo "fluxo")
+          const HArrow = ({ flowing = false }: { flowing?: boolean }) => (
+            <div className="shrink-0 self-center flex items-center justify-center w-6 lg:w-8" aria-hidden>
               <ChevronRight
-                className="h-5 w-5 text-muted-foreground/45"
+                className={cn(
+                  "h-5 w-5 transition-colors",
+                  flowing ? "text-accent/70" : "text-muted-foreground/35",
+                )}
                 strokeWidth={2.5}
               />
             </div>
           );
 
+          // Cada seta horizontal "flui" se o card anterior estiver concluído
+          const flowsAfter = (path: string) => completed.includes(path);
+          const verticalFlows =
+            completed.includes("parecer") || completed.includes("plano-acao");
+
           return (
             <div className="mb-7">
-              {/* Desktop / tablet: 2 linhas de 3 cards com seta vertical no centro */}
+              {/* Desktop / tablet: 2 linhas de 3 cards com bridge vertical */}
               <div className="hidden md:block">
                 <div className="flex items-stretch gap-2 lg:gap-3">
                   {renderCard(tabs[0])}
-                  <HArrow />
+                  <HArrow flowing={flowsAfter("onboarding")} />
                   {renderCard(tabs[1])}
-                  <HArrow />
+                  <HArrow flowing={flowsAfter("diagnostico")} />
                   {renderCard(tabs[2])}
                 </div>
-                <div className="flex justify-center my-3" aria-hidden>
-                  <div className="flex flex-col items-center gap-0.5">
-                    <div className="h-3 w-px bg-muted-foreground/30" />
+
+                {/* Bridge vertical entre as duas linhas */}
+                <div className="flex justify-center py-3" aria-hidden>
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={cn(
+                        "h-5 w-[2px] rounded-full transition-colors",
+                        verticalFlows ? "bg-accent/70" : "bg-muted-foreground/25",
+                      )}
+                    />
                     <ChevronDown
-                      className="h-5 w-5 text-muted-foreground/55"
+                      className={cn(
+                        "h-5 w-5 -mt-1 transition-colors",
+                        verticalFlows ? "text-accent/70" : "text-muted-foreground/45",
+                      )}
                       strokeWidth={2.5}
                     />
                   </div>
                 </div>
+
                 <div className="flex items-stretch gap-2 lg:gap-3">
                   {renderCard(tabs[3])}
-                  <HArrow />
+                  <HArrow flowing={flowsAfter("plano-acao")} />
                   {renderCard(tabs[4])}
-                  <HArrow />
+                  <HArrow flowing={flowsAfter("acompanhamento")} />
                   {renderCard(tabs[5])}
                 </div>
               </div>
 
-              {/* Mobile: scroll horizontal continuo dos 6 cards */}
+              {/* Mobile: stepper horizontal compacto */}
               <div className="md:hidden -mx-4 px-4">
                 <div className="flex items-stretch gap-2 overflow-x-auto pb-3 scrollbar-none overscroll-x-contain">
                   {tabs.map((tab, i) => (
                     <Fragment key={tab.path}>
-                      <div className="shrink-0 w-[118px]">{renderCard(tab)}</div>
+                      <div className="shrink-0 w-[132px]">{renderCard(tab)}</div>
                       {i < tabs.length - 1 && (
                         <div className="shrink-0 self-center">
                           <ChevronRight
-                            className="h-4 w-4 text-muted-foreground/45"
+                            className={cn(
+                              "h-4 w-4",
+                              flowsAfter(tab.path) ? "text-accent/70" : "text-muted-foreground/35",
+                            )}
                             strokeWidth={2.5}
                           />
                         </div>
