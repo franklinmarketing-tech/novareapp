@@ -262,40 +262,37 @@ const AdminClientLayout = () => {
                 return {
                   background:
                     "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 55%, hsl(var(--success) / 0.08) 100%)",
-                  border: "1px solid hsl(var(--success) / 0.32)",
-                  borderTopColor: "hsl(var(--success) / 0.55)",
-                  borderLeftColor: "hsl(var(--success) / 0.4)",
+                  border: "1.5px solid hsl(var(--success) / 0.55)",
+                  borderTopColor: "hsl(var(--success) / 0.7)",
+                  borderLeftColor: "hsl(var(--success) / 0.62)",
                   boxShadow: [
                     "0 1px 0 hsl(0 0% 100% / 0.7) inset",
-                    "0 -1px 0 hsl(var(--success) / 0.08) inset",
-                    "0 0 0 1px hsl(var(--success) / 0.12)",
-                    "0 2px 4px -1px hsl(var(--success) / 0.12)",
+                    "0 -1px 0 hsl(var(--success) / 0.12) inset",
+                    "0 2px 4px -1px hsl(var(--success) / 0.15)",
                     "0 8px 18px -6px hsl(var(--success) / 0.22)",
                     "0 14px 28px -12px hsl(var(--success) / 0.18)",
-                    "0 22px 40px -18px hsl(0 0% 0% / 0.1)",
                   ].join(", "),
                 };
               case "available":
                 return {
                   background:
                     "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, hsl(var(--muted) / 0.35) 100%)",
-                  border: "1px solid hsl(var(--border) / 0.55)",
-                  borderTopColor: "hsl(var(--border) / 0.9)",
-                  borderLeftColor: "hsl(var(--border) / 0.7)",
+                  border: "1.5px solid hsl(var(--foreground) / 0.22)",
+                  borderTopColor: "hsl(var(--foreground) / 0.3)",
+                  borderLeftColor: "hsl(var(--foreground) / 0.24)",
                   boxShadow: [
                     "0 1px 0 hsl(0 0% 100% / 0.8) inset",
-                    "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
-                    "0 1px 2px hsl(0 0% 0% / 0.04)",
-                    "0 4px 8px -2px hsl(0 0% 0% / 0.06)",
-                    "0 10px 20px -6px hsl(0 0% 0% / 0.08)",
-                    "0 18px 36px -14px hsl(0 0% 0% / 0.08)",
+                    "0 -1px 0 hsl(0 0% 0% / 0.08) inset",
+                    "0 1px 2px hsl(0 0% 0% / 0.06)",
+                    "0 4px 8px -2px hsl(0 0% 0% / 0.08)",
+                    "0 10px 20px -6px hsl(0 0% 0% / 0.1)",
                   ].join(", "),
                 };
               case "locked":
                 return {
                   background:
                     "linear-gradient(145deg, hsl(var(--muted) / 0.4) 0%, hsl(var(--muted) / 0.18) 100%)",
-                  border: "1px solid hsl(var(--border) / 0.35)",
+                  border: "1.5px solid hsl(var(--foreground) / 0.14)",
                   boxShadow: [
                     "0 1px 2px hsl(0 0% 0% / 0.06) inset",
                     "0 2px 4px hsl(0 0% 0% / 0.04) inset",
@@ -307,12 +304,12 @@ const AdminClientLayout = () => {
 
           const cardClasses = (state: JourneyState) =>
             cn(
-              "group relative flex items-center gap-3 w-full h-full",
-              "rounded-xl px-3.5 py-2.5 transition-all duration-300 ease-out overflow-hidden",
-              "min-h-[66px] min-w-0 select-none will-change-transform",
+              "group relative flex items-center gap-2.5 w-full h-full",
+              "rounded-lg px-3 py-2 transition-all duration-300 ease-out overflow-hidden",
+              "min-h-[58px] min-w-0 select-none will-change-transform",
               state === "active" && "text-accent-foreground -translate-y-0.5",
-              state === "completed" && "text-foreground hover:-translate-y-1 hover:scale-[1.01]",
-              state === "available" && "text-foreground hover:-translate-y-1 hover:scale-[1.01] cursor-pointer",
+              state === "completed" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01]",
+              state === "available" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01] cursor-pointer",
               state === "locked" && "text-muted-foreground/40 cursor-not-allowed",
             );
 
@@ -549,7 +546,7 @@ const AdminClientLayout = () => {
 
           // Seta horizontal premium entre cards
           const HArrow = ({ flowing = false }: { flowing?: boolean }) => (
-            <div className="shrink-0 self-center flex items-center justify-center w-7 lg:w-9" aria-hidden>
+            <div className="shrink-0 self-center flex items-center justify-center w-5 lg:w-6 relative" aria-hidden>
               {/* Trilho horizontal opcional (apenas quando flowing) */}
               {flowing && (
                 <div
@@ -561,44 +558,42 @@ const AdminClientLayout = () => {
                 />
               )}
               <div
-                className="relative h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300"
+                className="relative h-6 w-6 rounded-full flex items-center justify-center transition-all duration-300"
                 style={
                   flowing
                     ? {
                         background:
                           "linear-gradient(145deg, hsl(var(--accent) / 0.22) 0%, hsl(var(--accent) / 0.08) 100%)",
-                        border: "1px solid hsl(var(--accent) / 0.35)",
-                        borderTopColor: "hsl(var(--accent) / 0.55)",
+                        border: "1px solid hsl(var(--accent) / 0.45)",
+                        borderTopColor: "hsl(var(--accent) / 0.6)",
                         boxShadow: [
                           "0 1px 0 hsl(0 0% 100% / 0.5) inset",
                           "0 -1px 0 hsl(var(--accent) / 0.15) inset",
-                          "0 2px 4px -1px hsl(var(--accent) / 0.2)",
-                          "0 4px 10px -3px hsl(var(--accent) / 0.18)",
+                          "0 2px 4px -1px hsl(var(--accent) / 0.22)",
                           "0 0 0 1px hsl(var(--accent) / 0.12)",
                         ].join(", "),
                       }
                     : {
                         background:
                           "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.4) 100%)",
-                        border: "1px solid hsl(var(--border) / 0.55)",
-                        borderTopColor: "hsl(var(--border) / 0.85)",
+                        border: "1px solid hsl(var(--foreground) / 0.18)",
+                        borderTopColor: "hsl(var(--foreground) / 0.24)",
                         boxShadow: [
                           "0 1px 0 hsl(0 0% 100% / 0.6) inset",
-                          "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
-                          "0 1px 2px hsl(0 0% 0% / 0.05)",
-                          "0 3px 6px -2px hsl(0 0% 0% / 0.06)",
+                          "0 -1px 0 hsl(0 0% 0% / 0.05) inset",
+                          "0 1px 2px hsl(0 0% 0% / 0.06)",
                         ].join(", "),
                       }
                 }
               >
                 <ChevronRight
                   className={cn(
-                    "h-4 w-4 transition-all",
+                    "h-3 w-3 transition-all",
                     flowing
                       ? "text-accent drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
-                      : "text-muted-foreground/55",
+                      : "text-muted-foreground/65",
                   )}
-                  strokeWidth={2.5}
+                  strokeWidth={2.75}
                 />
               </div>
             </div>
@@ -611,22 +606,22 @@ const AdminClientLayout = () => {
 
           return (
             <div
-              className="relative mb-5 rounded-2xl px-3 py-3 lg:px-4 lg:py-4"
+              className="relative mb-4 rounded-xl px-2 py-2 lg:px-2.5 lg:py-2.5"
               style={{
                 background:
                   "linear-gradient(145deg, hsl(var(--muted) / 0.25) 0%, hsl(var(--card)) 60%, hsl(var(--muted) / 0.18) 100%)",
-                border: "1px solid hsl(var(--border) / 0.45)",
-                borderTopColor: "hsl(var(--border) / 0.75)",
+                border: "1px solid hsl(var(--foreground) / 0.12)",
+                borderTopColor: "hsl(var(--foreground) / 0.18)",
                 boxShadow: [
                   "0 1px 0 hsl(0 0% 100% / 0.55) inset",
                   "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
-                  "0 1px 2px hsl(0 0% 0% / 0.03)",
-                  "0 6px 14px -8px hsl(0 0% 0% / 0.06)",
+                  "0 1px 2px hsl(0 0% 0% / 0.04)",
+                  "0 4px 10px -6px hsl(0 0% 0% / 0.08)",
                 ].join(", "),
               }}
             >
               {/* Label do menu */}
-              <div className="hidden md:flex items-center gap-2 mb-3 pl-1">
+              <div className="hidden md:flex items-center gap-2 mb-2 pl-1">
                 <span className="h-[2px] w-3 rounded-full bg-accent/60" />
                 <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-muted-foreground/85">
                   Jornada da Consultoria
@@ -636,7 +631,7 @@ const AdminClientLayout = () => {
 
               {/* Desktop / tablet: 2 linhas de 3 cards com bridge vertical */}
               <div className="hidden md:block">
-                <div className="flex items-stretch gap-2 lg:gap-2.5">
+                <div className="flex items-stretch gap-1 lg:gap-1.5">
                   {renderCard(tabs[0])}
                   <HArrow flowing={flowsAfter("onboarding")} />
                   {renderCard(tabs[1])}
@@ -644,65 +639,57 @@ const AdminClientLayout = () => {
                   {renderCard(tabs[2])}
                 </div>
 
-                {/* Bridge vertical 3D entre as duas linhas */}
-                <div className="flex justify-center py-2.5" aria-hidden>
+                {/* Bridge vertical compacto entre as duas linhas */}
+                <div className="flex justify-center py-1" aria-hidden>
                   <div className="flex flex-col items-center">
                     <div
-                      className="h-5 w-[2.5px] rounded-full transition-colors"
+                      className="h-2.5 w-[2px] rounded-full transition-colors"
                       style={{
                         background: verticalFlows
-                          ? "linear-gradient(180deg, hsl(var(--accent) / 0.75) 0%, hsl(var(--accent) / 0.4) 100%)"
-                          : "linear-gradient(180deg, hsl(var(--muted-foreground) / 0.35) 0%, hsl(var(--muted-foreground) / 0.15) 100%)",
+                          ? "linear-gradient(180deg, hsl(var(--accent) / 0.7) 0%, hsl(var(--accent) / 0.35) 100%)"
+                          : "linear-gradient(180deg, hsl(var(--foreground) / 0.3) 0%, hsl(var(--foreground) / 0.12) 100%)",
                         boxShadow: verticalFlows
-                          ? "0 0 8px hsl(var(--accent) / 0.4), 0 0 16px hsl(var(--accent) / 0.2)"
+                          ? "0 0 6px hsl(var(--accent) / 0.4)"
                           : undefined,
                       }}
                     />
                     <div
-                      className="h-7 w-7 -mt-1 rounded-full flex items-center justify-center transition-all"
+                      className="h-5 w-5 -mt-0.5 rounded-full flex items-center justify-center transition-all"
                       style={
                         verticalFlows
                           ? {
                               background:
                                 "linear-gradient(145deg, hsl(var(--accent) / 0.25) 0%, hsl(var(--accent) / 0.08) 100%)",
-                              border: "1px solid hsl(var(--accent) / 0.38)",
+                              border: "1px solid hsl(var(--accent) / 0.45)",
                               borderTopColor: "hsl(var(--accent) / 0.6)",
                               boxShadow: [
                                 "0 1px 0 hsl(0 0% 100% / 0.5) inset",
-                                "0 -1px 0 hsl(var(--accent) / 0.15) inset",
                                 "0 2px 5px -1px hsl(var(--accent) / 0.25)",
-                                "0 6px 14px -4px hsl(var(--accent) / 0.22)",
-                                "0 0 0 1px hsl(var(--accent) / 0.15)",
                               ].join(", "),
                             }
                           : {
                               background:
                                 "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.4) 100%)",
-                              border: "1px solid hsl(var(--border) / 0.55)",
-                              borderTopColor: "hsl(var(--border) / 0.85)",
-                              boxShadow: [
-                                "0 1px 0 hsl(0 0% 100% / 0.6) inset",
-                                "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
-                                "0 1px 2px hsl(0 0% 0% / 0.05)",
-                                "0 3px 6px -2px hsl(0 0% 0% / 0.07)",
-                              ].join(", "),
+                              border: "1px solid hsl(var(--foreground) / 0.2)",
+                              borderTopColor: "hsl(var(--foreground) / 0.26)",
+                              boxShadow: "0 1px 0 hsl(0 0% 100% / 0.55) inset, 0 1px 2px hsl(0 0% 0% / 0.05)",
                             }
                       }
                     >
                       <ChevronDown
                         className={cn(
-                          "h-3.5 w-3.5 transition-all",
+                          "h-3 w-3 transition-all",
                           verticalFlows
                             ? "text-accent drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
-                            : "text-muted-foreground/60",
+                            : "text-muted-foreground/65",
                         )}
-                        strokeWidth={2.5}
+                        strokeWidth={2.75}
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-stretch gap-2 lg:gap-2.5">
+                <div className="flex items-stretch gap-1 lg:gap-1.5">
                   {renderCard(tabs[3])}
                   <HArrow flowing={flowsAfter("plano-acao")} />
                   {renderCard(tabs[4])}
