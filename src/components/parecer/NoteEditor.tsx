@@ -1,4 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,14 +30,25 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import DOMPurify from "dompurify";
+import {
+  fmtBRL,
+  SOURCE_CONFIG,
+  type SnapshotChip,
+} from "./snapshotTypes";
 
 interface Note {
   id: string;
   client_id: string;
   title: string;
   content: string;
+  snapshots?: SnapshotChip[];
   created_at: string;
   updated_at: string;
+}
+
+export interface NoteEditorHandle {
+  /** Insere um chip de referencia no editor na posicao do cursor */
+  insertChip: (chip: SnapshotChip) => void;
 }
 
 interface SuggestedAction {
@@ -73,7 +91,7 @@ interface Props {
   clientId: string;
 }
 
-export const NoteEditor = ({ clientId }: Props) => {
+export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref) => {
   const { toast } = useToast();
   const editorRef = useRef<HTMLDivElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -138,22 +156,23 @@ export const NoteEditor = ({ clientId }: Props) => {
   };
 
   const saveNote = async () => {
-    if (!content.trim()) {
+    if (!content.trim() && !getPlainText()) {
       toast({ title: "Escreva algo antes de salvar", variant: "destructive" });
       return;
     }
     setSaving(true);
     try {
+      const snapshots = extractSnapshots();
       if (activeNote) {
         await supabase
           .from("consultant_notes")
-          .update({ title, content })
+          .update({ title, content, snapshots: snapshots as any })
           .eq("id", activeNote.id);
         toast({ title: "Parecer atualizado" });
       } else {
         const { data } = await supabase
           .from("consultant_notes")
-          .insert({ client_id: clientId, title, content })
+          .insert({ client_id: clientId, title, content, snapshots: snapshots as any })
           .select()
           .single();
         if (data) setActiveNote(data as Note);
@@ -173,25 +192,119 @@ export const NoteEditor = ({ clientId }: Props) => {
     toast({ title: "Parecer excluído" });
   };
 
-  // Sync contentEditable with content state
+  // V9: content agora carrega HTML do editor (preserva chips de referencia).
+  // Notas legadas que vinham como texto plano continuam renderizando porque
+  // o contentEditable aceita texto puro como nodos de texto.
   const getEditorText = useCallback(() => {
-    if (!editorRef.current) return "";
-    // Extract text + preserve image markdown
-    const clone = editorRef.current.cloneNode(true) as HTMLElement;
-    // Replace img elements with their markdown equivalent
-    clone.querySelectorAll("img").forEach((img) => {
-      const alt = img.getAttribute("alt") || "image";
-      const src = img.getAttribute("src") || "";
-      const text = document.createTextNode(`![${alt}](${src})`);
-      img.parentNode?.replaceChild(text, img);
-    });
-    return clone.innerText || "";
+    return editorRef.current?.innerHTML ?? "";
+  }, []);
+
+  // Extrai texto puro (sem chips e sem imagens) para enviar a IA
+  const getPlainText = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) return "";
+    const clone = editor.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll(".parecer-chip, img").forEach((el) => el.remove());
+    return (clone.innerText || clone.textContent || "").trim();
   }, []);
 
   const handleEditorInput = useCallback(() => {
-    const text = getEditorText();
-    setContent(text);
+    setContent(getEditorText());
   }, [getEditorText]);
+
+  // V9: Insere um chip de referencia na posicao do cursor
+  const insertChip = useCallback((chip: SnapshotChip) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const cfg = SOURCE_CONFIG[chip.source];
+    const valuePart =
+      chip.value != null && chip.value > 0 ? ` · ${fmtBRL(chip.value)}` : "";
+    const countPart =
+      chip.kind === "group" && typeof chip.meta?.count === "number"
+        ? ` (${chip.meta.count})`
+        : "";
+    const text = `${cfg.emoji} ${chip.label}${countPart}${valuePart}`;
+
+    const chipEl = document.createElement("span");
+    chipEl.className = "parecer-chip";
+    chipEl.setAttribute("contenteditable", "false");
+    chipEl.setAttribute("data-chip", JSON.stringify(chip));
+    chipEl.setAttribute("data-chip-id", chip.chipId);
+    chipEl.setAttribute("data-chip-source", chip.source);
+
+    const labelEl = document.createElement("span");
+    labelEl.className = "parecer-chip-label";
+    labelEl.textContent = text;
+
+    const removeEl = document.createElement("span");
+    removeEl.className = "parecer-chip-remove";
+    removeEl.setAttribute("role", "button");
+    removeEl.setAttribute("tabindex", "0");
+    removeEl.setAttribute("aria-label", "Remover referência");
+    removeEl.textContent = "×";
+
+    chipEl.appendChild(labelEl);
+    chipEl.appendChild(removeEl);
+
+    editor.focus();
+    const selection = window.getSelection();
+    const isSelectionInsideEditor =
+      selection && selection.rangeCount > 0 && editor.contains(selection.anchorNode);
+
+    if (isSelectionInsideEditor) {
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(chipEl);
+      const space = document.createTextNode(" ");
+      chipEl.parentNode?.insertBefore(space, chipEl.nextSibling);
+      range.setStartAfter(space);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    } else {
+      // Sem cursor dentro do editor: acrescenta no final
+      editor.appendChild(chipEl);
+      editor.appendChild(document.createTextNode(" "));
+    }
+
+    handleEditorInput();
+  }, [handleEditorInput]);
+
+  // V9: extrai os chips atuais do DOM para persistir como snapshots
+  const extractSnapshots = useCallback((): SnapshotChip[] => {
+    const editor = editorRef.current;
+    if (!editor) return [];
+    const chips = editor.querySelectorAll<HTMLSpanElement>(".parecer-chip[data-chip]");
+    const out: SnapshotChip[] = [];
+    chips.forEach((c) => {
+      try {
+        const raw = c.getAttribute("data-chip");
+        if (raw) out.push(JSON.parse(raw) as SnapshotChip);
+      } catch {
+        /* ignora chip corrompido */
+      }
+    });
+    return out;
+  }, []);
+
+  // V9: click no botao "×" do chip remove a referencia
+  const handleEditorClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains("parecer-chip-remove")) {
+        e.preventDefault();
+        e.stopPropagation();
+        const chip = target.closest(".parecer-chip");
+        chip?.remove();
+        handleEditorInput();
+      }
+    },
+    [handleEditorInput],
+  );
+
+  // Expoe insertChip para o pai (AdminParecer + AlinhamentoConsultivo)
+  useImperativeHandle(ref, () => ({ insertChip }), [insertChip]);
 
   const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLDivElement>) => {
     const items = e.clipboardData?.items;
@@ -263,7 +376,23 @@ export const NoteEditor = ({ clientId }: Props) => {
       // Sanitize before injecting to prevent stored XSS via notes
       const safeHtml = DOMPurify.sanitize(htmlContent, {
         ALLOWED_TAGS: ["img", "br", "p", "div", "b", "i", "u", "strong", "em", "ul", "ol", "li", "a", "span"],
-        ALLOWED_ATTR: ["src", "alt", "style", "href", "target", "rel"],
+        ALLOWED_ATTR: [
+          "src",
+          "alt",
+          "style",
+          "href",
+          "target",
+          "rel",
+          // V9: chips de referencia do parecer
+          "class",
+          "contenteditable",
+          "data-chip",
+          "data-chip-id",
+          "data-chip-source",
+          "role",
+          "tabindex",
+          "aria-label",
+        ],
         ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
       });
       if (editorRef.current.innerHTML !== safeHtml) {
@@ -276,9 +405,10 @@ export const NoteEditor = ({ clientId }: Props) => {
     setAnalyzing(true);
     setShowSuggestions(false);
     try {
-      const textOnly = content.replace(/!\[[^\]]*\]\([^)]+\)/g, "").trim();
+      const textOnly = getPlainText();
+      const snapshots = extractSnapshots();
       const { data, error } = await supabase.functions.invoke("analyze-notes", {
-        body: { content: textOnly || null, clientId },
+        body: { content: textOnly || null, clientId, snapshots },
       });
       if (error) throw error;
       setSuggestedActions(
@@ -303,11 +433,12 @@ export const NoteEditor = ({ clientId }: Props) => {
     setContent(newContent);
 
     try {
+      const snapshots = extractSnapshots();
       if (activeNote) {
         // Atualiza nota existente
         const { error } = await supabase
           .from("consultant_notes")
-          .update({ title: title || activeNote.title, content: newContent })
+          .update({ title: title || activeNote.title, content: newContent, snapshots: snapshots as any })
           .eq("id", activeNote.id);
         if (error) throw error;
         setActiveNote({ ...activeNote, title: title || activeNote.title, content: newContent });
@@ -321,7 +452,7 @@ export const NoteEditor = ({ clientId }: Props) => {
         const noteTitle = title.trim() || `Parecer ${format(new Date(), "dd/MM/yyyy")}`;
         const { data: created, error } = await supabase
           .from("consultant_notes")
-          .insert({ client_id: clientId, title: noteTitle, content: newContent })
+          .insert({ client_id: clientId, title: noteTitle, content: newContent, snapshots: snapshots as any })
           .select()
           .single();
         if (error) throw error;
@@ -639,6 +770,7 @@ export const NoteEditor = ({ clientId }: Props) => {
               contentEditable
               onInput={handleEditorInput}
               onPaste={handlePaste}
+              onClick={handleEditorClick}
               data-placeholder="Escreva suas observações e recomendações sobre o cliente aqui...
 
 Exemplos:
@@ -658,8 +790,8 @@ Exemplos:
                 </div>
               </div>
             )}
-            <div className="absolute bottom-2 right-3 text-xs text-muted-foreground/50">
-              {content.length} caracteres
+            <div className="absolute bottom-2 right-3 text-xs text-muted-foreground/50 pointer-events-none">
+              {getPlainText().split(/\s+/).filter(Boolean).length} palavras
             </div>
           </div>
         </CardContent>
@@ -781,4 +913,6 @@ Exemplos:
       )}
     </div>
   );
-};
+});
+
+NoteEditor.displayName = "NoteEditor";

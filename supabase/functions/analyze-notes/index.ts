@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     }
 
     // ── INPUT VALIDATION ──
-    const { content, clientId } = await req.json();
+    const { content, clientId, snapshots: rawSnapshots } = await req.json();
     if (!clientId || typeof clientId !== "string" || clientId.length > 100) {
       return new Response(JSON.stringify({ error: "clientId inválido" }), {
         status: 400,
@@ -74,6 +74,16 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // V9: snapshots = referencias do onboarding marcadas pelo consultor no parecer
+    const snapshots: Array<{
+      chipId?: string;
+      source?: string;
+      kind?: string;
+      label?: string;
+      value?: number;
+      meta?: Record<string, unknown>;
+    }> = Array.isArray(rawSnapshots) ? rawSnapshots.slice(0, 60) : [];
 
     // Fetch client financial summary using service role
     const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -141,10 +151,42 @@ ${goals.map(g => `- ${g.description}: R$ ${Number(g.target_amount || 0).toFixed(
 `.trim();
 
     const hasNotes = content && content.trim().length > 0;
+    const hasSnapshots = snapshots.length > 0;
+
+    const fmtBR = (n?: number) =>
+      typeof n === "number"
+        ? `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+        : "";
+
+    const snapshotsBlock = hasSnapshots
+      ? `
+
+🎯 ITENS MARCADOS PELO CONSULTOR NO PARECER (foco prioritário):
+O consultor inseriu referências explícitas a estes dados do onboarding ao escrever o parecer. Trate-os como pontos centrais da análise — as ações sugeridas devem endereçar diretamente estes itens.
+
+${snapshots
+  .map((s, i) => {
+    const label = String(s.label ?? "").slice(0, 200);
+    const valPart = s.value && s.value > 0 ? ` · ${fmtBR(Number(s.value))}` : "";
+    const sourceLabel =
+      {
+        client: "Cliente",
+        income: "Renda",
+        expense: "Despesa",
+        debt: "Dívida",
+        asset: "Patrimônio",
+        insurance: "Proteção",
+        goal: "Objetivo",
+      }[String(s.source ?? "")] || s.source || "Item";
+    const kindLabel = s.kind === "group" ? " (categoria inteira)" : "";
+    return `${i + 1}. [${sourceLabel}${kindLabel}] ${label}${valPart}`;
+  })
+  .join("\n")}`
+      : "";
 
     const systemPrompt = `Você é um consultor financeiro sênior especializado em planejamento financeiro pessoal no Brasil. Analise os dados financeiros do cliente${hasNotes ? " junto com as observações do consultor" : ""} e gere um plano de ação completo e personalizado.
 
-${financialSummary}
+${financialSummary}${snapshotsBlock}
 
 INSTRUÇÕES:
 - Gere entre 3 e 8 ações concretas e prioritárias
