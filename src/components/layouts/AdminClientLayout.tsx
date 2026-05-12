@@ -196,15 +196,15 @@ const AdminClientLayout = () => {
 
           const cardClasses = (state: JourneyState) =>
             cn(
-              "group relative flex flex-col items-center justify-center gap-3.5 w-full h-full",
-              "rounded-2xl px-4 py-5 transition-all duration-300 ease-out overflow-hidden",
-              "min-h-[136px] min-w-0 text-center select-none",
+              "group relative flex flex-col items-center justify-center gap-2 w-full h-full",
+              "rounded-xl px-3.5 py-3 transition-all duration-300 ease-out overflow-hidden",
+              "min-h-[104px] min-w-0 text-center select-none",
               state === "active" &&
-                "bg-gradient-to-br from-accent via-accent to-accent/90 text-accent-foreground shadow-[0_14px_36px_-12px_hsl(var(--accent)/0.55)]",
+                "bg-gradient-to-br from-accent via-accent to-accent/90 text-accent-foreground shadow-[0_10px_28px_-12px_hsl(var(--accent)/0.55)]",
               state === "completed" &&
-                "bg-card border border-success/35 text-foreground hover:border-success/60 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_hsl(var(--success)/0.4)]",
+                "bg-card border border-success/35 text-foreground hover:border-success/55 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_-12px_hsl(var(--success)/0.4)]",
               state === "available" &&
-                "bg-card border border-border/60 text-foreground hover:border-accent/45 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_-12px_hsl(var(--foreground)/0.18)]",
+                "bg-card border border-border/60 text-foreground hover:border-accent/45 hover:-translate-y-0.5 hover:shadow-[0_6px_18px_-12px_hsl(var(--foreground)/0.16)]",
               state === "locked" &&
                 "bg-muted/20 border border-border/30 text-muted-foreground/40 cursor-not-allowed",
             );
@@ -220,7 +220,7 @@ const AdminClientLayout = () => {
 
           const iconBoxClasses = (state: JourneyState) =>
             cn(
-              "h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300",
+              "h-9 w-9 rounded-lg flex items-center justify-center transition-all duration-300",
               state === "active" && "bg-accent-foreground/15 backdrop-blur-sm ring-1 ring-accent-foreground/20",
               state === "completed" && "bg-success/10 ring-1 ring-success/20 group-hover:bg-success/15",
               state === "available" && "bg-muted/50 ring-1 ring-border/40 group-hover:bg-accent/10 group-hover:ring-accent/30",
@@ -229,7 +229,7 @@ const AdminClientLayout = () => {
 
           const iconClasses = (state: JourneyState) =>
             cn(
-              "h-5 w-5 transition-colors duration-300",
+              "h-[18px] w-[18px] transition-colors duration-300",
               state === "active" && "text-accent-foreground",
               state === "completed" && "text-success",
               state === "available" && "text-foreground/70 group-hover:text-accent",
@@ -238,7 +238,7 @@ const AdminClientLayout = () => {
 
           const titleClasses = (state: JourneyState) =>
             cn(
-              "text-sm font-semibold tracking-tight leading-tight",
+              "text-[13px] font-semibold tracking-tight leading-tight",
               state === "active" && "text-accent-foreground",
               state === "completed" && "text-foreground",
               state === "available" && "text-foreground",
@@ -270,17 +270,17 @@ const AdminClientLayout = () => {
                       {state === "active" && (
                         <span
                           aria-hidden
-                          className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-accent-foreground/10 blur-2xl"
+                          className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-accent-foreground/10 blur-2xl"
                         />
                       )}
                       {/* Chip de status no canto superior direito */}
                       {state === "completed" && (
-                        <span className="absolute top-2.5 right-2.5 inline-flex items-center justify-center h-5 w-5 rounded-full bg-success/15 ring-1 ring-success/30">
-                          <Check className="h-3 w-3 text-success" strokeWidth={3} />
+                        <span className="absolute top-2 right-2 inline-flex items-center justify-center h-[18px] w-[18px] rounded-full bg-success/15 ring-1 ring-success/30">
+                          <Check className="h-[11px] w-[11px] text-success" strokeWidth={3} />
                         </span>
                       )}
                       {state === "locked" && (
-                        <span className="absolute top-2.5 right-2.5 inline-flex items-center justify-center h-5 w-5 rounded-full bg-muted/60">
+                        <span className="absolute top-2 right-2 inline-flex items-center justify-center h-[18px] w-[18px] rounded-full bg-muted/60">
                           <Lock className="h-2.5 w-2.5 text-muted-foreground/55" strokeWidth={2.5} />
                         </span>
                       )}
