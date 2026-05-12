@@ -52,7 +52,8 @@ Deno.serve(async (req) => {
     // ── INPUT (V9: novo contrato) ──
     const body = await req.json().catch(() => ({}));
     const clientId: string | undefined = body.clientId;
-    const objective: string = (body.objective ?? "").toString().trim().slice(0, 500);
+    const goalId: string | undefined = body.goalId;
+    const refinement: string = (body.refinement ?? body.objective ?? "").toString().trim().slice(0, 500);
     const parecerId: string | null = body.parecerId || null;
     const customInstructions: string = (body.customInstructions ?? "").toString().trim().slice(0, 2000);
 
@@ -63,14 +64,14 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (parecerId && !uuidRegex.test(parecerId)) {
-      return new Response(JSON.stringify({ error: "parecerId inválido" }), {
+    if (!goalId || !uuidRegex.test(goalId)) {
+      return new Response(JSON.stringify({ error: "goalId obrigatório — vincule o plano a um objetivo do cliente" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!objective) {
-      return new Response(JSON.stringify({ error: "Defina um objetivo para o plano" }), {
+    if (parecerId && !uuidRegex.test(parecerId)) {
+      return new Response(JSON.stringify({ error: "parecerId inválido" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -79,7 +80,7 @@ Deno.serve(async (req) => {
     const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     const [
-      incomeRes, expensesRes, debtsRes, assetsRes, goalsRes, insuranceRes, diagRes, clientRes, parecerRes,
+      incomeRes, expensesRes, debtsRes, assetsRes, goalsRes, insuranceRes, diagRes, clientRes, parecerRes, goalRes,
     ] = await Promise.all([
       serviceClient.from("income").select("amount, description, frequency, stability").eq("client_id", clientId),
       serviceClient.from("expenses").select("amount, category, is_fixed, description").eq("client_id", clientId),
@@ -92,7 +93,16 @@ Deno.serve(async (req) => {
       parecerId
         ? serviceClient.from("consultant_notes").select("title, content, snapshots").eq("id", parecerId).eq("client_id", clientId).maybeSingle()
         : Promise.resolve({ data: null }),
+      serviceClient.from("goals").select("description, target_amount, priority, deadline").eq("id", goalId).eq("client_id", clientId).maybeSingle(),
     ]);
+
+    const targetGoal = goalRes.data;
+    if (!targetGoal) {
+      return new Response(JSON.stringify({ error: "Objetivo não encontrado para este cliente" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const incomes = incomeRes.data || [];
     const expenses = expensesRes.data || [];
@@ -180,7 +190,20 @@ ${parecerSnapshots.length > 0
       ? `\n\nINSTRUÇÕES ADICIONAIS DO CONSULTOR:\n${customInstructions}`
       : "";
 
-    const systemPrompt = `Você é um consultor financeiro sênior brasileiro. Sua missão é gerar EXATAMENTE TRÊS planos de ação completos e DISTINTOS para alcançar o objetivo definido pelo consultor.
+    const refinementBlock = refinement
+      ? `\n\nREFINAMENTO DO PLANO (escrito pelo consultor):\n"${refinement}"`
+      : "";
+
+    const goalBlock = `
+
+OBJETIVO ALVO (cadastrado pelo cliente — TODO o plano deve focar nele):
+- Descrição: ${targetGoal.description}
+- Valor alvo: R$ ${Number(targetGoal.target_amount || 0).toFixed(0)}
+- Prioridade: ${targetGoal.priority || "média"}
+- Prazo: ${targetGoal.deadline || "sem prazo definido"}
+`;
+
+    const systemPrompt = `Você é um consultor financeiro sênior brasileiro. Sua missão é gerar EXATAMENTE TRÊS planos de ação completos e DISTINTOS para alcançar UM objetivo específico do cliente.
 
 Cada plano deve ser uma estratégia coerente e auto-suficiente, com 5 a 10 ações concretas que, executadas em ordem, levam ao objetivo. As três variantes devem representar três ângulos diferentes do mesmo objetivo:
 
@@ -189,18 +212,16 @@ Cada plano deve ser uma estratégia coerente e auto-suficiente, com 5 a 10 açõ
 - PLANO C — Acelerado: foco máximo no objetivo, aceita cortes mais agressivos e maior empenho. Prazo curto.
 
 REGRAS:
-1. Cada ação DEVE citar dados reais do cliente (valores específicos das despesas, dívidas, renda)
-2. financial_impact é o impacto MENSAL estimado em reais (positivo se libera caixa, negativo se exige novo aporte)
-3. deadline_offset_days é dias a contar de hoje para concluir a ação (ex: 30, 60, 90)
-4. area: "renda" | "despesas" | "dividas" | "investimentos" | "protecao" | "impostos"
-5. NÃO repita a mesma ação entre os 3 planos — cada plano tem ações específicas para sua estratégia
-6. O title do plano deve ser curto (3-6 palavras) refletindo a estratégia
-7. O approach deve explicar em 2-3 frases COMO a estratégia atinge o objetivo
-8. O horizon_months é o prazo realista (em meses) para concluir o plano
-
-OBJETIVO DEFINIDO PELO CONSULTOR:
-"${objective}"
-
+1. TODO plano deve estar focado no OBJETIVO ALVO indicado abaixo. Não invente outros objetivos.
+2. Cada ação DEVE citar dados reais do cliente (valores específicos das despesas, dívidas, renda)
+3. financial_impact é o impacto MENSAL estimado em reais (positivo se libera caixa, negativo se exige novo aporte)
+4. deadline_offset_days é dias a contar de hoje para concluir a ação (ex: 30, 60, 90)
+5. area: "renda" | "despesas" | "dividas" | "investimentos" | "protecao" | "impostos"
+6. NÃO repita a mesma ação entre os 3 planos — cada plano tem ações específicas para sua estratégia
+7. O title do plano deve ser curto (3-6 palavras) refletindo a estratégia
+8. O approach deve explicar em 2-3 frases COMO a estratégia atinge o objetivo alvo
+9. O horizon_months é o prazo realista (em meses) para concluir o plano (considere o prazo do objetivo se houver)
+${goalBlock}${refinementBlock}
 ${financialContext}${parecerBlock}${instructionsBlock}
 
 Retorne APENAS via a função return_plans com os 3 planos.`;
@@ -223,7 +244,7 @@ Retorne APENAS via a função return_plans com os 3 planos.`;
         model: "gpt-4o",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: "Gere os 3 planos para o objetivo acima." },
+          { role: "user", content: `Gere os 3 planos para o objetivo "${targetGoal.description}".` },
         ],
         tools: [
           {

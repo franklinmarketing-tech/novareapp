@@ -92,6 +92,7 @@ export type Database = {
           client_id: string
           created_at: string
           custom_instructions: string | null
+          goal_id: string | null
           id: string
           objective: string | null
           source_parecer_id: string | null
@@ -105,6 +106,7 @@ export type Database = {
           client_id: string
           created_at?: string
           custom_instructions?: string | null
+          goal_id?: string | null
           id?: string
           objective?: string | null
           source_parecer_id?: string | null
@@ -118,6 +120,7 @@ export type Database = {
           client_id?: string
           created_at?: string
           custom_instructions?: string | null
+          goal_id?: string | null
           id?: string
           objective?: string | null
           source_parecer_id?: string | null

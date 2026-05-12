@@ -144,6 +144,7 @@ const AdminMonitoring = () => {
   // IA insights
   const [insights, setInsights] = useState<Insight[] | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [autoTriggered, setAutoTriggered] = useState(false);
 
   // ── Carga ─────────────────────────────────────────
   const loadAll = async (silent = false) => {
@@ -278,31 +279,49 @@ const AdminMonitoring = () => {
   }, [parentActions]);
 
   // ── Acoes ─────────────────────────────────────────
-  const runAnalyze = async () => {
+  const runAnalyze = async (silent = false) => {
     if (!clientId) return;
-    setAnalyzing(true);
-    setInsights(null);
+    if (!silent) setAnalyzing(true);
+    if (!silent) setInsights(null);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-progress", {
         body: { clientId },
       });
       if (error) throw error;
       const arr = (data?.insights || []) as Insight[];
-      if (!arr.length) throw new Error("IA não retornou insights");
+      if (!arr.length) {
+        if (!silent) throw new Error("IA não retornou insights");
+        return;
+      }
       setInsights(arr);
-      toast({
-        title: "Análise concluída",
-        description: `${arr.length} insights gerados pela IA.`,
-      });
+      if (!silent) {
+        toast({
+          title: "Análise concluída",
+          description: `${arr.length} insights gerados pela IA.`,
+        });
+      }
     } catch (e: any) {
-      toast({
-        title: "Erro ao analisar",
-        description: e?.message || "Tente novamente",
-        variant: "destructive",
-      });
+      if (!silent) {
+        toast({
+          title: "Erro ao analisar",
+          description: e?.message || "Tente novamente",
+          variant: "destructive",
+        });
+      }
     }
-    setAnalyzing(false);
+    if (!silent) setAnalyzing(false);
   };
+
+  // Auto-dispara analise interna quando ja tem plano em andamento ou pareceres
+  useEffect(() => {
+    if (autoTriggered || loading || !clientId) return;
+    // So dispara automaticamente se houver contexto util (plano aplicado ou acoes)
+    if (plan?.applied_variant || parentActions.length > 0) {
+      setAutoTriggered(true);
+      runAnalyze(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientId, loading, plan?.applied_variant, parentActions.length]);
 
   // ── Render ────────────────────────────────────────
   if (loading) return <LoadingState variant="page" rows={4} />;
@@ -499,7 +518,7 @@ const AdminMonitoring = () => {
               </div>
             </div>
             <Button
-              onClick={runAnalyze}
+              onClick={() => runAnalyze(false)}
               disabled={analyzing}
               size="sm"
               className="gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"

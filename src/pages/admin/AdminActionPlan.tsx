@@ -73,12 +73,21 @@ interface PlanRow {
   source_parecer_id: string | null;
   custom_instructions: string | null;
   ai_generated_plans: AIPlan[] | null;
+  goal_id: string | null;
 }
 
 interface ParecerOption {
   id: string;
   title: string;
   updated_at: string;
+}
+
+interface GoalOption {
+  id: string;
+  description: string;
+  target_amount: number | null;
+  priority: string | null;
+  deadline: string | null;
 }
 
 interface AIAction {
@@ -154,12 +163,14 @@ const AdminActionPlan = () => {
   const [plan, setPlan] = useState<PlanRow | null>(null);
   const [items, setItems] = useState<ActionItem[]>([]);
   const [pareceres, setPareceres] = useState<ParecerOption[]>([]);
+  const [goalsList, setGoalsList] = useState<GoalOption[]>([]);
 
   // Popup de geracao
   const [genOpen, setGenOpen] = useState(false);
   const [genPhase, setGenPhase] = useState<"form" | "generating" | "result">("form");
   const [genParecerId, setGenParecerId] = useState<string>("__none__");
-  const [genObjective, setGenObjective] = useState("");
+  const [genGoalId, setGenGoalId] = useState<string>("");
+  const [genRefinement, setGenRefinement] = useState("");
   const [genInstructions, setGenInstructions] = useState("");
   const [generatedPlans, setGeneratedPlans] = useState<AIPlan[]>([]);
   const [applyingVariant, setApplyingVariant] = useState<string | null>(null);
@@ -196,7 +207,7 @@ const AdminActionPlan = () => {
     if (planRow) setPlan(planRow as unknown as PlanRow);
 
     if (planRow) {
-      const [actionsRes, paRes] = await Promise.all([
+      const [actionsRes, paRes, goalsRes] = await Promise.all([
         supabase
           .from("action_items")
           .select("*")
@@ -209,9 +220,15 @@ const AdminActionPlan = () => {
           .eq("client_id", clientId)
           .order("updated_at", { ascending: false })
           .limit(20),
+        supabase
+          .from("goals")
+          .select("id, description, target_amount, priority, deadline")
+          .eq("client_id", clientId)
+          .order("priority"),
       ]);
       setItems((actionsRes.data as ActionItem[]) || []);
       setPareceres((paRes.data as ParecerOption[]) || []);
+      setGoalsList((goalsRes.data as GoalOption[]) || []);
     }
 
     if (!silent) setLoading(false);
@@ -231,7 +248,8 @@ const AdminActionPlan = () => {
 
   // ── Acoes do popup de geracao ─────────────────────
   const openGenerate = () => {
-    setGenObjective("");
+    setGenGoalId("");
+    setGenRefinement("");
     setGenInstructions("");
     setGenParecerId("__none__");
     setGeneratedPlans([]);
@@ -240,13 +258,14 @@ const AdminActionPlan = () => {
   };
 
   const runGenerate = async () => {
-    if (!clientId || !genObjective.trim()) return;
+    if (!clientId || !genGoalId) return;
     setGenPhase("generating");
     try {
       const { data, error } = await supabase.functions.invoke("generate-recommendations", {
         body: {
           clientId,
-          objective: genObjective.trim(),
+          goalId: genGoalId,
+          refinement: genRefinement.trim() || null,
           parecerId: genParecerId === "__none__" ? null : genParecerId,
           customInstructions: genInstructions.trim() || null,
         },
@@ -267,9 +286,11 @@ const AdminActionPlan = () => {
   };
 
   const applyPlan = async (variant: AIPlan) => {
-    if (!plan?.id || !clientId) return;
+    if (!plan?.id || !clientId || !genGoalId) return;
     setApplyingVariant(variant.letter);
     try {
+      const selectedGoal = goalsList.find((g) => g.id === genGoalId);
+
       // Limpa acoes pendentes do plano anterior (mantem concluidas como historico)
       await supabase
         .from("action_items")
@@ -277,7 +298,7 @@ const AdminActionPlan = () => {
         .eq("action_plan_id", plan.id)
         .neq("status", "concluido");
 
-      // Cria novas acoes
+      // Cria novas acoes — todas vinculadas ao goal escolhido
       const now = Date.now();
       const newRows = variant.actions.map((a) => ({
         action_plan_id: plan.id,
@@ -290,16 +311,22 @@ const AdminActionPlan = () => {
           : null,
         status: "pendente" as const,
         responsible: "Novare",
+        goal_id: genGoalId,
       }));
       if (newRows.length > 0) {
         await supabase.from("action_items").insert(newRows);
       }
 
-      // Atualiza plano
+      // Atualiza plano (objective = descricao do goal, com refinamento opcional)
+      const objectiveText = genRefinement.trim()
+        ? `${selectedGoal?.description ?? ""} — ${genRefinement.trim()}`
+        : selectedGoal?.description ?? null;
+
       await supabase
         .from("action_plans")
         .update({
-          objective: genObjective.trim(),
+          objective: objectiveText,
+          goal_id: genGoalId,
           applied_variant: variant.letter,
           applied_at: new Date().toISOString(),
           source_parecer_id: genParecerId === "__none__" ? null : genParecerId,
@@ -366,6 +393,7 @@ const AdminActionPlan = () => {
       .from("action_plans")
       .update({
         objective: null,
+        goal_id: null,
         applied_variant: null,
         applied_at: null,
         custom_instructions: null,
@@ -437,8 +465,11 @@ const AdminActionPlan = () => {
         onOpenChange={setGenOpen}
         phase={genPhase}
         setPhase={setGenPhase}
-        objective={genObjective}
-        setObjective={setGenObjective}
+        goalId={genGoalId}
+        setGoalId={setGenGoalId}
+        goalsList={goalsList}
+        refinement={genRefinement}
+        setRefinement={setGenRefinement}
         instructions={genInstructions}
         setInstructions={setGenInstructions}
         parecerId={genParecerId}
@@ -650,8 +681,14 @@ const ActivePlanHero = ({
             <Target className="h-5 w-5 text-accent" strokeWidth={1.75} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/85 mb-1">
-              Objetivo deste plano
+            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/85 mb-1 flex items-center gap-1.5">
+              Objetivo entrelaçado
+              {plan.goal_id && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0 rounded-full bg-accent/10 text-accent border border-accent/25 text-[9px] normal-case tracking-normal font-medium">
+                  <Target className="h-2.5 w-2.5" />
+                  Vinculado
+                </span>
+              )}
             </p>
             <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-snug">
               {plan.objective}
@@ -788,8 +825,11 @@ const GenerateDialog = ({
   onOpenChange,
   phase,
   setPhase,
-  objective,
-  setObjective,
+  goalId,
+  setGoalId,
+  goalsList,
+  refinement,
+  setRefinement,
   instructions,
   setInstructions,
   parecerId,
@@ -804,8 +844,11 @@ const GenerateDialog = ({
   onOpenChange: (v: boolean) => void;
   phase: "form" | "generating" | "result";
   setPhase: (p: "form" | "generating" | "result") => void;
-  objective: string;
-  setObjective: (v: string) => void;
+  goalId: string;
+  setGoalId: (v: string) => void;
+  goalsList: GoalOption[];
+  refinement: string;
+  setRefinement: (v: string) => void;
   instructions: string;
   setInstructions: (v: string) => void;
   parecerId: string;
@@ -816,6 +859,7 @@ const GenerateDialog = ({
   onGenerate: () => void;
   onApply: (p: AIPlan) => void;
 }) => {
+  const selectedGoal = goalsList.find((g) => g.id === goalId) || null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -852,6 +896,84 @@ const GenerateDialog = ({
                 exit={{ opacity: 0 }}
                 className="px-6 py-5 space-y-4"
               >
+                {/* Objetivo (obrigatório, vem da tabela goals) */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <Target className="h-3.5 w-3.5 text-accent" />
+                    Objetivo do cliente
+                    <span className="text-destructive">*</span>
+                  </Label>
+                  {goalsList.length === 0 ? (
+                    <div className="rounded-lg border border-warning/40 bg-warning/[0.06] px-3 py-2.5">
+                      <p className="text-[12px] text-foreground font-medium">
+                        Nenhum objetivo cadastrado.
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Cadastre objetivos do cliente no <span className="font-semibold">Diagnóstico</span> antes de gerar um plano.
+                      </p>
+                    </div>
+                  ) : (
+                    <Select value={goalId} onValueChange={setGoalId}>
+                      <SelectTrigger className="h-10 text-sm">
+                        <SelectValue placeholder="Selecione o objetivo alvo deste plano" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {goalsList.map((g) => (
+                          <SelectItem key={g.id} value={g.id} className="text-sm">
+                            <span className="font-medium">{g.description}</span>
+                            {g.target_amount != null && g.target_amount > 0 && (
+                              <span className="text-muted-foreground ml-1.5">
+                                · {fmtBRL(g.target_amount)}
+                              </span>
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {selectedGoal && (
+                    <div className="rounded-md bg-accent/[0.05] border border-accent/15 px-2.5 py-1.5 mt-1 flex items-center gap-2 flex-wrap">
+                      {selectedGoal.target_amount != null && selectedGoal.target_amount > 0 && (
+                        <Badge variant="outline" className="text-[10px] gap-1">
+                          <Target className="h-3 w-3" />
+                          Meta {fmtBRL(selectedGoal.target_amount)}
+                        </Badge>
+                      )}
+                      {selectedGoal.deadline && (
+                        <Badge variant="outline" className="text-[10px] gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {fmtDate(selectedGoal.deadline)}
+                        </Badge>
+                      )}
+                      {selectedGoal.priority && (
+                        <Badge variant="outline" className="text-[10px] capitalize">
+                          Prio: {selectedGoal.priority}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Refinamento (opcional, texto curto) */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-accent" />
+                    Refinamento
+                    <span className="font-normal text-muted-foreground/70">(opcional)</span>
+                  </Label>
+                  <Input
+                    value={refinement}
+                    onChange={(e) => setRefinement(e.target.value)}
+                    placeholder="Ex: priorizar quitação do cartão Nubank primeiro"
+                    className="h-10 text-sm"
+                    maxLength={500}
+                  />
+                  <p className="text-[10.5px] text-muted-foreground/85">
+                    Detalhe específico que ajuda a IA a refinar a estratégia (não substitui o objetivo).
+                  </p>
+                </div>
+
+                {/* Parecer de referência (opcional) */}
                 <div className="space-y-1.5">
                   <Label className="text-xs flex items-center gap-1.5">
                     <PenLine className="h-3.5 w-3.5 text-accent" />
@@ -869,34 +991,14 @@ const GenerateDialog = ({
                       {pareceres.map((p) => (
                         <SelectItem key={p.id} value={p.id} className="text-sm">
                           {p.title || "Parecer sem título"} ·{" "}
-                          <span className="text-muted-foreground">
-                            {fmtDate(p.updated_at)}
-                          </span>
+                          <span className="text-muted-foreground">{fmtDate(p.updated_at)}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs flex items-center gap-1.5">
-                    <Target className="h-3.5 w-3.5 text-accent" />
-                    Objetivo deste plano
-                    <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    autoFocus
-                    value={objective}
-                    onChange={(e) => setObjective(e.target.value)}
-                    placeholder="Ex: Quitar dívidas de cartão em 12 meses"
-                    className="h-10 text-sm"
-                    maxLength={500}
-                  />
-                  <p className="text-[10.5px] text-muted-foreground/85">
-                    Seja específico — quanto mais claro o objetivo, melhores os planos.
-                  </p>
-                </div>
-
+                {/* Instruções (opcional) */}
                 <div className="space-y-1.5">
                   <Label className="text-xs flex items-center gap-1.5">
                     <Lightbulb className="h-3.5 w-3.5 text-accent" />
@@ -950,12 +1052,17 @@ const GenerateDialog = ({
                 exit={{ opacity: 0 }}
                 className="px-6 py-5"
               >
-                <div className="rounded-lg border border-accent/20 bg-accent/[0.04] px-3 py-2 mb-4 flex items-center gap-2">
+                <div className="rounded-lg border border-accent/20 bg-accent/[0.04] px-3 py-2 mb-4 flex items-center gap-2 flex-wrap">
                   <Target className="h-4 w-4 text-accent shrink-0" />
                   <p className="text-[12.5px] text-foreground">
-                    <span className="text-muted-foreground">Objetivo:</span>{" "}
-                    <span className="font-semibold">{objective}</span>
+                    <span className="text-muted-foreground">Objetivo alvo:</span>{" "}
+                    <span className="font-semibold">{selectedGoal?.description || "—"}</span>
                   </p>
+                  {refinement && (
+                    <span className="text-[11.5px] text-muted-foreground">
+                      · {refinement}
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -982,7 +1089,7 @@ const GenerateDialog = ({
             </Button>
             <Button
               onClick={onGenerate}
-              disabled={!objective.trim()}
+              disabled={!goalId || goalsList.length === 0}
               className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
             >
               <Sparkles className="h-4 w-4" />
