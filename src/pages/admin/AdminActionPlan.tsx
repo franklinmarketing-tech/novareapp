@@ -176,6 +176,11 @@ const AdminActionPlan = () => {
   const [generatedPlans, setGeneratedPlans] = useState<AIPlan[]>([]);
   const [applyingVariant, setApplyingVariant] = useState<string | null>(null);
 
+  // V9: refinamento de plano individual (modal pequeno)
+  const [refineTarget, setRefineTarget] = useState<AIPlan | null>(null);
+  const [refineInstructions, setRefineInstructions] = useState("");
+  const [refiningVariant, setRefiningVariant] = useState<string | null>(null);
+
   // Adicao manual
   const [manualOpen, setManualOpen] = useState(false);
   const [manualForm, setManualForm] = useState({
@@ -259,7 +264,7 @@ const AdminActionPlan = () => {
   };
 
   const runGenerate = async () => {
-    if (!clientId || !genGoalId) return;
+    if (!clientId || !genGoalId || !plan?.id) return;
     setGenPhase("generating");
     try {
       const { data, error } = await supabase.functions.invoke("generate-recommendations", {
@@ -274,8 +279,26 @@ const AdminActionPlan = () => {
       if (error) throw error;
       const plans = (data?.plans || []) as AIPlan[];
       if (!plans.length) throw new Error("IA não retornou planos");
+
+      // V9: persiste imediatamente no banco — os 3 cards aparecem inline na tela
+      // (sem precisar de phase=result no popup)
+      await supabase
+        .from("action_plans")
+        .update({
+          goal_id: genGoalId,
+          source_parecer_id: genParecerId === "__none__" ? null : genParecerId,
+          custom_instructions: genInstructions.trim() || null,
+          ai_generated_plans: plans as any,
+        })
+        .eq("id", plan.id);
+
       setGeneratedPlans(plans);
-      setGenPhase("result");
+      setGenOpen(false);
+      toast({
+        title: "3 planos gerados",
+        description: "Escolha o plano que melhor se encaixa ou refine com a IA.",
+      });
+      await loadAll(true);
     } catch (e: any) {
       toast({
         title: "Erro ao gerar planos",
@@ -284,6 +307,59 @@ const AdminActionPlan = () => {
       });
       setGenPhase("form");
     }
+  };
+
+  // V9: refina uma variante especifica com a IA
+  const runRefine = async () => {
+    if (!refineTarget || !plan?.id || !refineInstructions.trim() || !clientId) return;
+    const targetLetter = refineTarget.letter;
+    setRefiningVariant(targetLetter);
+    try {
+      // Reusa generate-recommendations passando refinement com a instrucao
+      // de ajuste alem do refinamento original. A IA gera novos 3 planos —
+      // pegamos APENAS a variante alvo (mesma letra) e atualizamos no cache.
+      const refinementMsg = [
+        `Refine APENAS o plano ${targetLetter} (atual: "${refineTarget.title}") com este ajuste:`,
+        refineInstructions.trim(),
+      ].join("\n");
+
+      const { data, error } = await supabase.functions.invoke("generate-recommendations", {
+        body: {
+          clientId,
+          goalId: plan.goal_id || genGoalId,
+          refinement: refinementMsg,
+          parecerId: plan.source_parecer_id || null,
+          customInstructions: plan.custom_instructions || null,
+        },
+      });
+      if (error) throw error;
+      const newPlans = (data?.plans || []) as AIPlan[];
+      const refinedVariant = newPlans.find((p) => p.letter === targetLetter);
+      if (!refinedVariant) throw new Error("IA não retornou o plano refinado");
+
+      // Atualiza so a variante alvo no cache do banco
+      const cached = Array.isArray(plan.ai_generated_plans)
+        ? (plan.ai_generated_plans as AIPlan[])
+        : [];
+      const updated = cached.map((p) => (p.letter === targetLetter ? refinedVariant : p));
+
+      await supabase
+        .from("action_plans")
+        .update({ ai_generated_plans: updated as any })
+        .eq("id", plan.id);
+
+      setRefineTarget(null);
+      setRefineInstructions("");
+      toast({ title: `Plano ${targetLetter} refinado` });
+      await loadAll(true);
+    } catch (e: any) {
+      toast({
+        title: "Erro ao refinar plano",
+        description: e?.message || "Tente novamente",
+        variant: "destructive",
+      });
+    }
+    setRefiningVariant(null);
   };
 
   const applyPlan = async (variant: AIPlan) => {
@@ -362,6 +438,20 @@ const AdminActionPlan = () => {
     toast({ title: "Ação removida" });
   };
 
+  const updateItem = async (
+    id: string,
+    patch: { description?: string; objective?: string | null; financial_impact?: number | null; deadline?: string | null; area?: string },
+  ) => {
+    const { error } = await supabase.from("action_items").update(patch as any).eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" as any });
+      return false;
+    }
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } as ActionItem : i)));
+    toast({ title: "Ação atualizada" });
+    return true;
+  };
+
   const saveManual = async () => {
     if (!plan?.id || !manualForm.description.trim()) return;
     await supabase.from("action_items").insert([
@@ -407,9 +497,26 @@ const AdminActionPlan = () => {
   // ── Render ────────────────────────────────────────
   if (loading) return <LoadingState variant="page" rows={4} />;
 
+  // V9: planos gerados (do cache do banco) — mostra inline quando ja gerou
+  // mas ainda nao aplicou nenhum
+  const cachedPlans: AIPlan[] = Array.isArray(plan?.ai_generated_plans)
+    ? (plan!.ai_generated_plans as AIPlan[])
+    : [];
+  const hasCachedPlans = cachedPlans.length > 0;
+  const showInlinePlans = !hasActivePlan && hasCachedPlans;
+  const targetGoal = plan?.goal_id ? goalsList.find((g) => g.id === plan.goal_id) : null;
+
+  // Pre-popula genGoalId quando o cache existe (para que applyPlan funcione)
+  useEffect(() => {
+    if (hasCachedPlans && plan?.goal_id && !genGoalId) {
+      setGenGoalId(plan.goal_id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasCachedPlans, plan?.goal_id]);
+
   return (
     <div className="space-y-6">
-      {/* HERO — Plano em andamento OU CTA de geracao */}
+      {/* HERO — Plano em andamento OU 3 cards inline OU CTA de geracao */}
       {hasActivePlan && plan ? (
         <ActivePlanHero
           plan={plan}
@@ -419,6 +526,27 @@ const AdminActionPlan = () => {
           pct={pct}
           onGenerateAgain={openGenerate}
           onDiscard={discardActivePlan}
+          onSwitchVariant={hasCachedPlans ? async () => {
+            if (!plan?.id) return;
+            if (!confirm("Trocar variante? As ações pendentes do plano atual serão removidas (concluídas viram histórico).")) return;
+            await supabase.from("action_items").delete().eq("action_plan_id", plan.id).neq("status", "concluido");
+            await supabase.from("action_plans").update({ applied_variant: null, applied_at: null }).eq("id", plan.id);
+            toast({ title: "Plano liberado — escolha uma das 3 variantes" });
+            await loadAll(true);
+          } : undefined}
+        />
+      ) : showInlinePlans ? (
+        <InlinePlansSelector
+          plans={cachedPlans}
+          targetGoal={targetGoal}
+          applyingVariant={applyingVariant}
+          refiningVariant={refiningVariant}
+          onApply={applyPlan}
+          onRefine={(p) => {
+            setRefineTarget(p);
+            setRefineInstructions("");
+          }}
+          onRegenerate={openGenerate}
         />
       ) : (
         <EmptyHero onGenerate={openGenerate} pareceresCount={pareceres.length} />
@@ -453,6 +581,7 @@ const AdminActionPlan = () => {
                   index={idx}
                   onToggle={() => toggleItem(item)}
                   onDelete={() => removeItem(item.id)}
+                  onUpdate={(patch) => updateItem(item.id, patch)}
                 />
               ))}
             </AnimatePresence>
@@ -566,6 +695,74 @@ const AdminActionPlan = () => {
         </DialogContent>
       </Dialog>
 
+      {/* POPUP REFINAR COM IA — apenas variante selecionada */}
+      <Dialog
+        open={refineTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRefineTarget(null);
+            setRefineInstructions("");
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base flex items-center gap-2">
+              <Wand2 className="h-4 w-4 text-primary" />
+              Refinar Plano {refineTarget?.letter}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              {refineTarget?.title
+                ? `Ajustar "${refineTarget.title}" sem alterar os outros planos.`
+                : "Ajustar este plano sem alterar os outros."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-xs">O que ajustar?</Label>
+            <Textarea
+              value={refineInstructions}
+              onChange={(e) => setRefineInstructions(e.target.value)}
+              rows={5}
+              className="resize-none text-sm"
+              placeholder="Ex.: incluir uma ação de quitar o cartão Itaú primeiro, reduzir prazo para 6 meses, focar mais em renegociação..."
+              disabled={refiningVariant !== null}
+            />
+            <p className="text-[10px] text-muted-foreground">
+              A IA usará o plano atual como base e aplicará apenas essas instruções.
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRefineTarget(null);
+                setRefineInstructions("");
+              }}
+              disabled={refiningVariant !== null}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={runRefine}
+              disabled={!refineInstructions.trim() || refiningVariant !== null}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {refiningVariant !== null ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Refinando...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Refinar com IA
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* V9: CTA para proxima etapa */}
       {hasActivePlan && (
         <JourneyFooterNav
@@ -629,6 +826,7 @@ const ActivePlanHero = ({
   pct,
   onGenerateAgain,
   onDiscard,
+  onSwitchVariant,
 }: {
   plan: PlanRow;
   totalImpact: number;
@@ -637,6 +835,7 @@ const ActivePlanHero = ({
   pct: number;
   onGenerateAgain: () => void;
   onDiscard: () => void;
+  onSwitchVariant?: () => void;
 }) => {
   const variant = plan.applied_variant || "A";
   const info = VARIANT_INFO[variant] || VARIANT_INFO.A;
@@ -673,7 +872,19 @@ const ActivePlanHero = ({
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {onSwitchVariant && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSwitchVariant}
+                className="gap-1.5 h-8"
+                title="Volta para a tela de escolha das 3 variantes geradas"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Trocar variante
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={onDiscard} className="text-muted-foreground hover:text-destructive gap-1.5 h-8">
               <Trash2 className="h-3.5 w-3.5" />
               Descartar
@@ -733,6 +944,65 @@ const ActivePlanHero = ({
   );
 };
 
+// V9: tela principal de selecao quando ha planos gerados mas nenhum aplicado
+const InlinePlansSelector = ({
+  plans,
+  targetGoal,
+  applyingVariant,
+  refiningVariant,
+  onApply,
+  onRefine,
+  onRegenerate,
+}: {
+  plans: AIPlan[];
+  targetGoal: GoalOption | null | undefined;
+  applyingVariant: string | null;
+  refiningVariant: string | null;
+  onApply: (p: AIPlan) => void;
+  onRefine: (p: AIPlan) => void;
+  onRegenerate: () => void;
+}) => (
+  <div className="space-y-4">
+    {/* Header */}
+    <div className="rounded-xl border border-accent/25 bg-accent/[0.04] px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div className="h-8 w-8 rounded-lg bg-accent/15 ring-1 ring-accent/30 flex items-center justify-center shrink-0">
+          <Sparkles className="h-4 w-4 text-accent" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground leading-tight">
+            Escolha um dos 3 planos
+          </p>
+          {targetGoal && (
+            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+              Objetivo alvo: <span className="font-medium text-foreground">{targetGoal.description}</span>
+            </p>
+          )}
+        </div>
+      </div>
+      <Button onClick={onRegenerate} variant="outline" size="sm" className="gap-1.5 h-8 shrink-0">
+        <RefreshCw className="h-3.5 w-3.5" />
+        Gerar novos
+      </Button>
+    </div>
+
+    {/* 3 cards lado a lado */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {plans.map((plan) => (
+        <PlanOptionCard
+          key={plan.letter}
+          plan={plan}
+          applying={applyingVariant === plan.letter}
+          anyApplying={Boolean(applyingVariant)}
+          refining={refiningVariant === plan.letter}
+          onApply={() => onApply(plan)}
+          onRefine={() => onRefine(plan)}
+        />
+      ))}
+    </div>
+  </div>
+);
+
 const StatTile = ({
   label,
   value,
@@ -759,15 +1029,55 @@ const ActionRow = ({
   index,
   onToggle,
   onDelete,
+  onUpdate,
 }: {
   item: ActionItem;
   index: number;
   onToggle: () => void;
   onDelete: () => void;
+  onUpdate: (patch: { description?: string; objective?: string | null; financial_impact?: number | null; deadline?: string | null; area?: string }) => Promise<boolean>;
 }) => {
   const isDone = item.status === "concluido";
   const areaLabel = AREA_LABEL[item.area] || item.area;
   const tone = AREA_TONE[item.area] || "bg-muted text-muted-foreground border-border";
+
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    area: item.area,
+    description: item.description,
+    objective: item.objective || "",
+    financial_impact: item.financial_impact != null ? String(item.financial_impact) : "",
+    deadline: item.deadline || "",
+  });
+
+  const startEdit = () => {
+    setForm({
+      area: item.area,
+      description: item.description,
+      objective: item.objective || "",
+      financial_impact: item.financial_impact != null ? String(item.financial_impact) : "",
+      deadline: item.deadline || "",
+    });
+    setEditing(true);
+  };
+
+  const saveEdit = async () => {
+    if (!form.description.trim()) {
+      toast({ title: "Descrição obrigatória", variant: "destructive" as any });
+      return;
+    }
+    setSaving(true);
+    const ok = await onUpdate({
+      area: form.area,
+      description: form.description.trim(),
+      objective: form.objective.trim() || null,
+      financial_impact: form.financial_impact.trim() === "" ? null : parseFloat(form.financial_impact) || null,
+      deadline: form.deadline || null,
+    });
+    setSaving(false);
+    if (ok) setEditing(false);
+  };
 
   return (
     <motion.div
@@ -778,51 +1088,136 @@ const ActionRow = ({
       transition={{ delay: Math.min(index * 0.03, 0.3), duration: 0.2 }}
       className={cn(
         "group rounded-xl border p-3.5 transition-colors",
+        editing ? "border-primary/50 bg-primary/[0.03]" :
         isDone ? "border-success/30 bg-success/[0.04]" : "border-border/60 bg-card hover:border-accent/40 hover:bg-muted/20",
       )}
     >
-      <div className="flex items-start gap-3">
-        <Checkbox
-          checked={isDone}
-          onCheckedChange={onToggle}
-          className="mt-0.5 data-[state=checked]:bg-success data-[state=checked]:border-success"
-        />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", tone)}>
-              {areaLabel}
-            </Badge>
-            {item.financial_impact != null && item.financial_impact !== 0 && (
-              <span className="text-[10.5px] font-semibold text-success tabular-nums">
-                {fmtBRL(item.financial_impact)}/mês
-              </span>
-            )}
-            {item.deadline && (
-              <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {fmtDate(item.deadline)}
-              </span>
+      {editing ? (
+        <div className="space-y-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-2.5">
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Área</Label>
+              <Select value={form.area} onValueChange={(v) => setForm((p) => ({ ...p, area: v }))}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(AREA_LABEL).map(([k, v]) => (
+                    <SelectItem key={k} value={k} className="text-sm">{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Descrição</Label>
+              <Textarea
+                value={form.description}
+                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                rows={2}
+                className="resize-none text-sm"
+                placeholder="O que precisa ser feito?"
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Objetivo</Label>
+            <Input
+              value={form.objective}
+              onChange={(e) => setForm((p) => ({ ...p, objective: e.target.value }))}
+              className="h-8 text-sm"
+              placeholder="Resultado esperado (opcional)"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Impacto (R$/mês)</Label>
+              <Input
+                type="number"
+                value={form.financial_impact}
+                onChange={(e) => setForm((p) => ({ ...p, financial_impact: e.target.value }))}
+                className="h-8 text-sm"
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Prazo</Label>
+              <Input
+                type="date"
+                value={form.deadline}
+                onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
+                className="h-8 text-sm"
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              onClick={saveEdit}
+              disabled={saving || !form.description.trim()}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Salvar"}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-start gap-3">
+          <Checkbox
+            checked={isDone}
+            onCheckedChange={onToggle}
+            className="mt-0.5 data-[state=checked]:bg-success data-[state=checked]:border-success"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", tone)}>
+                {areaLabel}
+              </Badge>
+              {item.financial_impact != null && item.financial_impact !== 0 && (
+                <span className="text-[10.5px] font-semibold text-success tabular-nums">
+                  {fmtBRL(item.financial_impact)}/mês
+                </span>
+              )}
+              {item.deadline && (
+                <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {fmtDate(item.deadline)}
+                </span>
+              )}
+            </div>
+            <p className={cn("text-sm font-semibold tracking-tight leading-snug", isDone && "line-through text-muted-foreground")}>
+              {item.description}
+            </p>
+            {item.objective && (
+              <p className="text-[11.5px] text-muted-foreground mt-0.5 leading-relaxed">
+                → {item.objective}
+              </p>
             )}
           </div>
-          <p className={cn("text-sm font-semibold tracking-tight leading-snug", isDone && "line-through text-muted-foreground")}>
-            {item.description}
-          </p>
-          {item.objective && (
-            <p className="text-[11.5px] text-muted-foreground mt-0.5 leading-relaxed">
-              → {item.objective}
-            </p>
-          )}
+          <div className="flex items-center gap-0.5 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={startEdit}
+              className="h-7 w-7 text-muted-foreground/60 hover:text-primary opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+              title="Editar ação"
+            >
+              <PenLine className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onDelete}
+              className="h-7 w-7 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+              title="Remover ação"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onDelete}
-          className="h-7 w-7 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity shrink-0"
-          title="Remover ação"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
-      </div>
+      )}
     </motion.div>
   );
 };
@@ -1127,11 +1522,15 @@ const PlanOptionCard = ({
   applying,
   anyApplying,
   onApply,
+  onRefine,
+  refining,
 }: {
   plan: AIPlan;
   applying: boolean;
   anyApplying: boolean;
   onApply: () => void;
+  onRefine?: () => void;
+  refining?: boolean;
 }) => {
   const info = VARIANT_INFO[plan.letter] || VARIANT_INFO.A;
   const [expanded, setExpanded] = useState(false);
@@ -1227,7 +1626,27 @@ const PlanOptionCard = ({
         </div>
       </div>
 
-      <div className="p-3 border-t border-border/50 bg-muted/20">
+      <div className="p-3 border-t border-border/50 bg-muted/20 space-y-2">
+        {onRefine && (
+          <Button
+            onClick={onRefine}
+            disabled={Boolean(anyApplying) || refining}
+            variant="outline"
+            className="w-full gap-1.5 h-8 text-[12px]"
+          >
+            {refining ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Refinando...
+              </>
+            ) : (
+              <>
+                <Wand2 className="h-3.5 w-3.5" />
+                Refinar com IA
+              </>
+            )}
+          </Button>
+        )}
         <Button
           onClick={onApply}
           disabled={anyApplying}
