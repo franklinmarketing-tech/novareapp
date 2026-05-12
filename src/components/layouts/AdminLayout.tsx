@@ -498,7 +498,7 @@ export const AdminLayout = ({ children }: Props) => {
           </div>
         </div>
 
-        <div className="p-4 sm:p-6 xl:p-8 max-w-[1600px] mx-auto w-full min-w-0">{children}</div>
+        <div className="pt-2 sm:pt-3 px-4 sm:px-6 xl:px-8 pb-6 sm:pb-8 max-w-[1600px] mx-auto w-full min-w-0">{children}</div>
       </main>
 
       {/* Global ⌘K palette (admin only) */}

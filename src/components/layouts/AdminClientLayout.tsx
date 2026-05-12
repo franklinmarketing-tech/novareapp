@@ -178,7 +178,7 @@ const AdminClientLayout = () => {
     <ClientProvider value={{ clientId, clientSlug: clientSlug || "" }}>
       <div>
         <div
-          className="relative mb-4 overflow-hidden rounded-xl"
+          className="relative mb-3 overflow-hidden rounded-xl"
           style={{
             background:
               "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 60%, hsl(var(--muted) / 0.25) 100%)",
@@ -202,10 +202,10 @@ const AdminClientLayout = () => {
             }}
           />
 
-          <div className="relative flex items-center gap-2.5 px-3 py-2 sm:px-4 sm:py-2.5">
+          <div className="relative flex items-center gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2">
             {/* Avatar — quadrado pequeno com status dot */}
             <div
-              className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center shrink-0"
+              className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center shrink-0"
               style={{
                 background:
                   "linear-gradient(145deg, hsl(var(--primary) / 0.18) 0%, hsl(var(--primary) / 0.06) 100%)",
@@ -215,12 +215,12 @@ const AdminClientLayout = () => {
                   "0 1px 0 hsl(0 0% 100% / 0.4) inset, 0 1px 3px hsl(var(--primary) / 0.15)",
               }}
             >
-              <span className="text-[13px] sm:text-sm font-bold text-primary tracking-tight">
+              <span className="text-[12px] sm:text-[13px] font-bold text-primary tracking-tight">
                 {getInitials(clientName)}
               </span>
               <span
                 className={cn(
-                  "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card",
+                  "absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ring-2 ring-card",
                   st.dot,
                 )}
                 title={st.label}
@@ -228,8 +228,8 @@ const AdminClientLayout = () => {
             </div>
 
             {/* Nome + badges em linha unica */}
-            <div className="min-w-0 flex-1 flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-sm sm:text-base font-bold text-foreground tracking-tight leading-tight truncate max-w-[280px] sm:max-w-none">
+            <div className="min-w-0 flex-1 flex items-center gap-2 flex-wrap">
+              <h1 className="text-[13px] sm:text-sm font-bold text-foreground tracking-tight leading-tight truncate max-w-[280px] sm:max-w-none">
                 {clientName || "Carregando..."}
               </h1>
               <Badge variant={st.variant as any} className="text-[10px] shrink-0">
@@ -398,9 +398,9 @@ const AdminClientLayout = () => {
 
           const cardClasses = (state: JourneyState) =>
             cn(
-              "group relative flex items-center gap-2 w-full h-full",
-              "rounded-md px-2 py-1.5 transition-all duration-300 ease-out overflow-hidden",
-              "min-h-[48px] min-w-0 select-none will-change-transform",
+              "group relative flex items-center gap-1.5 w-full h-full",
+              "rounded-md px-1.5 py-1 transition-all duration-300 ease-out overflow-hidden",
+              "min-h-[40px] min-w-0 select-none will-change-transform",
               state === "active" && "text-primary-foreground -translate-y-0.5",
               state === "completed" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01]",
               state === "available" && "text-foreground hover:-translate-y-0.5 hover:scale-[1.01] cursor-pointer",
@@ -466,7 +466,7 @@ const AdminClientLayout = () => {
 
           const iconBoxClasses = (state: JourneyState) =>
             cn(
-              "h-8 w-8 rounded-md flex items-center justify-center transition-all duration-300 shrink-0",
+              "h-7 w-7 rounded flex items-center justify-center transition-all duration-300 shrink-0",
               state === "active" && "group-hover:rotate-3",
               state === "available" && "group-hover:scale-110 group-hover:rotate-3",
               state === "completed" && "group-hover:scale-105",
@@ -474,7 +474,7 @@ const AdminClientLayout = () => {
 
           const iconClasses = (state: JourneyState) =>
             cn(
-              "h-[16px] w-[16px] transition-all duration-300",
+              "h-[14px] w-[14px] transition-all duration-300",
               state === "active" && "text-primary-foreground drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.3)]",
               state === "completed" && "text-success",
               state === "available" && "text-foreground/70 group-hover:text-primary group-hover:scale-105",
@@ -731,7 +731,7 @@ const AdminClientLayout = () => {
             completed.includes("parecer") || completed.includes("plano-acao");
 
           return (
-            <div className="px-2.5 py-2 sm:px-3 sm:py-2.5">
+            <div className="px-2 py-1.5 sm:px-2.5 sm:py-2">
 
               {/* Desktop / tablet: 2 linhas de 3 cards com bridge vertical */}
               <div className="hidden md:block">
@@ -743,11 +743,11 @@ const AdminClientLayout = () => {
                   {renderCard(tabs[2])}
                 </div>
 
-                {/* Bridge vertical compacto entre as duas linhas */}
-                <div className="flex justify-center py-0.5" aria-hidden>
+                {/* Bridge vertical ultra compacto entre as duas linhas */}
+                <div className="flex justify-center py-px" aria-hidden>
                   <div className="flex flex-col items-center">
                     <div
-                      className="h-2.5 w-[2px] rounded-full transition-colors"
+                      className="h-1.5 w-[2px] rounded-full transition-colors"
                       style={{
                         background: verticalFlows
                           ? "linear-gradient(180deg, hsl(var(--primary) / 0.7) 0%, hsl(var(--primary) / 0.35) 100%)"
@@ -758,7 +758,7 @@ const AdminClientLayout = () => {
                       }}
                     />
                     <div
-                      className="h-5 w-5 -mt-0.5 rounded-full flex items-center justify-center transition-all"
+                      className="h-4 w-4 -mt-0.5 rounded-full flex items-center justify-center transition-all"
                       style={
                         verticalFlows
                           ? {
