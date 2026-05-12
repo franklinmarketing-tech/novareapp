@@ -548,16 +548,22 @@ const AdminActionPlan = () => {
 
   return (
     <div className="space-y-6">
-      {/* HERO — Plano em andamento OU 3 cards inline OU CTA de geracao */}
+      {/* TELA PRINCIPAL — Plano aplicado (formato dos cards A/B/C) OU 3 cards inline OU CTA */}
       {hasActivePlan && plan ? (
-        <ActivePlanHero
+        <AppliedPlanCard
           plan={plan}
-          totalImpact={totalImpact}
+          items={items}
           completed={completed}
           total={total}
           pct={pct}
-          onGenerateAgain={openGenerate}
+          totalImpact={totalImpact}
+          goal={plan.goal_id ? goalsList.find((g) => g.id === plan.goal_id) || null : null}
+          onToggleItem={toggleItem}
+          onUpdateItem={updateItem}
+          onDeleteItem={removeItem}
+          onAddManual={() => setManualOpen(true)}
           onDiscard={discardActivePlan}
+          onGenerateAgain={openGenerate}
           onSwitchVariant={hasCachedPlans ? async () => {
             if (!plan?.id) return;
             if (!confirm("Trocar variante? As ações pendentes do plano atual serão removidas (concluídas viram histórico).")) return;
@@ -582,43 +588,6 @@ const AdminActionPlan = () => {
         />
       ) : (
         <EmptyHero onGenerate={openGenerate} pareceresCount={pareceres.length} />
-      )}
-
-      {/* LISTA DE ACOES (se houver plano ativo OU itens manuais) */}
-      {items.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-accent/10">
-                  <ClipboardList className="h-4 w-4 text-accent" />
-                </div>
-                Ações do plano
-                <Badge variant="outline" className="text-[10px]">
-                  {completed}/{total}
-                </Badge>
-              </CardTitle>
-              <Button size="sm" variant="outline" onClick={() => setManualOpen(true)} className="gap-1.5">
-                <Plus className="h-3.5 w-3.5" />
-                Adicionar manualmente
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <AnimatePresence initial={false}>
-              {items.map((item, idx) => (
-                <ActionRow
-                  key={item.id}
-                  item={item}
-                  index={idx}
-                  onToggle={() => toggleItem(item)}
-                  onDelete={() => removeItem(item.id)}
-                  onUpdate={(patch) => updateItem(item.id, patch)}
-                />
-              ))}
-            </AnimatePresence>
-          </CardContent>
-        </Card>
       )}
 
       {/* POPUP DE GERACAO */}
@@ -849,6 +818,197 @@ const EmptyHero = ({
     </CardContent>
   </Card>
 );
+
+// V9: card unico do plano em andamento — mesma formatacao dos cards A/B/C
+// mas com itens interativos (toggle, editar, deletar, adicionar)
+const AppliedPlanCard = ({
+  plan,
+  items,
+  completed,
+  total,
+  pct,
+  totalImpact,
+  goal,
+  onToggleItem,
+  onUpdateItem,
+  onDeleteItem,
+  onAddManual,
+  onDiscard,
+  onGenerateAgain,
+  onSwitchVariant,
+}: {
+  plan: PlanRow;
+  items: ActionItem[];
+  completed: number;
+  total: number;
+  pct: number;
+  totalImpact: number;
+  goal: GoalOption | null;
+  onToggleItem: (item: ActionItem) => void | Promise<void>;
+  onUpdateItem: (
+    id: string,
+    patch: { description?: string; objective?: string | null; financial_impact?: number | null; deadline?: string | null; area?: string },
+  ) => Promise<boolean>;
+  onDeleteItem: (id: string) => void | Promise<void>;
+  onAddManual: () => void;
+  onDiscard: () => void;
+  onGenerateAgain: () => void;
+  onSwitchVariant?: () => void;
+}) => {
+  const variant = (plan.applied_variant || "A") as "A" | "B" | "C";
+  const info = VARIANT_INFO[variant] || VARIANT_INFO.A;
+  const aiPlan = Array.isArray(plan.ai_generated_plans)
+    ? (plan.ai_generated_plans as AIPlan[]).find((p) => p.letter === variant)
+    : null;
+
+  const accentBorder =
+    variant === "A" ? "border-blue-500/30" : variant === "B" ? "border-emerald-500/30" : "border-orange-500/30";
+  const headerBg =
+    variant === "A" ? "bg-blue-500/[0.06]" : variant === "B" ? "bg-emerald-500/[0.06]" : "bg-orange-500/[0.06]";
+  const dotColor =
+    variant === "A" ? "bg-blue-500" : variant === "B" ? "bg-emerald-500" : "bg-orange-500";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={cn("relative rounded-2xl border-2 bg-card overflow-hidden flex flex-col", accentBorder)}
+    >
+      {/* HEADER */}
+      <div className={cn("px-5 py-4 border-b border-border/50", headerBg)}>
+        <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge className={cn("text-[11px] font-bold px-2.5 py-0.5 border", info.tone)}>
+              Plano {variant} · Aplicado
+            </Badge>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">
+              {info.label}
+            </span>
+            {plan.applied_at && (
+              <Badge variant="outline" className="text-[10px] gap-1">
+                <Calendar className="h-3 w-3" />
+                {fmtDate(plan.applied_at)}
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {onSwitchVariant && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSwitchVariant}
+                className="gap-1.5 h-7 text-[11px]"
+                title="Volta para a tela de escolha das 3 variantes geradas"
+              >
+                <ArrowLeft className="h-3 w-3" />
+                Trocar variante
+              </Button>
+            )}
+            <Button
+              onClick={onGenerateAgain}
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-7 text-[11px]"
+            >
+              <RefreshCw className="h-3 w-3" />
+              Gerar novos
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDiscard}
+              className="text-muted-foreground hover:text-destructive gap-1.5 h-7 text-[11px]"
+            >
+              <Trash2 className="h-3 w-3" />
+              Excluir plano
+            </Button>
+          </div>
+        </div>
+        <h3 className="text-base font-bold text-foreground tracking-tight leading-snug">
+          {aiPlan?.title || plan.objective || "Plano em andamento"}
+        </h3>
+        {plan.objective && plan.objective !== aiPlan?.title && (
+          <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
+            <Target className="h-3 w-3 inline mr-1 -mt-0.5" />
+            {plan.objective}
+          </p>
+        )}
+        {goal && (
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Objetivo vinculado: <span className="font-medium text-foreground">{goal.description}</span>
+          </p>
+        )}
+      </div>
+
+      {/* APPROACH + TILES */}
+      <div className="p-5 space-y-4 border-b border-border/50">
+        {aiPlan?.approach && (
+          <p className="text-[12.5px] text-muted-foreground leading-relaxed">
+            {aiPlan.approach}
+          </p>
+        )}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-lg bg-muted/40 px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/85">Horizonte</p>
+            <p className="text-sm font-bold text-foreground">
+              {aiPlan ? `${aiPlan.horizon_months} ${aiPlan.horizon_months === 1 ? "mês" : "meses"}` : "—"}
+            </p>
+          </div>
+          <div className="rounded-lg bg-muted/40 px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/85">Impacto/mês</p>
+            <p className="text-sm font-bold text-foreground tabular-nums">
+              {fmtBRL(aiPlan?.monthly_impact ?? totalImpact)}
+            </p>
+          </div>
+          <div className="rounded-lg bg-muted/40 px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/85">Progresso</p>
+            <p className="text-sm font-bold text-foreground tabular-nums">{pct}%</p>
+            <Progress value={pct} className="h-1 mt-1" />
+          </div>
+        </div>
+      </div>
+
+      {/* LISTA DE ACOES INTERATIVA */}
+      <div className="p-5">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/85 flex items-center gap-1.5">
+            <span className={cn("h-2 w-2 rounded-full", dotColor)} />
+            <ClipboardList className="h-3.5 w-3.5" />
+            {total} {total === 1 ? "ação" : "ações"} · {completed} concluída{completed === 1 ? "" : "s"}
+          </p>
+          <Button size="sm" variant="outline" onClick={onAddManual} className="gap-1.5 h-7 text-[11px]">
+            <Plus className="h-3 w-3" />
+            Adicionar ação
+          </Button>
+        </div>
+
+        {items.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border/60 px-4 py-6 text-center">
+            <p className="text-[12px] text-muted-foreground">
+              Nenhuma ação no plano. Use "Adicionar ação" ou "Gerar novos".
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <AnimatePresence initial={false}>
+              {items.map((item, idx) => (
+                <ActionRow
+                  key={item.id}
+                  item={item}
+                  index={idx}
+                  onToggle={() => onToggleItem(item)}
+                  onDelete={() => onDeleteItem(item.id)}
+                  onUpdate={(patch) => onUpdateItem(item.id, patch)}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
 
 const ActivePlanHero = ({
   plan,
