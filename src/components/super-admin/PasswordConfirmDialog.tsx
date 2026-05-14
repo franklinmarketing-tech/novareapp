@@ -15,12 +15,15 @@ interface Props {
   requireReason?: boolean;
   requireConfirmText?: string; // ex: "DELETAR DEFINITIVO"
   confirmLabel?: string;
+  /** Texto do label do campo de senha. Default: "Sua senha de super admin". */
+  passwordLabel?: string;
   onConfirm: (params: { password: string; reason: string; confirm_text: string }) => Promise<void>;
 }
 
 export const PasswordConfirmDialog = ({
   open, onOpenChange, title, description, destructive,
   requireReason, requireConfirmText, confirmLabel = "Confirmar",
+  passwordLabel = "Sua senha de super admin",
   onConfirm,
 }: Props) => {
   const [password, setPassword] = useState("");
@@ -83,7 +86,7 @@ export const PasswordConfirmDialog = ({
             </div>
           )}
           <div className="space-y-1.5">
-            <Label className="text-xs">Sua senha de super admin</Label>
+            <Label className="text-xs">{passwordLabel}</Label>
             <Input
               type="password"
               value={password}

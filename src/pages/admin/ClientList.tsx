@@ -306,6 +306,26 @@ const ClientList = () => {
     setActiveFilter("all");
   };
 
+  // Extrai a mensagem real do corpo da resposta da edge function quando
+  // ela retorna status non-2xx. Por padrao o supabase-js so devolve o
+  // generico "Edge Function returned a non-2xx status code".
+  const readEdgeError = async (error: any, fallback: string) => {
+    try {
+      const ctx = error?.context;
+      if (ctx && typeof ctx.json === "function") {
+        const body = await ctx.clone().json();
+        if (body?.error) return String(body.error);
+      }
+      if (ctx && typeof ctx.text === "function") {
+        const txt = await ctx.clone().text();
+        if (txt) return txt;
+      }
+    } catch {
+      // se nao conseguir parsear, usa o fallback
+    }
+    return error?.message || fallback;
+  };
+
   const handleDeleteConfirm = async ({ password }: { password: string; reason: string; confirm_text: string }) => {
     if (!deleteTarget) return;
     const target = deleteTarget;
@@ -317,7 +337,7 @@ const ClientList = () => {
         body: { client_id: target.id, password },
       });
       if (error || data?.error) {
-        const message = data?.error ?? error?.message ?? "Não foi possível excluir o cliente.";
+        const message = data?.error ?? (await readEdgeError(error, "Não foi possível excluir o cliente."));
         toast({ title: "Erro ao excluir", description: message, variant: "destructive" });
         return;
       }
@@ -340,7 +360,7 @@ const ClientList = () => {
         body: { client_id: target.id, password },
       });
       if (error || data?.error) {
-        const message = data?.error ?? error?.message ?? "Não foi possível redefinir a senha.";
+        const message = data?.error ?? (await readEdgeError(error, "Não foi possível redefinir a senha."));
         toast({ title: "Erro ao redefinir senha", description: message, variant: "destructive" });
         return;
       }
@@ -861,6 +881,7 @@ const ClientList = () => {
         destructive
         requireConfirmText="EXCLUIR"
         confirmLabel="Excluir definitivamente"
+        passwordLabel="Sua senha"
         onConfirm={handleDeleteConfirm}
       />
 
@@ -874,6 +895,7 @@ const ClientList = () => {
             : ""
         }
         confirmLabel="Gerar nova senha"
+        passwordLabel="Sua senha"
         onConfirm={handleResetConfirm}
       />
 
