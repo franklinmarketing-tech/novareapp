@@ -929,11 +929,11 @@ const ClientList = () => {
                   <Copy className="h-3.5 w-3.5" /> Copiar
                 </Button>
               </div>
-              <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-[11px] text-amber-900 dark:text-amber-100 flex items-start gap-2">
+              <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 text-[11px] text-emerald-900 dark:text-emerald-100 flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
                 <p>
-                  Oriente o cliente a trocar essa senha no primeiro acesso, em
-                  <span className="font-semibold"> Configurações &gt; Trocar senha</span>.
+                  Senha atualizada com sucesso. As sessões anteriores foram encerradas — o cliente
+                  já pode entrar diretamente com esta senha.
                 </p>
               </div>
             </div>
