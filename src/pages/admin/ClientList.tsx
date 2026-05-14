@@ -23,6 +23,9 @@ import {
   MapPin,
   Briefcase,
   Loader2,
+  KeyRound,
+  Copy,
+  CheckCircle2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -33,6 +36,14 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { PasswordConfirmDialog } from "@/components/super-admin/PasswordConfirmDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -151,6 +162,10 @@ const ClientList = () => {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [deleteTarget, setDeleteTarget] = useState<ClientRow | null>(null);
   const [deletingClientId, setDeletingClientId] = useState<string | null>(null);
+  // V9: reset de senha pelo consultor
+  const [resetTarget, setResetTarget] = useState<ClientRow | null>(null);
+  const [resettingClientId, setResettingClientId] = useState<string | null>(null);
+  const [tempPasswordResult, setTempPasswordResult] = useState<{ clientName: string; password: string } | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window === "undefined") return "list";
@@ -314,11 +329,51 @@ const ClientList = () => {
     }
   };
 
+  const handleResetConfirm = async ({ password }: { password: string; reason: string; confirm_text: string }) => {
+    if (!resetTarget) return;
+    const target = resetTarget;
+    const targetName = target.profiles?.full_name ?? "Cliente";
+
+    setResettingClientId(target.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-reset-client-password", {
+        body: { client_id: target.id, password },
+      });
+      if (error || data?.error) {
+        const message = data?.error ?? error?.message ?? "Não foi possível redefinir a senha.";
+        toast({ title: "Erro ao redefinir senha", description: message, variant: "destructive" });
+        return;
+      }
+      const tempPassword = (data?.temp_password as string | undefined) ?? "";
+      setResetTarget(null);
+      if (tempPassword) {
+        setTempPasswordResult({ clientName: targetName, password: tempPassword });
+      } else {
+        sonnerToast.success("Senha redefinida", {
+          description: `Uma nova senha foi gerada para ${targetName}.`,
+        });
+      }
+    } finally {
+      setResettingClientId(null);
+    }
+  };
+
+  const copyTempPassword = async () => {
+    if (!tempPasswordResult) return;
+    try {
+      await navigator.clipboard.writeText(tempPasswordResult.password);
+      sonnerToast.success("Senha copiada", { description: "A senha temporária foi copiada para a área de transferência." });
+    } catch {
+      sonnerToast.error("Não foi possível copiar", { description: "Copie manualmente o valor exibido." });
+    }
+  };
+
   const renderListCard = (client: ClientRow, i: number) => {
     const profile = client.profiles as any;
     const st = statusMap[client.status] ?? statusMap.onboarding_pendente;
     const initials = getInitials(profile?.full_name);
     const isDeleting = deletingClientId === client.id;
+    const isResetting = resettingClientId === client.id;
     const since = client.created_at
       ? formatDistanceToNow(new Date(client.created_at), { locale: ptBR, addSuffix: false })
       : null;
@@ -407,6 +462,20 @@ const ClientList = () => {
                 <Button
                   size="icon"
                   variant="ghost"
+                  className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-500/10"
+                  title="Redefinir senha do cliente"
+                  aria-label={`Redefinir senha de ${profile?.full_name || "cliente"}`}
+                  disabled={isResetting}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setResetTarget(client);
+                  }}
+                >
+                  {isResetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
                   className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                   title="Excluir cliente"
                   aria-label={`Excluir ${profile?.full_name || "cliente"}`}
@@ -432,6 +501,7 @@ const ClientList = () => {
     const st = statusMap[client.status] ?? statusMap.onboarding_pendente;
     const initials = getInitials(profile?.full_name);
     const isDeleting = deletingClientId === client.id;
+    const isResetting = resettingClientId === client.id;
     const since = client.created_at
       ? formatDistanceToNow(new Date(client.created_at), { locale: ptBR, addSuffix: false })
       : null;
@@ -496,24 +566,39 @@ const ClientList = () => {
               )}
             </div>
 
-            <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+            <div className="mt-auto flex items-center justify-between gap-1 pt-2">
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-xs h-8"
+                className="text-xs h-8 px-2"
                 aria-label={`Editar ${profile?.full_name || "cliente"}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/admin/cliente/${client.slug}/onboarding`);
                 }}
               >
-                <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                <Pencil className="h-3.5 w-3.5 mr-1" />
                 Editar
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="text-xs h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-500/10"
+                aria-label={`Redefinir senha de ${profile?.full_name || "cliente"}`}
+                disabled={isResetting}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setResetTarget(client);
+                }}
+                title="Gerar nova senha temporária"
+              >
+                {isResetting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <KeyRound className="h-3.5 w-3.5 mr-1" />}
+                Senha
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
                 aria-label={`Excluir ${profile?.full_name || "cliente"}`}
                 disabled={isDeleting}
                 onClick={(e) => {
@@ -521,7 +606,7 @@ const ClientList = () => {
                   setDeleteTarget(client);
                 }}
               >
-                {isDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1.5" />}
+                {isDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />}
                 {isDeleting ? "Excluindo" : "Excluir"}
               </Button>
               <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-accent group-hover:translate-x-0.5 transition-all ml-auto" />
@@ -778,6 +863,64 @@ const ClientList = () => {
         confirmLabel="Excluir definitivamente"
         onConfirm={handleDeleteConfirm}
       />
+
+      <PasswordConfirmDialog
+        open={!!resetTarget}
+        onOpenChange={(v) => !v && setResetTarget(null)}
+        title="Redefinir senha do cliente"
+        description={
+          resetTarget
+            ? `Vamos gerar uma nova senha temporária para ${resetTarget.profiles?.full_name ?? "este cliente"}. As sessões ativas dele serão encerradas e você precisará entregar a nova senha pessoalmente.`
+            : ""
+        }
+        confirmLabel="Gerar nova senha"
+        onConfirm={handleResetConfirm}
+      />
+
+      <Dialog
+        open={!!tempPasswordResult}
+        onOpenChange={(v) => !v && setTempPasswordResult(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-blue-600" />
+              Senha temporária gerada
+            </DialogTitle>
+            <DialogDescription>
+              Esta senha aparecerá apenas uma vez. Copie agora e entregue ao cliente
+              {tempPasswordResult ? ` ${tempPasswordResult.clientName}` : ""}.
+            </DialogDescription>
+          </DialogHeader>
+          {tempPasswordResult && (
+            <div className="space-y-3 py-2">
+              <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 flex items-center justify-between gap-3">
+                <code className="text-base font-mono font-semibold tracking-wider text-foreground select-all">
+                  {tempPasswordResult.password}
+                </code>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 shrink-0"
+                  onClick={copyTempPassword}
+                >
+                  <Copy className="h-3.5 w-3.5" /> Copiar
+                </Button>
+              </div>
+              <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-[11px] text-amber-900 dark:text-amber-100 flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
+                <p>
+                  Oriente o cliente a trocar essa senha no primeiro acesso, em
+                  <span className="font-semibold"> Configurações &gt; Trocar senha</span>.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setTempPasswordResult(null)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageTransition>
   );
 };

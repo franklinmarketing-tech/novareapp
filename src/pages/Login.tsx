@@ -190,6 +190,9 @@ const Login = () => {
   const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [showPassword, setShowPassword] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+  // Estado pos-signup: se o Supabase pediu confirmacao de e-mail, mostramos o aviso
+  // em vez de deixar o usuario olhando para o form sem saber o que fazer.
+  const [signupSent, setSignupSent] = useState(false);
   const { signIn, role } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -211,6 +214,11 @@ const Login = () => {
     }
   }, [role, navigate]);
 
+  // Origem dinamica para links de e-mail (confirmacao / reset).
+  // Antes era hardcoded para producao, o que quebrava o fluxo em dev e staging.
+  const siteOrigin =
+    typeof window !== "undefined" ? window.location.origin : "https://novareapp.com.br";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -219,33 +227,55 @@ const Login = () => {
         await signIn(email, password);
         toast({ title: "Login realizado com sucesso!" });
       } else if (mode === "signup") {
-        const productionUrl = "https://novareapp.com.br";
-        const { error } = await supabase.auth.signUp({
-          email,
+        const trimmedName = fullName.trim();
+        const trimmedEmail = email.trim().toLowerCase();
+        if (trimmedName.length < 2) {
+          throw new Error("Informe seu nome completo.");
+        }
+        if (password.length < 6) {
+          throw new Error("A senha precisa ter pelo menos 6 caracteres.");
+        }
+
+        const { data, error } = await supabase.auth.signUp({
+          email: trimmedEmail,
           password,
           options: {
-            data: { full_name: fullName },
-            emailRedirectTo: productionUrl,
+            data: { full_name: trimmedName },
+            emailRedirectTo: siteOrigin,
           },
         });
         if (error) throw error;
 
-        // Dispara e-mail de boas-vindas (não bloqueia o fluxo se falhar)
+        // Dispara e-mail de boas-vindas (nao bloqueia o fluxo se falhar)
         supabase.functions
           .invoke("send-client-email", {
             body: {
-              to: email,
+              to: trimmedEmail,
               templateName: "welcome",
-              templateData: { clientName: fullName },
+              templateData: { clientName: trimmedName },
             },
           })
           .catch((err) => console.error("Falha ao enviar welcome:", err));
 
-        toast({ title: "Conta criada! 🎉", description: "Vamos iniciar sua consultoria financeira." });
+        // Se a confirmacao por e-mail estiver habilitada no Supabase, nao ha sessao
+        // retornada e o usuario precisa clicar no link enviado. Mostramos um estado
+        // claro em vez de deixa-lo no formulario achando que nada aconteceu.
+        if (!data.session) {
+          setSignupSent(true);
+          toast({
+            title: "Conta criada! Confirme seu e-mail",
+            description: "Enviamos um link de ativacao para o e-mail informado.",
+          });
+        } else {
+          toast({
+            title: "Conta criada!",
+            description: "Vamos iniciar sua consultoria financeira.",
+          });
+          // Sessao ja existe: o useEffect que olha o role faz o redirecionamento.
+        }
       } else if (mode === "forgot") {
-        const productionUrl = "https://novareapp.com.br";
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${productionUrl}/reset-password`,
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+          redirectTo: `${siteOrigin}/reset-password`,
         });
         if (error) throw error;
         setForgotSent(true);
@@ -255,17 +285,28 @@ const Login = () => {
         });
       }
     } catch (error: any) {
+      // Limpa a senha em qualquer erro de auth para evitar resubmits acidentais
+      // (e tambem por higiene — senha errada nao deve ficar persistida no input).
+      if (mode === "login" || mode === "signup") setPassword("");
+      const rawMessage = error?.message || "";
+      const description =
+        rawMessage === "Invalid login credentials"
+          ? "Email ou senha incorretos."
+          : /already.*registered|already.*exists/i.test(rawMessage)
+            ? "Este e-mail ja esta cadastrado. Tente fazer login ou recuperar a senha."
+            : /password should be at least/i.test(rawMessage)
+              ? "A senha precisa ter pelo menos 6 caracteres."
+              : /invalid email/i.test(rawMessage)
+                ? "Email invalido."
+                : rawMessage;
       toast({
         title:
           mode === "login"
             ? "Erro ao fazer login"
             : mode === "signup"
-            ? "Erro ao criar conta"
-            : "Erro ao enviar email",
-        description:
-          error.message === "Invalid login credentials"
-            ? "Email ou senha incorretos."
-            : error.message,
+              ? "Erro ao criar conta"
+              : "Erro ao enviar email",
+        description,
         variant: "destructive",
       });
     } finally {
@@ -297,21 +338,44 @@ const Login = () => {
                     {mode === "login"
                       ? "Consultoria Financeira"
                       : mode === "signup"
-                      ? "Criar conta"
+                      ? signupSent ? "Confirme seu email" : "Criar conta"
                       : "Recuperar senha"}
                   </h1>
                   <p className="text-muted-foreground mt-2 text-sm font-body">
                     {mode === "login"
                       ? "Insira seus dados para acessar a plataforma"
                       : mode === "signup"
-                      ? "Insira os dados e crie sua conta"
+                      ? signupSent
+                        ? "Pronto! Verifique seu email para ativar a conta."
+                        : "Insira os dados e crie sua conta"
                       : forgotSent
                       ? "Pronto! Verifique seu email para continuar."
                       : "Informe seu email e enviaremos um link para redefinir sua senha"}
                   </p>
                 </div>
 
-                {mode === "forgot" && forgotSent ? (
+                {mode === "signup" && signupSent ? (
+                  <div className="space-y-6">
+                    <div className="rounded-2xl bg-accent/10 border border-accent/20 p-5 text-center">
+                      <p className="text-sm text-foreground/80 font-body">
+                        Enviamos um link de ativacao para{" "}
+                        <strong className="text-foreground">{email}</strong>. Clique no link
+                        para confirmar sua conta e depois faca login normalmente.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("login");
+                        setSignupSent(false);
+                        setPassword("");
+                      }}
+                      className="w-full text-sm text-accent font-medium hover:underline"
+                    >
+                      Voltar ao login
+                    </button>
+                  </div>
+                ) : mode === "forgot" && forgotSent ? (
                   <div className="space-y-6">
                     <div className="rounded-2xl bg-accent/10 border border-accent/20 p-5 text-center">
                       <p className="text-sm text-foreground/80 font-body">
@@ -393,12 +457,20 @@ const Login = () => {
                     <button type="button" onClick={() => { setMode("login"); setForgotSent(false); }} className="text-accent font-medium hover:underline transition-colors">
                       Voltar ao login
                     </button>
-                  ) : (
+                  ) : signupSent ? null : (
                     <>
                       <span className="text-muted-foreground">
                         {mode === "login" ? "Não tem uma conta? " : "Já tem uma conta? "}
                       </span>
-                      <button type="button" onClick={() => setMode(mode === "login" ? "signup" : "login")} className="text-accent font-medium hover:underline transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMode(mode === "login" ? "signup" : "login");
+                          setSignupSent(false);
+                          setPassword("");
+                        }}
+                        className="text-accent font-medium hover:underline transition-colors"
+                      >
                         {mode === "login" ? "Criar conta" : "Fazer login"}
                       </button>
                     </>
