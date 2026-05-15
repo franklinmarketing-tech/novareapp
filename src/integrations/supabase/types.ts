@@ -138,6 +138,20 @@ export type Database = {
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "action_plans_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_plans_source_parecer_id_fkey"
+            columns: ["source_parecer_id"]
+            isOneToOne: false
+            referencedRelation: "consultant_notes"
+            referencedColumns: ["id"]
+          },
         ]
       }
       admin_invitations: {
@@ -513,6 +527,68 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "consultant_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_progress_snapshots: {
+        Row: {
+          client_id: string
+          completed_actions: number | null
+          completed_impact: number | null
+          created_at: string
+          id: string
+          monthly_debt_payments: number | null
+          net_worth: number | null
+          savings_rate: number | null
+          snapshot_date: string
+          total_actions: number | null
+          total_assets: number | null
+          total_debts: number | null
+          total_expenses: number | null
+          total_income: number | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          completed_actions?: number | null
+          completed_impact?: number | null
+          created_at?: string
+          id?: string
+          monthly_debt_payments?: number | null
+          net_worth?: number | null
+          savings_rate?: number | null
+          snapshot_date?: string
+          total_actions?: number | null
+          total_assets?: number | null
+          total_debts?: number | null
+          total_expenses?: number | null
+          total_income?: number | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          completed_actions?: number | null
+          completed_impact?: number | null
+          created_at?: string
+          id?: string
+          monthly_debt_payments?: number | null
+          net_worth?: number | null
+          savings_rate?: number | null
+          snapshot_date?: string
+          total_actions?: number | null
+          total_assets?: number | null
+          total_debts?: number | null
+          total_expenses?: number | null
+          total_income?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_progress_snapshots_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
