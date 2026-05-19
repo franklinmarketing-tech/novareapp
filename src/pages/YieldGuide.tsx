@@ -979,7 +979,7 @@ const YieldGuide = () => {
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   Entenda cada tipo de Renda Fixa — selecione um
                 </p>
-                <div key={tipoRenda} className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
                   {currentBento.map((f, i) => {
                     const isHero = f.variant === "hero";
                     const isSelected = selectedFaixa === f.title;
