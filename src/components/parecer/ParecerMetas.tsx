@@ -249,21 +249,19 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     setLoadingAI(true);
     try {
       const { data, error } = await supabase.functions.invoke("suggest-metas", { body: { clientId } });
-      if (error) throw new Error(error.message || "Erro na função");
+      if (error) {
+        const detail = (data as any)?.error || error.message || "Erro na função";
+        throw new Error(detail);
+      }
       const suggestions: AiSuggestion[] = data?.suggestions || [];
       if (!suggestions.length) { toast.info("IA não retornou sugestões"); return; }
       setAiSuggestions(suggestions);
-      // Expand all sections so suggestions are visible
       setExpanded(Object.fromEntries(SECTION_ORDER.map((s) => [s, true])) as Record<SourceTable, boolean>);
       toast.success(`IA gerou ${suggestions.length} sugestões — clique em Aplicar para usar`);
     } catch (err: any) {
       const msg = err?.message || String(err);
-      if (msg.includes("OPENAI_API_KEY") || msg.includes("401")) {
-        toast.error("Chave da IA não configurada. Configure OPENAI_API_KEY no Supabase.");
-      } else {
-        toast.error("Erro ao consultar IA: " + msg);
-      }
-      console.error("[suggest-metas]", err);
+      toast.error("Erro IA: " + msg);
+      console.error("[suggest-metas]", msg);
     } finally {
       setLoadingAI(false);
     }

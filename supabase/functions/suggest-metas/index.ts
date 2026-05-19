@@ -56,22 +56,30 @@ Deno.serve(async (req) => {
 
     // Carrega todos os dados financeiros do cliente
     const [
-      { data: client },
-      { data: income },
-      { data: expenses },
-      { data: debts },
-      { data: assets },
-      { data: insurance },
-      { data: goals },
+      clientRes,
+      incomeRes,
+      expensesRes,
+      debtsRes,
+      assetsRes,
+      insuranceRes,
+      goalsRes,
     ] = await Promise.all([
       serviceClient.from("clients").select("*").eq("id", clientId).maybeSingle(),
       serviceClient.from("income").select("*").eq("client_id", clientId),
       serviceClient.from("expenses").select("*").eq("client_id", clientId),
       serviceClient.from("debts").select("*").eq("client_id", clientId),
       serviceClient.from("assets").select("*").eq("client_id", clientId),
-      serviceClient.from("insurance").select("*").eq("client_id", clientId),
+      serviceClient.from("insurance").select("*").eq("client_id", clientId).throwOnError().catch(() => ({ data: [] })),
       serviceClient.from("goals").select("*").eq("client_id", clientId),
     ]);
+
+    const client   = clientRes.data;
+    const income   = incomeRes.data   || [];
+    const expenses = expensesRes.data || [];
+    const debts    = debtsRes.data    || [];
+    const assets   = assetsRes.data   || [];
+    const insurance = (insuranceRes as any).data || [];
+    const goals    = goalsRes.data    || [];
 
     if (!client) return json({ error: "Cliente não encontrado" }, 404);
 
@@ -164,8 +172,10 @@ Regras:
 
     if (!aiResp.ok) {
       const err = await aiResp.text();
-      console.error("[suggest-metas] OpenAI error:", err);
-      return json({ error: "Erro na IA: " + aiResp.status }, 500);
+      console.error("[suggest-metas] OpenAI error:", aiResp.status, err);
+      let detail = "";
+      try { detail = JSON.parse(err)?.error?.message || err; } catch { detail = err; }
+      return json({ error: `OpenAI ${aiResp.status}: ${detail}` }, 500);
     }
 
     const aiData = await aiResp.json();
