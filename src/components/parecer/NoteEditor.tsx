@@ -217,8 +217,8 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
       if (error) throw error;
 
       if (!activeNote && data) {
-        setActiveNote(data as Note);
-        setTitle((data as Note).title || noteTitle);
+        setActiveNote(data as unknown as Note);
+        setTitle((data as unknown as Note).title || noteTitle);
       }
       await loadNotes();
       setLastSavedAt(new Date());
