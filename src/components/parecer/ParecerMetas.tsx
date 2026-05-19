@@ -61,7 +61,7 @@ const SECTION_CONFIG: Record<SourceTable, { label: string; icon: LucideIcon; col
 
 const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance", "goals"];
 
-const GRID = "grid-cols-[minmax(0,2fr)_100px_120px_minmax(0,2fr)]";
+const GRID = "grid-cols-[minmax(0,1.2fr)_100px_120px_minmax(0,2fr)]";
 
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
