@@ -96,8 +96,6 @@ const tableData = [
   { ativo: "IPCA + 7% (isento IR)", rent: "11,51%", v50: "R$ 55.755", v100: "R$ 111.510", v1m: "R$ 1.115.100" },
 ];
 
-type TipoRenda = "fixa" | "mista" | "variavel";
-
 interface BentoFeature {
   title: string;
   desc: string;
@@ -109,144 +107,38 @@ interface BentoFeature {
   rentAnual: number;
 }
 
-/** Cards "Prefixado / Pós-fixado / IPCA+" — variam conforme o tipo de renda escolhido */
-const bentoByTipo: Record<TipoRenda, BentoFeature[]> = {
-  fixa: [
-    {
-      title: "Prefixado",
-      desc: "Taxa travada — ideal em queda de juros.",
-      icon: Lock,
-      rate: "14,20%",
-      rateLabel: "CDB 12 meses",
-      span: "md:col-span-1",
-      variant: "hero",
-      rentAnual: 14.2,
-    },
-    {
-      title: "Pós-fixado (CDI)",
-      desc: "Acompanha o CDI — segue a Selic.",
-      icon: TrendingUp,
-      rate: "14,73%",
-      rateLabel: "104% do CDI a.a.",
-      span: "md:col-span-1",
-      variant: "default",
-      rentAnual: 14.73,
-    },
-    {
-      title: "IPCA+",
-      desc: "Protege da inflação com ganho real.",
-      icon: Shield,
-      rate: "IPCA + 7%",
-      rateLabel: "Ganho real",
-      span: "md:col-span-1",
-      variant: "default",
-      rentAnual: 11.51,
-    },
-  ],
-  mista: [
-    {
-      title: "Multimercado",
-      desc: "Gestão ativa multiestratégia.",
-      icon: Landmark,
-      rate: "16,50%",
-      rateLabel: "Média 12 meses",
-      span: "md:col-span-1",
-      variant: "hero",
-      rentAnual: 16.5,
-    },
-    {
-      title: "Renda + Ações",
-      desc: "Carteira balanceada 60/40.",
-      icon: TrendingUp,
-      rate: "15,80%",
-      rateLabel: "60% RF + 40% RV",
-      span: "md:col-span-1",
-      variant: "default",
-      rentAnual: 15.8,
-    },
-    {
-      title: "Previdência PGBL",
-      desc: "Benefício fiscal + longo prazo.",
-      icon: Shield,
-      rate: "13,20%",
-      rateLabel: "Plano misto",
-      span: "md:col-span-1",
-      variant: "default",
-      rentAnual: 13.2,
-    },
-  ],
-  variavel: [
-    {
-      title: "Ações Brasil",
-      desc: "Blue chips brasileiras com dividendos.",
-      icon: TrendingUp,
-      rate: "18,00%",
-      rateLabel: "Ibovespa+",
-      span: "md:col-span-1",
-      variant: "hero",
-      rentAnual: 18,
-    },
-    {
-      title: "FIIs",
-      desc: "Renda mensal isenta de IR (PF).",
-      icon: Landmark,
-      rate: "13,50%",
-      rateLabel: "DY + valorização",
-      span: "md:col-span-1",
-      variant: "default",
-      rentAnual: 13.5,
-    },
-    {
-      title: "Ações Globais",
-      desc: "BDRs e ETFs internacionais.",
-      icon: Shield,
-      rate: "20,00%",
-      rateLabel: "S&P 500 (10 anos)",
-      span: "md:col-span-1",
-      variant: "default",
-      rentAnual: 20,
-    },
-  ],
-};
-
-// Mantém a referência usada no resto do código (default = renda fixa).
-const bentoFeatures = bentoByTipo.fixa;
-
-/* ── IR automático por tipo de renda + prazo ───── */
-function getAliquotaIRPorTipo(tipo: TipoRenda, anos: number): number {
-  // Tabela regressiva padrão (Renda Fixa e fundos)
-  const dias = anos * 365;
-  const regressiva = dias <= 180 ? 22.5 : dias <= 360 ? 20 : dias <= 720 ? 17.5 : 15;
-
-  switch (tipo) {
-    case "fixa":
-      // Renda Fixa: tabela regressiva pura
-      return regressiva;
-    case "mista":
-      // Renda Mista: regressiva, mas mínima de 15% (fundos de longo prazo)
-      return Math.max(15, regressiva);
-    case "variavel":
-      // Renda Variável: 15% fixo sobre ganho de capital (ações/ETFs)
-      return 15;
-    default:
-      return regressiva;
-  }
-}
-
-/** Texto explicativo da regra aplicada */
-function getRegraIR(tipo: TipoRenda, anos: number): string {
-  const aliq = getAliquotaIRPorTipo(tipo, anos).toString().replace(".", ",");
-  if (tipo === "variavel") return `${aliq}% — alíquota fixa sobre ganho de capital (ações e ETFs)`;
-  if (tipo === "mista") {
-    if (anos >= 2) return `${aliq}% — fundos de longo prazo (após 720 dias)`;
-    return `${aliq}% — tabela regressiva por prazo (${anos} ${anos === 1 ? "ano" : "anos"})`;
-  }
-  // fixa
-  if (anos < 0.5) return `${aliq}% — até 180 dias (tabela regressiva)`;
-  if (anos < 1) return `${aliq}% — 181 a 360 dias (tabela regressiva)`;
-  if (anos < 2) return `${aliq}% — 361 a 720 dias (tabela regressiva)`;
-  return `${aliq}% — acima de 720 dias (alíquota mínima)`;
-}
+const bentoFeatures: BentoFeature[] = [
+  {
+    title: "Prefixado",
+    desc: "Taxa travada — ideal em queda de juros.",
+    icon: Lock,
+    rate: "14,20%",
+    rateLabel: "CDB 12 meses",
+    span: "md:col-span-1",
+    variant: "hero",
+    rentAnual: 14.2,
+  },
+  {
+    title: "Pós-fixado (CDI)",
+    desc: "Acompanha o CDI — segue a Selic.",
+    icon: TrendingUp,
+    rate: "14,73%",
+    rateLabel: "104% do CDI a.a.",
+    span: "md:col-span-1",
+    variant: "default",
+    rentAnual: 14.73,
+  },
+  {
+    title: "IPCA+",
+    desc: "Protege da inflação com ganho real.",
+    icon: Shield,
+    rate: "IPCA + 7%",
+    rateLabel: "Ganho real",
+    span: "md:col-span-1",
+    variant: "default",
+    rentAnual: 11.51,
+  },
+];
 
 const bentoStats = [
   { value: "14,75%", label: "Taxa Selic", icon: Percent, color: "text-accent" },
@@ -472,26 +364,13 @@ const ScrollingPills = ({ onPillClick }: { onPillClick: (target: string) => void
 
 /* ── page component ────────────────────────────── */
 const YieldGuide = () => {
-  const [tipoRenda, setTipoRenda] = useState<TipoRenda>("fixa");
-  const currentBento = bentoByTipo[tipoRenda];
+  const currentBento = bentoFeatures;
   const _preFaixa = currentBento[0];
   const [sim, setSim] = useState({ idadeAtual: 0, idadeAposent: 0, patrimonioAtual: 0, aporte: 0, rendaDesejada: 0, rentabilidade: _preFaixa.rentAnual });
   const [rentPeriodo, setRentPeriodo] = useState<"anual" | "mensal">("anual");
   const [result, setResult] = useState<SimResult | null>(null);
   const [selectedFaixa, setSelectedFaixa] = useState<string | null>(_preFaixa.title);
   const [resultFaixa, setResultFaixa] = useState<BentoFeature | null>(null);
-
-  // Quando o usuário troca o tipo de renda, sincroniza o card destacado e a taxa do simulador
-  const handleTipoRendaChange = (novoTipo: TipoRenda) => {
-    if (novoTipo === tipoRenda) return;
-    const novoConjunto = bentoByTipo[novoTipo];
-    const primeira = novoConjunto[0];
-    setTipoRenda(novoTipo);
-    setSelectedFaixa(primeira.title);
-    setSim((prev) => ({ ...prev, rentabilidade: primeira.rentAnual }));
-    setRentPeriodo("anual");
-    // Bento agora está embutido no simulador — nenhum scroll externo necessário.
-  };
   const [selectedFounder, setSelectedFounder] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -574,17 +453,23 @@ const YieldGuide = () => {
     ? (Math.pow(1 + sim.rentabilidade / 100, 12) - 1) * 100
     : sim.rentabilidade;
 
-  // Alíquota de IR é 100% automática: depende do TIPO de renda + PRAZO (anos até a aposentadoria).
+  // Alíquota de IR automática: tabela regressiva de Renda Fixa pelo prazo.
   const anosHorizonte = Math.max(0, sim.idadeAposent - sim.idadeAtual);
-  const aliquotaEfetivaAtual = getAliquotaIRPorTipo(tipoRenda, anosHorizonte);
-  const regraIRTexto = getRegraIR(tipoRenda, anosHorizonte);
+  const aliquotaEfetivaAtual = getAliquotaIR(anosHorizonte);
+  const regraIRTexto = (() => {
+    const aliq = aliquotaEfetivaAtual.toString().replace(".", ",");
+    if (anosHorizonte < 0.5) return `${aliq}% — até 180 dias (tabela regressiva)`;
+    if (anosHorizonte < 1) return `${aliq}% — 181 a 360 dias (tabela regressiva)`;
+    if (anosHorizonte < 2) return `${aliq}% — 361 a 720 dias (tabela regressiva)`;
+    return `${aliq}% — acima de 720 dias (alíquota mínima)`;
+  })();
 
   const handleSimulate = () => {
     setIsSimulating(true);
     setSimCountdown(5);
     // calcula imediatamente, mas mantém o loader visível por 5s para criar expectativa
     const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliquotaEfetivaAtual);
-    const faixa = selectedFaixa ? currentBento.find((b) => b.title === selectedFaixa) ?? null : null;
+    const faixa = selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null;
 
     // Contador regressivo
     const tickInterval = window.setInterval(() => {
@@ -615,11 +500,11 @@ const YieldGuide = () => {
   useEffect(() => {
     if (!result || isSimulating) return;
     const r = simulate(sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliquotaEfetivaAtual);
-    const faixa = selectedFaixa ? currentBento.find((b) => b.title === selectedFaixa) ?? null : null;
+    const faixa = selectedFaixa ? bentoFeatures.find((b) => b.title === selectedFaixa) ?? null : null;
     setResult(r);
     setResultFaixa(faixa);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tipoRenda, sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliquotaEfetivaAtual, selectedFaixa]);
+  }, [sim.idadeAtual, sim.idadeAposent, sim.patrimonioAtual, sim.aporte, sim.rendaDesejada, rentAnual, aliquotaEfetivaAtual, selectedFaixa]);
 
   const scrollTo = (id: string) => {
     setMobileNav(false);
@@ -1089,111 +974,10 @@ const YieldGuide = () => {
                   }}
                   aria-hidden
                 />
-                <div className="space-y-2">
-                <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
-                  Escolha a forma de rendimento
-                </p>
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
-                  {([
-                    {
-                      id: "fixa" as TipoRenda,
-                      title: "Renda Fixa",
-                      desc: "Mais previsível",
-                      icon: TrendingUp,
-                      badge: "Menor risco",
-                      badgeBg: "bg-novare-blue-light text-novare-blue dark:bg-novare-blue/30 dark:text-novare-blue-bright",
-                    },
-                    {
-                      id: "mista" as TipoRenda,
-                      title: "Renda Mista",
-                      desc: "Equilíbrio",
-                      icon: Landmark,
-                      badge: "Médio risco",
-                      badgeBg: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-                    },
-                    {
-                      id: "variavel" as TipoRenda,
-                      title: "Renda Variável",
-                      desc: "Maior retorno",
-                      icon: ArrowUpRight,
-                      badge: "Maior risco",
-                      badgeBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
-                    },
-                  ]).map((t) => {
-                    const Icon = t.icon;
-                    const isSel = t.id === tipoRenda;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => handleTipoRendaChange(t.id)}
-                        aria-pressed={isSel}
-                        className={`relative flex flex-col h-full min-w-0 text-left rounded-xl border transition-all duration-200 p-2 sm:p-2.5 md:p-3 cursor-pointer group ${
-                          isSel
-                            ? "border-novare-blue/60 bg-novare-blue-light/40 dark:bg-novare-blue/15 shadow-[0_8px_22px_-12px_hsl(var(--novare-blue)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.5)]"
-                            : "border-border/60 bg-card hover:border-novare-blue/30 hover:-translate-y-0.5 hover:shadow-md"
-                        }`}
-                      >
-                        {/* Bolinha de seleção no canto superior direito */}
-                        <span
-                          className={`absolute top-1.5 right-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full transition-all ${
-                            isSel
-                              ? "bg-novare-blue text-white shadow-[0_2px_6px_-1px_hsl(215_50%_23%/0.5)]"
-                              : "bg-transparent border border-border/70 group-hover:border-novare-blue/50"
-                          }`}
-                          aria-hidden
-                        >
-                          {isSel && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
-                        </span>
-
-                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                          <div
-                            className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                              isSel
-                                ? "bg-novare-blue/15 dark:bg-novare-blue-bright/20"
-                                : "bg-muted/70"
-                            }`}
-                          >
-                            <Icon
-                              className={`h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 ${
-                                isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-muted-foreground"
-                              }`}
-                              strokeWidth={2.25}
-                            />
-                          </div>
-                          <p
-                            className={`text-[10.5px] sm:text-[12px] md:text-sm font-bold leading-tight pr-4 min-w-0 break-words ${
-                              isSel ? "text-novare-blue dark:text-novare-blue-bright" : "text-foreground"
-                            }`}
-                          >
-                            {t.title}
-                          </p>
-                        </div>
-
-                        <p className="text-[9.5px] sm:text-[10px] md:text-[11px] text-muted-foreground mt-1 sm:mt-1.5 leading-snug">{t.desc}</p>
-
-                        <span
-                          className={`inline-flex self-start mt-auto pt-1.5 sm:pt-2 px-1.5 py-0.5 rounded text-[8px] sm:text-[8.5px] md:text-[9.5px] font-bold uppercase tracking-wider w-fit ${t.badgeBg}`}
-                        >
-                          {t.badge}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Divider sutil entre os 3 tipos e as 3 estratégias */}
-              <div className="h-px bg-border/50 my-1" />
-
-              {/* ─── BENTO de faixas (Prefixado / CDI / IPCA+ ...) — embutido logo abaixo dos 3 tipos ─── */}
+                {/* ─── BENTO de faixas de Renda Fixa (Prefixado / CDI / IPCA+) ─── */}
               <div className="space-y-2">
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
-                  {tipoRenda === "fixa"
-                    ? "Entenda cada tipo de Renda Fixa — selecione um"
-                    : tipoRenda === "mista"
-                      ? "Estratégias de Renda Mista — selecione uma"
-                      : "Opções em Renda Variável — selecione uma"}
+                  Entenda cada tipo de Renda Fixa — selecione um
                 </p>
                 <div key={tipoRenda} className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
                   {currentBento.map((f, i) => {
@@ -1293,7 +1077,6 @@ const YieldGuide = () => {
                     );
                   })}
                 </div>
-              </div>
               </div>
             </motion.div>
 
@@ -1484,7 +1267,7 @@ const YieldGuide = () => {
                     {/* Card 1 — Alíquota automática */}
                     <div className="space-y-1">
                       <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">
-                        Alíquota de IR ({tipoRenda === "fixa" ? "Renda Fixa" : tipoRenda === "mista" ? "Renda Mista" : "Renda Variável"})
+                        Alíquota de IR (Renda Fixa)
                       </label>
                       <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
                         <span className="text-base font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
