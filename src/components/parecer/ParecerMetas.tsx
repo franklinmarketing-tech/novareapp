@@ -1,13 +1,18 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Sparkles, Save, Check, Loader2, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Sparkles, Save, Loader2, ChevronDown, CalendarDays,
+  Wallet, Receipt, CreditCard, Building2, Shield, Target,
+  type LucideIcon,
+} from "lucide-react";
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -30,7 +35,6 @@ interface ParecerMeta {
   meta_text: string;
   prazo?: string;
   meta_valor?: number;
-  ai_suggestion?: string;
 }
 
 interface AiSuggestion {
@@ -41,132 +45,41 @@ interface AiSuggestion {
   suggested_prazo?: string;
 }
 
-const SECTION_LABELS: Record<SourceTable, string> = {
-  income: "Rendas",
-  expenses: "Despesas",
-  debts: "Dívidas",
-  assets: "Patrimônio",
-  insurance: "Seguros",
-  goals: "Objetivos",
+interface FieldState {
+  metaText: string;
+  prazo: string;
+}
+
+const SECTION_CONFIG: Record<SourceTable, { label: string; icon: LucideIcon; color: string }> = {
+  income:    { label: "Rendas",      icon: Wallet,    color: "bg-success/10 text-success" },
+  expenses:  { label: "Despesas",    icon: Receipt,   color: "bg-destructive/10 text-destructive" },
+  debts:     { label: "Dívidas",     icon: CreditCard, color: "bg-warning/10 text-warning" },
+  assets:    { label: "Patrimônio",  icon: Building2, color: "bg-primary/10 text-primary" },
+  insurance: { label: "Seguros",     icon: Shield,    color: "bg-accent/10 text-accent" },
+  goals:     { label: "Objetivos",   icon: Target,    color: "bg-success/10 text-success" },
 };
 
-const SECTION_ORDER: SourceTable[] = [
-  "income",
-  "expenses",
-  "debts",
-  "assets",
-  "insurance",
-  "goals",
-];
+const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance", "goals"];
 
-// Colunas: Item | Valor atual | Prazo | Meta | Salvar
-const GRID = "grid-cols-[minmax(0,1.8fr)_120px_130px_minmax(0,2fr)_36px]";
+const GRID = "grid-cols-[minmax(0,2fr)_100px_120px_minmax(0,2fr)]";
 
-function MetaRow({
-  item,
-  meta,
-  aiSuggestion,
-  onSave,
-  saving,
-}: {
-  item: FinancialItem;
-  meta?: ParecerMeta;
-  aiSuggestion?: AiSuggestion;
-  onSave: (
-    sourceTable: string,
-    sourceId: string,
-    metaText: string,
-    prazo: string,
-    metaValor?: number,
-  ) => void;
-  saving: boolean;
-}) {
-  const [metaValue, setMetaValue] = useState(meta?.meta_text || "");
-  const [prazo, setPrazo] = useState(meta?.prazo || "");
-  const [saved, setSaved] = useState(false);
-
-  const handleSave = () => {
-    if (!metaValue.trim()) return;
-    onSave(item.source_table, item.source_id, metaValue.trim(), prazo);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
-
-  const handleApplyAI = () => {
-    if (!aiSuggestion) return;
-    setMetaValue(aiSuggestion.suggestion_text);
-    if (aiSuggestion.suggested_prazo) setPrazo(aiSuggestion.suggested_prazo);
-  };
-
+function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className={`grid ${GRID} gap-3 items-start py-3 border-b border-border/40 last:border-0`}>
-      {/* Nome + detalhe + sugestão IA */}
-      <div className="min-w-0 pt-1">
-        <p className="text-sm font-medium leading-tight">{item.source_label}</p>
-        {item.detail && (
-          <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
-        )}
-        {aiSuggestion && !metaValue && (
-          <button
-            onClick={handleApplyAI}
-            className="mt-1.5 flex items-start gap-1 text-xs text-novare-blue hover:text-novare-blue-light transition-colors text-left"
-          >
-            <Sparkles className="w-3 h-3 mt-0.5 shrink-0" />
-            <span className="line-clamp-2">{aiSuggestion.suggestion_text}</span>
-            <span className="shrink-0 font-semibold ml-1">Aplicar</span>
-          </button>
-        )}
-        {aiSuggestion && metaValue && metaValue !== aiSuggestion.suggestion_text && (
-          <button
-            onClick={handleApplyAI}
-            className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-novare-blue transition-colors"
-          >
-            <Sparkles className="w-3 h-3" />
-            <span>Sugestão IA</span>
-            <ChevronRight className="w-3 h-3" />
-          </button>
-        )}
-      </div>
-
-      {/* Valor atual */}
-      <div className="text-sm text-muted-foreground tabular-nums pt-1.5">
-        {item.current_value > 0 ? formatBRL(item.current_value) : "—"}
-        {item.unit && <span className="text-xs ml-0.5 text-muted-foreground/70">{item.unit}</span>}
-      </div>
-
-      {/* Prazo */}
+    <div className="relative">
       <Input
         type="date"
-        value={prazo}
-        onChange={(e) => setPrazo(e.target.value)}
-        className="text-sm h-8"
-      />
-
-      {/* Meta */}
-      <Input
-        value={metaValue}
-        onChange={(e) => setMetaValue(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSave()}
-        placeholder="Defina a meta..."
-        className="text-sm h-8"
-      />
-
-      {/* Salvar */}
-      <Button
-        size="sm"
-        variant={saved ? "secondary" : "default"}
-        onClick={handleSave}
-        disabled={!metaValue.trim() || saving}
-        className="h-8 w-9 p-0 shrink-0"
-      >
-        {saving ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-        ) : saved ? (
-          <Check className="w-3.5 h-3.5" />
-        ) : (
-          <Save className="w-3.5 h-3.5" />
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(
+          "h-8 text-sm pr-8",
+          "[&::-webkit-calendar-picker-indicator]:opacity-0",
+          "[&::-webkit-calendar-picker-indicator]:absolute",
+          "[&::-webkit-calendar-picker-indicator]:inset-0",
+          "[&::-webkit-calendar-picker-indicator]:w-full",
+          "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
         )}
-      </Button>
+      />
+      <CalendarDays className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
     </div>
   );
 }
@@ -176,171 +89,84 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   const queryClient = useQueryClient();
   const [aiSuggestions, setAiSuggestions] = useState<AiSuggestion[]>([]);
   const [loadingAI, setLoadingAI] = useState(false);
-  const [savingId, setSavingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [fields, setFields] = useState<Record<string, FieldState>>({});
+  const [expanded, setExpanded] = useState<Record<SourceTable, boolean>>(
+    Object.fromEntries(SECTION_ORDER.map((s) => [s, true])) as Record<SourceTable, boolean>,
+  );
 
   const { data: income = [] } = useQuery({
     queryKey: ["income", clientId],
-    queryFn: async () => {
-      const { data } = await supabase.from("income").select("*").eq("client_id", clientId);
-      return data || [];
-    },
+    queryFn: async () => { const { data } = await supabase.from("income").select("*").eq("client_id", clientId); return data || []; },
   });
-
   const { data: expenses = [] } = useQuery({
     queryKey: ["expenses", clientId],
-    queryFn: async () => {
-      const { data } = await supabase.from("expenses").select("*").eq("client_id", clientId);
-      return data || [];
-    },
+    queryFn: async () => { const { data } = await supabase.from("expenses").select("*").eq("client_id", clientId); return data || []; },
   });
-
   const { data: debts = [] } = useQuery({
     queryKey: ["debts", clientId],
-    queryFn: async () => {
-      const { data } = await supabase.from("debts").select("*").eq("client_id", clientId);
-      return data || [];
-    },
+    queryFn: async () => { const { data } = await supabase.from("debts").select("*").eq("client_id", clientId); return data || []; },
   });
-
   const { data: assets = [] } = useQuery({
     queryKey: ["assets", clientId],
-    queryFn: async () => {
-      const { data } = await supabase.from("assets").select("*").eq("client_id", clientId);
-      return data || [];
-    },
+    queryFn: async () => { const { data } = await supabase.from("assets").select("*").eq("client_id", clientId); return data || []; },
   });
-
   const { data: insurance = [] } = useQuery({
     queryKey: ["insurance", clientId],
-    queryFn: async () => {
-      const { data } = await supabase.from("insurance").select("*").eq("client_id", clientId);
-      return data || [];
-    },
+    queryFn: async () => { const { data } = await supabase.from("insurance").select("*").eq("client_id", clientId); return data || []; },
   });
-
   const { data: goals = [] } = useQuery({
     queryKey: ["goals", clientId],
-    queryFn: async () => {
-      const { data } = await supabase.from("goals").select("*").eq("client_id", clientId);
-      return data || [];
-    },
+    queryFn: async () => { const { data } = await supabase.from("goals").select("*").eq("client_id", clientId); return data || []; },
   });
 
   const { data: metas = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("parecer_metas")
-        .select("*")
-        .eq("client_id", clientId);
+      const { data } = await supabase.from("parecer_metas").select("*").eq("client_id", clientId);
       return (data || []) as ParecerMeta[];
     },
   });
 
-  const saveMeta = useMutation({
-    mutationFn: async ({
-      sourceTable,
-      sourceId,
-      sourceLabel,
-      currentValue,
-      metaText,
-      prazo,
-      metaValor,
-    }: {
-      sourceTable: string;
-      sourceId: string;
-      sourceLabel: string;
-      currentValue: number;
-      metaText: string;
-      prazo: string;
-      metaValor?: number;
-    }) => {
-      const { error } = await supabase.from("parecer_metas").upsert(
-        {
-          client_id: clientId,
-          source_table: sourceTable,
-          source_id: sourceId,
-          source_label: sourceLabel,
-          current_value: currentValue,
-          meta_text: metaText,
-          prazo: prazo || null,
-          meta_valor: metaValor ?? null,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "client_id,source_table,source_id" },
-      );
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
-      toast.success("Meta salva");
-    },
-    onError: () => toast.error("Erro ao salvar meta"),
-  });
+  // Populate fields from saved metas (only for keys not yet touched by user)
+  useEffect(() => {
+    if (!metas.length) return;
+    setFields((prev) => {
+      const next = { ...prev };
+      for (const m of metas) {
+        if (next[m.source_id] === undefined) {
+          next[m.source_id] = { metaText: m.meta_text || "", prazo: m.prazo || "" };
+        }
+      }
+      return next;
+    });
+  }, [metas]);
 
-  const handleSave = (
-    sourceTable: string,
-    sourceId: string,
-    metaText: string,
-    prazo: string,
-    metaValor?: number,
-  ) => {
-    const item = allItems.find(
-      (i) => i.source_table === sourceTable && i.source_id === sourceId,
-    );
-    if (!item) return;
-    setSavingId(sourceId);
-    saveMeta.mutate(
-      {
-        sourceTable,
-        sourceId,
-        sourceLabel: item.source_label,
-        currentValue: item.current_value,
-        metaText,
-        prazo,
-        metaValor,
-      },
-      { onSettled: () => setSavingId(null) },
-    );
-  };
-
-  const handleAI = async () => {
-    if (!session?.access_token) return;
-    setLoadingAI(true);
-    try {
-      const resp = await supabase.functions.invoke("suggest-metas", {
-        body: { clientId },
-      });
-      if (resp.error) throw resp.error;
-      const suggestions: AiSuggestion[] = resp.data?.suggestions || [];
-      setAiSuggestions(suggestions);
-      toast.success(`IA gerou ${suggestions.length} sugestões`);
-    } catch (err) {
-      toast.error("Erro ao consultar IA");
-      console.error(err);
-    } finally {
-      setLoadingAI(false);
-    }
+  const updateField = (sourceId: string, key: keyof FieldState, value: string) => {
+    setFields((prev) => ({
+      ...prev,
+      [sourceId]: { metaText: "", prazo: "", ...prev[sourceId], [key]: value },
+    }));
   };
 
   const allItems: FinancialItem[] = [
-    ...income.map((r: any) => ({
+    ...(income as any[]).map((r) => ({
       source_table: "income" as SourceTable,
       source_id: r.id,
       source_label: r.description,
       current_value: Number(r.amount),
       unit: `/${r.frequency === "mensal" ? "mês" : r.frequency === "anual" ? "ano" : "eventual"}`,
-      detail: `Estabilidade: ${r.stability} · ${r.is_primary ? "Renda principal" : "Renda secundária"}`,
+      detail: `Estabilidade: ${r.stability}${r.is_primary ? " · Principal" : ""}`,
     })),
-    ...expenses.map((r: any) => ({
+    ...(expenses as any[]).map((r) => ({
       source_table: "expenses" as SourceTable,
       source_id: r.id,
       source_label: r.category + (r.description ? ` — ${r.description}` : ""),
       current_value: Number(r.amount),
       unit: "/mês",
-      detail: r.is_fixed ? "Despesa fixa" : `Despesa variável${r.due_day ? ` · vence dia ${r.due_day}` : ""}`,
+      detail: r.is_fixed ? "Fixa" : `Variável${r.due_day ? ` · vence dia ${r.due_day}` : ""}`,
     })),
-    ...debts.map((r: any) => ({
+    ...(debts as any[]).map((r) => ({
       source_table: "debts" as SourceTable,
       source_id: r.id,
       source_label: `${r.type}${r.creditor ? ` — ${r.creditor}` : ""}`,
@@ -351,13 +177,13 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         r.remaining_months ? `${r.remaining_months} meses restantes` : null,
       ].filter(Boolean).join(" · "),
     })),
-    ...assets.map((r: any) => ({
+    ...(assets as any[]).map((r) => ({
       source_table: "assets" as SourceTable,
       source_id: r.id,
       source_label: `${r.type}${r.description ? ` — ${r.description}` : ""}`,
       current_value: Number(r.estimated_value),
     })),
-    ...insurance.map((r: any) => ({
+    ...(insurance as any[]).map((r) => ({
       source_table: "insurance" as SourceTable,
       source_id: r.id,
       source_label: `${r.type}${r.provider ? ` — ${r.provider}` : ""}`,
@@ -365,7 +191,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       unit: "/mês",
       detail: r.coverage_amount ? `Cobertura: ${formatBRL(Number(r.coverage_amount))}` : undefined,
     })),
-    ...goals.map((r: any) => ({
+    ...(goals as any[]).map((r) => ({
       source_table: "goals" as SourceTable,
       source_id: r.id,
       source_label: r.description,
@@ -378,99 +204,234 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   ];
 
   const bySection = SECTION_ORDER.reduce(
-    (acc, section) => {
-      acc[section] = allItems.filter((i) => i.source_table === section);
-      return acc;
-    },
+    (acc, s) => { acc[s] = allItems.filter((i) => i.source_table === s); return acc; },
     {} as Record<SourceTable, FinancialItem[]>,
   );
 
   const totalItems = allItems.length;
   const totalMetas = metas.filter((m) => m.meta_text).length;
 
+  const handleSaveAll = async () => {
+    const toSave = allItems.filter((item) => fields[item.source_id]?.metaText?.trim());
+    if (!toSave.length) { toast.error("Nenhuma meta preenchida"); return; }
+    setSaving(true);
+    try {
+      const rows = toSave.map((item) => {
+        const f = fields[item.source_id];
+        return {
+          client_id: clientId,
+          source_table: item.source_table,
+          source_id: item.source_id,
+          source_label: item.source_label,
+          current_value: item.current_value,
+          meta_text: f.metaText.trim(),
+          prazo: f.prazo || null,
+          updated_at: new Date().toISOString(),
+        };
+      });
+      const { error } = await supabase
+        .from("parecer_metas")
+        .upsert(rows, { onConflict: "client_id,source_table,source_id" });
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
+      toast.success(`${toSave.length} meta${toSave.length !== 1 ? "s" : ""} salva${toSave.length !== 1 ? "s" : ""}`);
+    } catch (err: any) {
+      toast.error("Erro ao salvar: " + (err?.message || "tente novamente"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAI = async () => {
+    if (!session?.access_token) { toast.error("Sessão expirada, faça login novamente"); return; }
+    setLoadingAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("suggest-metas", { body: { clientId } });
+      if (error) throw new Error(error.message || "Erro na função");
+      const suggestions: AiSuggestion[] = data?.suggestions || [];
+      if (!suggestions.length) { toast.info("IA não retornou sugestões"); return; }
+      setAiSuggestions(suggestions);
+      // Expand all sections so suggestions are visible
+      setExpanded(Object.fromEntries(SECTION_ORDER.map((s) => [s, true])) as Record<SourceTable, boolean>);
+      toast.success(`IA gerou ${suggestions.length} sugestões — clique em Aplicar para usar`);
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      if (msg.includes("ANTHROPIC_API_KEY")) {
+        toast.error("Chave da IA não configurada. Configure ANTHROPIC_API_KEY no Supabase.");
+      } else {
+        toast.error("Erro ao consultar IA: " + msg);
+      }
+      console.error("[suggest-metas]", err);
+    } finally {
+      setLoadingAI(false);
+    }
+  };
+
+  if (totalItems === 0) {
+    return (
+      <div className="text-center py-16 text-muted-foreground">
+        <p className="text-sm">Nenhum dado financeiro encontrado.</p>
+        <p className="text-xs mt-1">O cliente precisa completar o onboarding primeiro.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {totalMetas} de {totalItems} metas definidas
         </p>
-        <Button
-          onClick={handleAI}
-          disabled={loadingAI || totalItems === 0}
-          className="gap-2"
-          variant="outline"
-        >
-          {loadingAI ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Sparkles className="w-4 h-4 text-novare-blue" />
-          )}
+        <Button onClick={handleAI} disabled={loadingAI || totalItems === 0} variant="outline" className="gap-2">
+          {loadingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-novare-blue" />}
           {loadingAI ? "Analisando..." : "IA: Sugerir metas"}
         </Button>
       </div>
 
-      {totalItems === 0 && (
-        <div className="text-center py-16 text-muted-foreground">
-          <p className="text-sm">Nenhum dado financeiro encontrado.</p>
-          <p className="text-xs mt-1">O cliente precisa completar o onboarding primeiro.</p>
-        </div>
-      )}
-
+      {/* Section cards */}
       {SECTION_ORDER.map((section) => {
+        const cfg = SECTION_CONFIG[section];
         const items = bySection[section];
         if (!items.length) return null;
-        const metasCount = metas.filter((m) => m.source_table === section && m.meta_text).length;
+        const Icon = cfg.icon;
+        const isExpanded = expanded[section];
+        const metasCount = items.filter((item) => {
+          const f = fields[item.source_id];
+          return f?.metaText?.trim() || metas.find((m) => m.source_id === item.source_id && m.meta_text);
+        }).length;
 
         return (
-          <div key={section}>
-            {/* Título da seção */}
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {SECTION_LABELS[section]}
-              </h3>
-              <Badge variant="secondary" className="text-xs">{items.length}</Badge>
-              {metasCount > 0 && (
-                <Badge variant="outline" className="text-xs text-green-600 border-green-600/30">
-                  {metasCount} com meta
-                </Badge>
+          <div key={section} className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-subtle">
+            {/* Card header — click to expand */}
+            <button
+              onClick={() => setExpanded((prev) => ({ ...prev, [section]: !prev[section] }))}
+              className="w-full flex items-center gap-4 p-4 text-left hover:bg-muted/30 transition-colors"
+            >
+              <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", cfg.color)}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{cfg.label}</p>
+                <p className="text-[0.6875rem] text-muted-foreground">
+                  {items.length} item{items.length !== 1 ? "s" : ""}
+                  {metasCount > 0 && ` · ${metasCount} com meta`}
+                  {aiSuggestions.filter((s) => s.source_table === section).length > 0 && (
+                    <span className="ml-1.5 text-novare-blue font-medium">
+                      · {aiSuggestions.filter((s) => s.source_table === section).length} sugestão IA
+                    </span>
+                  )}
+                </p>
+              </div>
+              <Badge variant="secondary" className="text-xs shrink-0">{items.length}</Badge>
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-muted-foreground/40 shrink-0"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </motion.div>
+            </button>
+
+            {/* Card content */}
+            <AnimatePresence initial={false}>
+              {isExpanded && (
+                <motion.div
+                  key="content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
+                  style={{ overflow: "hidden" }}
+                >
+                  <div className="px-4 pb-4 border-t border-border/30">
+                    {/* Column headers */}
+                    <div className={cn(`grid ${GRID} gap-3 pt-3 pb-2 text-xs text-muted-foreground font-medium border-b border-border/20`)}>
+                      <span>Item</span>
+                      <span>Valor atual</span>
+                      <span>Prazo</span>
+                      <span>Meta</span>
+                    </div>
+
+                    {items.map((item) => {
+                      const aiSugg = aiSuggestions.find(
+                        (s) => s.source_table === item.source_table && s.source_id === item.source_id,
+                      );
+                      const f = fields[item.source_id] || { metaText: "", prazo: "" };
+                      const hasAI = !!aiSugg && aiSugg.suggestion_text !== f.metaText;
+
+                      return (
+                        <div
+                          key={item.source_id}
+                          className={cn(`grid ${GRID} gap-3 items-start py-3 border-b border-border/20 last:border-0`)}
+                        >
+                          {/* Name */}
+                          <div className="min-w-0 pt-1">
+                            <p className="text-sm font-medium leading-tight">{item.source_label}</p>
+                            {item.detail && (
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.detail}</p>
+                            )}
+                          </div>
+
+                          {/* Current value */}
+                          <div className="text-sm text-muted-foreground tabular-nums pt-1.5">
+                            {item.current_value > 0 ? formatBRL(item.current_value) : "—"}
+                            {item.unit && (
+                              <span className="text-xs ml-0.5 text-muted-foreground/60">{item.unit}</span>
+                            )}
+                          </div>
+
+                          {/* Prazo */}
+                          <DateInput value={f.prazo} onChange={(v) => updateField(item.source_id, "prazo", v)} />
+
+                          {/* Meta + IA suggestion */}
+                          <div className="space-y-1.5">
+                            <Input
+                              value={f.metaText}
+                              onChange={(e) => updateField(item.source_id, "metaText", e.target.value)}
+                              placeholder="Defina a meta..."
+                              className="h-8 text-sm"
+                            />
+                            {hasAI && (
+                              <button
+                                onClick={() => {
+                                  updateField(item.source_id, "metaText", aiSugg.suggestion_text);
+                                  if (aiSugg.suggested_prazo) updateField(item.source_id, "prazo", aiSugg.suggested_prazo);
+                                }}
+                                className="flex items-start gap-1.5 text-xs text-novare-blue hover:text-novare-blue-light transition-colors text-left w-full"
+                              >
+                                <Sparkles className="w-3 h-3 mt-0.5 shrink-0 text-novare-blue" />
+                                <span className="line-clamp-2 flex-1">{aiSugg.suggestion_text}</span>
+                                <span className="shrink-0 font-semibold underline">Aplicar</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
               )}
-            </div>
-
-            {/* Cabeçalho das colunas */}
-            <div className={`grid ${GRID} gap-3 pb-1 mb-1`}>
-              <p className="text-xs text-muted-foreground font-medium">Item</p>
-              <p className="text-xs text-muted-foreground font-medium">Valor atual</p>
-              <p className="text-xs text-muted-foreground font-medium">Prazo</p>
-              <p className="text-xs text-muted-foreground font-medium">Meta</p>
-              <div />
-            </div>
-
-            <div className="rounded-lg border border-border/60 bg-card px-4">
-              {items.map((item) => {
-                const meta = metas.find(
-                  (m) => m.source_table === item.source_table && m.source_id === item.source_id,
-                );
-                const aiSuggestion = aiSuggestions.find(
-                  (s) => s.source_table === item.source_table && s.source_id === item.source_id,
-                );
-                return (
-                  <MetaRow
-                    key={item.source_id}
-                    item={item}
-                    meta={meta}
-                    aiSuggestion={aiSuggestion}
-                    onSave={handleSave}
-                    saving={savingId === item.source_id}
-                  />
-                );
-              })}
-            </div>
-
-            <Separator className="mt-6" />
+            </AnimatePresence>
           </div>
         );
       })}
+
+      {/* Single save button */}
+      <div className="flex justify-end pt-2">
+        <Button
+          onClick={handleSaveAll}
+          disabled={saving}
+          className="gap-2 min-w-[140px]"
+        >
+          {saving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
+          {saving ? "Salvando..." : "Salvar tudo"}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -57,6 +57,7 @@ Deno.serve(async (req) => {
       { data: expenses },
       { data: debts },
       { data: assets },
+      { data: insurance },
       { data: goals },
     ] = await Promise.all([
       serviceClient.from("clients").select("*").eq("id", clientId).maybeSingle(),
@@ -64,6 +65,7 @@ Deno.serve(async (req) => {
       serviceClient.from("expenses").select("*").eq("client_id", clientId),
       serviceClient.from("debts").select("*").eq("client_id", clientId),
       serviceClient.from("assets").select("*").eq("client_id", clientId),
+      serviceClient.from("insurance").select("*").eq("client_id", clientId),
       serviceClient.from("goals").select("*").eq("client_id", clientId),
     ]);
 
@@ -94,6 +96,9 @@ ${(debts || []).map((r: any) => `- ${r.type} (${r.creditor || "N/A"}): total ${f
 PATRIMÔNIO (total: ${formatBRL(totalAssets)}):
 ${(assets || []).map((r: any) => `- ${r.type}: ${r.description || ""} — ${formatBRL(Number(r.estimated_value))}`).join("\n") || "Nenhum"}
 
+SEGUROS:
+${(insurance || []).map((r: any) => `- ${r.type}${r.provider ? ` (${r.provider})` : ""}: prêmio ${formatBRL(Number(r.monthly_premium || 0))}/mês, cobertura ${formatBRL(Number(r.coverage_amount || 0))}`).join("\n") || "Nenhum"}
+
 OBJETIVOS:
 ${(goals || []).map((r: any) => `- ${r.description}: meta ${formatBRL(Number(r.target_amount || 0))}, prazo ${r.deadline || "N/A"}, prioridade ${r.priority}`).join("\n") || "Nenhum"}
 
@@ -106,6 +111,7 @@ Capacidade de poupança: ${formatBRL(totalIncome - totalExpenses)}/mês
       ...(expenses || []).map((r: any) => ({ source_table: "expenses", source_id: r.id, source_label: r.category + (r.description ? ` — ${r.description}` : ""), current_value: Number(r.amount) })),
       ...(debts || []).map((r: any) => ({ source_table: "debts", source_id: r.id, source_label: `${r.type} (${r.creditor || "N/A"})`, current_value: Number(r.total_amount) })),
       ...(assets || []).map((r: any) => ({ source_table: "assets", source_id: r.id, source_label: `${r.type}: ${r.description || ""}`, current_value: Number(r.estimated_value) })),
+      ...(insurance || []).map((r: any) => ({ source_table: "insurance", source_id: r.id, source_label: `${r.type}${r.provider ? ` (${r.provider})` : ""}`, current_value: Number(r.monthly_premium || 0) })),
       ...(goals || []).map((r: any) => ({ source_table: "goals", source_id: r.id, source_label: r.description, current_value: Number(r.target_amount || 0) })),
     ];
 
