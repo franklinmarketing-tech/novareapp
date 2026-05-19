@@ -149,15 +149,14 @@ Regras:
 - Para objetivos: sugira estratégia para atingir
 - Responda APENAS o JSON, sem texto adicional`;
 
-    const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${openaiKey}`,
+        "Authorization": `Bearer ${lovableKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
-        max_tokens: 4096,
+        model: "google/gemini-2.5-flash",
         messages: [{ role: "user", content: prompt }],
       }),
     });
