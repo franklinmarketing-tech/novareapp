@@ -130,7 +130,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
       .select("*")
       .eq("client_id", clientId)
       .order("created_at", { ascending: false });
-    setNotes((data as Note[]) || []);
+    setNotes((data as unknown as Note[]) || []);
     setLoading(false);
   };
 
