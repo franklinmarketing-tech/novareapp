@@ -22,8 +22,8 @@ const STEP_INFO: Record<
 > = {
   onboarding:     { num: 1, label: "Onboarding",     description: "Coleta de dados brutos do cliente" },
   diagnostico:    { num: 2, label: "Diagnóstico",    description: "Análise financeira + IA inicial" },
-  parecer:        { num: 3, label: "Parecer",        description: "Alinhamento consultivo + chips" },
-  "plano-acao":   { num: 4, label: "Plano de Ação",  description: "IA gera 3 variantes A/B/C" },
+  parecer:        { num: 3, label: "Plano de Ação",  description: "Defina metas para cada item financeiro" },
+  "plano-acao":   { num: 4, label: "Ver Ações",      description: "Visualize as metas definidas" },
   acompanhamento: { num: 5, label: "Acompanhamento", description: "KPIs + comparativo + evolução IA" },
   relatorio:      { num: 6, label: "Relatório",      description: "PDF consolidado para o cliente" },
 };
