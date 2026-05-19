@@ -61,7 +61,9 @@ const SECTION_CONFIG: Record<SourceTable, { label: string; icon: LucideIcon; col
 
 const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance", "goals"];
 
-const GRID = "grid-cols-[minmax(0,1.2fr)_100px_120px_minmax(0,2fr)]";
+// Item | Valor atual | espaçador | Prazo | Meta
+// O espaçador absorve o espaço sobrante, mantendo Prazo e Meta ancorados à direita
+const GRID = "grid-cols-[minmax(0,1fr)_96px_minmax(0,0.6fr)_120px_minmax(0,2fr)]";
 
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
@@ -349,6 +351,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                     <div className={cn(`grid ${GRID} gap-3 pt-3 pb-2 text-xs text-muted-foreground font-medium border-b border-border/20`)}>
                       <span>Item</span>
                       <span>Valor atual</span>
+                      <span />
                       <span>Prazo</span>
                       <span>Meta</span>
                     </div>
@@ -380,6 +383,9 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                               <span className="text-xs ml-0.5 text-muted-foreground/60">{item.unit}</span>
                             )}
                           </div>
+
+                          {/* Espaçador */}
+                          <div />
 
                           {/* Prazo */}
                           <DateInput value={f.prazo} onChange={(v) => updateField(item.source_id, "prazo", v)} />
