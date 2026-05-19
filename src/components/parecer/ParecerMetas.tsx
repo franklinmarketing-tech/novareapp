@@ -248,12 +248,23 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     if (!session?.access_token) { toast.error("Sessão expirada, faça login novamente"); return; }
     setLoadingAI(true);
     try {
-      const { data, error } = await supabase.functions.invoke("suggest-metas", { body: { clientId } });
-      if (error) {
-        const detail = (data as any)?.error || error.message || "Erro na função";
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const resp = await fetch(`${supabaseUrl}/functions/v1/suggest-metas`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+        },
+        body: JSON.stringify({ clientId }),
+      });
+      const respData = await resp.json();
+      if (!resp.ok) {
+        const detail = respData?.error || `HTTP ${resp.status}`;
+        console.error("[suggest-metas] erro:", detail, respData);
         throw new Error(detail);
       }
-      const suggestions: AiSuggestion[] = data?.suggestions || [];
+      const suggestions: AiSuggestion[] = respData?.suggestions || [];
       if (!suggestions.length) { toast.info("IA não retornou sugestões"); return; }
       setAiSuggestions(suggestions);
       setExpanded(Object.fromEntries(SECTION_ORDER.map((s) => [s, true])) as Record<SourceTable, boolean>);
