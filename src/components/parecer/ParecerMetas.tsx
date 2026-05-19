@@ -8,12 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Sparkles, Save, Check, Loader2, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-type SourceTable = "income" | "expenses" | "debts" | "assets" | "goals";
+type SourceTable = "income" | "expenses" | "debts" | "assets" | "insurance" | "goals";
 
 interface FinancialItem {
   source_table: SourceTable;
@@ -21,6 +20,7 @@ interface FinancialItem {
   source_label: string;
   current_value: number;
   unit?: string;
+  detail?: string;
 }
 
 interface ParecerMeta {
@@ -28,6 +28,7 @@ interface ParecerMeta {
   source_table: string;
   source_id: string;
   meta_text: string;
+  prazo?: string;
   meta_valor?: number;
   ai_suggestion?: string;
 }
@@ -37,6 +38,7 @@ interface AiSuggestion {
   source_id: string;
   suggestion_text: string;
   target_value?: number;
+  suggested_prazo?: string;
 }
 
 const SECTION_LABELS: Record<SourceTable, string> = {
@@ -44,10 +46,21 @@ const SECTION_LABELS: Record<SourceTable, string> = {
   expenses: "Despesas",
   debts: "Dívidas",
   assets: "Patrimônio",
+  insurance: "Seguros",
   goals: "Objetivos",
 };
 
-const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "goals"];
+const SECTION_ORDER: SourceTable[] = [
+  "income",
+  "expenses",
+  "debts",
+  "assets",
+  "insurance",
+  "goals",
+];
+
+// Colunas: Item | Valor atual | Prazo | Meta | Salvar
+const GRID = "grid-cols-[minmax(0,1.8fr)_120px_130px_minmax(0,2fr)_36px]";
 
 function MetaRow({
   item,
@@ -59,63 +72,82 @@ function MetaRow({
   item: FinancialItem;
   meta?: ParecerMeta;
   aiSuggestion?: AiSuggestion;
-  onSave: (sourceTable: string, sourceId: string, metaText: string, metaValor?: number) => void;
+  onSave: (
+    sourceTable: string,
+    sourceId: string,
+    metaText: string,
+    prazo: string,
+    metaValor?: number,
+  ) => void;
   saving: boolean;
 }) {
-  const [value, setValue] = useState(meta?.meta_text || "");
+  const [metaValue, setMetaValue] = useState(meta?.meta_text || "");
+  const [prazo, setPrazo] = useState(meta?.prazo || "");
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
-    if (!value.trim()) return;
-    onSave(item.source_table, item.source_id, value.trim());
+    if (!metaValue.trim()) return;
+    onSave(item.source_table, item.source_id, metaValue.trim(), prazo);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
   const handleApplyAI = () => {
     if (!aiSuggestion) return;
-    setValue(aiSuggestion.suggestion_text);
+    setMetaValue(aiSuggestion.suggestion_text);
+    if (aiSuggestion.suggested_prazo) setPrazo(aiSuggestion.suggested_prazo);
   };
 
   return (
-    <div className="grid grid-cols-[1fr_140px_1fr_auto] gap-3 items-center py-3 border-b border-border/40 last:border-0">
-      {/* Nome */}
-      <div className="min-w-0">
-        <p className="text-sm font-medium truncate">{item.source_label}</p>
-        {aiSuggestion && !value && (
+    <div className={`grid ${GRID} gap-3 items-start py-3 border-b border-border/40 last:border-0`}>
+      {/* Nome + detalhe + sugestão IA */}
+      <div className="min-w-0 pt-1">
+        <p className="text-sm font-medium leading-tight">{item.source_label}</p>
+        {item.detail && (
+          <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
+        )}
+        {aiSuggestion && !metaValue && (
           <button
             onClick={handleApplyAI}
-            className="mt-1 flex items-center gap-1 text-xs text-novare-blue hover:text-novare-blue-light transition-colors"
+            className="mt-1.5 flex items-start gap-1 text-xs text-novare-blue hover:text-novare-blue-light transition-colors text-left"
           >
-            <Sparkles className="w-3 h-3" />
-            <span className="truncate max-w-[200px]">{aiSuggestion.suggestion_text}</span>
-            <span className="shrink-0 font-semibold">Aplicar</span>
+            <Sparkles className="w-3 h-3 mt-0.5 shrink-0" />
+            <span className="line-clamp-2">{aiSuggestion.suggestion_text}</span>
+            <span className="shrink-0 font-semibold ml-1">Aplicar</span>
           </button>
         )}
-        {aiSuggestion && value && value !== aiSuggestion.suggestion_text && (
+        {aiSuggestion && metaValue && metaValue !== aiSuggestion.suggestion_text && (
           <button
             onClick={handleApplyAI}
             className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-novare-blue transition-colors"
           >
             <Sparkles className="w-3 h-3" />
-            <span className="shrink-0">Ver sugestão IA</span>
+            <span>Sugestão IA</span>
             <ChevronRight className="w-3 h-3" />
           </button>
         )}
       </div>
 
       {/* Valor atual */}
-      <div className="text-sm text-muted-foreground tabular-nums">
+      <div className="text-sm text-muted-foreground tabular-nums pt-1.5">
         {item.current_value > 0 ? formatBRL(item.current_value) : "—"}
-        {item.unit && <span className="text-xs ml-0.5">{item.unit}</span>}
+        {item.unit && <span className="text-xs ml-0.5 text-muted-foreground/70">{item.unit}</span>}
       </div>
 
-      {/* Campo meta */}
+      {/* Prazo */}
       <Input
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
+        type="date"
+        value={prazo}
+        onChange={(e) => setPrazo(e.target.value)}
+        className="text-sm h-8"
+      />
+
+      {/* Meta */}
+      <Input
+        value={metaValue}
+        onChange={(e) => setMetaValue(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSave()}
-        placeholder="Defina a meta para este item..."
+        placeholder="Defina a meta..."
         className="text-sm h-8"
       />
 
@@ -124,8 +156,8 @@ function MetaRow({
         size="sm"
         variant={saved ? "secondary" : "default"}
         onClick={handleSave}
-        disabled={!value.trim() || saving}
-        className="h-8 w-8 p-0 shrink-0"
+        disabled={!metaValue.trim() || saving}
+        className="h-8 w-9 p-0 shrink-0"
       >
         {saving ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -146,7 +178,6 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   const [loadingAI, setLoadingAI] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  // Carrega dados financeiros
   const { data: income = [] } = useQuery({
     queryKey: ["income", clientId],
     queryFn: async () => {
@@ -179,6 +210,14 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     },
   });
 
+  const { data: insurance = [] } = useQuery({
+    queryKey: ["insurance", clientId],
+    queryFn: async () => {
+      const { data } = await supabase.from("insurance").select("*").eq("client_id", clientId);
+      return data || [];
+    },
+  });
+
   const { data: goals = [] } = useQuery({
     queryKey: ["goals", clientId],
     queryFn: async () => {
@@ -187,7 +226,6 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     },
   });
 
-  // Carrega metas salvas
   const { data: metas = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
     queryFn: async () => {
@@ -199,7 +237,6 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     },
   });
 
-  // Mutation para salvar meta
   const saveMeta = useMutation({
     mutationFn: async ({
       sourceTable,
@@ -207,6 +244,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       sourceLabel,
       currentValue,
       metaText,
+      prazo,
       metaValor,
     }: {
       sourceTable: string;
@@ -214,6 +252,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       sourceLabel: string;
       currentValue: number;
       metaText: string;
+      prazo: string;
       metaValor?: number;
     }) => {
       const { error } = await supabase.from("parecer_metas").upsert(
@@ -224,6 +263,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
           source_label: sourceLabel,
           current_value: currentValue,
           meta_text: metaText,
+          prazo: prazo || null,
           meta_valor: metaValor ?? null,
           updated_at: new Date().toISOString(),
         },
@@ -242,6 +282,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     sourceTable: string,
     sourceId: string,
     metaText: string,
+    prazo: string,
     metaValor?: number,
   ) => {
     const item = allItems.find(
@@ -256,6 +297,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         sourceLabel: item.source_label,
         currentValue: item.current_value,
         metaText,
+        prazo,
         metaValor,
       },
       { onSettled: () => setSavingId(null) },
@@ -272,7 +314,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       if (resp.error) throw resp.error;
       const suggestions: AiSuggestion[] = resp.data?.suggestions || [];
       setAiSuggestions(suggestions);
-      toast.success(`IA gerou ${suggestions.length} sugestões de metas`);
+      toast.success(`IA gerou ${suggestions.length} sugestões`);
     } catch (err) {
       toast.error("Erro ao consultar IA");
       console.error(err);
@@ -281,14 +323,14 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     }
   };
 
-  // Monta lista estruturada
   const allItems: FinancialItem[] = [
     ...income.map((r: any) => ({
       source_table: "income" as SourceTable,
       source_id: r.id,
       source_label: r.description,
       current_value: Number(r.amount),
-      unit: `/${r.frequency === "mensal" ? "mês" : r.frequency}`,
+      unit: `/${r.frequency === "mensal" ? "mês" : r.frequency === "anual" ? "ano" : "eventual"}`,
+      detail: `Estabilidade: ${r.stability} · ${r.is_primary ? "Renda principal" : "Renda secundária"}`,
     })),
     ...expenses.map((r: any) => ({
       source_table: "expenses" as SourceTable,
@@ -296,24 +338,42 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       source_label: r.category + (r.description ? ` — ${r.description}` : ""),
       current_value: Number(r.amount),
       unit: "/mês",
+      detail: r.is_fixed ? "Despesa fixa" : `Despesa variável${r.due_day ? ` · vence dia ${r.due_day}` : ""}`,
     })),
     ...debts.map((r: any) => ({
       source_table: "debts" as SourceTable,
       source_id: r.id,
-      source_label: `${r.type}${r.creditor ? ` (${r.creditor})` : ""}`,
+      source_label: `${r.type}${r.creditor ? ` — ${r.creditor}` : ""}`,
       current_value: Number(r.total_amount),
+      detail: [
+        r.monthly_payment ? `Parcela: ${formatBRL(Number(r.monthly_payment))}/mês` : null,
+        r.interest_rate ? `Juros: ${r.interest_rate}%/mês` : null,
+        r.remaining_months ? `${r.remaining_months} meses restantes` : null,
+      ].filter(Boolean).join(" · "),
     })),
     ...assets.map((r: any) => ({
       source_table: "assets" as SourceTable,
       source_id: r.id,
-      source_label: `${r.type}${r.description ? `: ${r.description}` : ""}`,
+      source_label: `${r.type}${r.description ? ` — ${r.description}` : ""}`,
       current_value: Number(r.estimated_value),
+    })),
+    ...insurance.map((r: any) => ({
+      source_table: "insurance" as SourceTable,
+      source_id: r.id,
+      source_label: `${r.type}${r.provider ? ` — ${r.provider}` : ""}`,
+      current_value: Number(r.monthly_premium || 0),
+      unit: "/mês",
+      detail: r.coverage_amount ? `Cobertura: ${formatBRL(Number(r.coverage_amount))}` : undefined,
     })),
     ...goals.map((r: any) => ({
       source_table: "goals" as SourceTable,
       source_id: r.id,
       source_label: r.description,
       current_value: Number(r.target_amount || 0),
+      detail: [
+        r.priority ? `Prioridade: ${r.priority}` : null,
+        r.deadline ? `Prazo atual: ${new Date(r.deadline).toLocaleDateString("pt-BR")}` : null,
+      ].filter(Boolean).join(" · "),
     })),
   ];
 
@@ -332,11 +392,9 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            {totalMetas} de {totalItems} metas definidas
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {totalMetas} de {totalItems} metas definidas
+        </p>
         <Button
           onClick={handleAI}
           disabled={loadingAI || totalItems === 0}
@@ -359,32 +417,33 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         </div>
       )}
 
-      {/* Seções */}
       {SECTION_ORDER.map((section) => {
         const items = bySection[section];
         if (!items.length) return null;
+        const metasCount = metas.filter((m) => m.source_table === section && m.meta_text).length;
+
         return (
           <div key={section}>
+            {/* Título da seção */}
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 {SECTION_LABELS[section]}
               </h3>
-              <Badge variant="secondary" className="text-xs">
-                {items.length}
-              </Badge>
-              {metas.filter((m) => m.source_table === section && m.meta_text).length > 0 && (
+              <Badge variant="secondary" className="text-xs">{items.length}</Badge>
+              {metasCount > 0 && (
                 <Badge variant="outline" className="text-xs text-green-600 border-green-600/30">
-                  {metas.filter((m) => m.source_table === section && m.meta_text).length} com meta
+                  {metasCount} com meta
                 </Badge>
               )}
             </div>
 
-            {/* Cabeçalho da tabela */}
-            <div className="grid grid-cols-[1fr_140px_1fr_auto] gap-3 pb-1 mb-1">
+            {/* Cabeçalho das colunas */}
+            <div className={`grid ${GRID} gap-3 pb-1 mb-1`}>
               <p className="text-xs text-muted-foreground font-medium">Item</p>
               <p className="text-xs text-muted-foreground font-medium">Valor atual</p>
+              <p className="text-xs text-muted-foreground font-medium">Prazo</p>
               <p className="text-xs text-muted-foreground font-medium">Meta</p>
-              <div className="w-8" />
+              <div />
             </div>
 
             <div className="rounded-lg border border-border/60 bg-card px-4">
@@ -393,8 +452,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                   (m) => m.source_table === item.source_table && m.source_id === item.source_id,
                 );
                 const aiSuggestion = aiSuggestions.find(
-                  (s) =>
-                    s.source_table === item.source_table && s.source_id === item.source_id,
+                  (s) => s.source_table === item.source_table && s.source_id === item.source_id,
                 );
                 return (
                   <MetaRow
@@ -408,6 +466,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                 );
               })}
             </div>
+
             <Separator className="mt-6" />
           </div>
         );
