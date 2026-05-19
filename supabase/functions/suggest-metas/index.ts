@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY")!;
+    const openaiKey = Deno.env.get("OPENAI_API_KEY")!;
 
     const serviceClient = createClient(supabaseUrl, serviceRole);
     const callerClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
@@ -145,15 +145,14 @@ Regras:
 - Para objetivos: sugira estratégia para atingir
 - Responda APENAS o JSON, sem texto adicional`;
 
-    const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
+    const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": anthropicKey,
-        "anthropic-version": "2023-06-01",
+        "Authorization": `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: "gpt-4o",
         max_tokens: 4096,
         messages: [{ role: "user", content: prompt }],
       }),
@@ -161,12 +160,12 @@ Regras:
 
     if (!aiResp.ok) {
       const err = await aiResp.text();
-      console.error("[suggest-metas] Anthropic error:", err);
+      console.error("[suggest-metas] OpenAI error:", err);
       return json({ error: "Erro na IA: " + aiResp.status }, 500);
     }
 
     const aiData = await aiResp.json();
-    const rawText = aiData.content?.[0]?.text || "[]";
+    const rawText = aiData.choices?.[0]?.message?.content || "[]";
 
     let suggestions: unknown[] = [];
     try {

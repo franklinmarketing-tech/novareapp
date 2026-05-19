@@ -258,8 +258,8 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       toast.success(`IA gerou ${suggestions.length} sugestões — clique em Aplicar para usar`);
     } catch (err: any) {
       const msg = err?.message || String(err);
-      if (msg.includes("ANTHROPIC_API_KEY")) {
-        toast.error("Chave da IA não configurada. Configure ANTHROPIC_API_KEY no Supabase.");
+      if (msg.includes("OPENAI_API_KEY") || msg.includes("401")) {
+        toast.error("Chave da IA não configurada. Configure OPENAI_API_KEY no Supabase.");
       } else {
         toast.error("Erro ao consultar IA: " + msg);
       }
