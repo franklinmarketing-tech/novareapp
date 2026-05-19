@@ -42,12 +42,18 @@ const AdminActionPlan = () => {
   const { data: client } = useQuery({
     queryKey: ["client", clientId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: c } = await supabase
         .from("clients")
-        .select("full_name")
+        .select("user_id")
         .eq("id", clientId)
         .maybeSingle();
-      return data;
+      if (!c?.user_id) return null;
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", c.user_id)
+        .maybeSingle();
+      return p;
     },
     enabled: !!clientId,
   });
