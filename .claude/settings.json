@@ -29,7 +29,17 @@
       "Bash(npm run *)",
       "Bash(awk 'NR==324,NR==327' \"c:/Users/frank/OneDrive/Desktop/NOVARE/novareapp-main/novareapp-main/src/components/parecer/NoteEditor.tsx\")",
       "PowerShell($path = \"c:\\\\Users\\\\frank\\\\OneDrive\\\\Desktop\\\\NOVARE\\\\novareapp-main\\\\novareapp-main\\\\src\\\\components\\\\parecer\\\\NoteEditor.tsx\"; $raw = [System.IO.File]::ReadAllText\\($path\\); $oldBlock = \"    if \\(isSelectionInsideEditor\\) {`r`n      const range = selection.getRangeAt\\(0\\);`r`n      range.deleteContents\\(\\);`r`n      range.insertNode\\(chipEl\\);`r`n      const space = document.createTextNode\\([char]0x00A0 + ' '\\);`r`n      chipEl.parentNode?.insertBefore\\(space, chipEl.nextSibling\\);\"; if \\($raw.Contains\\([char]0x00A0\\)\\) { Write-Output \"NBSP found in file\" } else { Write-Output \"NBSP not found\" }; $count = \\([regex]::Matches\\($raw, [char]0x00A0\\)\\).Count; Write-Output \"NBSP occurrences: $count\")",
-      "PowerShell($path = \"c:\\\\Users\\\\frank\\\\OneDrive\\\\Desktop\\\\NOVARE\\\\novareapp-main\\\\novareapp-main\\\\src\\\\components\\\\parecer\\\\NoteEditor.tsx\"; $raw = [System.IO.File]::ReadAllText\\($path\\); $nbsp = [char]0x00A0; $clean = $raw.Replace\\($nbsp, ' '\\); [System.IO.File]::WriteAllText\\($path, $clean, [System.Text.UTF8Encoding]::new\\($false\\)\\); $verify = [System.IO.File]::ReadAllText\\($path\\); $count = \\([regex]::Matches\\($verify, $nbsp\\)\\).Count; Write-Output \"Remaining NBSP: $count\")"
+      "PowerShell($path = \"c:\\\\Users\\\\frank\\\\OneDrive\\\\Desktop\\\\NOVARE\\\\novareapp-main\\\\novareapp-main\\\\src\\\\components\\\\parecer\\\\NoteEditor.tsx\"; $raw = [System.IO.File]::ReadAllText\\($path\\); $nbsp = [char]0x00A0; $clean = $raw.Replace\\($nbsp, ' '\\); [System.IO.File]::WriteAllText\\($path, $clean, [System.Text.UTF8Encoding]::new\\($false\\)\\); $verify = [System.IO.File]::ReadAllText\\($path\\); $count = \\([regex]::Matches\\($verify, $nbsp\\)\\).Count; Write-Output \"Remaining NBSP: $count\")",
+      "Bash(git ls-remote *)",
+      "Read(//c/Users/frank/OneDrive/Desktop/d7oficial/**)",
+      "Read(//c/c/Users/frank/OneDrive/Desktop/**)",
+      "Bash(xargs grep *)",
+      "Bash(git rev-list *)",
+      "Bash(git stash *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\frank\\OneDrive\\Desktop\\d7oficial",
+      "C:\\Users\\frank\\OneDrive\\Desktop\\d7oficial\\.claude"
     ]
   }
 }
