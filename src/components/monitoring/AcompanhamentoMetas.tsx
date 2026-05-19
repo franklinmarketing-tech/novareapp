@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import {
   Save, Loader2, Check, ChevronDown, ChevronRight,
-  Clock, TrendingUp, TrendingDown, Minus, History,
+  Clock, Target, TrendingUp, TrendingDown, Minus, History,
+  Wallet, Receipt, CreditCard, Building2, Shield,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,13 +29,13 @@ const formatDateTime = (d: string) =>
 
 type SourceTable = "income" | "expenses" | "debts" | "assets" | "insurance" | "goals";
 
-const SECTION_LABELS: Record<SourceTable, string> = {
-  income: "Rendas",
-  expenses: "Despesas",
-  debts: "Dívidas",
-  assets: "Patrimônio",
-  insurance: "Seguros",
-  goals: "Objetivos",
+const SECTION_CONFIG: Record<SourceTable, { label: string; icon: LucideIcon; color: string }> = {
+  income:    { label: "Rendas",     icon: Wallet,    color: "bg-success/10 text-success" },
+  expenses:  { label: "Despesas",   icon: Receipt,   color: "bg-destructive/10 text-destructive" },
+  debts:     { label: "Dívidas",    icon: CreditCard, color: "bg-warning/10 text-warning" },
+  assets:    { label: "Patrimônio", icon: Building2, color: "bg-primary/10 text-primary" },
+  insurance: { label: "Seguros",    icon: Shield,    color: "bg-accent/10 text-accent" },
+  goals:     { label: "Objetivos",  icon: Target,    color: "bg-success/10 text-success" },
 };
 
 const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance", "goals"];
@@ -101,11 +102,12 @@ function MetaAcompRow({
   const [saved, setSaved] = useState(false);
   const [histOpen, setHistOpen] = useState(false);
 
-  const pct = meta.meta_valor && valor
-    ? Math.round((parseFloat(valor.replace(/\D/g, "") || "0") / meta.meta_valor) * 100)
+  const valorNum = parseFloat(valor) || 0;
+  const pct = meta.meta_valor && valorNum > 0
+    ? Math.round((valorNum / meta.meta_valor) * 100)
     : latestEntry?.progresso_pct ?? null;
 
-  const prevEntry = history[1]; // second most recent
+  const prevEntry = history[1];
 
   const handleSave = () => {
     if (!estado.trim() && !valor.trim()) return;
@@ -115,64 +117,90 @@ function MetaAcompRow({
   };
 
   return (
-    <div className="py-4 border-b border-border/40 last:border-0 space-y-3">
-      {/* Linha principal */}
-      <div className="grid grid-cols-[minmax(0,1.6fr)_100px_110px_minmax(0,1fr)_minmax(0,1.2fr)_80px_36px] gap-3 items-start">
-        {/* Nome + prazo */}
-        <div className="min-w-0">
-          <p className="text-sm font-medium leading-tight">{meta.source_label}</p>
-          {meta.prazo && (
-            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              Prazo: {formatDate(meta.prazo)}
-            </p>
-          )}
-          {meta.meta_text && (
-            <p className="text-xs text-muted-foreground/80 mt-0.5 line-clamp-1 italic">
-              "{meta.meta_text}"
-            </p>
-          )}
-        </div>
+    <div className="py-4 border-b border-border/30 last:border-0 space-y-3">
+      {/* Layout: Plano (esquerda) | Tracking (direita) */}
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 items-start">
 
-        {/* Meta valor */}
-        <div className="pt-1">
-          {meta.meta_valor ? (
-            <span className="text-xs font-medium tabular-nums">
-              {formatBRL(meta.meta_valor)}
-            </span>
+        {/* ── ESQUERDA: dados do Plano de Ação (read-only) ── */}
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold leading-tight">{meta.source_label}</p>
+
+          {meta.meta_text ? (
+            <div className="flex items-start gap-1.5 rounded-md bg-muted/40 px-2.5 py-1.5">
+              <Target className="w-3 h-3 mt-0.5 shrink-0 text-accent" />
+              <p className="text-xs text-foreground/80 leading-snug">{meta.meta_text}</p>
+            </div>
           ) : (
-            <span className="text-xs text-muted-foreground/50">—</span>
+            <p className="text-xs text-muted-foreground/50 italic">Sem meta definida no plano</p>
           )}
+
+          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+            {meta.prazo && (
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Prazo: <span className="font-medium text-foreground/70">{formatDate(meta.prazo)}</span>
+              </span>
+            )}
+            {meta.meta_valor ? (
+              <span className="flex items-center gap-1">
+                <span>Meta:</span>
+                <span className="font-medium tabular-nums text-foreground/70">{formatBRL(meta.meta_valor)}</span>
+              </span>
+            ) : null}
+          </div>
         </div>
 
-        {/* Valor atual (input numérico) */}
-        <Input
-          value={valor}
-          onChange={(e) => setValor(e.target.value)}
-          placeholder="Valor atual"
-          className="h-8 text-sm tabular-nums"
-          type="number"
-          min={0}
-        />
+        {/* ── DIREITA: tracking (editable) ── */}
+        <div className="space-y-2">
+          {/* Linha: valor atual + botão salvar */}
+          <div className="flex items-center gap-2">
+            <Input
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              placeholder="Valor atual (R$)"
+              className="h-8 text-sm tabular-nums flex-1"
+              type="number"
+              min={0}
+            />
+            <Button
+              size="sm"
+              variant={saved ? "secondary" : "default"}
+              onClick={handleSave}
+              disabled={(!estado.trim() && !valor.trim()) || saving}
+              className="h-8 w-9 p-0 shrink-0"
+            >
+              {saving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : saved ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <Save className="w-3.5 h-3.5" />
+              )}
+            </Button>
+          </div>
 
-        {/* Estado atual (texto) */}
-        <Textarea
-          value={estado}
-          onChange={(e) => setEstado(e.target.value)}
-          placeholder="Estado atual..."
-          className="text-sm min-h-[32px] h-8 resize-none py-1.5"
-          rows={1}
-        />
+          {/* Estado atual */}
+          <Textarea
+            value={estado}
+            onChange={(e) => setEstado(e.target.value)}
+            placeholder="Como está agora? Descreva o estado atual..."
+            className="text-sm min-h-[60px] resize-none py-1.5"
+            rows={2}
+          />
 
-        {/* Progresso */}
-        <div className="pt-1 space-y-1">
-          {pct != null ? (
-            <>
+          {/* Progresso */}
+          {pct != null && (
+            <div className="space-y-1">
               <div className="flex items-center gap-1.5">
-                <span className={cn("text-sm font-semibold tabular-nums", progressColor(pct))}>
+                <span className={cn("text-sm font-bold tabular-nums", progressColor(pct))}>
                   {pct}%
                 </span>
                 <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
+                {latestEntry && (
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {formatDateTime(latestEntry.snapshotted_at)}
+                  </span>
+                )}
               </div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                 <div
@@ -180,43 +208,15 @@ function MetaAcompRow({
                   style={{ width: `${Math.min(pct, 100)}%` }}
                 />
               </div>
-            </>
-          ) : (
-            <span className="text-xs text-muted-foreground/50">—</span>
+            </div>
           )}
         </div>
-
-        {/* Último save */}
-        <div className="pt-1 text-right">
-          {latestEntry ? (
-            <span className="text-[10px] text-muted-foreground">
-              {formatDateTime(latestEntry.snapshotted_at)}
-            </span>
-          ) : null}
-        </div>
-
-        {/* Salvar */}
-        <Button
-          size="sm"
-          variant={saved ? "secondary" : "default"}
-          onClick={handleSave}
-          disabled={(!estado.trim() && !valor.trim()) || saving}
-          className="h-8 w-9 p-0 shrink-0"
-        >
-          {saving ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : saved ? (
-            <Check className="w-3.5 h-3.5" />
-          ) : (
-            <Save className="w-3.5 h-3.5" />
-          )}
-        </Button>
       </div>
 
       {/* Histórico colapsável */}
       {history.length > 0 && (
         <Collapsible open={histOpen} onOpenChange={setHistOpen}>
-          <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors ml-0">
+          <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
             <History className="w-3 h-3" />
             {history.length} registro{history.length > 1 ? "s" : ""} anterior{history.length > 1 ? "es" : ""}
             {histOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
@@ -225,7 +225,7 @@ function MetaAcompRow({
             <div className="mt-2 ml-1 border-l-2 border-border/40 pl-3 space-y-2">
               {history.map((entry) => (
                 <div key={entry.id} className="text-xs text-muted-foreground space-y-0.5">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-foreground/70">
                       {formatDateTime(entry.snapshotted_at)}
                     </span>
@@ -260,7 +260,6 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const queryClient = useQueryClient();
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  // Metas definidas no parecer
   const { data: metas = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
     queryFn: async () => {
@@ -274,7 +273,6 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     enabled: !!clientId,
   });
 
-  // Entradas de acompanhamento (exceto closing snapshots da visualização principal)
   const { data: entradas = [] } = useQuery({
     queryKey: ["acompanhamento_entradas", clientId],
     queryFn: async () => {
@@ -324,7 +322,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
       queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId] });
       toast.success("Acompanhamento salvo");
     },
-    onError: () => toast.error("Erro ao salvar"),
+    onError: (err: any) => toast.error("Erro ao salvar: " + (err?.message || "tente novamente")),
   });
 
   const handleSave = (metaId: string, estadoAtual: string, valorAtualStr: string) => {
@@ -352,7 +350,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     return (
       <div className="text-center py-16 text-muted-foreground">
         <p className="text-sm">Nenhuma meta definida.</p>
-        <p className="text-xs mt-1">Vá para Plano de Ação para definir as metas primeiro.</p>
+        <p className="text-xs mt-1">Vá para Plano de Ação e salve as metas primeiro.</p>
       </div>
     );
   }
@@ -364,30 +362,42 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
         <p className="text-sm text-muted-foreground">
           {totalComAcomp} de {totalMetas} metas com acompanhamento registrado
         </p>
-      </div>
-
-      {/* Cabeçalho global das colunas */}
-      <div className="grid grid-cols-[minmax(0,1.6fr)_100px_110px_minmax(0,1fr)_minmax(0,1.2fr)_80px_36px] gap-3 text-xs text-muted-foreground font-medium pb-1">
-        <span>Item / Meta / Prazo</span>
-        <span>Meta R$</span>
-        <span>Valor atual</span>
-        <span>Estado atual</span>
-        <span>Progresso</span>
-        <span className="text-right">Último save</span>
-        <span />
+        <div className="flex gap-4 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground/60">Plano de Ação</span>
+          <span>→</span>
+          <span className="font-medium text-foreground/60">Estado atual</span>
+        </div>
       </div>
 
       {SECTION_ORDER.map((section) => {
         const items = bySection[section];
         if (!items.length) return null;
+        const cfg = SECTION_CONFIG[section];
+        const Icon = cfg.icon;
+        const comAcomp = items.filter((m) =>
+          entradas.some((e) => e.meta_id === m.id),
+        ).length;
 
         return (
           <div key={section}>
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {SECTION_LABELS[section]}
-              </h3>
+            {/* Cabeçalho da seção */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", cfg.color)}>
+                <Icon className="w-3.5 h-3.5" />
+              </div>
+              <h3 className="text-sm font-semibold">{cfg.label}</h3>
               <Badge variant="secondary" className="text-xs">{items.length}</Badge>
+              {comAcomp > 0 && (
+                <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-600/30">
+                  {comAcomp} atualizada{comAcomp !== 1 ? "s" : ""}
+                </Badge>
+              )}
+            </div>
+
+            {/* Cabeçalho das colunas */}
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 px-4 pb-1 text-xs text-muted-foreground font-medium border-b border-border/30">
+              <span>Meta definida no Plano de Ação</span>
+              <span>Acompanhamento atual</span>
             </div>
 
             <div className="rounded-lg border border-border/60 bg-card px-4">

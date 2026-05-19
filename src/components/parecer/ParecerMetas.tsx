@@ -290,14 +290,20 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground shrink-0">
           {totalMetas} de {totalItems} metas definidas
         </p>
-        <Button onClick={handleAI} disabled={loadingAI || totalItems === 0} variant="outline" className="gap-2">
-          {loadingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-novare-blue" />}
-          {loadingAI ? "Analisando..." : "IA: Sugerir metas"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleAI} disabled={loadingAI || totalItems === 0} variant="outline" className="gap-2">
+            {loadingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-novare-blue" />}
+            {loadingAI ? "Analisando..." : "IA: Sugerir metas"}
+          </Button>
+          <Button onClick={handleSaveAll} disabled={saving} className="gap-2 min-w-[130px]">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saving ? "Salvando..." : "Salvar tudo"}
+          </Button>
+        </div>
       </div>
 
       {/* Section cards */}
@@ -432,21 +438,6 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         );
       })}
 
-      {/* Single save button */}
-      <div className="flex justify-end pt-2">
-        <Button
-          onClick={handleSaveAll}
-          disabled={saving}
-          className="gap-2 min-w-[140px]"
-        >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
-          {saving ? "Salvando..." : "Salvar tudo"}
-        </Button>
-      </div>
     </div>
   );
 }
