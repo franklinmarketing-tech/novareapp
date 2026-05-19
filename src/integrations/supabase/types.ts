@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      acompanhamento_entradas: {
+        Row: {
+          client_id: string
+          created_at: string
+          estado_atual: string | null
+          id: string
+          is_closing_snapshot: boolean
+          meta_id: string | null
+          month_closing_id: string | null
+          prazo: string | null
+          progresso_pct: number | null
+          snapshotted_at: string
+          source_id: string
+          source_label: string
+          source_table: string
+          valor_atual: number | null
+          valor_meta: number | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          estado_atual?: string | null
+          id?: string
+          is_closing_snapshot?: boolean
+          meta_id?: string | null
+          month_closing_id?: string | null
+          prazo?: string | null
+          progresso_pct?: number | null
+          snapshotted_at?: string
+          source_id: string
+          source_label: string
+          source_table: string
+          valor_atual?: number | null
+          valor_meta?: number | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          estado_atual?: string | null
+          id?: string
+          is_closing_snapshot?: boolean
+          meta_id?: string | null
+          month_closing_id?: string | null
+          prazo?: string | null
+          progresso_pct?: number | null
+          snapshotted_at?: string
+          source_id?: string
+          source_label?: string
+          source_table?: string
+          valor_atual?: number | null
+          valor_meta?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acompanhamento_entradas_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acompanhamento_entradas_meta_id_fkey"
+            columns: ["meta_id"]
+            isOneToOne: false
+            referencedRelation: "parecer_metas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acompanhamento_entradas_month_closing_id_fkey"
+            columns: ["month_closing_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_closings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       action_items: {
         Row: {
           action_plan_id: string
@@ -1481,6 +1557,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      parecer_metas: {
+        Row: {
+          ai_suggestion: string | null
+          client_id: string
+          created_at: string
+          current_value: number | null
+          id: string
+          meta_text: string | null
+          meta_valor: number | null
+          prazo: string | null
+          source_id: string
+          source_label: string
+          source_table: string
+          updated_at: string
+        }
+        Insert: {
+          ai_suggestion?: string | null
+          client_id: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          meta_text?: string | null
+          meta_valor?: number | null
+          prazo?: string | null
+          source_id: string
+          source_label: string
+          source_table: string
+          updated_at?: string
+        }
+        Update: {
+          ai_suggestion?: string | null
+          client_id?: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          meta_text?: string | null
+          meta_valor?: number | null
+          prazo?: string | null
+          source_id?: string
+          source_label?: string
+          source_table?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parecer_metas_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pdf_lead_messages: {
         Row: {

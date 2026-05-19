@@ -234,7 +234,7 @@ export const AlinhamentoConsultivo = ({ clientId, onInsertChip }: Props) => {
         id: r.id,
         label: r.description || "Objetivo",
         value: r.target_amount || 0,
-        meta: { priority: r.priority, deadline: r.deadline, category: r.category },
+        meta: { priority: r.priority, deadline: r.deadline, category: (r as any).category },
       }));
 
       const sumValues = (arr: SourceItem[]) =>

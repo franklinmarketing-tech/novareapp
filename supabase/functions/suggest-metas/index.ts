@@ -29,7 +29,11 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const openaiKey = Deno.env.get("OPENAI_API_KEY")!;
+    const lovableKey = Deno.env.get("LOVABLE_API_KEY")!;
+    if (!lovableKey) {
+      console.error("[suggest-metas] LOVABLE_API_KEY ausente");
+      return json({ error: "LOVABLE_API_KEY não configurada" }, 500);
+    }
 
     const serviceClient = createClient(supabaseUrl, serviceRole);
     const callerClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
@@ -145,15 +149,14 @@ Regras:
 - Para objetivos: sugira estratégia para atingir
 - Responda APENAS o JSON, sem texto adicional`;
 
-    const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${openaiKey}`,
+        "Authorization": `Bearer ${lovableKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
-        max_tokens: 4096,
+        model: "google/gemini-2.5-flash",
         messages: [{ role: "user", content: prompt }],
       }),
     });

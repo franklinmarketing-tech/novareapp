@@ -130,7 +130,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
       .select("*")
       .eq("client_id", clientId)
       .order("created_at", { ascending: false });
-    setNotes((data as Note[]) || []);
+    setNotes((data as unknown as Note[]) || []);
     setLoading(false);
   };
 
@@ -217,8 +217,8 @@ export const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ clientId }, ref
       if (error) throw error;
 
       if (!activeNote && data) {
-        setActiveNote(data as Note);
-        setTitle((data as Note).title || noteTitle);
+        setActiveNote(data as unknown as Note);
+        setTitle((data as unknown as Note).title || noteTitle);
       }
       await loadNotes();
       setLastSavedAt(new Date());
