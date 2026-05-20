@@ -324,36 +324,29 @@ const AdminClientLayout = () => {
                         style={
                           state === "active"
                             ? {
-                                background:
-                                  "linear-gradient(145deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.88) 100%)",
-                                boxShadow:
-                                  "0 0 0 1px hsl(var(--primary) / 0.4), 0 1px 0 hsl(0 0% 100% / 0.25) inset",
+                                background: "hsl(var(--primary))",
+                                boxShadow: "0 0 0 1px hsl(var(--primary))",
                               }
                             : state === "completed"
                             ? {
-                                background:
-                                  "linear-gradient(145deg, hsl(var(--success) / 0.18) 0%, hsl(var(--success) / 0.08) 100%)",
-                                boxShadow:
-                                  "0 0 0 1px hsl(var(--success) / 0.35), 0 1px 0 hsl(0 0% 100% / 0.4) inset",
+                                background: "hsl(var(--success))",
+                                boxShadow: "0 0 0 1px hsl(var(--success))",
                               }
                             : state === "locked"
                             ? {
-                                background: "hsl(var(--muted) / 0.5)",
-                                boxShadow:
-                                  "0 0 0 1px hsl(var(--border) / 0.6), 0 1px 0 hsl(0 0% 100% / 0.3) inset",
+                                background: "hsl(var(--muted))",
+                                boxShadow: "0 0 0 1px hsl(var(--border))",
                               }
                             : {
-                                background:
-                                  "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.4) 100%)",
-                                boxShadow:
-                                  "0 0 0 1px hsl(var(--foreground) / 0.14), 0 1px 2px hsl(0 0% 0% / 0.05), 0 1px 0 hsl(0 0% 100% / 0.5) inset",
+                                background: "hsl(var(--card))",
+                                boxShadow: "0 0 0 1px hsl(var(--border))",
                               }
                         }
                       >
                         {state === "completed" ? (
-                          <Check className="h-[18px] w-[18px] text-success" strokeWidth={3} />
+                          <Check className="h-[18px] w-[18px] text-white" strokeWidth={3} />
                         ) : state === "locked" ? (
-                          <Lock className="h-[13px] w-[13px] text-muted-foreground/55" strokeWidth={2.5} />
+                          <Lock className="h-[13px] w-[13px] text-muted-foreground" strokeWidth={2.5} />
                         ) : (
                           <Icon
                             className={cn(
