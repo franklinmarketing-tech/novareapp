@@ -351,34 +351,63 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
           return f?.metaText?.trim() || metas.find((m) => m.source_id === item.source_id && m.meta_text);
         }).length;
 
+        const sectionAccentColor: Record<SourceTable, string> = {
+          income:    "hsl(142 65% 42%)",
+          expenses:  "hsl(0 72% 55%)",
+          debts:     "hsl(38 95% 48%)",
+          assets:    "hsl(var(--novare-blue-bright))",
+          insurance: "hsl(260 60% 58%)",
+          goals:     "hsl(142 65% 42%)",
+        };
+        const accent = sectionAccentColor[section];
+
         return (
-          <div key={section} className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-subtle">
+          <div
+            key={section}
+            className="rounded-2xl overflow-hidden"
+            style={{
+              background: "hsl(var(--card))",
+              border: "1.5px solid hsl(var(--foreground) / 0.10)",
+              borderTopColor: "hsl(var(--foreground) / 0.16)",
+              boxShadow: [
+                "0 1px 0 hsl(0 0% 100% / 0.65) inset",
+                "0 -1px 0 hsl(0 0% 0% / 0.04) inset",
+                "0 2px 6px -2px hsl(0 0% 0% / 0.06)",
+                "0 10px 28px -8px hsl(0 0% 0% / 0.08)",
+              ].join(", "),
+            }}
+          >
+            {/* Top accent ribbon */}
+            <div aria-hidden className="h-[3px] w-full" style={{ background: `linear-gradient(90deg, transparent 0%, ${accent} 30%, ${accent} 70%, transparent 100%)` }} />
+
             {/* Card header — click to expand */}
             <button
               onClick={() => setExpanded((prev) => ({ ...prev, [section]: !prev[section] }))}
-              className="w-full flex items-center gap-4 p-4 text-left hover:bg-muted/30 transition-colors"
+              className="w-full flex items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-muted/20"
             >
-              <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", cfg.color)}>
-                <Icon className="w-4 h-4" />
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{
+                  background: `linear-gradient(145deg, ${accent}22 0%, ${accent}0a 100%)`,
+                  border: `1.5px solid ${accent}40`,
+                  boxShadow: `0 1px 0 hsl(0 0% 100% / 0.5) inset, 0 2px 6px ${accent}18`,
+                }}
+              >
+                <Icon className="w-4 h-4" style={{ color: accent }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{cfg.label}</p>
+                <p className="text-sm font-bold text-foreground">{cfg.label}</p>
                 <p className="text-[0.6875rem] text-muted-foreground">
                   {items.length} item{items.length !== 1 ? "s" : ""}
-                  {metasCount > 0 && <> · <span className="text-novare-terracotta font-medium">{metasCount} com meta</span></>}
+                  {metasCount > 0 && <> · <span className="text-novare-terracotta font-semibold">{metasCount} com meta ✓</span></>}
                   {aiSuggestions.filter((s) => s.source_table === section).length > 0 && (
-                    <span className="ml-1.5 text-novare-blue font-medium">
+                    <span className="ml-1.5 text-novare-blue-bright font-medium">
                       · {aiSuggestions.filter((s) => s.source_table === section).length} sugestão IA
                     </span>
                   )}
                 </p>
               </div>
-              <Badge variant="secondary" className="text-xs shrink-0">{items.length}</Badge>
-              <motion.div
-                animate={{ rotate: isExpanded ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-                className="text-muted-foreground/40 shrink-0"
-              >
+              <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-muted-foreground/40 shrink-0">
                 <ChevronDown className="w-4 h-4" />
               </motion.div>
             </button>
@@ -394,7 +423,10 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                   transition={{ duration: 0.22, ease: "easeInOut" }}
                   style={{ overflow: "hidden" }}
                 >
-                  <div className="px-4 pb-4 pt-3 border-t border-border/30 space-y-3">
+                  <div
+                    className="px-4 pb-4 pt-3 space-y-3"
+                    style={{ borderTop: "1px solid hsl(var(--border) / 0.3)" }}
+                  >
                     {items.map((item) => {
                       const aiSugg = aiSuggestions.find(
                         (s) => s.source_table === item.source_table && s.source_id === item.source_id,
@@ -409,14 +441,32 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                       return (
                         <div
                           key={item.source_id}
-                          className="rounded-xl border border-border/50 overflow-hidden bg-card border-l-[3px] border-l-novare-blue-bright/50"
+                          className="rounded-xl overflow-hidden"
+                          style={{
+                            background: "linear-gradient(160deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.25) 100%)",
+                            border: "1.5px solid hsl(var(--foreground) / 0.09)",
+                            borderTopColor: "hsl(var(--foreground) / 0.14)",
+                            borderLeft: `3px solid ${accent}`,
+                            boxShadow: [
+                              "0 1px 0 hsl(0 0% 100% / 0.7) inset",
+                              "0 -1px 0 hsl(0 0% 0% / 0.03) inset",
+                              "0 2px 8px -2px hsl(0 0% 0% / 0.06)",
+                              `0 6px 18px -6px ${accent}18`,
+                            ].join(", "),
+                          }}
                         >
-                          {/* Item header: name + current value */}
-                          <div className="flex items-start gap-4 px-4 py-3 bg-muted/30 border-b border-border/40">
+                          {/* Item header: name + "Hoje" pill */}
+                          <div
+                            className="flex items-center gap-4 px-4 py-3"
+                            style={{
+                              background: `linear-gradient(135deg, hsl(var(--novare-blue) / 0.05) 0%, hsl(var(--muted) / 0.15) 100%)`,
+                              borderBottom: "1px solid hsl(var(--border) / 0.35)",
+                            }}
+                          >
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                <p className="text-sm font-semibold leading-tight">{item.source_label}</p>
-                                <span className={cn("inline-flex items-center gap-1 text-[0.6rem] font-semibold rounded-full px-2 py-0.5 shrink-0", dcfg.badge)}>
+                                <p className="text-sm font-bold leading-tight text-foreground">{item.source_label}</p>
+                                <span className={cn("inline-flex items-center gap-1 text-[0.6rem] font-bold rounded-full px-2 py-0.5 shrink-0", dcfg.badge)}>
                                   <DirIcon className="w-2.5 h-2.5" />
                                   {dcfg.label}
                                 </span>
@@ -425,43 +475,55 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                                 <p className="text-xs text-muted-foreground line-clamp-1">{item.detail}</p>
                               )}
                             </div>
-                            <div className="text-right shrink-0 pl-4 border-l border-border/40">
-                              <p className="text-[10px] uppercase tracking-wide text-novare-blue-bright font-semibold">Hoje</p>
-                              <p className="text-sm font-bold tabular-nums text-novare-blue">
+
+                            {/* "Hoje" dark navy pill */}
+                            <div
+                              className="text-right shrink-0 rounded-xl px-3.5 py-2"
+                              style={{
+                                background: "linear-gradient(145deg, hsl(var(--novare-blue)) 0%, hsl(var(--novare-blue) / 0.80) 100%)",
+                                boxShadow: "0 1px 0 hsl(0 0% 100% / 0.12) inset, 0 3px 10px hsl(var(--novare-blue) / 0.35)",
+                              }}
+                            >
+                              <p className="text-[9px] uppercase tracking-widest font-bold" style={{ color: "hsl(var(--novare-blue-bright))" }}>Hoje</p>
+                              <p className="text-base font-black tabular-nums leading-tight text-white">
                                 {item.current_value > 0 ? formatBRL(item.current_value) : "—"}
                               </p>
-                              {item.unit && <p className="text-[10px] text-muted-foreground">{item.unit}</p>}
+                              {item.unit && <p className="text-[9px] font-medium" style={{ color: "hsl(0 0% 100% / 0.55)" }}>{item.unit}</p>}
                             </div>
                           </div>
 
                           {/* Meta fields */}
-                          <div className="px-4 py-3 space-y-3">
+                          <div
+                            className="px-4 py-3.5 space-y-3"
+                            style={{ background: "linear-gradient(180deg, hsl(var(--muted) / 0.08) 0%, transparent 100%)" }}
+                          >
                             {/* Meta text */}
-                            <div className="space-y-1">
-                              <label className="text-[10px] font-semibold uppercase tracking-wide text-novare-terracotta">
-                                Meta {hasMeta && <span className="text-emerald-600 ml-1">✓</span>}
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-novare-terracotta flex items-center gap-1.5">
+                                Meta {hasMeta && <span className="text-emerald-500 text-xs">✓</span>}
                               </label>
                               <Input
                                 value={f.metaText}
                                 onChange={(e) => updateField(item.source_id, "metaText", e.target.value)}
                                 placeholder="Descreva a meta para este item..."
-                                className="h-9 text-sm bg-background"
+                                className="h-9 text-sm bg-background/80"
+                                style={{ borderColor: hasMeta ? "hsl(var(--novare-terracotta) / 0.4)" : undefined }}
                               />
                             </div>
 
                             {/* Prazo + Valor alvo side by side */}
                             <div className="grid grid-cols-2 gap-3">
-                              <div className="space-y-1">
-                                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Prazo</label>
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prazo</label>
                                 <DateInput value={f.prazo} onChange={(v) => updateField(item.source_id, "prazo", v)} />
                               </div>
-                              <div className="space-y-1">
-                                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Valor alvo</label>
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Valor alvo</label>
                                 <CurrencyInput
                                   value={f.metaValor}
                                   onChange={(v) => updateField(item.source_id, "metaValor", v)}
                                   placeholder="R$ 0,00"
-                                  className="h-8 text-sm"
+                                  className="h-8 text-sm bg-background/80"
                                 />
                               </div>
                             </div>
@@ -469,19 +531,15 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                             {/* AI suggestion */}
                             {hasAI && (
                               <div className={cn("flex items-start gap-3 px-3 py-2.5 rounded-lg border", dcfg.card)}>
-                                <Sparkles className="w-3.5 h-3.5 text-novare-blue shrink-0 mt-0.5" />
-                                <p className="text-xs text-muted-foreground flex-1 leading-relaxed">
-                                  {aiSugg!.suggestion_text}
-                                </p>
+                                <Sparkles className="w-3.5 h-3.5 text-novare-blue-bright shrink-0 mt-0.5" />
+                                <p className="text-xs text-muted-foreground flex-1 leading-relaxed">{aiSugg!.suggestion_text}</p>
                                 <button
                                   onClick={() => {
                                     updateField(item.source_id, "metaText", aiSugg!.suggestion_text);
-                                    if (aiSugg!.target_value != null)
-                                      updateField(item.source_id, "metaValor", String(aiSugg!.target_value));
-                                    if (aiSugg!.suggested_prazo)
-                                      updateField(item.source_id, "prazo", aiSugg!.suggested_prazo);
+                                    if (aiSugg!.target_value != null) updateField(item.source_id, "metaValor", String(aiSugg!.target_value));
+                                    if (aiSugg!.suggested_prazo) updateField(item.source_id, "prazo", aiSugg!.suggested_prazo);
                                   }}
-                                  className="shrink-0 text-xs font-semibold px-2.5 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors self-start"
+                                  className="shrink-0 text-xs font-bold px-2.5 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors self-start"
                                 >
                                   Aplicar
                                 </button>
