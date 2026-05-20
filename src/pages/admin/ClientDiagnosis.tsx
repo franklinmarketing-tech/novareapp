@@ -52,6 +52,12 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip as RTooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  RadialBarChart,
+  RadialBar,
 } from "recharts";
 
 // ── Tipos ───────────────────────────────────────────────
@@ -702,6 +708,222 @@ const ClientDiagnosis = () => {
         </div>
       </div>
 
+      {/* ── 2.5. PAINEL DE GAUGES FINANCEIROS ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Card 1 — Fluxo de Caixa */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-semibold flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-emerald-500/10">
+                <Banknote className="h-3.5 w-3.5 text-emerald-600" />
+              </div>
+              Fluxo de Caixa
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const flowData = [
+                { name: "Renda", value: diagnosis.totalIncome, fill: "hsl(152, 55%, 41%)" },
+                { name: "Despesas", value: diagnosis.totalExpenses, fill: "hsl(0, 70%, 65%)" },
+                { name: "Dívidas", value: diagnosis.monthlyDebtPayments, fill: "hsl(25, 90%, 60%)" },
+                {
+                  name: "Saldo",
+                  value: Math.max(
+                    0,
+                    diagnosis.totalIncome - diagnosis.totalExpenses - diagnosis.monthlyDebtPayments,
+                  ),
+                  fill: "hsl(215, 50%, 35%)",
+                },
+              ];
+              const hasData = flowData.some((d) => d.value > 0);
+              if (!hasData) {
+                return (
+                  <div className="h-[160px] flex items-center justify-center text-[11px] text-muted-foreground">
+                    Sem dados de fluxo
+                  </div>
+                );
+              }
+              return (
+                <div className="h-[160px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={flowData}
+                      layout="vertical"
+                      margin={{ top: 4, right: 12, left: 4, bottom: 4 }}
+                      barCategoryGap={6}
+                    >
+                      <XAxis type="number" hide />
+                      <YAxis
+                        type="category"
+                        dataKey="name"
+                        width={64}
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <RTooltip
+                        formatter={(value: number) => fmtBRL(value)}
+                        cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+                        contentStyle={{
+                          borderRadius: "10px",
+                          border: "1px solid hsl(var(--border))",
+                          fontSize: "12px",
+                          padding: "8px 12px",
+                        }}
+                      />
+                      <Bar dataKey="value" radius={[4, 4, 4, 4]}>
+                        {flowData.map((d, i) => (
+                          <Cell key={i} fill={d.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* Card 2 — Saúde Financeira (Gauge) */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-semibold flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <Gauge className="h-3.5 w-3.5 text-accent" />
+              </div>
+              Saúde Financeira
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const rate = diagnosis.savingsCapacity;
+              const clamped = Math.max(0, Math.min(100, rate));
+              const color =
+                rate >= 30
+                  ? "hsl(152, 55%, 41%)"
+                  : rate >= 10
+                  ? "hsl(215, 65%, 55%)"
+                  : rate >= 0
+                  ? "hsl(38, 92%, 50%)"
+                  : "hsl(0, 72%, 55%)";
+              const label =
+                rate >= 30 ? "Excelente" : rate >= 10 ? "Bom" : rate >= 0 ? "Neutro" : "Negativo";
+              const gaugeData = [{ name: "Poupança", value: clamped, fill: color }];
+              return (
+                <div className="h-[160px] w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadialBarChart
+                      cx="50%"
+                      cy="75%"
+                      innerRadius="80%"
+                      outerRadius="130%"
+                      barSize={14}
+                      data={gaugeData}
+                      startAngle={180}
+                      endAngle={0}
+                    >
+                      <RadialBar
+                        background={{ fill: "hsl(var(--muted) / 0.5)" }}
+                        dataKey="value"
+                        cornerRadius={8}
+                      />
+                    </RadialBarChart>
+                  </ResponsiveContainer>
+                  <div
+                    className="absolute inset-x-0 bottom-2 flex flex-col items-center pointer-events-none"
+                  >
+                    <span
+                      className="text-2xl font-black tabular-nums leading-none"
+                      style={{ color }}
+                    >
+                      {rate.toFixed(1)}%
+                    </span>
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider mt-1"
+                      style={{ color }}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* Card 3 — Composição Patrimonial */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-semibold flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-blue-500/10">
+                <Scale className="h-3.5 w-3.5 text-blue-600" />
+              </div>
+              Composição Patrimonial
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const wealthData = [
+                { name: "Ativos", value: diagnosis.totalAssets, fill: "hsl(215, 65%, 50%)" },
+                { name: "Dívidas", value: diagnosis.totalDebts, fill: "hsl(0, 70%, 55%)" },
+              ].filter((d) => d.value > 0);
+              if (wealthData.length === 0) {
+                return (
+                  <div className="h-[160px] flex items-center justify-center text-[11px] text-muted-foreground">
+                    Sem dados patrimoniais
+                  </div>
+                );
+              }
+              return (
+                <div className="h-[160px] w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={wealthData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={42}
+                        outerRadius={62}
+                        strokeWidth={3}
+                        stroke="hsl(var(--card))"
+                      >
+                        {wealthData.map((d, i) => (
+                          <Cell key={i} fill={d.fill} />
+                        ))}
+                      </Pie>
+                      <RTooltip
+                        formatter={(value: number) => fmtBRL(value)}
+                        contentStyle={{
+                          borderRadius: "10px",
+                          border: "1px solid hsl(var(--border))",
+                          fontSize: "12px",
+                          padding: "8px 12px",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Líquido
+                    </span>
+                    <span
+                      className={cn(
+                        "text-sm font-bold tabular-nums leading-tight",
+                        netWealth >= 0 ? "text-blue-600" : "text-destructive",
+                      )}
+                    >
+                      {fmtBRL(netWealth)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* ── 3. INSIGHTS DA IA AGRUPADOS ───────────── */}
       {aiInsights.length > 0 && (
         <div className="space-y-4">
@@ -846,10 +1068,15 @@ const ClientDiagnosis = () => {
       {/* ── 5. DETALHES POR FONTE ─────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {diagnosis.incomeBreakdown.length > 0 && (
-          <SourceList
+          <SourceCard
             title="Rendas"
             icon={TrendingUp}
             iconBg="bg-emerald-500/10 text-emerald-600"
+            chartColor="hsl(152, 55%, 41%)"
+            chartData={diagnosis.incomeBreakdown.map((i) => ({
+              name: i.description,
+              value: i.amount,
+            }))}
             items={diagnosis.incomeBreakdown.map((i, idx) => ({
               key: `inc-${idx}`,
               primary: i.description,
@@ -862,10 +1089,15 @@ const ClientDiagnosis = () => {
           />
         )}
         {diagnosis.assetBreakdown.length > 0 && (
-          <SourceList
+          <SourceCard
             title="Patrimônio"
             icon={Wallet}
             iconBg="bg-blue-500/10 text-blue-600"
+            chartColor="hsl(215, 65%, 50%)"
+            chartData={diagnosis.assetBreakdown.map((a) => ({
+              name: a.type,
+              value: a.estimated_value,
+            }))}
             items={diagnosis.assetBreakdown.map((a, idx) => ({
               key: `ast-${idx}`,
               primary: a.type,
@@ -878,10 +1110,15 @@ const ClientDiagnosis = () => {
           />
         )}
         {diagnosis.debtBreakdown.length > 0 && (
-          <SourceList
+          <SourceCard
             title="Dívidas"
             icon={CreditCard}
             iconBg="bg-orange-500/10 text-orange-600"
+            chartColor="hsl(0, 70%, 55%)"
+            chartData={diagnosis.debtBreakdown.map((d) => ({
+              name: d.type,
+              value: d.total_amount,
+            }))}
             items={diagnosis.debtBreakdown.map((d, idx) => ({
               key: `dbt-${idx}`,
               primary: d.type,
@@ -1151,10 +1388,12 @@ const InsightCard = ({ insight, index }: { insight: Insight; index: number }) =>
   );
 };
 
-const SourceList = ({
+const SourceCard = ({
   title,
   icon: Icon,
   iconBg,
+  chartColor,
+  chartData,
   items,
   totalLabel,
   totalValue,
@@ -1162,6 +1401,8 @@ const SourceList = ({
   title: string;
   icon: React.ElementType;
   iconBg: string;
+  chartColor: string;
+  chartData: { name: string; value: number }[];
   items: {
     key: string;
     primary: string;
@@ -1172,42 +1413,88 @@ const SourceList = ({
   }[];
   totalLabel: string;
   totalValue: string;
-}) => (
-  <Card>
-    <CardHeader className="pb-3">
-      <CardTitle className="text-sm font-semibold flex items-center gap-2">
-        <div className={cn("p-1.5 rounded-lg", iconBg)}>
-          <Icon className="h-4 w-4" />
-        </div>
-        {title}
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-1.5">
-        {items.map((it) => (
-          <div
-            key={it.key}
-            className="flex items-start justify-between gap-2 py-1.5 px-2 rounded-lg hover:bg-muted/30 transition-colors"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="text-sm text-foreground capitalize truncate">{it.primary}</p>
-              {it.secondary && (
-                <p className="text-[10.5px] text-muted-foreground truncate">{it.secondary}</p>
-              )}
-            </div>
-            <div className="text-right shrink-0">
-              <p className={cn("text-sm font-semibold tabular-nums", it.valueTone)}>{it.value}</p>
-              {it.extra && <p className="text-[10px] text-muted-foreground">{it.extra}</p>}
-            </div>
+}) => {
+  const validChart = chartData.filter((d) => d.value > 0);
+  const chartHeight = Math.min(120, Math.max(60, validChart.length * 28));
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+          <div className={cn("p-1.5 rounded-lg", iconBg)}>
+            <Icon className="h-4 w-4" />
           </div>
-        ))}
-        <div className="pt-2 mt-1 border-t border-border/50 flex items-center justify-between px-2">
-          <span className="text-xs font-medium text-muted-foreground">{totalLabel}</span>
-          <span className="text-sm font-bold text-foreground tabular-nums">{totalValue}</span>
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {validChart.length > 0 && (
+          <>
+            <div
+              className="w-full"
+              style={{ height: `${chartHeight}px` }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={validChart}
+                  layout="vertical"
+                  margin={{ top: 2, right: 8, left: 4, bottom: 2 }}
+                  barCategoryGap={4}
+                >
+                  <XAxis type="number" hide />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={70}
+                    tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v: string) =>
+                      v.length > 10 ? `${v.slice(0, 10)}…` : v
+                    }
+                  />
+                  <RTooltip
+                    formatter={(value: number) => fmtBRL(value)}
+                    cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+                    contentStyle={{
+                      borderRadius: "10px",
+                      border: "1px solid hsl(var(--border))",
+                      fontSize: "12px",
+                      padding: "8px 12px",
+                    }}
+                  />
+                  <Bar dataKey="value" fill={chartColor} radius={[3, 3, 3, 3]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="my-3 border-t border-border/50" />
+          </>
+        )}
+        <div className="space-y-1.5">
+          {items.map((it) => (
+            <div
+              key={it.key}
+              className="flex items-start justify-between gap-2 py-1.5 px-2 rounded-lg hover:bg-muted/30 transition-colors"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-foreground capitalize truncate">{it.primary}</p>
+                {it.secondary && (
+                  <p className="text-[10.5px] text-muted-foreground truncate">{it.secondary}</p>
+                )}
+              </div>
+              <div className="text-right shrink-0">
+                <p className={cn("text-sm font-semibold tabular-nums", it.valueTone)}>{it.value}</p>
+                {it.extra && <p className="text-[10px] text-muted-foreground">{it.extra}</p>}
+              </div>
+            </div>
+          ))}
+          <div className="pt-2 mt-1 border-t border-border/50 flex items-center justify-between px-2">
+            <span className="text-xs font-medium text-muted-foreground">{totalLabel}</span>
+            <span className="text-sm font-bold text-foreground tabular-nums">{totalValue}</span>
+          </div>
         </div>
-      </div>
-    </CardContent>
-  </Card>
-);
+      </CardContent>
+    </Card>
+  );
+};
 
 export default ClientDiagnosis;
