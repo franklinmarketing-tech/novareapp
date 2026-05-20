@@ -1033,7 +1033,9 @@ export type Database = {
       }
       goals: {
         Row: {
+          amount_applied: number | null
           client_id: string
+          completed_at: string | null
           created_at: string
           deadline: string | null
           description: string
@@ -1043,7 +1045,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount_applied?: number | null
           client_id: string
+          completed_at?: string | null
           created_at?: string
           deadline?: string | null
           description: string
@@ -1053,7 +1057,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount_applied?: number | null
           client_id?: string
+          completed_at?: string | null
           created_at?: string
           deadline?: string | null
           description?: string
@@ -1562,6 +1568,7 @@ export type Database = {
         Row: {
           ai_suggestion: string | null
           client_id: string
+          completed_at: string | null
           created_at: string
           current_value: number | null
           id: string
@@ -1576,6 +1583,7 @@ export type Database = {
         Insert: {
           ai_suggestion?: string | null
           client_id: string
+          completed_at?: string | null
           created_at?: string
           current_value?: number | null
           id?: string
@@ -1590,6 +1598,7 @@ export type Database = {
         Update: {
           ai_suggestion?: string | null
           client_id?: string
+          completed_at?: string | null
           created_at?: string
           current_value?: number | null
           id?: string
