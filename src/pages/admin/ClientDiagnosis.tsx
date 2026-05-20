@@ -174,7 +174,7 @@ const fmtPct = (v: number) => `${v.toFixed(1)}%`;
 
 const INSIGHT_TONES: Record<
   Insight["kind"],
-  { label: string; bg: string; border: string; iconBg: string; icon: React.ElementType }
+  { label: string; bg: string; border: string; iconBg: string; icon: React.ElementType; emoji: string }
 > = {
   critico: {
     label: "Crítico",
@@ -182,6 +182,7 @@ const INSIGHT_TONES: Record<
     border: "border-red-500/35",
     iconBg: "bg-red-500/15 text-red-600",
     icon: AlertTriangle,
+    emoji: "🚨",
   },
   alerta: {
     label: "Atenção",
@@ -189,6 +190,7 @@ const INSIGHT_TONES: Record<
     border: "border-amber-500/35",
     iconBg: "bg-amber-500/15 text-amber-600",
     icon: Flame,
+    emoji: "⚠️",
   },
   oportunidade: {
     label: "Oportunidade",
@@ -196,6 +198,7 @@ const INSIGHT_TONES: Record<
     border: "border-accent/30",
     iconBg: "bg-accent/15 text-accent",
     icon: Lightbulb,
+    emoji: "💡",
   },
   ponto_forte: {
     label: "Ponto forte",
@@ -203,6 +206,7 @@ const INSIGHT_TONES: Record<
     border: "border-success/30",
     iconBg: "bg-success/15 text-success",
     icon: CheckCircle2,
+    emoji: "✅",
   },
 };
 
@@ -979,7 +983,6 @@ const KpiLine = ({
 
 const InsightCard = ({ insight, index }: { insight: Insight; index: number }) => {
   const tone = INSIGHT_TONES[insight.kind];
-  const Icon = tone.icon;
 
   return (
     <motion.div
@@ -997,16 +1000,15 @@ const InsightCard = ({ insight, index }: { insight: Insight; index: number }) =>
       <div className={cn("h-0.5 w-full", tone.border.replace("border-", "bg-").replace("/35", "/60").replace("/30", "/60"))} />
 
       <div className="p-4 flex flex-col gap-3 flex-1">
-        {/* Topo: ícone + tipo + metric */}
+        {/* Topo: emoji + tipo + metric */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", tone.iconBg)}>
-              <Icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+            <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shrink-0 text-lg leading-none", tone.iconBg)}>
+              {tone.emoji}
             </div>
             <span className={cn(
               "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
               tone.bg, tone.border,
-              // extrai só a cor de texto do iconBg
               tone.iconBg.split(" ").find(c => c.startsWith("text-")) || "text-foreground"
             )}>
               {tone.label}
