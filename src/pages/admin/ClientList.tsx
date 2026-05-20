@@ -139,17 +139,19 @@ interface KpiCardProps {
 }
 
 const KpiCard = ({ label, value, hint, icon: Icon, tint, iconColor }: KpiCardProps) => (
-  <Card3D className="p-4 sm:p-5">
-    <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0">
-        <p className="text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground/85">
+  <Card3D className="px-3.5 py-3">
+    <div className="flex items-center gap-2.5 min-w-0">
+      <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", tint)}>
+        <Icon className={cn("h-3.5 w-3.5", iconColor)} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground/70 truncate">
           {label}
         </p>
-        <p className="mt-1.5 text-3xl font-bold tracking-tight text-foreground tabular-nums">{value}</p>
-        {hint && <p className="mt-1 text-[0.75rem] text-muted-foreground truncate">{hint}</p>}
-      </div>
-      <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", tint)}>
-        <Icon className={cn("h-5 w-5", iconColor)} />
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-xl font-bold tracking-tight text-foreground tabular-nums leading-tight">{value}</span>
+          {hint && <span className="text-[0.65rem] text-muted-foreground truncate hidden sm:block">{hint}</span>}
+        </div>
       </div>
     </div>
   </Card3D>
@@ -656,7 +658,7 @@ const ClientList = () => {
       <motion.div
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4"
       >
         <motion.div variants={fadeUp} custom={0}>
           <KpiCard
