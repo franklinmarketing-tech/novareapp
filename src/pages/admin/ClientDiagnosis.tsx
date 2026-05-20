@@ -982,44 +982,63 @@ const KpiLine = ({
 );
 
 const INSIGHT_STYLES: Record<Insight["kind"], {
-  glow: string; gradientFrom: string; gradientTo: string;
-  iconRing: string; metricBg: string; metricText: string; divider: string;
+  borderColor: string; barGradient: string; bgGradient: string;
+  iconRing: string; iconShadow: string;
+  metricText: string; dividerGradient: string;
+  calloutBg: string; calloutBorder: string;
+  shadow: string; shadowHover: string;
 }> = {
   critico: {
-    glow: "hsl(0 72% 55% / 0.12)",
-    gradientFrom: "hsl(0 72% 55% / 0.08)",
-    gradientTo: "transparent",
-    iconRing: "ring-red-500/20",
-    metricBg: "bg-red-500/10",
+    borderColor: "hsl(0 72% 55% / 0.25)",
+    barGradient: "linear-gradient(90deg, hsl(0 72% 55% / 0.9), hsl(0 72% 55% / 0.4), transparent)",
+    bgGradient: "radial-gradient(ellipse at 0% 0%, hsl(0 72% 55% / 0.07) 0%, transparent 60%)",
+    iconRing: "ring-red-500/25",
+    iconShadow: "0 4px 12px -2px hsl(0 72% 55% / 0.3)",
     metricText: "text-red-600 dark:text-red-400",
-    divider: "from-red-500/30 via-red-500/10 to-transparent",
+    dividerGradient: "linear-gradient(90deg, hsl(0 72% 55% / 0.35), hsl(0 72% 55% / 0.08) 60%, transparent)",
+    calloutBg: "hsl(0 72% 55% / 0.06)",
+    calloutBorder: "hsl(0 72% 55% / 0.5)",
+    shadow: "0 1px 3px hsl(0 0% 0% / 0.07), 0 4px 16px -4px hsl(0 72% 55% / 0.12)",
+    shadowHover: "0 4px 24px -4px hsl(0 72% 55% / 0.25), 0 8px 32px -8px hsl(0 0% 0% / 0.1)",
   },
   alerta: {
-    glow: "hsl(38 95% 48% / 0.12)",
-    gradientFrom: "hsl(38 95% 48% / 0.08)",
-    gradientTo: "transparent",
-    iconRing: "ring-amber-500/20",
-    metricBg: "bg-amber-500/10",
+    borderColor: "hsl(38 95% 48% / 0.25)",
+    barGradient: "linear-gradient(90deg, hsl(38 95% 48% / 0.9), hsl(38 95% 48% / 0.4), transparent)",
+    bgGradient: "radial-gradient(ellipse at 0% 0%, hsl(38 95% 48% / 0.07) 0%, transparent 60%)",
+    iconRing: "ring-amber-500/25",
+    iconShadow: "0 4px 12px -2px hsl(38 95% 48% / 0.3)",
     metricText: "text-amber-600 dark:text-amber-400",
-    divider: "from-amber-500/30 via-amber-500/10 to-transparent",
+    dividerGradient: "linear-gradient(90deg, hsl(38 95% 48% / 0.35), hsl(38 95% 48% / 0.08) 60%, transparent)",
+    calloutBg: "hsl(38 95% 48% / 0.06)",
+    calloutBorder: "hsl(38 95% 48% / 0.5)",
+    shadow: "0 1px 3px hsl(0 0% 0% / 0.07), 0 4px 16px -4px hsl(38 95% 48% / 0.12)",
+    shadowHover: "0 4px 24px -4px hsl(38 95% 48% / 0.25), 0 8px 32px -8px hsl(0 0% 0% / 0.1)",
   },
   oportunidade: {
-    glow: "hsl(var(--accent) / 0.12)",
-    gradientFrom: "hsl(var(--accent) / 0.07)",
-    gradientTo: "transparent",
-    iconRing: "ring-accent/20",
-    metricBg: "bg-accent/10",
+    borderColor: "hsl(var(--accent) / 0.25)",
+    barGradient: "linear-gradient(90deg, hsl(var(--accent) / 0.9), hsl(var(--accent) / 0.4), transparent)",
+    bgGradient: "radial-gradient(ellipse at 0% 0%, hsl(var(--accent) / 0.07) 0%, transparent 60%)",
+    iconRing: "ring-accent/25",
+    iconShadow: "0 4px 12px -2px hsl(var(--accent) / 0.3)",
     metricText: "text-accent",
-    divider: "from-accent/30 via-accent/10 to-transparent",
+    dividerGradient: "linear-gradient(90deg, hsl(var(--accent) / 0.35), hsl(var(--accent) / 0.08) 60%, transparent)",
+    calloutBg: "hsl(var(--accent) / 0.06)",
+    calloutBorder: "hsl(var(--accent) / 0.5)",
+    shadow: "0 1px 3px hsl(0 0% 0% / 0.07), 0 4px 16px -4px hsl(var(--accent) / 0.12)",
+    shadowHover: "0 4px 24px -4px hsl(var(--accent) / 0.25), 0 8px 32px -8px hsl(0 0% 0% / 0.1)",
   },
   ponto_forte: {
-    glow: "hsl(var(--success) / 0.12)",
-    gradientFrom: "hsl(var(--success) / 0.07)",
-    gradientTo: "transparent",
-    iconRing: "ring-success/20",
-    metricBg: "bg-success/10",
+    borderColor: "hsl(var(--success) / 0.25)",
+    barGradient: "linear-gradient(90deg, hsl(var(--success) / 0.9), hsl(var(--success) / 0.4), transparent)",
+    bgGradient: "radial-gradient(ellipse at 0% 0%, hsl(var(--success) / 0.07) 0%, transparent 60%)",
+    iconRing: "ring-success/25",
+    iconShadow: "0 4px 12px -2px hsl(var(--success) / 0.3)",
     metricText: "text-success",
-    divider: "from-success/30 via-success/10 to-transparent",
+    dividerGradient: "linear-gradient(90deg, hsl(var(--success) / 0.35), hsl(var(--success) / 0.08) 60%, transparent)",
+    calloutBg: "hsl(var(--success) / 0.06)",
+    calloutBorder: "hsl(var(--success) / 0.5)",
+    shadow: "0 1px 3px hsl(0 0% 0% / 0.07), 0 4px 16px -4px hsl(var(--success) / 0.12)",
+    shadowHover: "0 4px 24px -4px hsl(var(--success) / 0.25), 0 8px 32px -8px hsl(0 0% 0% / 0.1)",
   },
 };
 
@@ -1032,84 +1051,97 @@ const InsightCard = ({ insight, index }: { insight: Insight; index: number }) =>
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+      initial={{ opacity: 0, y: 16, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ delay: Math.min(index * 0.06, 0.3), duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="group relative rounded-2xl border border-border/50 bg-card overflow-hidden flex flex-col"
+      exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{
+        y: -4,
+        boxShadow: style.shadowHover,
+        transition: { duration: 0.22, ease: "easeOut" },
+      }}
+      transition={{ delay: Math.min(index * 0.07, 0.28), duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="group relative rounded-2xl border bg-card overflow-hidden flex flex-col cursor-default"
       style={{
-        boxShadow: `0 0 0 1px hsl(0 0% 0% / 0.04), 0 2px 8px -2px hsl(0 0% 0% / 0.08), 0 0 32px -8px ${style.glow}`,
+        borderColor: style.borderColor,
+        boxShadow: style.shadow,
       }}
     >
-      {/* Gradiente de fundo */}
+      {/* Barra superior colorida */}
+      <div className="h-[2.5px] w-full shrink-0" style={{ background: style.barGradient }} />
+
+      {/* Gradiente de fundo sutil */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: `radial-gradient(ellipse at top left, ${style.gradientFrom}, ${style.gradientTo} 65%)` }}
+        className="absolute inset-0 pointer-events-none opacity-60"
+        style={{ background: style.bgGradient }}
       />
 
-      {/* Brilho interno no topo */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+      {/* Brilho interno topo */}
+      <div className="absolute inset-x-0 top-[2.5px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
 
-      <div className="relative z-10 p-4 flex flex-col gap-3 flex-1">
+      <div className="relative z-10 p-5 flex flex-col gap-4 flex-1">
 
-        {/* Header: ícone + label + métrica */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className={cn(
-              "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ring-1",
-              tone.iconBg, style.iconRing,
-            )}
-              style={{ boxShadow: `0 2px 8px -2px ${style.glow}` }}
+        {/* LINHA 1: ícone + tipo + métrica */}
+        <div className="flex items-center justify-between gap-3">
+
+          {/* Ícone + label */}
+          <div className="flex items-center gap-3">
+            <motion.div
+              className={cn("h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 ring-1", tone.iconBg, style.iconRing)}
+              style={{ boxShadow: style.iconShadow }}
+              whileHover={{ rotate: 6, scale: 1.08 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
             >
-              <Icon className="h-4 w-4" strokeWidth={2} />
-            </div>
-            <div>
-              <span className={cn("text-[10px] font-bold uppercase tracking-[0.12em]", textColor)}>
+              <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+            </motion.div>
+            <div className="flex flex-col gap-0.5">
+              <span className={cn("text-[10px] font-bold uppercase tracking-[0.14em]", textColor)}>
                 {tone.label}
               </span>
               {insight.severity === "alta" && (
-                <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
-                  Alta
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-destructive">
+                  · severidade alta
                 </span>
               )}
             </div>
           </div>
 
+          {/* Métrica */}
           {insight.metric_value != null && (
-            <div className={cn("flex flex-col items-end shrink-0 px-2.5 py-1.5 rounded-xl", style.metricBg)}>
-              <span className={cn("text-sm font-bold tabular-nums leading-none", style.metricText)}>
+            <div className="flex flex-col items-end shrink-0">
+              <span className={cn("text-xl font-black tabular-nums leading-none tracking-tight", style.metricText)}>
                 {insight.metric_value < 100 && insight.metric_value > -100
                   ? `${insight.metric_value.toFixed(1)}%`
                   : fmtBRL(insight.metric_value)}
               </span>
               {insight.metric_label && (
-                <span className="text-[9px] text-muted-foreground mt-0.5 leading-none">{insight.metric_label}</span>
+                <span className="text-[9.5px] text-muted-foreground mt-0.5 font-medium">{insight.metric_label}</span>
               )}
             </div>
           )}
         </div>
 
-        {/* Divisor gradiente */}
-        <div className={cn("h-px w-full bg-gradient-to-r", style.divider)} />
+        {/* Divisor */}
+        <div className="h-px w-full" style={{ background: style.dividerGradient }} />
 
         {/* Título + descrição */}
-        <div className="space-y-1.5">
-          <p className="text-sm font-semibold text-foreground tracking-tight leading-snug">
+        <div className="space-y-2">
+          <p className="text-[0.9375rem] font-bold text-foreground tracking-tight leading-snug">
             {insight.title}
           </p>
-          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             {insight.description}
           </p>
         </div>
 
-        {/* Sugestão */}
+        {/* Ação recomendada — callout */}
         {insight.suggested_action && (
-          <div className="mt-auto pt-3 flex items-start gap-2">
-            <div className={cn("h-5 w-5 rounded-lg flex items-center justify-center shrink-0 mt-0.5", tone.iconBg)}>
-              <ArrowRight className="h-2.5 w-2.5" strokeWidth={2.5} />
-            </div>
-            <p className="text-[11px] leading-relaxed text-muted-foreground">
-              <span className={cn("font-semibold", textColor)}>Ação recomendada: </span>
+          <div
+            className="mt-auto rounded-xl px-3.5 py-2.5 flex items-start gap-2.5"
+            style={{ background: style.calloutBg, borderLeft: `3px solid ${style.calloutBorder}` }}
+          >
+            <ArrowRight className={cn("h-3.5 w-3.5 mt-0.5 shrink-0", textColor)} strokeWidth={2.5} />
+            <p className="text-[11.5px] leading-snug text-foreground/80">
+              <span className={cn("font-semibold", textColor)}>Ação: </span>
               {insight.suggested_action}
             </p>
           </div>
