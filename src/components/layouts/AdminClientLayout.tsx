@@ -169,6 +169,7 @@ const AdminClientLayout = () => {
 
   const st = statusMap[clientStatus] || statusMap.onboarding_pendente;
   const disabled = disabledByStatus[clientStatus] || [];
+  const completedSteps = (completedByStatus[clientStatus] || []).length;
 
   if (loading || !clientId) {
     return <div className="flex items-center justify-center py-20"><span className="animate-pulse text-muted-foreground">Carregando...</span></div>;
@@ -244,6 +245,9 @@ const AdminClientLayout = () => {
                   Plano {activePlanInfo.variant}
                 </Badge>
               )}
+              <Badge variant="outline" className="text-[10px] gap-1 border-foreground/15 text-muted-foreground shrink-0 font-mono">
+                {completedSteps}/6 etapas
+              </Badge>
             </div>
 
             {/* Consultor dropdown — compacto */}
@@ -436,7 +440,19 @@ const AdminClientLayout = () => {
                       </div>
 
                       <div className="min-w-0 flex-1 relative">
+                        <span className={stepLabelClasses(state)}>{String(tab.step).padStart(2, "0")}</span>
                         <span className={cn(titleClasses(state), "block")}>{tab.label}</span>
+                        {(state === "completed" || state === "active") && stageTimestamps[tab.path] && (
+                          <span className={cn(
+                            "block text-[9px] leading-none mt-0.5 tabular-nums",
+                            state === "active" ? "text-primary-foreground/60" : "text-success/70",
+                          )}>
+                            {formatStageTime(stageTimestamps[tab.path], state)}
+                          </span>
+                        )}
+                        {state === "locked" && (
+                          <span className="block text-[9px] leading-none mt-0.5 text-muted-foreground/40">aguardando</span>
+                        )}
                       </div>
 
                       {/* Status chip a direita (3D) */}

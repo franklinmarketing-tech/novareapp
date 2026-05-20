@@ -72,10 +72,22 @@ export const JourneyFooterNav = ({
   return (
     <Card
       className={cn(
-        "border-accent/25 bg-gradient-to-br from-accent/[0.05] via-card to-card",
+        "overflow-hidden border-accent/25 bg-gradient-to-br from-accent/[0.05] via-card to-card",
         isLast && "border-success/30 from-success/[0.04]",
       )}
     >
+      {/* Progress track — 6 segments */}
+      <div className="flex h-[3px]">
+        {ORDER.map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              "flex-1 transition-all duration-500",
+              i < idx ? "bg-success/80" : i === idx ? "bg-accent" : "bg-muted/60",
+            )}
+          />
+        ))}
+      </div>
       <CardContent className="py-5 px-5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
