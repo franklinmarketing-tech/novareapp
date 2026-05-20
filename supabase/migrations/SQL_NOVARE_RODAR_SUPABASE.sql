@@ -1,67 +1,73 @@
--- =============================================================
--- NOVARE APP — SQL CONSOLIDADO PARA RODAR NO SUPABASE
+-- ===========================================================
+-- NOVARE APP - SQL CONSOLIDADO PARA RODAR NO SUPABASE
 -- Data: 2026-05-19
--- Rode este script no SQL Editor do painel Supabase:
+-- Rode no SQL Editor:
 -- https://supabase.com/dashboard/project/hjikeevfzfswqydduars/sql
---
--- Todos os comandos usam IF NOT EXISTS / IF NOT EXISTS para
--- serem seguros de rodar mais de uma vez (idempotente).
--- =============================================================
+-- Todos os comandos sao seguros de rodar mais de uma vez.
+-- ===========================================================
 
 
--- ─────────────────────────────────────────────────────────────
--- 1. TABELA: parecer_metas
---    Metas definidas pelo consultor para cada item financeiro.
--- ─────────────────────────────────────────────────────────────
+-- -----------------------------------------------------------
+-- 1. TABELA parecer_metas
+--    Metas do consultor para cada item financeiro do cliente.
+-- -----------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.parecer_metas (
-  id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  client_id    uuid        NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
-  source_table text        NOT NULL,  -- 'income' | 'expenses' | 'debts' | 'assets' | 'insurance' | 'goals'
-  source_id    uuid        NOT NULL,
-  source_label text        NOT NULL,
+  id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id     uuid        NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
+  source_table  text        NOT NULL,
+  source_id     uuid        NOT NULL,
+  source_label  text        NOT NULL,
   current_value numeric,
-  meta_text    text,
-  meta_valor   numeric,
+  meta_text     text,
+  meta_valor    numeric,
   ai_suggestion text,
-  created_at   timestamptz NOT NULL DEFAULT now(),
-  updated_at   timestamptz NOT NULL DEFAULT now(),
+  prazo         date,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  updated_at    timestamptz NOT NULL DEFAULT now(),
   UNIQUE (client_id, source_table, source_id)
 );
 
 ALTER TABLE public.parecer_metas ENABLE ROW LEVEL SECURITY;
 
-DO $$ BEGIN
+DO $do$ BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'parecer_metas' AND policyname = 'admin_all_parecer_metas'
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'parecer_metas'
+      AND policyname = 'admin_all_parecer_metas'
   ) THEN
     CREATE POLICY "admin_all_parecer_metas"
       ON public.parecer_metas FOR ALL TO authenticated
-      USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'))
-      WITH CHECK (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+      USING (
+        EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin')
+      )
+      WITH CHECK (
+        EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin')
+      );
   END IF;
-END $$;
+END $do$;
 
-DO $$ BEGIN
+DO $do$ BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'parecer_metas' AND policyname = 'client_read_own_parecer_metas'
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'parecer_metas'
+      AND policyname = 'client_read_own_parecer_metas'
   ) THEN
     CREATE POLICY "client_read_own_parecer_metas"
       ON public.parecer_metas FOR SELECT TO authenticated
-      USING (EXISTS (SELECT 1 FROM public.clients WHERE id = parecer_metas.client_id AND user_id = auth.uid()));
+      USING (
+        EXISTS (SELECT 1 FROM public.clients WHERE id = parecer_metas.client_id AND user_id = auth.uid())
+      );
   END IF;
-END $$;
-
--- Campo prazo (data-alvo da meta)
-ALTER TABLE public.parecer_metas ADD COLUMN IF NOT EXISTS prazo date;
+END $do$;
 
 
--- ─────────────────────────────────────────────────────────────
--- 2. TABELA: acompanhamento_entradas
+-- -----------------------------------------------------------
+-- 2. TABELA acompanhamento_entradas
 --    Snapshots de acompanhamento (append-only).
 --    Cada save do consultor gera uma linha.
---    Fechamento do mês gera linha com is_closing_snapshot = true.
--- ─────────────────────────────────────────────────────────────
+--    Fechamento do mes gera linha com is_closing_snapshot = true.
+-- -----------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.acompanhamento_entradas (
   id                  uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -90,41 +96,52 @@ CREATE INDEX IF NOT EXISTS idx_acomp_closing
 
 ALTER TABLE public.acompanhamento_entradas ENABLE ROW LEVEL SECURITY;
 
-DO $$ BEGIN
+DO $do$ BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'acompanhamento_entradas' AND policyname = 'admin_all_acompanhamento_entradas'
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'acompanhamento_entradas'
+      AND policyname = 'admin_all_acompanhamento_entradas'
   ) THEN
     CREATE POLICY "admin_all_acompanhamento_entradas"
       ON public.acompanhamento_entradas FOR ALL TO authenticated
-      USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'))
-      WITH CHECK (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+      USING (
+        EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin')
+      )
+      WITH CHECK (
+        EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin')
+      );
   END IF;
-END $$;
+END $do$;
 
-DO $$ BEGIN
+DO $do$ BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE tablename = 'acompanhamento_entradas' AND policyname = 'client_read_own_acompanhamento_entradas'
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'acompanhamento_entradas'
+      AND policyname = 'client_read_own_acompanhamento_entradas'
   ) THEN
     CREATE POLICY "client_read_own_acompanhamento_entradas"
       ON public.acompanhamento_entradas FOR SELECT TO authenticated
-      USING (EXISTS (SELECT 1 FROM public.clients WHERE id = acompanhamento_entradas.client_id AND user_id = auth.uid()));
+      USING (
+        EXISTS (SELECT 1 FROM public.clients WHERE id = acompanhamento_entradas.client_id AND user_id = auth.uid())
+      );
   END IF;
-END $$;
+END $do$;
 
 
--- ─────────────────────────────────────────────────────────────
--- 3. TABELA goals — colunas novas
---    amount_applied: valor já investido/aplicado no objetivo
---    completed_at:   quando a meta foi atingida e arquivada
--- ─────────────────────────────────────────────────────────────
+-- -----------------------------------------------------------
+-- 3. TABELA goals - colunas novas
+--    amount_applied : valor investido/aplicado no objetivo
+--    completed_at   : quando a meta foi atingida e arquivada
+-- -----------------------------------------------------------
 
 ALTER TABLE public.goals ADD COLUMN IF NOT EXISTS amount_applied numeric DEFAULT 0;
 ALTER TABLE public.goals ADD COLUMN IF NOT EXISTS completed_at   timestamptz DEFAULT NULL;
 
 
--- ─────────────────────────────────────────────────────────────
+-- ===========================================================
 -- FIM DO SCRIPT
--- Após rodar, verifique no Table Editor que as tabelas
--- parecer_metas e acompanhamento_entradas existem, e que
--- goals possui as colunas amount_applied e completed_at.
--- =============================================================
+-- Verifique no Table Editor que:
+--   - parecer_metas existe
+--   - acompanhamento_entradas existe
+--   - goals tem as colunas amount_applied e completed_at
+-- ===========================================================
