@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -224,6 +224,9 @@ const ClientDiagnosis = () => {
   const [aiInsights, setAiInsights] = useState<Insight[]>([]);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiTriggered, setAiTriggered] = useState(false);
+  const [aiAnalyzedAt, setAiAnalyzedAt] = useState<string | null>(null);
+  // true = já existe análise salva, não dispara automático
+  const [aiAlreadySaved, setAiAlreadySaved] = useState(false);
 
   // ── Carga inicial dos dados ──────────────────────
   useEffect(() => {
@@ -238,7 +241,23 @@ const ClientDiagnosis = () => {
         supabase.from("diagnosis").select("*").eq("client_id", clientId).maybeSingle(),
       ]);
 
-      if (diagRes.data) setExistingDiagnosisId(diagRes.data.id);
+      if (diagRes.data) {
+        setExistingDiagnosisId(diagRes.data.id);
+        if (diagRes.data.ai_summary) {
+          setAiSummary(diagRes.data.ai_summary as string);
+          setAiInsights(
+            ((diagRes.data.ai_insights as Insight[]) || []).sort((a, b) => {
+              const orderKind = { critico: 0, alerta: 1, oportunidade: 2, ponto_forte: 3 };
+              const orderSev = { alta: 0, media: 1, baixa: 2 };
+              return (
+                orderKind[a.kind] - orderKind[b.kind] || orderSev[a.severity] - orderSev[b.severity]
+              );
+            })
+          );
+          setAiAnalyzedAt(diagRes.data.ai_analyzed_at as string | null);
+          setAiAlreadySaved(true);
+        }
+      }
 
       const incomes = incomeRes.data || [];
       const expenses = expenseRes.data || [];
@@ -341,48 +360,61 @@ const ClientDiagnosis = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
-  // ── IA dispara automaticamente ao carregar ───────
+  // ── Executa análise da IA e persiste no banco ────
   const runAnalyzeAI = async (silent = false) => {
     if (!clientId) return;
-    if (!silent) setAiAnalyzing(true);
+    setAiAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-diagnosis", {
         body: { clientId },
       });
       if (error) throw error;
-      setAiSummary((data?.summary as string) || "");
-      setAiInsights(((data?.insights as Insight[]) || []).sort((a, b) => {
+
+      const summary = (data?.summary as string) || "";
+      const insights = ((data?.insights as Insight[]) || []).sort((a, b) => {
         const orderKind = { critico: 0, alerta: 1, oportunidade: 2, ponto_forte: 3 };
         const orderSev = { alta: 0, media: 1, baixa: 2 };
         return (
           orderKind[a.kind] - orderKind[b.kind] || orderSev[a.severity] - orderSev[b.severity]
         );
-      }));
+      });
+      const analyzedAt = new Date().toISOString();
+
+      setAiSummary(summary);
+      setAiInsights(insights);
+      setAiAnalyzedAt(analyzedAt);
+      setAiAlreadySaved(true);
+
+      // Persiste no banco
+      if (existingDiagnosisId) {
+        await supabase
+          .from("diagnosis")
+          .update({ ai_summary: summary, ai_insights: insights as any, ai_analyzed_at: analyzedAt })
+          .eq("id", existingDiagnosisId);
+      }
+
       if (!silent) {
-        toast({
-          title: "Análise concluída",
-          description: `${(data?.insights || []).length} insights gerados pela IA.`,
+        toast.success("Análise concluída", {
+          description: `${insights.length} insights gerados pela IA.`,
         });
       }
     } catch (e: any) {
       if (!silent) {
-        toast({
-          title: "Erro ao analisar",
-          description: e?.message || "Tente novamente",
-          variant: "destructive",
+        toast.error("Erro ao analisar", {
+          description: (e as any)?.message || "Tente novamente",
         });
       }
     }
-    if (!silent) setAiAnalyzing(false);
+    setAiAnalyzing(false);
   };
 
-  // Dispara IA automaticamente assim que o diagnostico estiver pronto
+  // Dispara IA automaticamente apenas se não há análise salva
   useEffect(() => {
-    if (!diagnosis || aiTriggered || !clientId) return;
+    if (!diagnosis || aiTriggered || !clientId || aiAlreadySaved) return;
     setAiTriggered(true);
     runAnalyzeAI(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diagnosis, clientId]);
+  }, [diagnosis, clientId, aiAlreadySaved]);
 
   // ── Derivados visuais ────────────────────────────
   const risk = diagnosis ? classificationConfig[diagnosis.riskClassification] || classificationConfig.C : null;
@@ -519,25 +551,36 @@ const ClientDiagnosis = () => {
           <Card className="border-accent/20 bg-gradient-to-br from-accent/[0.04] via-card to-card h-full">
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-accent/10">
-                    <Sparkles className="h-4 w-4 text-accent" />
-                  </div>
-                  Diagnóstico pela IA
-                </CardTitle>
+                <div className="flex flex-col gap-0.5">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-accent/10">
+                      <Sparkles className="h-4 w-4 text-accent" />
+                    </div>
+                    Diagnóstico pela IA
+                  </CardTitle>
+                  {aiAnalyzedAt && (
+                    <p className="text-[10px] text-muted-foreground pl-8">
+                      Última análise:{" "}
+                      {new Date(aiAnalyzedAt).toLocaleString("pt-BR", {
+                        day: "2-digit", month: "2-digit", year: "numeric",
+                        hour: "2-digit", minute: "2-digit",
+                      })}
+                    </p>
+                  )}
+                </div>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => runAnalyzeAI(false)}
                   disabled={aiAnalyzing}
-                  className="gap-1.5 h-7 text-[11px] text-muted-foreground hover:text-foreground"
+                  className="gap-1.5 h-7 text-[11px] border-accent/30 text-accent hover:bg-accent/10 hover:text-accent"
                 >
                   {aiAnalyzing ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
                   ) : (
                     <RefreshCw className="h-3 w-3" />
                   )}
-                  Atualizar
+                  Nova Análise
                 </Button>
               </div>
             </CardHeader>

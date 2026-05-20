@@ -1,0 +1,4 @@
+ALTER TABLE public.diagnosis
+  ADD COLUMN IF NOT EXISTS ai_summary TEXT,
+  ADD COLUMN IF NOT EXISTS ai_insights JSONB,
+  ADD COLUMN IF NOT EXISTS ai_analyzed_at TIMESTAMPTZ;
