@@ -592,7 +592,9 @@ const ClientOnboarding = () => {
                             </span>
                           </div>
                         </div>
-                        <EditButton onClick={() => openEditDialog(s.key)} />
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <EditButton onClick={() => openEditDialog(s.key)} />
+                        </div>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-5 pb-5">

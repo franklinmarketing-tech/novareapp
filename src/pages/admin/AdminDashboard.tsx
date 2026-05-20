@@ -419,7 +419,9 @@ const AdminDashboard = () => {
                 </div>
                 <span className="text-label-xs">Clientes ativos</span>
               </div>
-              <p className="text-4xl xl:text-5xl font-bold text-foreground tracking-tight tabular-nums drop-shadow-sm">{totalCount}</p>
+              <p className="text-4xl xl:text-5xl font-bold text-foreground tracking-tight tabular-nums drop-shadow-sm">
+  {!loading && stats.total === 0 ? "—" : totalCount}
+</p>
               <div className="flex items-center gap-3 mt-4 flex-wrap">
                 <PipelineDot color="bg-accent" label="Onboarding" count={stats.onboarding} />
                 <PipelineDot color="bg-destructive" label="Diagnóstico" count={stats.diagnostico} />
@@ -440,7 +442,7 @@ const AdminDashboard = () => {
                 <span className="text-label-xs">Patrimônio sob gestão</span>
               </div>
               <p className={`text-2xl xl:text-3xl font-bold tracking-tight tabular-nums drop-shadow-sm break-words ${netWealth >= 0 ? "text-foreground" : "text-destructive"}`}>
-                {fmtShort(wealthCount)}
+                {!loading && stats.total === 0 ? "—" : fmtShort(wealthCount)}
               </p>
               <p className="text-meta-sm mt-1">
                 {stats.total > 0 ? `Média de ${fmtShort(Math.round(netWealth / stats.total))} por cliente` : "—"}
@@ -459,7 +461,9 @@ const AdminDashboard = () => {
                 </div>
                 <span className="text-label-xs">Progresso dos planos</span>
               </div>
-              <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums drop-shadow-sm">{progressCount}%</p>
+              <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums drop-shadow-sm">
+  {!loading && stats.total === 0 ? "—" : `${progressCount}%`}
+</p>
               <Progress value={avgPlanProgress} className="h-2 rounded-full mt-3 [&>div]:bg-accent" />
             </div>
           </KpiCard3D>

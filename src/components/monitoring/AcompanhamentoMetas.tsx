@@ -244,6 +244,7 @@ function MetaAcompRow({
               variant={saved ? "secondary" : "default"}
               onClick={handleSave}
               disabled={(!estado.trim() && !valor.trim()) || saving}
+              title={(!estado.trim() && !valor.trim()) ? "Preencha o valor ou o estado atual para salvar" : "Salvar registro"}
               className={cn("h-9 w-9 p-0 shrink-0", !saved && "bg-novare-terracotta hover:bg-novare-terracotta/90 text-white border-0")}
             >
               {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
@@ -541,10 +542,17 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     onError: (err: any) => toast.error("Erro ao salvar: " + (err?.message || "tente novamente")),
   });
 
-  const handleSave = (metaId: string, estadoAtual: string, valorAtualStr: string) => {
+  const handleSave = async (metaId: string, estadoAtual: string, valorAtualStr: string) => {
     const meta = metas.find((m) => m.id === metaId);
     if (!meta) return;
     setSavingId(metaId);
+    // Reset completed_at if new progress drops below 100%
+    if (meta.meta_valor && valorAtualStr) {
+      const newPct = Math.round((parseFloat(valorAtualStr) / meta.meta_valor) * 100);
+      if (newPct < 100) {
+        await supabase.from("parecer_metas").update({ completed_at: null }).eq("id", metaId);
+      }
+    }
     saveEntrada.mutate(
       { meta, estadoAtual, valorAtualStr },
       { onSettled: () => setSavingId(null) },

@@ -90,10 +90,12 @@ const ClientDashboard = () => {
   const [dataConfirmedThisMonth, setDataConfirmedThisMonth] = useState(true);
   const [profile, setProfile] = useState<{ full_name: string } | null>(null);
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
+      try {
 
       const [{ data: client }, { data: profileData }] = await Promise.all([
         supabase.from("clients").select("id, status").eq("user_id", user.id).single(),
@@ -154,6 +156,9 @@ const ClientDashboard = () => {
       const { data: conf } = await supabase
         .from("data_confirmations").select("id").eq("client_id", client.id).eq("month_ref", monthRef).maybeSingle();
       setDataConfirmedThisMonth(!!conf);
+      } catch {
+        setFetchError(true);
+      }
     };
     fetchData();
   }, [user]);
@@ -181,6 +186,16 @@ const ClientDashboard = () => {
   };
 
   const insight = generateInsight();
+
+  if (fetchError) return (
+    <PageTransition>
+      <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
+        <AlertTriangle className="h-8 w-8 text-destructive/60" />
+        <p className="text-sm font-medium text-foreground">Não foi possível carregar seus dados</p>
+        <p className="text-xs text-muted-foreground">Verifique sua conexão e recarregue a página.</p>
+      </div>
+    </PageTransition>
+  );
 
   return (
     <PageTransition className="space-y-6">

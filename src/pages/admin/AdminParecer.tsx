@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { useClientId } from "@/contexts/ClientContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ParecerMetas } from "@/components/parecer/ParecerMetas";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import { Target, Sparkles, Save, ListChecks } from "lucide-react";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
 
 const AdminParecer = () => {
   const { clientId } = useClientId();
@@ -105,7 +107,14 @@ const AdminParecer = () => {
         </div>
       </section>
 
-      <ParecerMetas clientId={clientId} />
+      <Suspense fallback={
+        <div className="space-y-3">
+          <SkeletonCard lines={3} />
+          <SkeletonCard lines={3} />
+        </div>
+      }>
+        <ParecerMetas clientId={clientId} />
+      </Suspense>
 
       <JourneyFooterNav
         current="parecer"

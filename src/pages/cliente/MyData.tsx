@@ -605,6 +605,16 @@ const MyData = () => {
         )}
       </AnimatePresence>
 
+      {/* Unsaved changes counter */}
+      {modifiedSections.size > 0 && (
+        <div className="flex items-center gap-2 px-1">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+            {modifiedSections.size} seção{modifiedSections.size > 1 ? "ões" : ""} com alterações não salvas
+          </span>
+        </div>
+      )}
+
       {/* ━━━ CHAPTER CARDS ━━━ */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={3} className="space-y-3">
         {sections.map((s, idx) => {
@@ -676,7 +686,13 @@ const MyData = () => {
       </motion.div>
 
       {/* ━━━ EDIT DIALOG ━━━ */}
-      <Dialog open={editingDialog !== null} onOpenChange={(open) => { if (!open) setEditingDialog(null); }}>
+      <Dialog open={editingDialog !== null} onOpenChange={(open) => {
+  if (!open) {
+    if (editingDialog !== null && modifiedSections.has(editingDialog) &&
+        !window.confirm("Existem alterações não salvas. Deseja sair sem salvar?")) return;
+    setEditingDialog(null);
+  }
+}}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl">
           {editingSection && (
             <>
@@ -690,7 +706,11 @@ const MyData = () => {
               </DialogHeader>
               <div className="py-4">{editingSection.edit}</div>
               <div className="flex justify-end gap-3 pt-2 border-t border-border/30">
-                <Button variant="outline" onClick={() => setEditingDialog(null)} className="rounded-xl gap-1.5"><X className="h-6 w-6" /> Cancelar</Button>
+                <Button variant="outline" onClick={() => {
+                  if (editingDialog !== null && modifiedSections.has(editingDialog) &&
+                      !window.confirm("Existem alterações não salvas. Deseja sair sem salvar?")) return;
+                  setEditingDialog(null);
+                }} className="rounded-xl gap-1.5"><X className="h-6 w-6" /> Cancelar</Button>
                 <Button variant="premium" onClick={() => handleSaveDialog(editingSection.key)} disabled={submitting} className="rounded-xl gap-1.5">
                   <Save className="h-6 w-6" /> {submitting ? "Salvando..." : "Salvar"}
                 </Button>

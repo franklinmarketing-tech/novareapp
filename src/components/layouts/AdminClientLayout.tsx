@@ -317,6 +317,7 @@ const AdminClientLayout = () => {
                 to={`/admin/cliente/${clientSlug}/${tab.path}`}
                 onClick={(e) => isLocked && e.preventDefault()}
                 aria-disabled={isLocked}
+                title={isLocked ? "Aguardando conclusão do Onboarding" : tab.label}
                 className="group relative flex flex-col items-center gap-2 flex-1 min-w-0 outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-lg"
               >
                 {({ isActive }) => {

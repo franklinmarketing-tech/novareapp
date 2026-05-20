@@ -26,6 +26,7 @@ import {
   KeyRound,
   Copy,
   CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -918,6 +919,12 @@ const ClientList = () => {
           </DialogHeader>
           {tempPasswordResult && (
             <div className="space-y-3 py-2">
+              <div className="rounded-lg border border-amber-500/40 bg-amber-500/8 px-3 py-2 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+                  Esta senha aparece <span className="underline">apenas uma vez</span> — copie agora antes de fechar.
+                </p>
+              </div>
               <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 flex items-center justify-between gap-3">
                 <code className="text-base font-mono font-semibold tracking-wider text-foreground select-all">
                   {tempPasswordResult.password}
