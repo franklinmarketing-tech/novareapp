@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Power,
   ChevronDown,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -62,6 +63,14 @@ const sections: NavSection[] = [
     items: [
       { to: "/super-admin/operacoes", label: "Operações", icon: Power },
       { to: "/super-admin/feature-flags", label: "Feature Flags", icon: Flag },
+    ],
+  },
+  {
+    id: "marketing",
+    label: "Marketing",
+    icon: Mail,
+    items: [
+      { to: "/super-admin/leads", label: "Leads", icon: Mail },
     ],
   },
   {

@@ -58,7 +58,6 @@ const sections = [
       { to: "/admin/clientes", icon: Users, label: "Clientes" },
       { to: "/admin/novo-cliente", icon: UserPlus, label: "Novo Cliente" },
       { to: "/admin/financeiro", icon: Wallet, label: "Financeiro" },
-      { to: "/admin/leads", icon: Mail, label: "Leads" },
     ],
   },
   {
