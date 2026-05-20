@@ -29,8 +29,23 @@ const CP = [
   "#2563eb", "#7c3aed", "#0891b2", "#be185d", "#65a30d",
 ];
 
+// Helper para criar canvas em alta resolução (2x DPR)
+const _mkCanvas = (pw: number, ph: number): { ctx: CanvasRenderingContext2D; cvs: HTMLCanvasElement } => {
+  const dpr = 2;
+  const cvs = document.createElement("canvas");
+  cvs.width = pw * dpr;
+  cvs.height = ph * dpr;
+  const ctx = cvs.getContext("2d")!;
+  ctx.scale(dpr, dpr);
+  // Fundo branco para nitidez no PDF
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, pw, ph);
+  return { ctx, cvs };
+};
+
+// Rounded rectangle path (cross-browser, sem roundRect)
 const _rr = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
-  r = Math.min(r, w / 2, h / 2, 99);
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -40,125 +55,675 @@ const _rr = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: 
   ctx.closePath();
 };
 
-// Gráfico de pizza/donut — retorna dataURL
+// Rounded rectangle apenas nos cantos do topo
+const _rrTop = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
+  r = Math.max(0, Math.min(r, w / 2, h));
+  ctx.beginPath();
+  ctx.moveTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h);
+  ctx.closePath();
+};
+
+// Converte hex para rgba com alpha
+const _hexA = (hex: string, alpha: number): string => {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+// Clareia uma cor hex (mistura com branco)
+const _lighten = (hex: string, amount: number): string => {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  const nr = Math.round(r + (255 - r) * amount);
+  const ng = Math.round(g + (255 - g) * amount);
+  const nb = Math.round(b + (255 - b) * amount);
+  return `rgb(${nr}, ${ng}, ${nb})`;
+};
+
+// Formata valor de forma compacta para labels (k/M)
+const _compact = (v: number): string => {
+  const abs = Math.abs(v);
+  if (abs >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${(v / 1_000).toFixed(0)}k`;
+  return `${v.toFixed(0)}`;
+};
+
+// ──────────────────────────────────────────────────────────
+// Gráfico Donut — Categorias com gradiente, legenda lateral e sombra
+// ──────────────────────────────────────────────────────────
 const canvasDonut = (
   items: Array<{ label: string; value: number }>,
   pw: number, ph: number
 ): string => {
-  const dpr = 2;
-  const cvs = document.createElement("canvas");
-  cvs.width = pw * dpr; cvs.height = ph * dpr;
-  const ctx = cvs.getContext("2d")!;
-  ctx.scale(dpr, dpr);
+  const { ctx, cvs } = _mkCanvas(pw, ph);
   const total = items.reduce((s, i) => s + i.value, 0);
   if (!total) return cvs.toDataURL();
-  const cx = pw * 0.34; const cy = ph / 2;
-  const OR = Math.min(cx, cy) * 0.9; const IR = OR * 0.54;
+
+  // Posicionamento: donut à esquerda, legenda à direita
+  const cx = pw * 0.30;
+  const cy = ph / 2;
+  const OR = Math.min(pw * 0.27, ph * 0.42);
+  const IR = OR * 0.55;
+
+  // Sombra suave atrás do donut
+  ctx.save();
+  ctx.shadowColor = "rgba(20, 30, 50, 0.18)";
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 2;
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(cx, cy, OR + 1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Segmentos com gradiente radial
   let a = -Math.PI / 2;
   items.forEach((item, i) => {
     const sweep = (item.value / total) * 2 * Math.PI;
-    ctx.beginPath(); ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, OR, a, a + sweep); ctx.closePath();
-    ctx.fillStyle = CP[i % CP.length]; ctx.fill();
-    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.stroke();
+    const color = CP[i % CP.length];
+    const grad = ctx.createRadialGradient(cx, cy, IR, cx, cy, OR);
+    grad.addColorStop(0, _lighten(color, 0.35));
+    grad.addColorStop(1, color);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, OR, a, a + sweep);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    // Separadores brancos de 3px
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
     a += sweep;
   });
-  ctx.beginPath(); ctx.arc(cx, cy, IR, 0, 2 * Math.PI);
-  ctx.fillStyle = "#ffffff"; ctx.fill();
-  // legend
-  const fs = Math.max(Math.round(pw * 0.032), 10);
-  ctx.font = `${fs}px Arial`; ctx.textBaseline = "middle";
-  const maxI = Math.min(items.length, 8);
-  const rowH = Math.min(ph / (maxI + 1), 20);
-  const startY = cy - ((maxI - 1) * rowH) / 2;
-  const lx = pw * 0.7;
-  for (let i = 0; i < maxI; i++) {
-    const ly = startY + i * rowH;
-    const pct = ((items[i].value / total) * 100).toFixed(0);
-    ctx.beginPath(); ctx.arc(lx - 8, ly, 5, 0, 2 * Math.PI);
-    ctx.fillStyle = CP[i % CP.length]; ctx.fill();
-    ctx.fillStyle = "#404050"; ctx.textAlign = "left";
-    ctx.fillText(`${items[i].label.slice(0, 14)}  ${pct}%`, lx, ly);
+
+  // Furo interno branco
+  ctx.beginPath();
+  ctx.arc(cx, cy, IR, 0, 2 * Math.PI);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+
+  // Centro: total de categorias
+  const biggest = items.reduce((a, b) => (a.value > b.value ? a : b));
+  ctx.fillStyle = "#1e3a5f";
+  ctx.font = `bold ${Math.max(Math.round(pw * 0.05), 14)}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(String(items.length), cx, cy - 2);
+  ctx.fillStyle = "#787880";
+  ctx.font = `${Math.max(Math.round(pw * 0.025), 9)}px Arial`;
+  ctx.fillText("categorias", cx, cy + 12);
+  // Label da maior
+  if (biggest && items.length <= 12) {
+    ctx.font = `${Math.max(Math.round(pw * 0.022), 9)}px Arial`;
+    ctx.fillStyle = "#a0a0a8";
+    ctx.fillText(biggest.label.slice(0, 14), cx, cy + 24);
   }
+
+  // Legenda à direita
+  const lx = pw * 0.62;
+  const fs = Math.max(Math.round(pw * 0.028), 10);
+  ctx.font = `${fs}px Arial`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  const maxI = Math.min(items.length, 8);
+  const rowH = Math.min((ph - 20) / maxI, fs * 1.7);
+  const startY = cy - ((maxI - 1) * rowH) / 2;
+  const sorted = items.slice().sort((a, b) => b.value - a.value).slice(0, maxI);
+  sorted.forEach((it, i) => {
+    const orig = items.indexOf(it);
+    const color = CP[orig % CP.length];
+    const ly = startY + i * rowH;
+    // Círculo
+    ctx.beginPath();
+    ctx.arc(lx + 4, ly, 4, 0, 2 * Math.PI);
+    ctx.fillStyle = color;
+    ctx.fill();
+    // Texto
+    const pct = ((it.value / total) * 100).toFixed(0);
+    ctx.fillStyle = "#404050";
+    ctx.font = `${fs}px Arial`;
+    const lbl = it.label.length > 16 ? it.label.slice(0, 16) + "…" : it.label;
+    ctx.fillText(lbl, lx + 12, ly);
+    // Porcentagem em negrito
+    ctx.fillStyle = color;
+    ctx.font = `bold ${fs}px Arial`;
+    ctx.textAlign = "right";
+    ctx.fillText(`${pct}%`, pw - 6, ly);
+    ctx.textAlign = "left";
+  });
+
   return cvs.toDataURL("image/png");
 };
 
-// Gráfico de barras verticais
+// ──────────────────────────────────────────────────────────
+// Barras verticais — gradiente, top arredondado, grid claro
+// ──────────────────────────────────────────────────────────
 const canvasBarV = (
   bars: Array<{ label: string; value: number; color: string }>,
   pw: number, ph: number,
   fmtFn: (v: number) => string
 ): string => {
-  const dpr = 2;
-  const cvs = document.createElement("canvas");
-  cvs.width = pw * dpr; cvs.height = ph * dpr;
-  const ctx = cvs.getContext("2d")!;
-  ctx.scale(dpr, dpr);
-  const pL = 10; const pR = 10; const pT = 26; const pB = 32;
-  const cW = pw - pL - pR; const cH = ph - pT - pB;
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  const pL = 14;
+  const pR = 10;
+  const pT = 30;
+  const pB = 34;
+  const cW = pw - pL - pR;
+  const cH = ph - pT - pB;
   const maxV = Math.max(...bars.map((b) => b.value), 1);
-  const bW = Math.min((cW / bars.length) * 0.6, 50);
   const bSpace = cW / bars.length;
-  // grid
-  ctx.strokeStyle = "#e8e8ec"; ctx.lineWidth = 0.8;
-  [0, 0.25, 0.5, 0.75, 1].forEach((t) => {
+  const bW = Math.min(bSpace * 0.58, 64);
+
+  // Grid horizontal (5 níveis) + labels Y compactas
+  ctx.strokeStyle = "#eef0f3";
+  ctx.lineWidth = 0.8;
+  ctx.fillStyle = "#a8a8b0";
+  ctx.font = `${Math.max(Math.round(pw * 0.022), 9)}px Arial`;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  for (let i = 0; i <= 4; i++) {
+    const t = i / 4;
     const gy = pT + cH * (1 - t);
-    ctx.beginPath(); ctx.moveTo(pL, gy); ctx.lineTo(pL + cW, gy); ctx.stroke();
-  });
-  const fs = Math.max(Math.round(pw * 0.028), 9);
+    ctx.beginPath();
+    ctx.moveTo(pL, gy);
+    ctx.lineTo(pL + cW, gy);
+    ctx.stroke();
+    const v = maxV * t;
+    ctx.fillText(_compact(v), pL - 2, gy);
+  }
+
+  // Barras
+  const fsVal = Math.max(Math.round(pw * 0.034), 11);
+  const fsLbl = Math.max(Math.round(pw * 0.028), 10);
   bars.forEach((bar, i) => {
     const bH = Math.max((bar.value / maxV) * cH, 2);
     const x = pL + bSpace * i + bSpace / 2 - bW / 2;
     const y = pT + cH - bH;
-    ctx.fillStyle = bar.color;
-    _rr(ctx, x, y, bW, bH, Math.min(6, bW / 2));
+
+    // Gradiente vertical: top claro -> brand color embaixo
+    const grad = ctx.createLinearGradient(0, y, 0, y + bH);
+    grad.addColorStop(0, _lighten(bar.color, 0.25));
+    grad.addColorStop(1, bar.color);
+
+    ctx.fillStyle = grad;
+    _rrTop(ctx, x, y, bW, bH, Math.min(6, bW / 2));
     ctx.fill();
-    // value above bar
-    ctx.font = `bold ${fs}px Arial`; ctx.fillStyle = "#1e1e23";
-    ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
-    const vStr = bar.value >= 1000000
-      ? `${(bar.value / 1000000).toFixed(1)}M`
-      : bar.value >= 1000 ? `${(bar.value / 1000).toFixed(0)}k` : fmtFn(bar.value);
-    ctx.fillText(vStr, x + bW / 2, y - 5);
-    // label
-    ctx.font = `${Math.max(Math.round(pw * 0.026), 9)}px Arial`; ctx.fillStyle = "#787880";
-    ctx.fillText(bar.label.slice(0, 12), x + bW / 2, pT + cH + 18);
+
+    // Valor acima da barra (bold)
+    ctx.font = `bold ${fsVal}px Arial`;
+    ctx.fillStyle = "#1e1e23";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    const vStr = bar.value >= 1000
+      ? `R$ ${_compact(bar.value)}`
+      : fmtFn(bar.value);
+    ctx.fillText(vStr, x + bW / 2, y - 6);
+
+    // Label abaixo (cinza)
+    ctx.font = `${fsLbl}px Arial`;
+    ctx.fillStyle = "#787880";
+    ctx.textBaseline = "top";
+    ctx.fillText(bar.label.slice(0, 14), x + bW / 2, pT + cH + 8);
   });
+
   return cvs.toDataURL("image/png");
 };
 
-// Gráfico de barras horizontais
+// ──────────────────────────────────────────────────────────
+// Barras horizontais — gradiente, track cinza, ends arredondados
+// ──────────────────────────────────────────────────────────
 const canvasBarH = (
   bars: Array<{ label: string; value: number; color: string }>,
   pw: number, ph: number,
   fmtFn: (v: number) => string
 ): string => {
-  const dpr = 2;
-  const cvs = document.createElement("canvas");
-  cvs.width = pw * dpr; cvs.height = ph * dpr;
-  const ctx = cvs.getContext("2d")!;
-  ctx.scale(dpr, dpr);
-  const pL = 95; const pR = 60; const pT = 8; const pB = 8;
-  const cW = pw - pL - pR; const cH = ph - pT - pB;
-  const rowH = cH / (bars.length || 1);
-  const bH = Math.min(rowH * 0.5, 14);
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  const pL = Math.min(pw * 0.32, 220);
+  const pR = Math.min(pw * 0.18, 130);
+  const pT = 12;
+  const pB = 12;
+  const cW = pw - pL - pR;
+  const cH = ph - pT - pB;
+  const rowH = cH / Math.max(bars.length, 1);
+  const bH = Math.min(rowH * 0.55, 18);
   const maxV = Math.max(...bars.map((b) => b.value), 1);
-  const fs = Math.max(Math.round(ph * 0.065), 9);
-  ctx.font = `${fs}px Arial`; ctx.textBaseline = "middle";
+  const total = bars.reduce((s, b) => s + b.value, 0) || 1;
+
+  const fs = Math.max(Math.round(ph * 0.06), 10);
+
   bars.forEach((bar, i) => {
     const y = pT + rowH * i + (rowH - bH) / 2;
-    const bW = (bar.value / maxV) * cW;
+    const bW = Math.max((bar.value / maxV) * cW, 2);
+
+    // Track de fundo (cinza claro arredondado)
     ctx.fillStyle = "#f0f0f4";
-    _rr(ctx, pL, y, cW, bH, bH / 2); ctx.fill();
-    if (bW > 1) {
-      ctx.fillStyle = bar.color;
-      _rr(ctx, pL, y, Math.max(bW, 2), bH, bH / 2); ctx.fill();
-    }
-    ctx.fillStyle = "#1e1e23"; ctx.textAlign = "right";
-    ctx.fillText(bar.label.slice(0, 18), pL - 8, y + bH / 2);
-    ctx.fillStyle = "#505060"; ctx.textAlign = "left";
+    _rr(ctx, pL, y, cW, bH, bH / 2);
+    ctx.fill();
+
+    // Barra colorida com gradiente horizontal
+    const grad = ctx.createLinearGradient(pL, 0, pL + bW, 0);
+    grad.addColorStop(0, bar.color);
+    grad.addColorStop(1, _lighten(bar.color, 0.35));
+    ctx.fillStyle = grad;
+    _rr(ctx, pL, y, bW, bH, bH / 2);
+    ctx.fill();
+
+    // Label esquerda
+    ctx.fillStyle = "#1e1e23";
+    ctx.font = `bold ${fs}px Arial`;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    const lbl = bar.label.length > 22 ? bar.label.slice(0, 22) + "…" : bar.label;
+    ctx.fillText(lbl, pL - 8, y + bH / 2);
+
+    // Valor à direita
+    ctx.fillStyle = "#1e1e23";
+    ctx.font = `bold ${fs}px Arial`;
+    ctx.textAlign = "left";
     ctx.fillText(fmtFn(bar.value), pL + bW + 6, y + bH / 2);
+
+    // Porcentagem em texto suave
+    const pct = ((bar.value / total) * 100).toFixed(0);
+    const vTextWidth = ctx.measureText(fmtFn(bar.value)).width;
+    ctx.fillStyle = "#a0a0a8";
+    ctx.font = `${Math.round(fs * 0.85)}px Arial`;
+    ctx.fillText(`(${pct}%)`, pL + bW + 6 + vTextWidth + 4, y + bH / 2);
   });
+
+  return cvs.toDataURL("image/png");
+};
+
+// ──────────────────────────────────────────────────────────
+// Area/Line chart — Evolução patrimonial (3 séries)
+// ──────────────────────────────────────────────────────────
+const canvasAreaLine = (
+  series: Array<{ label: string; patrimonio: number; ativos: number; dividas: number }>,
+  pw: number, ph: number
+): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  if (series.length === 0) return cvs.toDataURL();
+
+  const pL = 56;
+  const pR = 18;
+  const pT = 20;
+  const pB = series.length > 6 ? 50 : 38;
+  const cW = pw - pL - pR;
+  const cH = ph - pT - pB;
+
+  const allVals = series.flatMap((s) => [s.patrimonio, s.ativos, s.dividas]);
+  const rawMax = Math.max(...allVals, 1);
+  const rawMin = Math.min(...allVals, 0);
+  const niceMax = Math.ceil(rawMax / 1000) * 1000 || 1000;
+  const niceMin = rawMin < 0 ? Math.floor(rawMin / 1000) * 1000 : 0;
+  const range = niceMax - niceMin || 1;
+
+  const yToPx = (v: number) => pT + cH - ((v - niceMin) / range) * cH;
+  const xToPx = (i: number) =>
+    series.length === 1 ? pL + cW / 2 : pL + (i / (series.length - 1)) * cW;
+
+  // Grid + labels Y
+  ctx.strokeStyle = "#eef0f3";
+  ctx.lineWidth = 0.8;
+  ctx.fillStyle = "#a0a0a8";
+  ctx.font = "10px Arial";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  const ySteps = 5;
+  for (let i = 0; i <= ySteps; i++) {
+    const v = niceMin + (range * i) / ySteps;
+    const py = yToPx(v);
+    ctx.beginPath();
+    ctx.moveTo(pL, py);
+    ctx.lineTo(pL + cW, py);
+    ctx.stroke();
+    ctx.fillText(`R$ ${_compact(v)}`, pL - 4, py);
+  }
+
+  // Linha zero
+  if (niceMin < 0) {
+    ctx.strokeStyle = "#787880";
+    ctx.lineWidth = 1;
+    const y0 = yToPx(0);
+    ctx.beginPath();
+    ctx.moveTo(pL, y0);
+    ctx.lineTo(pL + cW, y0);
+    ctx.stroke();
+  }
+
+  // X labels
+  ctx.fillStyle = "#787880";
+  ctx.font = "9px Arial";
+  ctx.textBaseline = "top";
+  const stepX = Math.max(1, Math.ceil(series.length / 8));
+  series.forEach((s, i) => {
+    if (i % stepX !== 0 && i !== series.length - 1) return;
+    const px = xToPx(i);
+    ctx.save();
+    if (series.length > 6) {
+      ctx.translate(px, pT + cH + 6);
+      ctx.rotate(-Math.PI / 6);
+      ctx.textAlign = "right";
+      ctx.fillText(s.label, 0, 0);
+    } else {
+      ctx.textAlign = "center";
+      ctx.fillText(s.label, px, pT + cH + 6);
+    }
+    ctx.restore();
+  });
+
+  // Função auxiliar de série
+  const patrimVals = series.map((s) => s.patrimonio);
+  const ativoVals = series.map((s) => s.ativos);
+  const dividaVals = series.map((s) => s.dividas);
+
+  // Área Patrimônio (preenchida com gradiente)
+  const patrimColor = "#16a34a";
+  const baseY = yToPx(Math.max(niceMin, 0));
+  const gradFill = ctx.createLinearGradient(0, pT, 0, pT + cH);
+  gradFill.addColorStop(0, _hexA(patrimColor, 0.45));
+  gradFill.addColorStop(1, _hexA(patrimColor, 0.02));
+
+  ctx.beginPath();
+  ctx.moveTo(xToPx(0), baseY);
+  patrimVals.forEach((v, i) => ctx.lineTo(xToPx(i), yToPx(v)));
+  ctx.lineTo(xToPx(patrimVals.length - 1), baseY);
+  ctx.closePath();
+  ctx.fillStyle = gradFill;
+  ctx.fill();
+
+  // Linha Patrimônio
+  ctx.strokeStyle = patrimColor;
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  patrimVals.forEach((v, i) => {
+    const x = xToPx(i), py = yToPx(v);
+    if (i === 0) ctx.moveTo(x, py);
+    else ctx.lineTo(x, py);
+  });
+  ctx.stroke();
+
+  // Linha Ativos (azul)
+  const ativoColor = "#2563eb";
+  ctx.strokeStyle = ativoColor;
+  ctx.lineWidth = 1.8;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ativoVals.forEach((v, i) => {
+    const x = xToPx(i), py = yToPx(v);
+    if (i === 0) ctx.moveTo(x, py);
+    else ctx.lineTo(x, py);
+  });
+  ctx.stroke();
+
+  // Linha Dívidas (vermelho, tracejada)
+  const dividaColor = "#dc2626";
+  ctx.strokeStyle = dividaColor;
+  ctx.lineWidth = 1.8;
+  ctx.setLineDash([5, 3]);
+  ctx.beginPath();
+  dividaVals.forEach((v, i) => {
+    const x = xToPx(i), py = yToPx(v);
+    if (i === 0) ctx.moveTo(x, py);
+    else ctx.lineTo(x, py);
+  });
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Pontos com marcadores
+  const drawDots = (vals: number[], color: string) => {
+    vals.forEach((v, i) => {
+      const x = xToPx(i), py = yToPx(v);
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(x, py, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, py, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  };
+  drawDots(patrimVals, patrimColor);
+  drawDots(ativoVals, ativoColor);
+  drawDots(dividaVals, dividaColor);
+
+  // Legenda no rodapé
+  const legendItems = [
+    { label: "Patrimônio Líquido", color: patrimColor },
+    { label: "Ativos", color: ativoColor },
+    { label: "Dívidas", color: dividaColor },
+  ];
+  ctx.font = "10px Arial";
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  let lx = pL;
+  const ly = ph - 10;
+  legendItems.forEach((lg) => {
+    ctx.fillStyle = lg.color;
+    ctx.beginPath();
+    ctx.arc(lx + 5, ly, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#404050";
+    ctx.fillText(lg.label, lx + 14, ly);
+    lx += ctx.measureText(lg.label).width + 30;
+  });
+
+  return cvs.toDataURL("image/png");
+};
+
+// ──────────────────────────────────────────────────────────
+// Gauge semicircular — Risco
+// ──────────────────────────────────────────────────────────
+const canvasGauge = (risk: string, pw: number, ph: number): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+
+  const cx = pw / 2;
+  const cy = ph * 0.62;
+  const r = Math.min(pw * 0.36, ph * 0.45);
+  const stroke = 18;
+
+  // Mapping
+  const order: Array<"A" | "B" | "C" | "D" | "E"> = ["A", "B", "C", "D", "E"];
+  const colors: Record<string, string> = {
+    A: "#16a34a",
+    B: "#2563eb",
+    C: "#d97706",
+    D: "#ea580c",
+    E: "#dc2626",
+  };
+  const labels: Record<string, string> = {
+    A: "Excelente",
+    B: "Bom",
+    C: "Regular",
+    D: "Atenção",
+    E: "Crítico",
+  };
+
+  const startA = Math.PI;
+  const endA = 2 * Math.PI;
+  const totalAngle = endA - startA;
+  const seg = totalAngle / 5;
+
+  // 5 segmentos coloridos
+  order.forEach((k, i) => {
+    const s = startA + seg * i;
+    const e = s + seg - 0.03; // pequeno gap
+    ctx.beginPath();
+    ctx.strokeStyle = colors[k];
+    ctx.lineWidth = stroke;
+    ctx.lineCap = "round";
+    ctx.arc(cx, cy, r, s, e);
+    ctx.stroke();
+  });
+
+  // Calcular ponteiro
+  const idx = Math.max(0, order.indexOf(risk as "A" | "B" | "C" | "D" | "E"));
+  const needleA = startA + seg * (idx + 0.5);
+  const needleLen = r - stroke / 2 - 2;
+  const nx = cx + Math.cos(needleA) * needleLen;
+  const ny = cy + Math.sin(needleA) * needleLen;
+
+  // Ponteiro
+  ctx.strokeStyle = "#1e1e23";
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(nx, ny);
+  ctx.stroke();
+
+  // Centro do ponteiro
+  ctx.fillStyle = "#1e1e23";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Letra grande embaixo
+  const curColor = colors[risk] || "#787880";
+  ctx.fillStyle = curColor;
+  ctx.font = `bold ${Math.round(ph * 0.22)}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(risk, cx, ph - 8);
+
+  // Label
+  ctx.fillStyle = "#787880";
+  ctx.font = `${Math.round(ph * 0.07)}px Arial`;
+  ctx.fillText(labels[risk] || "—", cx, cy + r - 4);
+
+  // Labels A-E nas extremidades
+  ctx.font = `${Math.round(ph * 0.06)}px Arial`;
+  ctx.fillStyle = "#a0a0a8";
+  order.forEach((k, i) => {
+    const a = startA + seg * (i + 0.5);
+    const lr = r + stroke / 2 + 8;
+    const lxp = cx + Math.cos(a) * lr;
+    const lyp = cy + Math.sin(a) * lr;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(k, lxp, lyp);
+  });
+
+  // Título no topo
+  ctx.fillStyle = "#404050";
+  ctx.font = `bold ${Math.round(ph * 0.07)}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText("Classificação", cx, 6);
+
+  return cvs.toDataURL("image/png");
+};
+
+// ──────────────────────────────────────────────────────────
+// Stacked bar — Composição da Renda (despesas / poupança / restante)
+// ──────────────────────────────────────────────────────────
+const canvasBarStacked = (
+  data: { income: number; expenses: number; savings: number },
+  pw: number, ph: number
+): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+
+  const income = Math.max(data.income, 1);
+  const expenses = Math.max(0, data.expenses);
+  const savings = Math.max(0, data.savings);
+  const remaining = Math.max(0, income - expenses - savings);
+
+  // Título
+  ctx.fillStyle = "#404050";
+  ctx.font = `bold ${Math.round(ph * 0.10)}px Arial`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText("Composição da Renda", 10, 6);
+
+  ctx.fillStyle = "#787880";
+  ctx.font = `${Math.round(ph * 0.07)}px Arial`;
+  ctx.fillText(`Renda total: R$ ${_compact(income)}`, 10, 6 + ph * 0.13);
+
+  // Barra
+  const barY = ph * 0.5;
+  const barH = ph * 0.22;
+  const barX = 10;
+  const barW = pw - 20;
+
+  // Track
+  ctx.fillStyle = "#f0f0f4";
+  _rr(ctx, barX, barY, barW, barH, barH / 2);
+  ctx.fill();
+
+  // Segmentos
+  const segments = [
+    { v: expenses, color: "#dc2626", label: "Despesas" },
+    { v: savings, color: "#16a34a", label: "Poupança" },
+    { v: remaining, color: "#a0a0a8", label: "Outros" },
+  ];
+
+  let cur = 0;
+  segments.forEach((seg, i) => {
+    if (seg.v <= 0) return;
+    const w = (seg.v / income) * barW;
+    ctx.save();
+    // clip ao retangulo arredondado
+    _rr(ctx, barX, barY, barW, barH, barH / 2);
+    ctx.clip();
+    // Gradiente vertical leve
+    const grad = ctx.createLinearGradient(0, barY, 0, barY + barH);
+    grad.addColorStop(0, _lighten(seg.color, 0.2));
+    grad.addColorStop(1, seg.color);
+    ctx.fillStyle = grad;
+    ctx.fillRect(barX + cur, barY, w, barH);
+    ctx.restore();
+    cur += w;
+  });
+
+  // Labels com porcentagem em cada segmento
+  let curL = 0;
+  ctx.textBaseline = "middle";
+  ctx.font = `bold ${Math.round(ph * 0.08)}px Arial`;
+  segments.forEach((seg) => {
+    if (seg.v <= 0) return;
+    const w = (seg.v / income) * barW;
+    const cxp = barX + curL + w / 2;
+    const pct = ((seg.v / income) * 100).toFixed(0);
+    if (w > 40) {
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.fillText(`${pct}%`, cxp, barY + barH / 2);
+    }
+    curL += w;
+  });
+
+  // Legenda abaixo
+  const legY = barY + barH + ph * 0.10;
+  let lx = 10;
+  ctx.font = `${Math.round(ph * 0.07)}px Arial`;
+  ctx.textBaseline = "middle";
+  segments.forEach((seg) => {
+    const sq = Math.round(ph * 0.06);
+    ctx.fillStyle = seg.color;
+    _rr(ctx, lx, legY - sq / 2, sq, sq, 2);
+    ctx.fill();
+    ctx.fillStyle = "#404050";
+    ctx.textAlign = "left";
+    const txt = `${seg.label}  R$ ${_compact(seg.v)}`;
+    ctx.fillText(txt, lx + sq + 4, legY);
+    lx += sq + 8 + ctx.measureText(txt).width + 14;
+  });
+
   return cvs.toDataURL("image/png");
 };
 
@@ -290,6 +855,8 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   } catch (e) {
     console.warn("Falha ao carregar logo do PDF:", e);
   }
+  // logoBlack disponível para uso futuro
+  void logoBlack;
 
   // ─── Helpers internos ────────────────────────────────
   const addHeader = () => {
@@ -492,12 +1059,12 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   });
   y += 32;
 
-  // ── 2. Classificação
+  // ── 2. Classificação de Risco
   sectionHeader("Classificação de Risco", "Saúde financeira baseada na capacidade de poupança");
   const riskColor = RISK_COLORS[data.risk] || C.warning;
-  ensureSpace(40);
 
-  // Card classificação
+  // Card principal com letra de risco + descrição
+  ensureSpace(40);
   pdf.setFillColor(...C.bgSoft);
   pdf.roundedRect(MARGIN, y, CONTENT_W, 36, 2, 2, "F");
 
@@ -511,7 +1078,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   pdf.setFontSize(7);
   pdf.text(data.riskLabel.toUpperCase(), MARGIN + 18, y + 28, { align: "center" });
 
-  // Métricas ao lado
+  // Descrição + métricas ao lado
   pdf.setTextColor(...C.text);
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9);
@@ -536,7 +1103,32 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   });
   y += 42;
 
-  // ── 3. Balanço
+  // Gráficos: Gauge + Composição da Renda lado a lado
+  {
+    const halfW = (CONTENT_W - 4) / 2;
+    const blockH = 56;
+    ensureSpace(blockH + 4);
+
+    // Gauge à esquerda
+    const gaugeImg = canvasGauge(data.risk, 520, 320);
+    pdf.addImage(gaugeImg, "PNG", MARGIN, y, halfW, blockH);
+
+    // Composição da Renda à direita
+    const savings = Math.max(0, data.totalIncome * (data.savingsRate / 100));
+    const stackedImg = canvasBarStacked(
+      {
+        income: data.totalIncome,
+        expenses: data.totalExpenses + data.monthlyDebtPayments,
+        savings,
+      },
+      520, 320
+    );
+    pdf.addImage(stackedImg, "PNG", MARGIN + halfW + 4, y, halfW, blockH);
+
+    y += blockH + 4;
+  }
+
+  // ── 3. Balanço Patrimonial
   sectionHeader("Balanço Patrimonial", "Visão consolidada de ativos e passivos");
   ensureSpace(28);
   const cards = [
@@ -588,21 +1180,21 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
         .sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0))
         .slice(0, 8)
         .map((a, i) => ({
-          label: (a.description || a.type || "Ativo").slice(0, 18),
+          label: a.description || a.type || "Ativo",
           value: a.estimated_value || 0,
           color: CP[i % CP.length],
         }));
       if (assetBars.length >= 2) {
-        const chartH = Math.min(assetBars.length * 10 + 12, 70);
+        const chartH = Math.min(assetBars.length * 10 + 12, 76);
         ensureSpace(chartH + 4);
-        const img = canvasBarH(assetBars, 900, assetBars.length * 28 + 16, fmt);
+        const img = canvasBarH(assetBars, 1100, assetBars.length * 38 + 24, fmt);
         pdf.addImage(img, "PNG", MARGIN, y, CONTENT_W, chartH);
         y += chartH + 6;
       }
     }
   }
 
-  // ── 4. Fluxo de caixa
+  // ── 4. Fluxo de Caixa
   sectionHeader("Fluxo de Caixa Mensal", "Receitas, despesas e saldo líquido");
 
   // Receitas
@@ -682,6 +1274,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   // Gráficos do fluxo de caixa — barra de comparação + donut de despesas
   {
     const halfW = (CONTENT_W - 4) / 2;
+    const chartH = 60;
 
     // Barra de comparação: Receitas | Despesas | Saldo
     const flowBars = [
@@ -690,25 +1283,25 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       { label: "Saldo",     value: Math.max(data.netCashFlow, 0), color: data.netCashFlow >= 0 ? "#2563eb" : "#d97706" },
     ];
 
-    ensureSpace(56);
+    ensureSpace(chartH + 6);
 
     // Barra de comparação à esquerda
-    const barImg = canvasBarV(flowBars, 540, 220, fmt);
-    pdf.addImage(barImg, "PNG", MARGIN, y, halfW, 46);
+    const barImg = canvasBarV(flowBars, 640, 360, fmt);
+    pdf.addImage(barImg, "PNG", MARGIN, y, halfW, chartH);
 
     // Donut de despesas à direita
     if (data.expensesByCategory.length >= 2) {
       const donutImg = canvasDonut(
         data.expensesByCategory.map((e) => ({ label: e.category, value: e.amount })),
-        580, 220
+        680, 360
       );
-      pdf.addImage(donutImg, "PNG", MARGIN + halfW + 4, y, halfW, 46);
+      pdf.addImage(donutImg, "PNG", MARGIN + halfW + 4, y, halfW, chartH);
     }
 
-    y += 50;
+    y += chartH + 4;
   }
 
-  // ── 5. Dívidas
+  // ── 5. Mapa de Dívidas
   if (data.debts.length > 0) {
     sectionHeader("Mapa de Dívidas", `${data.debts.length} dívida${data.debts.length !== 1 ? "s" : ""} ativa${data.debts.length !== 1 ? "s" : ""}`);
     autoTable(pdf, {
@@ -747,7 +1340,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     y = (pdf as any).lastAutoTable.finalY + 6;
   }
 
-  // ── 6. Seguros
+  // ── 6. Proteção e Seguros
   if (data.insurance.length > 0) {
     sectionHeader("Proteção e Seguros", "Cobertura de riscos e seguros ativos");
     autoTable(pdf, {
@@ -770,7 +1363,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     y = (pdf as any).lastAutoTable.finalY + 6;
   }
 
-  // ── 7. Objetivos
+  // ── 7. Objetivos Financeiros
   if (data.goals.length > 0) {
     sectionHeader(
       "Objetivos Financeiros",
@@ -844,7 +1437,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     });
   }
 
-  // ── 8. Plano de ação
+  // ── 8. Plano de Ação
   if (data.actionItems.length > 0) {
     sectionHeader("Plano de Ação", `${data.completedActions}/${data.totalActions} ações concluídas`);
 
@@ -884,9 +1477,34 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     pdf.setFontSize(13);
     pdf.text(fmt(data.totalImpact), PAGE_W - MARGIN - 4, y + 8, { align: "right" });
     y += 18;
+
+    // Gráfico: Top 6 ações por impacto financeiro
+    const topActions = data.actionItems
+      .filter((a) => (a.financial_impact || 0) > 0)
+      .sort((a, b) => (b.financial_impact || 0) - (a.financial_impact || 0))
+      .slice(0, 6)
+      .map((a, i) => ({
+        label: a.title,
+        value: a.financial_impact || 0,
+        color: CP[i % CP.length],
+      }));
+    if (topActions.length >= 2) {
+      const aChartH = Math.min(topActions.length * 10 + 14, 76);
+      ensureSpace(aChartH + 8);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...C.text);
+      pdf.text("Top ações por impacto financeiro", MARGIN, y);
+      y += 4;
+
+      const img = canvasBarH(topActions, 1100, topActions.length * 38 + 24, fmt);
+      pdf.addImage(img, "PNG", MARGIN, y, CONTENT_W, aChartH);
+      y += aChartH + 4;
+    }
   }
 
-  // ── 8.5 Plano de Ação Aplicado (V9 — dinâmico baseado em action_plans.ai_generated_plans)
+  // ── 8.5 Plano de Ação Aplicado (V9)
   if (
     data.activePlan &&
     data.activePlan.appliedVariant &&
@@ -900,11 +1518,10 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       (v) => v.letter !== data.activePlan!.appliedVariant,
     );
 
-    // cores por variante
     const variantColor: Record<"A" | "B" | "C", [number, number, number]> = {
-      A: [37, 99, 235],   // azul cauteloso
-      B: C.success,       // verde equilibrado
-      C: C.accent,        // terracota acelerado
+      A: [37, 99, 235],
+      B: C.success,
+      C: C.accent,
     };
     const variantLabel: Record<"A" | "B" | "C", string> = {
       A: "Cauteloso",
@@ -930,7 +1547,6 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
           : `Plano ${applied.letter} · ${variantLabel[applied.letter]}`,
       );
 
-      // Card grande com o plano aplicado
       const headerH = 26;
       ensureSpace(headerH + 6);
       pdf.setFillColor(...C.bgSoft);
@@ -956,7 +1572,6 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
 
       y += headerH + 2;
 
-      // Metricas (horizonte + impacto)
       const metaH = 10;
       ensureSpace(metaH + 4);
       pdf.setFontSize(8);
@@ -968,7 +1583,6 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       );
       y += metaH;
 
-      // Lista de acoes
       ensureSpace(10);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(8.5);
@@ -987,18 +1601,15 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
         const blockH = 5 + descLines.length * 3.5 + objLines.length * 3.2 + 3;
         ensureSpace(blockH);
 
-        // bullet colorido
         pdf.setFillColor(...variantColor[applied.letter]);
         pdf.circle(MARGIN + 1.5, y + 2.5, 0.8, "F");
 
-        // area badge
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(7);
         pdf.setTextColor(...C.muted);
         const areaText = (areaLabels[a.area] || a.area).toUpperCase();
         pdf.text(areaText, MARGIN + 4, y + 2.5);
 
-        // impacto a direita
         if (a.financial_impact && a.financial_impact > 0) {
           pdf.setFont("helvetica", "bold");
           pdf.setFontSize(8);
@@ -1011,13 +1622,11 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
           );
         }
 
-        // descricao
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(9);
         pdf.setTextColor(...C.text);
         pdf.text(descLines, MARGIN + 4, y + 6);
 
-        // objetivo
         if (objLines.length > 0) {
           pdf.setFontSize(8);
           pdf.setTextColor(...C.muted);
@@ -1030,7 +1639,6 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       y += 4;
     }
 
-    // Alternativas consideradas (mais compactas)
     if (alternatives.length > 0) {
       ensureSpace(20);
       pdf.setFont("helvetica", "bold");
@@ -1077,7 +1685,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     }
   }
 
-  // ── 9. Evolução Patrimonial (gráfico)
+  // ── 9. Evolução Patrimonial — usa canvasAreaLine
   if (data.snapshots && data.snapshots.length >= 2) {
     newPage();
     sectionHeader(
@@ -1090,146 +1698,22 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       .sort((a, b) => new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime());
 
     const series = snaps.map((s) => ({
-      date: new Date(s.snapshot_date),
+      label: new Date(s.snapshot_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
       ativos: s.total_assets || 0,
       dividas: s.total_debts || 0,
       patrimonio: (s.total_assets || 0) - (s.total_debts || 0),
     }));
 
-    // ─── Área do gráfico
-    const chartH = 90;
-    const chartW = CONTENT_W;
-    const chartX = MARGIN;
-    const chartY = y;
-    const padL = 22;
-    const padR = 6;
-    const padT = 8;
-    const padB = 14;
-    const innerX = chartX + padL;
-    const innerY = chartY + padT;
-    const innerW = chartW - padL - padR;
-    const innerH = chartH - padT - padB;
-
-    // Fundo
-    pdf.setFillColor(...C.bgSoft);
-    pdf.roundedRect(chartX, chartY, chartW, chartH, 2, 2, "F");
-
-    // Escala Y
-    const allVals = series.flatMap((s) => [s.ativos, s.dividas, s.patrimonio]);
-    const rawMax = Math.max(...allVals, 1);
-    const rawMin = Math.min(...allVals, 0);
-    const niceMax = Math.ceil(rawMax / 1000) * 1000 || 1000;
-    const niceMin = rawMin < 0 ? Math.floor(rawMin / 1000) * 1000 : 0;
-    const range = niceMax - niceMin || 1;
-
-    const yToPx = (v: number) => innerY + innerH - ((v - niceMin) / range) * innerH;
-    const xToPx = (i: number) =>
-      series.length === 1 ? innerX + innerW / 2 : innerX + (i / (series.length - 1)) * innerW;
-
-    // Grid horizontal + labels Y
-    pdf.setDrawColor(...C.border);
-    pdf.setLineWidth(0.15);
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(6.5);
-    pdf.setTextColor(...C.muted);
-    const ySteps = 4;
-    for (let i = 0; i <= ySteps; i++) {
-      const v = niceMin + (range * i) / ySteps;
-      const py = yToPx(v);
-      pdf.line(innerX, py, innerX + innerW, py);
-      const label = v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v.toFixed(0)}`;
-      pdf.text(`R$ ${label}`, innerX - 2, py + 1.5, { align: "right" });
-    }
-
-    // Linha zero (se aplicável)
-    if (niceMin < 0) {
-      pdf.setDrawColor(...C.muted);
-      pdf.setLineWidth(0.3);
-      const y0 = yToPx(0);
-      pdf.line(innerX, y0, innerX + innerW, y0);
-    }
-
-    // Datas eixo X (até 6 labels)
-    const stepX = Math.max(1, Math.ceil(series.length / 6));
-    series.forEach((s, i) => {
-      if (i % stepX !== 0 && i !== series.length - 1) return;
-      const px = xToPx(i);
-      const lbl = s.date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-      pdf.setTextColor(...C.muted);
-      pdf.setFontSize(6);
-      pdf.text(lbl, px, chartY + chartH - 4, { align: "center" });
-    });
-
-    // Função para desenhar série como linha
-    const drawSeries = (
-      vals: number[],
-      color: [number, number, number],
-      filled = false
-    ) => {
-      // Área (opcional)
-      if (filled) {
-        pdf.setFillColor(...color);
-        pdf.setGState(pdf.GState({ opacity: 0.12 }));
-        const baseY = yToPx(Math.max(niceMin, 0));
-        // Polígono
-        const pts: Array<[number, number]> = vals.map((v, i) => [xToPx(i), yToPx(v)]);
-        // Desenha como série de triângulos via path simulado (linhas)
-        for (let i = 0; i < pts.length - 1; i++) {
-          pdf.triangle(
-            pts[i][0], pts[i][1],
-            pts[i + 1][0], pts[i + 1][1],
-            pts[i + 1][0], baseY,
-            "F"
-          );
-          pdf.triangle(
-            pts[i][0], pts[i][1],
-            pts[i + 1][0], baseY,
-            pts[i][0], baseY,
-            "F"
-          );
-        }
-        pdf.setGState(pdf.GState({ opacity: 1 }));
-      }
-      // Linha
-      pdf.setDrawColor(...color);
-      pdf.setLineWidth(0.6);
-      for (let i = 0; i < vals.length - 1; i++) {
-        pdf.line(xToPx(i), yToPx(vals[i]), xToPx(i + 1), yToPx(vals[i + 1]));
-      }
-      // Pontos
-      pdf.setFillColor(...color);
-      vals.forEach((v, i) => {
-        pdf.circle(xToPx(i), yToPx(v), 0.9, "F");
-      });
-    };
-
-    drawSeries(series.map((s) => s.ativos), [37, 99, 235], false);
-    drawSeries(series.map((s) => s.dividas), C.danger, false);
-    drawSeries(series.map((s) => s.patrimonio), C.success, true);
-
-    y = chartY + chartH + 4;
-
-    // Legenda
-    const legend: Array<{ label: string; color: [number, number, number] }> = [
-      { label: "Patrimônio Líquido", color: C.success },
-      { label: "Ativos", color: [37, 99, 235] },
-      { label: "Dívidas", color: C.danger },
-    ];
-    let lx = MARGIN;
-    legend.forEach((lg) => {
-      pdf.setFillColor(...lg.color);
-      pdf.circle(lx + 1.5, y + 1.5, 1.2, "F");
-      pdf.setTextColor(...C.text);
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(8);
-      pdf.text(lg.label, lx + 4, y + 2.2);
-      lx += pdf.getTextWidth(lg.label) + 12;
-    });
-    y += 8;
+    // Gráfico de área/linhas (75mm)
+    const chartH = 75;
+    ensureSpace(chartH + 6);
+    const areaImg = canvasAreaLine(series, 1400, 720);
+    pdf.addImage(areaImg, "PNG", MARGIN, y, CONTENT_W, chartH);
+    y += chartH + 4;
 
     // Tabela resumo
-    const first = series[0];
-    const last = series[series.length - 1];
+    const first = { ...series[0], date: new Date(snaps[0].snapshot_date) };
+    const last = { ...series[series.length - 1], date: new Date(snaps[snaps.length - 1].snapshot_date) };
     const deltaPat = last.patrimonio - first.patrimonio;
     const deltaPct = first.patrimonio !== 0 ? (deltaPat / Math.abs(first.patrimonio)) * 100 : 0;
 
@@ -1286,7 +1770,6 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     const deltaRate = lastRate - firstRate;
     const avgRate = rVals.reduce((a, b) => a + b, 0) / rVals.length;
 
-    // Gráfico de barras coloridas por período
     const rateBars = rateSorted.map((s) => {
       const v = s.savings_rate!;
       const color = v >= 30 ? "#16a34a" : v >= 10 ? "#2563eb" : v >= 0 ? "#d97706" : "#dc2626";
@@ -1294,13 +1777,12 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       return { label: lbl, value: Math.max(v, 0.1), color };
     });
 
-    const rChartMmH = 60;
+    const rChartMmH = 70;
     ensureSpace(rChartMmH + 6);
-    const rImg = canvasBarV(rateBars, Math.max(rateBars.length * 80 + 40, 540), 220, (v) => `${v.toFixed(0)}%`);
+    const rImg = canvasBarV(rateBars, Math.max(rateBars.length * 110 + 80, 720), 360, (v) => `${v.toFixed(0)}%`);
     pdf.addImage(rImg, "PNG", MARGIN, y, CONTENT_W, rChartMmH);
     y += rChartMmH + 4;
 
-    // Linha de resumo
     ensureSpace(14);
     pdf.setFillColor(...C.bgSoft);
     pdf.roundedRect(MARGIN, y, CONTENT_W, 12, 2, 2, "F");
