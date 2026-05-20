@@ -548,32 +548,47 @@ const ClientDiagnosis = () => {
       {/* ── 2. RESUMO DA IA + KPIs ────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <Card className="border-accent/20 bg-gradient-to-br from-accent/[0.04] via-card to-card h-full">
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex flex-col gap-0.5">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-accent/10">
+          <div
+            className="rounded-2xl border border-accent/20 h-full overflow-hidden flex flex-col"
+            style={{
+              background: "hsl(var(--card))",
+              boxShadow: "0 2px 12px -4px hsl(0 0% 0% / 0.06), 0 1px 3px hsl(0 0% 0% / 0.03)",
+            }}
+          >
+            {/* Cabeçalho com gradiente sutil */}
+            <div className="bg-gradient-to-br from-accent/[0.07] to-transparent border-b border-accent/15 px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* Ícone com ring sutil */}
+                  <div className="relative shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center ring-1 ring-accent/20 ring-offset-1 ring-offset-card">
                       <Sparkles className="h-4 w-4 text-accent" />
                     </div>
-                    Diagnóstico pela IA
-                  </CardTitle>
-                  {aiAnalyzedAt && (
-                    <p className="text-[10px] text-muted-foreground pl-8">
-                      Última análise:{" "}
-                      {new Date(aiAnalyzedAt).toLocaleString("pt-BR", {
-                        day: "2-digit", month: "2-digit", year: "numeric",
-                        hour: "2-digit", minute: "2-digit",
-                      })}
-                    </p>
-                  )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm text-foreground">Diagnóstico pela IA</span>
+                      <span className="bg-accent/10 text-accent text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full">
+                        IA
+                      </span>
+                    </div>
+                    {aiAnalyzedAt && (
+                      <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                        Última análise:{" "}
+                        {new Date(aiAnalyzedAt).toLocaleString("pt-BR", {
+                          day: "2-digit", month: "2-digit", year: "numeric",
+                          hour: "2-digit", minute: "2-digit",
+                        })}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={() => runAnalyzeAI(false)}
                   disabled={aiAnalyzing}
-                  className="gap-1.5 h-7 text-[11px] border-accent/30 text-accent hover:bg-accent/10 hover:text-accent"
+                  className="gap-1.5 h-7 text-[11px] text-accent hover:bg-accent/10 hover:text-accent shrink-0"
                 >
                   {aiAnalyzing ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -583,26 +598,74 @@ const ClientDiagnosis = () => {
                   Nova Análise
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              {!aiSummary && aiAnalyzing && (
-                <div className="flex items-center gap-2 py-3">
-                  <Loader2 className="h-4 w-4 animate-spin text-accent" />
-                  <p className="text-xs text-muted-foreground">
-                    A IA está analisando os dados do onboarding...
-                  </p>
+            </div>
+
+            {/* Corpo do card */}
+            <div className="flex-1 px-5 py-5">
+              {/* Estado: carregando */}
+              {aiAnalyzing && !aiSummary && (
+                <div className="flex flex-col items-center justify-center py-8 gap-4">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center">
+                      <Sparkles className="h-6 w-6 text-accent" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent flex items-center justify-center">
+                      <Loader2 className="h-2.5 w-2.5 text-white animate-spin" />
+                    </div>
+                  </div>
+                  <div className="text-center space-y-1">
+                    <p className="text-sm font-medium text-foreground">Gerando diagnóstico com IA</p>
+                    <p className="text-xs text-muted-foreground">Analisando renda, despesas, dívidas e patrimônio...</p>
+                  </div>
+                  {/* Barra de progresso animada */}
+                  <div className="w-48 h-1 bg-muted rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-accent rounded-full"
+                      animate={{ x: ["-100%", "100%"] }}
+                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                  </div>
                 </div>
               )}
-              {!aiSummary && !aiAnalyzing && (
-                <p className="text-xs text-muted-foreground italic py-2">
-                  Aguardando análise da IA.
-                </p>
-              )}
+
+              {/* Estado: com resultado */}
               {aiSummary && (
-                <p className="text-sm text-foreground leading-relaxed">{aiSummary}</p>
+                <div className="space-y-4">
+                  <div className="flex gap-3">
+                    <div className="w-0.5 bg-accent/40 rounded-full shrink-0 mt-1" />
+                    <p className="text-[0.9375rem] text-foreground leading-relaxed">{aiSummary}</p>
+                  </div>
+                  {aiInsights.length > 0 && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <Badge
+                        variant="outline"
+                        className="gap-1 text-[10px] border-accent/30 text-accent bg-accent/5"
+                      >
+                        <Sparkles className="h-2.5 w-2.5" />
+                        {aiInsights.length} insights identificados
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">↓ veja abaixo</span>
+                    </div>
+                  )}
+                </div>
               )}
-            </CardContent>
-          </Card>
+
+              {/* Estado: sem análise ainda */}
+              {!aiSummary && !aiAnalyzing && (
+                <div className="flex flex-col items-center justify-center py-8 gap-3 text-center">
+                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                    <Sparkles className="h-5 w-5 text-muted-foreground/50" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground/70">Nenhuma análise gerada</p>
+                    <p className="text-xs text-muted-foreground">
+                      Clique em Nova Análise para gerar o diagnóstico pela IA.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         <div className="lg:col-span-1">
           <Card className="h-full">
