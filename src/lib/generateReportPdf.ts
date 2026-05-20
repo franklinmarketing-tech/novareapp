@@ -53,6 +53,23 @@ export interface ReportData {
   totalActions: number;
   planPct: number;
   snapshots?: Array<{ snapshot_date: string; total_assets?: number; total_debts?: number; savings_rate?: number }>;
+  parecerMetas?: Array<{
+    sourceLabel: string;
+    sourceTable: string;
+    metaValor?: number;
+    metaText?: string;
+    prazo?: string;
+    latestValor?: number;
+    latestEstado?: string;
+    progressPct?: number;
+  }>;
+  monthlyClosings?: Array<{
+    date: string;
+    totalAssets?: number;
+    totalDebts?: number;
+    savingsRate?: number;
+    metas: Array<{ label: string; valor?: number; estado?: string; pct?: number }>;
+  }>;
   // V9: plano aplicado e variantes geradas pela IA
   activePlan?: {
     objective: string | null;
@@ -1061,6 +1078,216 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       didDrawPage: () => { addHeader(); },
     });
     y = (pdf as any).lastAutoTable.finalY + 6;
+  }
+
+  // ── Evolução da Taxa de Poupança
+  const rateSnaps = (data.snapshots ?? []).filter((s) => s.savings_rate != null);
+  if (rateSnaps.length >= 2) {
+    newPage();
+    sectionHeader("Evolução da Taxa de Poupança", `${rateSnaps.length} registros históricos`);
+
+    const rateSorted = rateSnaps
+      .slice()
+      .sort((a, b) => new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime());
+
+    const rChartH = 60;
+    const rChartX = MARGIN;
+    const rChartY = y;
+    const rPadL = 22; const rPadR = 6; const rPadT = 6; const rPadB = 12;
+    const rInnerX = rChartX + rPadL;
+    const rInnerY = rChartY + rPadT;
+    const rInnerW = CONTENT_W - rPadL - rPadR;
+    const rInnerH = rChartH - rPadT - rPadB;
+
+    pdf.setFillColor(...C.bgSoft);
+    pdf.roundedRect(rChartX, rChartY, CONTENT_W, rChartH, 2, 2, "F");
+
+    const rVals = rateSorted.map((s) => s.savings_rate!);
+    const rRawMax = Math.max(...rVals, 0);
+    const rRawMin = Math.min(...rVals, 0);
+    const rNiceMax = Math.ceil(Math.max(rRawMax, 10) / 5) * 5;
+    const rNiceMin = rRawMin < 0 ? Math.floor(rRawMin / 5) * 5 : 0;
+    const rRange = rNiceMax - rNiceMin || 10;
+
+    const ryToPx = (v: number) => rInnerY + rInnerH - ((v - rNiceMin) / rRange) * rInnerH;
+    const rxToPx = (i: number) =>
+      rateSorted.length === 1 ? rInnerX + rInnerW / 2 : rInnerX + (i / (rateSorted.length - 1)) * rInnerW;
+
+    pdf.setDrawColor(...C.border); pdf.setLineWidth(0.15);
+    pdf.setFont("helvetica", "normal"); pdf.setFontSize(6); pdf.setTextColor(...C.muted);
+    [0, 0.5, 1].forEach((t) => {
+      const v = rNiceMin + rRange * t;
+      const py = ryToPx(v);
+      pdf.line(rInnerX, py, rInnerX + rInnerW, py);
+      pdf.text(`${v.toFixed(0)}%`, rInnerX - 2, py + 1.5, { align: "right" });
+    });
+
+    if (rNiceMin < 0) {
+      pdf.setDrawColor(...C.muted); pdf.setLineWidth(0.3);
+      pdf.line(rInnerX, ryToPx(0), rInnerX + rInnerW, ryToPx(0));
+    }
+
+    const rStepX = Math.max(1, Math.ceil(rateSorted.length / 6));
+    rateSorted.forEach((s, i) => {
+      if (i % rStepX !== 0 && i !== rateSorted.length - 1) return;
+      const px = rxToPx(i);
+      const lbl = new Date(s.snapshot_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+      pdf.setTextColor(...C.muted); pdf.setFontSize(6);
+      pdf.text(lbl, px, rChartY + rChartH - 2, { align: "center" });
+    });
+
+    const rBlue: [number, number, number] = [37, 99, 235];
+    pdf.setDrawColor(...rBlue); pdf.setLineWidth(0.7);
+    for (let i = 0; i < rVals.length - 1; i++) {
+      pdf.line(rxToPx(i), ryToPx(rVals[i]), rxToPx(i + 1), ryToPx(rVals[i + 1]));
+    }
+    pdf.setFillColor(...rBlue);
+    rVals.forEach((v, i) => { pdf.circle(rxToPx(i), ryToPx(v), 0.9, "F"); });
+
+    y = rChartY + rChartH + 6;
+
+    const firstRate = rVals[0];
+    const lastRate = rVals[rVals.length - 1];
+    const deltaRate = lastRate - firstRate;
+    const avgRate = rVals.reduce((a, b) => a + b, 0) / rVals.length;
+    ensureSpace(14);
+    pdf.setFillColor(...C.bgSoft);
+    pdf.roundedRect(MARGIN, y, CONTENT_W, 12, 2, 2, "F");
+    pdf.setFont("helvetica", "normal"); pdf.setFontSize(8); pdf.setTextColor(...C.muted);
+    pdf.text(
+      `Início: ${firstRate.toFixed(1)}%   ·   Atual: ${lastRate.toFixed(1)}%   ·   Variação: ${deltaRate >= 0 ? "+" : ""}${deltaRate.toFixed(1)} p.p.   ·   Média: ${avgRate.toFixed(1)}%`,
+      MARGIN + 4, y + 7.5
+    );
+    y += 18;
+  }
+
+  // ── Acompanhamento de Metas
+  if (data.parecerMetas && data.parecerMetas.length > 0) {
+    ensureSpace(20);
+    sectionHeader("Acompanhamento de Metas", `${data.parecerMetas.length} metas definidas`);
+
+    ensureSpace(10);
+    pdf.setFillColor(...C.primary);
+    pdf.rect(MARGIN, y, CONTENT_W, 7, "F");
+    pdf.setTextColor(...C.white);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(7.5);
+    const mCols = [0, 65, 105, 135, 158];
+    ["Meta", "Categoria", "Valor Alvo", "Valor Atual", "Progresso"].forEach((h, i) => {
+      pdf.text(h, MARGIN + mCols[i] + 2, y + 5);
+    });
+    y += 9;
+
+    const catLabel: Record<string, string> = {
+      income: "Renda", expenses: "Despesa", debts: "Dívida",
+      assets: "Patrimônio", insurance: "Seguro",
+    };
+
+    data.parecerMetas.forEach((m, idx) => {
+      ensureSpace(10);
+      if (idx % 2 === 0) {
+        pdf.setFillColor(...C.bgSoft);
+        pdf.rect(MARGIN, y, CONTENT_W, 9, "F");
+      }
+
+      const pct = m.progressPct ?? 0;
+      const pctColor: [number, number, number] = pct >= 100 ? C.success : pct >= 60 ? [37, 99, 235] : pct >= 30 ? C.warning : C.danger;
+
+      pdf.setTextColor(...C.text);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8);
+      pdf.text(pdf.splitTextToSize(m.sourceLabel, 60)[0], MARGIN + mCols[0] + 2, y + 5.5);
+
+      pdf.setTextColor(...C.muted);
+      pdf.setFontSize(7.5);
+      pdf.text(catLabel[m.sourceTable] || m.sourceTable, MARGIN + mCols[1] + 2, y + 5.5);
+
+      pdf.setTextColor(...C.text);
+      pdf.setFontSize(8);
+      const targetStr = m.metaValor ? fmt(m.metaValor) : (m.metaText?.slice(0, 18) || "—");
+      pdf.text(targetStr, MARGIN + mCols[2] + 2, y + 5.5);
+
+      const currentStr = m.latestValor != null ? fmt(m.latestValor) : (m.latestEstado?.slice(0, 18) || "—");
+      pdf.text(currentStr, MARGIN + mCols[3] + 2, y + 5.5);
+
+      if (m.progressPct != null) {
+        const barX = MARGIN + mCols[4] + 2;
+        const barW = CONTENT_W - mCols[4] - 20;
+        pdf.setFillColor(220, 220, 225);
+        pdf.roundedRect(barX, y + 3.5, barW, 2.5, 1, 1, "F");
+        pdf.setFillColor(...pctColor);
+        pdf.roundedRect(barX, y + 3.5, (barW * Math.min(pct, 100)) / 100, 2.5, 1, 1, "F");
+        pdf.setTextColor(...pctColor);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(7.5);
+        pdf.text(`${pct}%`, MARGIN + CONTENT_W - 2, y + 5.5, { align: "right" });
+      } else {
+        pdf.setTextColor(...C.muted);
+        pdf.setFontSize(7.5);
+        pdf.text("—", MARGIN + mCols[4] + 2, y + 5.5);
+      }
+
+      pdf.setDrawColor(...C.border);
+      pdf.setLineWidth(0.15);
+      pdf.line(MARGIN, y + 9, MARGIN + CONTENT_W, y + 9);
+      y += 10;
+    });
+    y += 4;
+  }
+
+  // ── Fechamentos Mensais
+  if (data.monthlyClosings && data.monthlyClosings.length > 0) {
+    sectionHeader("Fechamentos Mensais", `${data.monthlyClosings.length} fechamento${data.monthlyClosings.length !== 1 ? "s" : ""} registrado${data.monthlyClosings.length !== 1 ? "s" : ""}`);
+
+    autoTable(pdf, {
+      startY: y,
+      head: [["Período", "Ativos", "Dívidas", "Poupança", "Metas Registradas"]],
+      body: data.monthlyClosings.map((mc) => [
+        new Date(mc.date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }),
+        mc.totalAssets != null ? fmt(mc.totalAssets) : "—",
+        mc.totalDebts != null ? fmt(mc.totalDebts) : "—",
+        mc.savingsRate != null ? fmtPct(mc.savingsRate) : "—",
+        `${mc.metas.length} item${mc.metas.length !== 1 ? "s" : ""}`,
+      ]),
+      theme: "striped",
+      styles: { fontSize: 8.5, cellPadding: 2.5 },
+      headStyles: { fillColor: C.primary, textColor: C.white, fontSize: 8 },
+      alternateRowStyles: { fillColor: C.bgSoft },
+      columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "center" } },
+      margin: { left: MARGIN, right: MARGIN },
+      didDrawPage: () => { addHeader(); },
+    });
+    y = (pdf as any).lastAutoTable.finalY + 6;
+
+    for (const mc of data.monthlyClosings) {
+      if (mc.metas.length === 0) continue;
+      const periodLabel = new Date(mc.date + "T12:00:00").toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+      ensureSpace(14 + mc.metas.length * 7);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(8);
+      pdf.setTextColor(...C.text);
+      pdf.text(`Detalhes — ${periodLabel}`, MARGIN, y);
+      y += 4;
+
+      autoTable(pdf, {
+        startY: y,
+        head: [["Meta", "Valor", "Estado", "Progresso"]],
+        body: mc.metas.map((m) => [
+          m.label.length > 40 ? m.label.slice(0, 40) + "…" : m.label,
+          m.valor != null ? fmt(m.valor) : "—",
+          m.estado || "—",
+          m.pct != null ? `${m.pct}%` : "—",
+        ]),
+        theme: "plain",
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: C.bgSoft, textColor: C.muted, fontSize: 7.5, fontStyle: "bold" },
+        columnStyles: { 1: { halign: "right" }, 3: { halign: "right" } },
+        margin: { left: MARGIN + 4, right: MARGIN },
+        didDrawPage: () => { addHeader(); },
+      });
+      y = (pdf as any).lastAutoTable.finalY + 6;
+    }
   }
 
   // ── Fechamento

@@ -170,6 +170,26 @@ type ReportSnapshot = {
 };
 type GoalProgress = ReportGoal & { tasksDone: number; tasksTotal: number; pct: number };
 
+type ParecerMeta = {
+  id: string;
+  source_table: string;
+  source_id: string;
+  source_label: string;
+  meta_text?: string | null;
+  meta_valor?: number | null;
+  prazo?: string | null;
+};
+
+type AcompEntry = {
+  id: string;
+  meta_id: string;
+  valor_atual?: number | null;
+  estado_atual?: string | null;
+  progresso_pct?: number | null;
+  snapshotted_at: string;
+  is_closing_snapshot: boolean;
+};
+
 // V9: variantes do plano (geradas pela IA, cache em action_plans.ai_generated_plans)
 type AIPlanVariant = {
   letter: "A" | "B" | "C";
@@ -204,6 +224,8 @@ const AdminReport = () => {
   const [goals, setGoals] = useState<ReportGoal[]>([]);
   const [actionItems, setActionItems] = useState<ReportActionItem[]>([]);
   const [snapshots, setSnapshots] = useState<ReportSnapshot[]>([]);
+  const [parecerMetas, setParecerMetas] = useState<ParecerMeta[]>([]);
+  const [acompEntries, setAcompEntries] = useState<AcompEntry[]>([]);
   const [parecerNote, setParecerNote] = useState<{ title: string; content: string } | null>(null);
   // V9: plano aplicado e variantes geradas pela IA
   const [activePlan, setActivePlan] = useState<{
@@ -218,7 +240,7 @@ const AdminReport = () => {
     if (!clientId) return;
     const load = async () => {
       setLoading(true);
-      const [clientRes, diagRes, incRes, expRes, debRes, assRes, insRes, goalRes, planRes, snapRes] = await Promise.all([
+      const [clientRes, diagRes, incRes, expRes, debRes, assRes, insRes, goalRes, planRes, snapRes, metaRes, acompRes] = await Promise.all([
         supabase.from("clients").select("*").eq("id", clientId).single(),
         supabase.from("diagnosis").select("*").eq("client_id", clientId).maybeSingle(),
         supabase.from("income").select("*").eq("client_id", clientId),
@@ -233,6 +255,8 @@ const AdminReport = () => {
           .eq("client_id", clientId)
           .maybeSingle(),
         supabase.from("monitoring_snapshots").select("*").eq("client_id", clientId).order("snapshot_date", { ascending: true }),
+        supabase.from("parecer_metas").select("*").eq("client_id", clientId).order("created_at"),
+        supabase.from("acompanhamento_entradas").select("*").eq("client_id", clientId).order("snapshotted_at", { ascending: false }),
       ]);
 
       if (clientRes.data) {
@@ -251,6 +275,8 @@ const AdminReport = () => {
       setInsurance((insRes.data ?? []) as ReportInsurance[]);
       setGoals((goalRes.data ?? []) as ReportGoal[]);
       setSnapshots((snapRes.data ?? []) as ReportSnapshot[]);
+      setParecerMetas((metaRes.data ?? []) as ParecerMeta[]);
+      setAcompEntries((acompRes.data ?? []) as AcompEntry[]);
 
       if (planRes.data) {
         const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id).order("created_at");
@@ -372,6 +398,49 @@ const AdminReport = () => {
         totalActions,
         planPct,
         snapshots,
+        parecerMetas: parecerMetas.map((m) => {
+          const entries = acompEntries.filter((e) => e.meta_id === m.id);
+          const latest = entries[0];
+          return {
+            sourceLabel: m.source_label,
+            sourceTable: m.source_table,
+            metaValor: m.meta_valor ?? undefined,
+            metaText: m.meta_text ?? undefined,
+            prazo: m.prazo ?? undefined,
+            latestValor: latest?.valor_atual ?? undefined,
+            latestEstado: latest?.estado_atual ?? undefined,
+            progressPct: latest?.progresso_pct ?? undefined,
+          };
+        }),
+        monthlyClosings: (() => {
+          const closingEntries = acompEntries.filter((e) => e.is_closing_snapshot);
+          const byDate: Record<string, AcompEntry[]> = {};
+          closingEntries.forEach((e) => {
+            const date = e.snapshotted_at.slice(0, 10);
+            if (!byDate[date]) byDate[date] = [];
+            byDate[date].push(e);
+          });
+          return Object.entries(byDate)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([date, entries]) => {
+              const snap = snapshots.find((s) => s.snapshot_date.slice(0, 10) === date);
+              return {
+                date,
+                totalAssets: snap?.total_assets ?? undefined,
+                totalDebts: snap?.total_debts ?? undefined,
+                savingsRate: snap?.savings_rate ?? undefined,
+                metas: entries.map((e) => {
+                  const meta = parecerMetas.find((m) => m.id === e.meta_id);
+                  return {
+                    label: meta?.source_label ?? "—",
+                    valor: e.valor_atual ?? undefined,
+                    estado: e.estado_atual ?? undefined,
+                    pct: e.progresso_pct ?? undefined,
+                  };
+                }),
+              };
+            });
+        })(),
         // V9: plano aplicado + variantes geradas pela IA
         activePlan: activePlan
           ? {
