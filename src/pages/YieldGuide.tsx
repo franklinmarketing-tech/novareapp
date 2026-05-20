@@ -690,22 +690,22 @@ const YieldGuide = () => {
       </section>
 
       {/* ── BENTO STATS ─────────────────────────── */}
-      <section className="py-6 md:py-9">
+      <section className="py-4 md:py-5">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            className="grid grid-cols-2 md:grid-cols-4 gap-3"
           >
             {bentoStats.map((s, i) => (
               <motion.div key={s.label} variants={fadeUp} custom={i}>
-                <Card className="rounded-2xl border-border/40 shadow-subtle hover:shadow-soft transition-shadow h-full">
-                  <CardContent className="p-6 flex flex-col justify-between h-full">
-                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-6">
-                      <s.icon className={`h-6 w-6 ${s.color}`} />
+                <Card className="rounded-xl border-border/40 shadow-subtle hover:shadow-soft transition-shadow h-full">
+                  <CardContent className="p-4 flex flex-col justify-between h-full">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center mb-3">
+                      <s.icon className={`h-4 w-4 ${s.color}`} />
                     </div>
                     <div>
-                      <p className={`text-3xl md:text-4xl font-bold tracking-tight tabular-nums ${s.color}`}>{s.value}</p>
-                      <p className="text-sm text-muted-foreground mt-1.5 font-medium">{s.label}</p>
+                      <p className={`text-2xl md:text-3xl font-bold tracking-tight tabular-nums ${s.color}`}>{s.value}</p>
+                      <p className="text-xs text-muted-foreground mt-1 font-medium">{s.label}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -716,17 +716,17 @@ const YieldGuide = () => {
       </section>
 
       {/* ── INTRO / ABOUT ───────────────────────── */}
-      <section id="intro" className="py-6 md:py-9">
+      <section id="intro" className="py-4 md:py-6">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}>
-            <div className="grid lg:grid-cols-2 gap-8 items-center">
-              <motion.div variants={fadeUp} custom={0} className="space-y-6">
+            <div className="grid lg:grid-cols-2 gap-6 items-center">
+              <motion.div variants={fadeUp} custom={0} className="space-y-3">
                 <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Cenário Atual</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight leading-[1.15]">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight leading-[1.15]">
                   O Brasil tem a segunda maior taxa de{" "}
                   <span className="text-accent">juros real</span> do mundo.
                 </h2>
-                <p className="text-muted-foreground text-base leading-relaxed">
+                <p className="text-muted-foreground text-sm leading-relaxed">
                   Em março de 2026, o Banco Central reduziu a Selic para <strong className="text-foreground">14,75% a.a.</strong> — ainda assim, a Renda Fixa brasileira segue entre as mais rentáveis do planeta, com juros reais de 9,51%.
                 </p>
                 <p className="text-muted-foreground text-sm leading-relaxed">
@@ -735,31 +735,31 @@ const YieldGuide = () => {
               </motion.div>
 
               {/* Bento grid mini */}
-              <motion.div variants={fadeUp} custom={1} className="grid grid-cols-2 gap-4">
-                <Card className="rounded-2xl border-border/40 shadow-subtle col-span-2 bg-primary text-primary-foreground">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary-foreground/10 flex items-center justify-center">
-                        <TrendingUp className="h-6 w-6" />
+              <motion.div variants={fadeUp} custom={1} className="grid grid-cols-2 gap-3">
+                <Card className="rounded-xl border-border/40 shadow-subtle col-span-2 bg-primary text-primary-foreground">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary-foreground/10 flex items-center justify-center">
+                        <TrendingUp className="h-4 w-4" />
                       </div>
                       <span className="text-xs font-semibold uppercase tracking-wider opacity-60">Rentabilidade média</span>
                     </div>
-                    <p className="text-4xl font-bold tracking-tight">~1% <span className="text-lg font-medium opacity-60">ao mês</span></p>
-                    <p className="text-sm opacity-60 mt-2">Renda Fixa no cenário atual de juros elevados</p>
+                    <p className="text-3xl font-bold tracking-tight">~1% <span className="text-base font-medium opacity-60">ao mês</span></p>
+                    <p className="text-xs opacity-60 mt-1">Renda Fixa no cenário atual de juros elevados</p>
                   </CardContent>
                 </Card>
-                <Card className="rounded-2xl border-border/40 shadow-subtle">
-                  <CardContent className="p-5">
-                    <Calendar className="h-6 w-6 text-accent mb-3" />
-                    <p className="text-2xl font-bold text-foreground">12 meses</p>
-                    <p className="text-xs text-muted-foreground mt-1">Período das simulações</p>
+                <Card className="rounded-xl border-border/40 shadow-subtle">
+                  <CardContent className="p-4">
+                    <Calendar className="h-4 w-4 text-accent mb-2" />
+                    <p className="text-xl font-bold text-foreground">12 meses</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Período das simulações</p>
                   </CardContent>
                 </Card>
-                <Card className="rounded-2xl border-border/40 shadow-subtle">
-                  <CardContent className="p-5">
-                    <Shield className="h-6 w-6 text-success mb-3" />
-                    <p className="text-2xl font-bold text-foreground">FGC</p>
-                    <p className="text-xs text-muted-foreground mt-1">Até R$ 250k protegidos</p>
+                <Card className="rounded-xl border-border/40 shadow-subtle">
+                  <CardContent className="p-4">
+                    <Shield className="h-4 w-4 text-success mb-2" />
+                    <p className="text-xl font-bold text-foreground">FGC</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Até R$ 250k protegidos</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -769,45 +769,45 @@ const YieldGuide = () => {
       </section>
 
       {/* ── RENDA FIXA TABLE ────────────────────── */}
-      <section id="renda-fixa" className="py-6 md:py-9 bg-muted/40">
+      <section id="renda-fixa" className="py-4 md:py-6 bg-muted/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-6">
-            <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-4">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} className="space-y-4">
+            <motion.div variants={fadeUp} custom={0} className="text-center max-w-2xl mx-auto space-y-2">
               <span className="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Simulação</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
                 Quanto rendem seus investimentos?
               </h2>
-              <p className="text-muted-foreground text-base">Resultados em 12 meses para diferentes valores iniciais.</p>
+              <p className="text-muted-foreground text-sm">Resultados em 12 meses para diferentes valores iniciais.</p>
             </motion.div>
 
             <motion.div variants={fadeUp} custom={1}>
-              <Card className="overflow-hidden border-border/40 shadow-soft rounded-2xl">
+              <Card className="overflow-hidden border-border/40 shadow-soft rounded-xl">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-primary text-primary-foreground">
-                        <th className="text-left px-6 py-4 font-semibold">Ativo</th>
-                        <th className="text-center px-4 py-4 font-semibold">Rentabilidade</th>
-                        <th className="text-right px-4 py-4 font-semibold">R$ 50.000</th>
-                        <th className="text-right px-4 py-4 font-semibold">R$ 100.000</th>
-                        <th className="text-right px-6 py-4 font-semibold">R$ 1.000.000</th>
+                        <th className="text-left px-4 py-3 font-semibold">Ativo</th>
+                        <th className="text-center px-3 py-3 font-semibold">Rentabilidade</th>
+                        <th className="text-right px-3 py-3 font-semibold">R$ 50.000</th>
+                        <th className="text-right px-3 py-3 font-semibold">R$ 100.000</th>
+                        <th className="text-right px-4 py-3 font-semibold">R$ 1.000.000</th>
                       </tr>
                     </thead>
                     <tbody>
                       {tableData.map((row, i) => (
                         <tr key={row.ativo} className={`border-b border-border/30 ${i % 2 === 0 ? "bg-card" : "bg-muted/30"}`}>
-                          <td className="px-6 py-4 font-medium text-foreground">{row.ativo}</td>
-                          <td className="text-center px-4 py-4 text-accent font-semibold">{row.rent}</td>
-                          <td className="text-right px-4 py-4 text-muted-foreground tabular-nums">{row.v50}</td>
-                          <td className="text-right px-4 py-4 text-muted-foreground tabular-nums">{row.v100}</td>
-                          <td className="text-right px-6 py-4 font-semibold text-foreground tabular-nums">{row.v1m}</td>
+                          <td className="px-4 py-3 font-medium text-foreground">{row.ativo}</td>
+                          <td className="text-center px-3 py-3 text-accent font-semibold">{row.rent}</td>
+                          <td className="text-right px-3 py-3 text-muted-foreground tabular-nums">{row.v50}</td>
+                          <td className="text-right px-3 py-3 text-muted-foreground tabular-nums">{row.v100}</td>
+                          <td className="text-right px-4 py-3 font-semibold text-foreground tabular-nums">{row.v1m}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               </Card>
-              <p className="text-xs text-muted-foreground mt-4 text-center max-w-3xl mx-auto">
+              <p className="text-xs text-muted-foreground mt-3 text-center max-w-3xl mx-auto">
                 Taxas pós-fixadas e atreladas a inflação podem sofrer alteração. Alíquota de IR considerada: 17,5%. Inflação implícita: 4,51%. DI futuro: 13,16% — referência Anbima.
               </p>
             </motion.div>
