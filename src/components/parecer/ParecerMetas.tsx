@@ -320,17 +320,70 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     );
   }
 
+  const progressPct = totalItems > 0 ? Math.round((totalMetas / totalItems) * 100) : 0;
+  const allDone = totalMetas >= totalItems && totalItems > 0;
+
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground shrink-0">
-          {totalMetas} de {totalItems} metas definidas
-        </p>
-        <div className="flex items-center gap-2">
-          <Button onClick={handleAI} disabled={loadingAI || totalItems === 0} variant="outline" className="gap-2">
-            {loadingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-novare-blue" />}
-            {loadingAI ? "Analisando..." : "IA: Sugerir metas"}
+      {/* Toolbar — progresso + ações */}
+      <div
+        className="sticky top-0 z-20 rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3 backdrop-blur-md"
+        style={{
+          background: "hsl(var(--background) / 0.92)",
+          border: "1px solid hsl(var(--border))",
+          boxShadow: "0 4px 12px -6px hsl(0 0% 0% / 0.08)",
+        }}
+      >
+        {/* Progresso */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline justify-between gap-2 mb-1.5">
+            <span className="text-[12px] font-semibold text-foreground tracking-tight">
+              {totalMetas} <span className="text-muted-foreground font-normal">de</span> {totalItems} metas
+            </span>
+            <span
+              className={cn(
+                "text-[11px] font-bold tabular-nums",
+                allDone ? "text-success" : "text-muted-foreground",
+              )}
+            >
+              {progressPct}%
+              {allDone && <span className="ml-1">✓ Completo</span>}
+            </span>
+          </div>
+          <div
+            className="relative h-1.5 rounded-full overflow-hidden"
+            style={{ background: "hsl(var(--muted) / 0.5)" }}
+          >
+            <motion.div
+              className="absolute inset-y-0 left-0 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPct}%` }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              style={{
+                background: allDone
+                  ? "linear-gradient(90deg, hsl(var(--success)) 0%, hsl(var(--success) / 0.85) 100%)"
+                  : "linear-gradient(90deg, hsl(var(--accent) / 0.85) 0%, hsl(var(--primary)) 100%)",
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            onClick={handleAI}
+            disabled={loadingAI || totalItems === 0}
+            variant={totalMetas === 0 ? "default" : "outline"}
+            className={cn(
+              "gap-2",
+              totalMetas === 0 && "bg-gradient-to-r from-novare-blue to-novare-blue-bright text-white hover:opacity-95 shadow-md",
+            )}
+          >
+            {loadingAI ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Sparkles className={cn("w-4 h-4", totalMetas === 0 ? "text-white" : "text-novare-blue")} />
+            )}
+            {loadingAI ? "Analisando..." : totalMetas === 0 ? "Começar com IA" : "Sugerir metas"}
           </Button>
           <Button onClick={handleSaveAll} disabled={saving} className="gap-2 min-w-[130px]">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -338,6 +391,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
           </Button>
         </div>
       </div>
+
 
       {/* Section cards */}
       {SECTION_ORDER.map((section) => {
