@@ -643,40 +643,40 @@ const YieldGuide = () => {
       </motion.nav>
 
       {/* ── HERO ────────────────────────────────── */}
-      <section className="pt-16 pb-6 md:pt-24 md:pb-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-5 lg:px-6 text-center">
-          <motion.div initial="hidden" animate="visible" className="space-y-6">
-            <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-widest">
-              <Landmark className="h-6 w-6" />
+      <section className="pt-8 pb-4 md:pt-12 md:pb-5">
+        <div className="max-w-3xl mx-auto px-4 sm:px-5 lg:px-6 text-center">
+          <motion.div initial="hidden" animate="visible" className="space-y-3">
+            <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-widest">
+              <Landmark className="h-3.5 w-3.5" />
               Consultoria de Investimentos
             </motion.div>
 
-            <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-[1.08] tracking-tight">
+            <motion.h1 variants={fadeUp} custom={1} className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground leading-[1.1] tracking-tight">
               Quanto rende um{" "}
               <span className="text-accent">investimento</span>?
             </motion.h1>
 
-            <motion.p variants={fadeUp} custom={2} className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Simulações atualizadas de quanto rendem R$ 50 mil, R$ 100 mil e R$ 1 milhão nas principais estratégias de Renda Fixa do Brasil.
+            <motion.p variants={fadeUp} custom={2} className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Simulações de quanto rendem R$ 50 mil, R$ 100 mil e R$ 1 milhão nas principais estratégias de Renda Fixa do Brasil.
             </motion.p>
 
-            <motion.div variants={fadeUp} custom={3} className="flex flex-wrap justify-center gap-4 pt-4">
+            <motion.div variants={fadeUp} custom={3} className="flex flex-wrap justify-center gap-3 pt-2">
               <button
                 onClick={() => scrollTo("#simulador")}
-                className="group relative inline-flex items-center gap-3 bg-accent text-accent-foreground font-semibold text-base px-8 py-4 rounded-2xl shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                className="group relative inline-flex items-center gap-2 bg-accent text-accent-foreground font-semibold text-sm px-6 py-3 rounded-xl shadow-[0_4px_14px_-4px_hsl(var(--accent)/0.5)] hover:shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.6)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
                 Simular agora
-                <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-accent-foreground/20 group-hover:bg-accent-foreground/30 transition-colors">
-                  <BarChart3 className="h-6 w-6" />
+                <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-accent-foreground/20 group-hover:bg-accent-foreground/30 transition-colors">
+                  <BarChart3 className="h-3.5 w-3.5" />
                 </span>
               </button>
               <button
                 onClick={() => scrollTo("#intro")}
-                className="group relative inline-flex items-center gap-3 bg-white text-foreground font-semibold text-base px-8 py-4 rounded-2xl border border-border/60 shadow-[0_4px_12px_-2px_hsl(var(--foreground)/0.06)] hover:shadow-[0_6px_20px_-4px_hsl(var(--foreground)/0.1)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                className="group relative inline-flex items-center gap-2 bg-white text-foreground font-semibold text-sm px-6 py-3 rounded-xl border border-border/60 shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.06)] hover:shadow-[0_4px_14px_-4px_hsl(var(--foreground)/0.1)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
                 Começar a leitura
-                <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-muted group-hover:bg-accent/10 transition-colors">
-                  <ArrowRight className="h-6 w-6" />
+                <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-muted group-hover:bg-accent/10 transition-colors">
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </span>
               </button>
             </motion.div>
@@ -684,28 +684,28 @@ const YieldGuide = () => {
         </div>
 
         {/* Scrolling pills */}
-        <div className="mt-12">
+        <div className="mt-5">
           <ScrollingPills onPillClick={scrollTo} />
         </div>
       </section>
 
       {/* ── BENTO STATS ─────────────────────────── */}
-      <section className="py-4 md:py-5">
+      <section className="py-3">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-6">
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+            className="grid grid-cols-2 md:grid-cols-4 gap-2.5"
           >
             {bentoStats.map((s, i) => (
               <motion.div key={s.label} variants={fadeUp} custom={i}>
                 <Card className="rounded-xl border-border/40 shadow-subtle hover:shadow-soft transition-shadow h-full">
-                  <CardContent className="p-4 flex flex-col justify-between h-full">
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center mb-3">
+                  <CardContent className="p-3 flex items-center gap-3 h-full">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
                       <s.icon className={`h-4 w-4 ${s.color}`} />
                     </div>
-                    <div>
-                      <p className={`text-2xl md:text-3xl font-bold tracking-tight tabular-nums ${s.color}`}>{s.value}</p>
-                      <p className="text-xs text-muted-foreground mt-1 font-medium">{s.label}</p>
+                    <div className="min-w-0">
+                      <p className={`text-xl font-bold tracking-tight tabular-nums leading-tight ${s.color}`}>{s.value}</p>
+                      <p className="text-[11px] text-muted-foreground font-medium leading-tight mt-0.5">{s.label}</p>
                     </div>
                   </CardContent>
                 </Card>
