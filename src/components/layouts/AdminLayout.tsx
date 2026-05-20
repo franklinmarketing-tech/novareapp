@@ -21,7 +21,6 @@ import {
   CreditCard,
   Lock,
   Shield,
-  HelpCircle,
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react";
@@ -59,12 +58,7 @@ const sections = [
       { to: "/admin/financeiro", icon: Wallet, label: "Financeiro" },
     ],
   },
-  {
-    label: "Suporte",
-    items: [
-      { to: "/admin/ajuda", icon: HelpCircle, label: "Ajuda & Manual" },
-    ],
-  },
+
 ];
 
 
