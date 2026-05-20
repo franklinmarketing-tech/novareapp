@@ -22,7 +22,6 @@ import {
   Lock,
   Shield,
   HelpCircle,
-  Mail,
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react";
