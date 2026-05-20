@@ -62,26 +62,27 @@ const SECTION_CONFIG: Record<SourceTable, { label: string; icon: LucideIcon; col
 const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance", "goals"];
 
 // Item | Valor atual | espaçador | Prazo | Meta
-// O espaçador absorve o espaço sobrante, mantendo Prazo e Meta ancorados à direita
-const GRID = "grid-cols-[minmax(0,1fr)_96px_minmax(0,0.6fr)_120px_minmax(0,2fr)]";
+const GRID = "grid-cols-[minmax(0,1fr)_96px_minmax(0,0.4fr)_148px_minmax(0,2fr)]";
 
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <Input
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          "h-8 text-sm pr-8",
+          "h-8 text-sm pl-3 pr-8",
           "[&::-webkit-calendar-picker-indicator]:opacity-0",
           "[&::-webkit-calendar-picker-indicator]:absolute",
-          "[&::-webkit-calendar-picker-indicator]:inset-0",
-          "[&::-webkit-calendar-picker-indicator]:w-full",
+          "[&::-webkit-calendar-picker-indicator]:right-0",
+          "[&::-webkit-calendar-picker-indicator]:top-0",
+          "[&::-webkit-calendar-picker-indicator]:h-full",
+          "[&::-webkit-calendar-picker-indicator]:w-8",
           "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
         )}
       />
-      <CalendarDays className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+      <CalendarDays className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none z-10" />
     </div>
   );
 }
@@ -414,17 +415,24 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                               className="h-8 text-sm"
                             />
                             {hasAI && (
-                              <button
-                                onClick={() => {
-                                  updateField(item.source_id, "metaText", aiSugg.suggestion_text);
-                                  if (aiSugg.suggested_prazo) updateField(item.source_id, "prazo", aiSugg.suggested_prazo);
-                                }}
-                                className="flex items-start gap-1.5 text-xs text-novare-blue hover:text-novare-blue-light transition-colors text-left w-full"
-                              >
-                                <Sparkles className="w-3 h-3 mt-0.5 shrink-0 text-novare-blue" />
-                                <span className="line-clamp-2 flex-1">{aiSugg.suggestion_text}</span>
-                                <span className="shrink-0 font-semibold underline">Aplicar</span>
-                              </button>
+                              <div className="flex items-start gap-2 px-2.5 py-2 rounded-lg bg-novare-blue/5 border border-novare-blue/20">
+                                <Sparkles className="w-3.5 h-3.5 mt-0.5 shrink-0 text-novare-blue" />
+                                <span className="text-xs text-muted-foreground flex-1 leading-relaxed">
+                                  {aiSugg.suggestion_text}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    const val = aiSugg.target_value != null
+                                      ? String(aiSugg.target_value)
+                                      : aiSugg.suggestion_text;
+                                    updateField(item.source_id, "metaText", val);
+                                    if (aiSugg.suggested_prazo) updateField(item.source_id, "prazo", aiSugg.suggested_prazo);
+                                  }}
+                                  className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
+                                >
+                                  Aplicar
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
