@@ -119,12 +119,27 @@ function MetaAcompRow({
 
   const prevEntry = history[1];
 
+  const isGoal = meta.source_table === "goals";
+
   const handleSave = () => {
-    if (!estado.trim() && !valor.trim()) return;
+    const canSave = isGoal ? !!valor.trim() : (!!(estado.trim() || valor.trim()));
+    if (!canSave) return;
     onSave(meta.id, estado.trim(), valor.trim());
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
+
+  const SaveBtn = (
+    <Button
+      size="sm"
+      variant={saved ? "secondary" : "default"}
+      onClick={handleSave}
+      disabled={(isGoal ? !valor.trim() : (!estado.trim() && !valor.trim())) || saving}
+      className="h-8 w-9 p-0 shrink-0"
+    >
+      {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+    </Button>
+  );
 
   return (
     <div className="py-4 border-b border-border/30 last:border-0 space-y-3">
@@ -173,67 +188,104 @@ function MetaAcompRow({
           </div>
         </div>
 
-        {/* ── DIREITA: tracking (editable) ── */}
-        <div className="space-y-2">
-          {/* Linha: valor atual + botão salvar */}
-          <div className="flex items-center gap-2">
-            <Input
-              value={valor}
-              onChange={(e) => setValor(e.target.value)}
-              placeholder="Valor atual (R$)"
-              className="h-8 text-sm tabular-nums flex-1"
-              type="number"
-              min={0}
-            />
-            <Button
-              size="sm"
-              variant={saved ? "secondary" : "default"}
-              onClick={handleSave}
-              disabled={(!estado.trim() && !valor.trim()) || saving}
-              className="h-8 w-9 p-0 shrink-0"
-            >
-              {saving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : saved ? (
-                <Check className="w-3.5 h-3.5" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
-            </Button>
-          </div>
-
-          {/* Estado atual */}
-          <Textarea
-            value={estado}
-            onChange={(e) => setEstado(e.target.value)}
-            placeholder="Como está agora? Descreva o estado atual..."
-            className="text-sm min-h-[60px] resize-none py-1.5"
-            rows={2}
-          />
-
-          {/* Progresso */}
-          {pct != null && (
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <span className={cn("text-sm font-bold tabular-nums", progressColor(pct))}>
-                  {pct}%
-                </span>
-                <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
-                {latestEntry && (
-                  <span className="text-[10px] text-muted-foreground ml-auto">
-                    {formatDateTime(latestEntry.snapshotted_at)}
-                  </span>
-                )}
-              </div>
-              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className={cn("h-full rounded-full transition-all", progressBarColor(pct))}
-                  style={{ width: `${Math.min(pct, 100)}%` }}
+        {/* ── DIREITA: tracking ── */}
+        {isGoal ? (
+          /* ── OBJETIVO: investimento aplicado + % da meta ── */
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 relative">
+                <Input
+                  value={valor}
+                  onChange={(e) => setValor(e.target.value)}
+                  placeholder="Investimento aplicado (R$)"
+                  className="h-8 text-sm tabular-nums pr-2"
+                  type="number"
+                  min={0}
                 />
               </div>
+              {SaveBtn}
             </div>
-          )}
-        </div>
+
+            {/* Bloco de progresso destacado */}
+            <div className="rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5 space-y-2">
+              <div className="flex items-end justify-between gap-2">
+                <div className="space-y-0.5">
+                  <p className="text-[0.6875rem] text-muted-foreground">Progresso da meta</p>
+                  {meta.meta_valor && (
+                    <p className="text-xs text-muted-foreground tabular-nums">
+                      {formatBRL(valorNum || latestEntry?.valor_atual || 0)}
+                      <span className="mx-1 text-border">/</span>
+                      {formatBRL(meta.meta_valor)}
+                    </p>
+                  )}
+                </div>
+                <span className={cn("text-2xl font-bold tabular-nums leading-none", pct != null ? progressColor(pct) : "text-muted-foreground")}>
+                  {pct != null ? `${pct}%` : "—"}
+                </span>
+              </div>
+
+              <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={cn("h-full rounded-full transition-all duration-500", pct != null ? progressBarColor(pct) : "bg-muted-foreground/30")}
+                  style={{ width: pct != null ? `${Math.min(pct, 100)}%` : "0%" }}
+                />
+              </div>
+
+              {pct != null && pct >= 100 && (
+                <p className="text-xs font-semibold text-emerald-600">Meta atingida!</p>
+              )}
+
+              {latestEntry && (
+                <p className="text-[10px] text-muted-foreground/60 text-right">
+                  {formatDateTime(latestEntry.snapshotted_at)}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* ── OUTROS: tracking padrão ── */
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Input
+                value={valor}
+                onChange={(e) => setValor(e.target.value)}
+                placeholder="Valor atual (R$)"
+                className="h-8 text-sm tabular-nums flex-1"
+                type="number"
+                min={0}
+              />
+              {SaveBtn}
+            </div>
+
+            <Textarea
+              value={estado}
+              onChange={(e) => setEstado(e.target.value)}
+              placeholder="Como está agora? Descreva o estado atual..."
+              className="text-sm min-h-[60px] resize-none py-1.5"
+              rows={2}
+            />
+
+            {pct != null && (
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <span className={cn("text-sm font-bold tabular-nums", progressColor(pct))}>{pct}%</span>
+                  <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
+                  {latestEntry && (
+                    <span className="text-[10px] text-muted-foreground ml-auto">
+                      {formatDateTime(latestEntry.snapshotted_at)}
+                    </span>
+                  )}
+                </div>
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={cn("h-full rounded-full transition-all", progressBarColor(pct))}
+                    style={{ width: `${Math.min(pct, 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Histórico colapsável */}
