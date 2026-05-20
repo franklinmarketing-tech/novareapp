@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, NavLink, Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +14,6 @@ import {
   Target,
   Check,
   Lock,
-  ChevronRight,
-  ChevronDown,
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { ClientProvider } from "@/contexts/ClientContext";
