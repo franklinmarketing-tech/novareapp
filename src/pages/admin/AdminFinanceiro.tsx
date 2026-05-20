@@ -344,7 +344,7 @@ const AdminFinanceiro = () => {
                 <p className="text-sm text-foreground flex-1">{ins.text}</p>
                 {ins.action && (
                   <Button size="sm" variant="ghost" onClick={ins.action} className={`shrink-0 ${iconColor[ins.severity]} gap-1 text-xs`}>
-                    {ins.actionLabel} <ArrowUpRight className="h-6 w-6" />
+                    {ins.actionLabel} <ArrowUpRight className="h-4 w-4" />
                   </Button>
                 )}
               </div>

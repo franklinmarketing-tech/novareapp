@@ -641,6 +641,9 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const totalComAcomp          = new Set(entradas.map((e) => e.meta_id)).size;
   const goalsWithInvestment    = activeGoals.filter((g) => g.amount_applied && g.amount_applied > 0).length;
   const hasContent             = totalMetas > 0 || activeGoals.length > 0;
+  const lastSyncDate           = entradas[0]?.snapshotted_at
+    ? new Date(entradas[0].snapshotted_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+    : null;
 
   if (!hasContent) {
     return (
@@ -663,7 +666,13 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
             <span>{goalsWithInvestment} de {activeGoals.length} objetivos com investimento</span>
           )}
         </div>
-        <div className="flex gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+          {lastSyncDate && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/20 text-[10px] font-medium">
+              <Clock className="h-2.5 w-2.5" />
+              Sincronizado em {lastSyncDate}
+            </span>
+          )}
           <span className="font-medium text-foreground/60">Plano de Ação</span>
           <span>→</span>
           <span className="font-medium text-foreground/60">Estado atual</span>

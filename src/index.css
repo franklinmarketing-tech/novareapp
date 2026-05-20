@@ -84,6 +84,26 @@
     --novare-blue-light: 215 50% 96%;
     /* Azul Novare claro/brilhante — para uso sobre fundos escuros (calculadoras, hero dark) */
     --novare-blue-bright: 210 75% 62%;
+
+    /* --- Goal type accent colors --- */
+    --goal-dividas: 0 91% 71%;
+    --goal-reserva: 38 92% 55%;
+    --goal-investimentos: 152 69% 52%;
+    --goal-aposentadoria: 263 70% 75%;
+    --goal-imovel: 199 89% 60%;
+    --goal-familia: 330 85% 70%;
+    --goal-viagem: 187 92% 64%;
+    --goal-veiculo: 215 25% 67%;
+    --goal-educacao: 234 89% 74%;
+    --goal-protecao: 173 80% 52%;
+    --goal-default: 213 92% 68%;
+
+    /* --- Recharts chart palette (synced with theme) --- */
+    --chart-1: 16 70% 55%;
+    --chart-2: 215 50% 55%;
+    --chart-3: 152 55% 45%;
+    --chart-4: 38 92% 55%;
+    --chart-5: 263 60% 65%;
   }
 
   .dark {
@@ -143,6 +163,26 @@
     --novare-blue: 215 45% 65%;
     --novare-blue-light: 215 30% 14%;
     --novare-blue-bright: 210 75% 65%;
+
+    /* --- Goal type accent colors (dark mode — slightly brighter) --- */
+    --goal-dividas: 0 91% 75%;
+    --goal-reserva: 38 92% 62%;
+    --goal-investimentos: 152 69% 58%;
+    --goal-aposentadoria: 263 70% 78%;
+    --goal-imovel: 199 89% 65%;
+    --goal-familia: 330 85% 73%;
+    --goal-viagem: 187 92% 66%;
+    --goal-veiculo: 215 25% 70%;
+    --goal-educacao: 234 89% 76%;
+    --goal-protecao: 173 80% 56%;
+    --goal-default: 213 92% 70%;
+
+    /* --- Recharts chart palette (dark mode) --- */
+    --chart-1: 16 70% 60%;
+    --chart-2: 215 50% 65%;
+    --chart-3: 152 55% 48%;
+    --chart-4: 38 92% 60%;
+    --chart-5: 263 60% 70%;
   }
 }
 
@@ -1709,4 +1749,89 @@
   white-space: pre-wrap;
   pointer-events: none;
   display: block;
+}
+
+/* ══════════════════════════════════════════════════════════
+   #16 RECHARTS THEME ADAPTER
+   Syncs Recharts tooltip/grid with the app theme variables
+   ══════════════════════════════════════════════════════════ */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: hsl(var(--border));
+  stroke-opacity: 0.6;
+}
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: hsl(var(--popover)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 12px -4px hsl(0 0% 0% / 0.15) !important;
+}
+.recharts-default-tooltip .recharts-tooltip-label {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.recharts-default-tooltip .recharts-tooltip-item {
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.75rem;
+}
+.recharts-legend-item-text {
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.75rem;
+}
+.recharts-xAxis .recharts-cartesian-axis-tick-value,
+.recharts-yAxis .recharts-cartesian-axis-tick-value {
+  fill: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   #19 PRINT STYLES
+   Clean, ink-friendly print layout
+   ══════════════════════════════════════════════════════════ */
+@media print {
+  /* Hide non-content elements */
+  nav,
+  aside,
+  [data-sidebar],
+  .print-hide,
+  button:not(.print-show),
+  [role="navigation"] {
+    display: none !important;
+  }
+
+  /* Force white background and black text */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+
+  /* Cards print flat */
+  .surface-card,
+  .surface-elevated,
+  [class*="card"] {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    break-inside: avoid;
+  }
+
+  /* Ensure full-width content */
+  main,
+  [data-main] {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Page breaks */
+  h2, h3 {
+    break-after: avoid;
+  }
+
+  /* Animations off */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }

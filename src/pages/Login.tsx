@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
@@ -195,7 +195,7 @@ const Login = () => {
   const [signupSent, setSignupSent] = useState(false);
   const { signIn, role } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+
 
   // Refs / values for chart animations
   const novarePathRef = useRef<SVGPathElement>(null);
@@ -225,7 +225,7 @@ const Login = () => {
     try {
       if (mode === "login") {
         await signIn(email, password);
-        toast({ title: "Login realizado com sucesso!" });
+        toast.success("Login realizado com sucesso!");
       } else if (mode === "signup") {
         const trimmedName = fullName.trim();
         const trimmedEmail = email.trim().toLowerCase();
@@ -262,15 +262,11 @@ const Login = () => {
         // claro em vez de deixa-lo no formulario achando que nada aconteceu.
         if (!data.session) {
           setSignupSent(true);
-          toast({
-            title: "Conta criada! Confirme seu e-mail",
-            description: "Enviamos um link de ativacao para o e-mail informado.",
+          toast.success("Conta criada! Confirme seu e-mail", {
+            description: "Enviamos um link de ativação para o e-mail informado.",
           });
         } else {
-          toast({
-            title: "Conta criada!",
-            description: "Vamos iniciar sua consultoria financeira.",
-          });
+          toast.success("Conta criada!", { description: "Vamos iniciar sua consultoria financeira." });
           // Sessao ja existe: o useEffect que olha o role faz o redirecionamento.
         }
       } else if (mode === "forgot") {
@@ -279,10 +275,7 @@ const Login = () => {
         });
         if (error) throw error;
         setForgotSent(true);
-        toast({
-          title: "Email enviado!",
-          description: "Verifique sua caixa de entrada para redefinir a senha.",
-        });
+        toast.success("Email enviado!", { description: "Verifique sua caixa de entrada para redefinir a senha." });
       }
     } catch (error: any) {
       // Limpa a senha em qualquer erro de auth para evitar resubmits acidentais
@@ -299,16 +292,10 @@ const Login = () => {
               : /invalid email/i.test(rawMessage)
                 ? "Email invalido."
                 : rawMessage;
-      toast({
-        title:
-          mode === "login"
-            ? "Erro ao fazer login"
-            : mode === "signup"
-              ? "Erro ao criar conta"
-              : "Erro ao enviar email",
-        description,
-        variant: "destructive",
-      });
+      toast.error(
+        mode === "login" ? "Erro ao fazer login" : mode === "signup" ? "Erro ao criar conta" : "Erro ao enviar email",
+        { description },
+      );
     } finally {
       setIsLoading(false);
     }

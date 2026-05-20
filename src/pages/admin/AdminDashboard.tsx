@@ -394,7 +394,7 @@ const AdminDashboard = () => {
           <p className="text-sm text-foreground flex-1 font-medium min-w-0">{insight.text}</p>
           {insight.action && (
             <Button size="sm" variant="ghost" onClick={() => navigate(insight.action!)} className="shrink-0 text-accent hover:text-accent gap-1">
-              {insight.actionLabel} <ChevronRight className="h-6 w-6" />
+              {insight.actionLabel} <ChevronRight className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -402,27 +402,30 @@ const AdminDashboard = () => {
 
       {/* ── North Star + Supporting KPIs ── */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <SkeletonCard lines={3} />
-          <SkeletonCard lines={2} />
-          <SkeletonCard lines={2} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <SkeletonCard lines={4} className="lg:col-span-1" />
+          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <SkeletonCard lines={2} />
+            <SkeletonCard lines={2} />
+          </div>
         </div>
       ) : (
-      <motion.div initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* North Star: Total Clients */}
-        <motion.div variants={fadeUp} custom={0} className="sm:col-span-2 lg:col-span-1">
-          <KpiCard3D accent="primary">
-            <div className="p-4 sm:p-5 xl:p-6 flex flex-col justify-center min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center shadow-[inset_0_1px_0_hsl(var(--primary)/0.25),0_4px_10px_-4px_hsl(var(--primary)/0.4)]">
-                  <Users className="h-4 w-4 text-primary" />
+      <motion.div initial="hidden" animate="visible" className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* North Star: Total Clients — hero card spans 1 col on lg, full width on smaller */}
+        <motion.div variants={fadeUp} custom={0} className="lg:col-span-1">
+          <KpiCard3D accent="primary" className="h-full">
+            <div className="p-5 sm:p-6 flex flex-col justify-center min-w-0 h-full">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shadow-[inset_0_1px_0_hsl(var(--primary)/0.25),0_4px_10px_-4px_hsl(var(--primary)/0.4)]">
+                  <Users className="h-5 w-5 text-primary" />
                 </div>
                 <span className="text-label-xs">Clientes ativos</span>
               </div>
-              <p className="text-4xl xl:text-5xl font-bold text-foreground tracking-tight tabular-nums drop-shadow-sm">
-  {!loading && stats.total === 0 ? "—" : totalCount}
-</p>
-              <div className="flex items-center gap-3 mt-4 flex-wrap">
+              <p className="text-5xl xl:text-6xl font-black text-foreground tracking-tight tabular-nums drop-shadow-sm leading-none mb-1">
+                {!loading && stats.total === 0 ? "—" : totalCount}
+              </p>
+              <p className="text-meta-sm text-muted-foreground mb-4">clientes na carteira</p>
+              <div className="flex items-center gap-3 flex-wrap">
                 <PipelineDot color="bg-accent" label="Onboarding" count={stats.onboarding} />
                 <PipelineDot color="bg-destructive" label="Diagnóstico" count={stats.diagnostico} />
                 <PipelineDot color="bg-success" label="Acompanhamento" count={stats.acompanhamento} />
@@ -431,10 +434,11 @@ const AdminDashboard = () => {
           </KpiCard3D>
         </motion.div>
 
-        {/* Supporting: AUM */}
-        <motion.div variants={fadeUp} custom={1}>
+        {/* Supporting KPIs stacked on right */}
+        <motion.div variants={fadeUp} custom={1} className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* AUM */}
           <KpiCard3D accent="success">
-            <div className="p-4 sm:p-5 xl:p-6 flex flex-col justify-center min-w-0">
+            <div className="p-4 sm:p-5 flex flex-col justify-center min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-xl bg-success/15 flex items-center justify-center shadow-[inset_0_1px_0_hsl(var(--success)/0.25),0_4px_10px_-4px_hsl(var(--success)/0.4)]">
                   <TrendingUp className="h-4 w-4 text-success" />
@@ -445,28 +449,44 @@ const AdminDashboard = () => {
                 {!loading && stats.total === 0 ? "—" : fmtShort(wealthCount)}
               </p>
               <p className="text-meta-sm mt-1">
-                {stats.total > 0 ? `Média de ${fmtShort(Math.round(netWealth / stats.total))} por cliente` : "—"}
+                {stats.total > 0 ? `Média ${fmtShort(Math.round(netWealth / stats.total))}/cliente` : "—"}
               </p>
             </div>
           </KpiCard3D>
-        </motion.div>
 
-        {/* Supporting: Plan progress */}
-        <motion.div variants={fadeUp} custom={2}>
+          {/* Plan progress */}
           <KpiCard3D accent="accent">
-            <div className="p-4 sm:p-5 xl:p-6 flex flex-col justify-center min-w-0">
+            <div className="p-4 sm:p-5 flex flex-col justify-center min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shadow-[inset_0_1px_0_hsl(var(--accent)/0.25),0_4px_10px_-4px_hsl(var(--accent)/0.4)]">
                   <Target className="h-4 w-4 text-accent" />
                 </div>
                 <span className="text-label-xs">Progresso dos planos</span>
               </div>
-              <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums drop-shadow-sm">
-  {!loading && stats.total === 0 ? "—" : `${progressCount}%`}
-</p>
-              <Progress value={avgPlanProgress} className="h-2 rounded-full mt-3 [&>div]:bg-accent" />
+              <p className="text-2xl xl:text-3xl font-bold text-foreground tracking-tight tabular-nums drop-shadow-sm">
+                {!loading && stats.total === 0 ? "—" : `${progressCount}%`}
+              </p>
+              <Progress value={avgPlanProgress} className="h-1.5 rounded-full mt-3 [&>div]:bg-accent" />
             </div>
           </KpiCard3D>
+
+          {/* Unclassified warning */}
+          {unclassifiedCount > 0 && (
+            <KpiCard3D accent="warning" className="sm:col-span-2">
+              <div className="p-4 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-warning/15 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="h-4 w-4 text-warning" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-label-xs">Sem dados financeiros</p>
+                  <p className="text-xl font-bold text-foreground tabular-nums">{unclassifiedCount} cliente{unclassifiedCount !== 1 ? "s" : ""}</p>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => navigate("/admin/clientes")} className="shrink-0 text-warning hover:text-warning gap-1 text-xs">
+                  Revisar <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </KpiCard3D>
+          )}
         </motion.div>
       </motion.div>
       )}
@@ -489,7 +509,7 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm font-semibold text-foreground">Clientes recentes</p>
                 <Button variant="ghost" size="sm" onClick={() => navigate("/admin/clientes")} className="text-xs text-muted-foreground hover:text-foreground gap-1 h-auto py-1 px-2">
-                  Ver todos <ChevronRight className="h-6 w-6" />
+                  Ver todos <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
               {recentClients.length === 0 ? (
@@ -523,7 +543,7 @@ const AdminDashboard = () => {
                         <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-medium ${statusColors[c.status] || "bg-muted text-muted-foreground"}`}>
                           {statusLabels[c.status] || c.status}
                         </span>
-                        <ArrowRight className="h-6 w-6 text-muted-foreground/0 group-hover:text-muted-foreground transition-all" />
+                        <ArrowRight className="h-4 w-4 text-muted-foreground/0 group-hover:text-muted-foreground transition-all" />
                       </div>
                     </div>
                   ))}
@@ -568,7 +588,7 @@ const AdminDashboard = () => {
                         <p className="text-sm font-medium text-foreground truncate">{item.description}</p>
                         <p className="text-[11px] text-muted-foreground">{item.client_name}</p>
                       </div>
-                      <ArrowRight className="h-6 w-6 text-muted-foreground/0 group-hover:text-muted-foreground transition-all shrink-0" />
+                      <ArrowRight className="h-4 w-4 text-muted-foreground/0 group-hover:text-muted-foreground transition-all shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -651,7 +671,7 @@ const AdminDashboard = () => {
                         <span className="text-[11px] text-muted-foreground">Ainda não confirmou os dados</span>
                       </div>
                     </div>
-                    <ArrowRight className="h-6 w-6 text-muted-foreground/0 group-hover:text-muted-foreground transition-all shrink-0" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground/0 group-hover:text-muted-foreground transition-all shrink-0" />
                   </div>
                 ))}
               </div>

@@ -17,7 +17,8 @@ import {
   Download, Loader2, Gauge,
 } from "lucide-react";
 import { sendClientEmail } from "@/lib/sendClientEmail";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { ScrollableTable } from "@/components/ui/scrollable-table";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 
@@ -304,7 +305,17 @@ const AdminReport = () => {
     load();
   }, [clientId]);
 
-  if (loading) return <div className="flex items-center justify-center py-20"><span className="animate-pulse text-muted-foreground">Gerando relatório...</span></div>;
+  if (loading) return (
+    <div className="space-y-4 p-4">
+      <SkeletonCard lines={2} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <SkeletonCard lines={2} />
+        <SkeletonCard lines={2} />
+        <SkeletonCard lines={2} />
+      </div>
+      <SkeletonCard lines={4} />
+    </div>
+  );
 
   // ── Calculations ───────────────────────────────
   const totalIncome = incomes.reduce((s: number, i) => s + (i.frequency === "anual" ? (i.amount || 0) / 12 : (i.amount || 0)), 0);
@@ -451,10 +462,10 @@ const AdminReport = () => {
             }
           : null,
       });
-      toast({ title: "PDF gerado com sucesso!" });
+      toast.success("PDF gerado com sucesso!");
     } catch (err) {
       if (import.meta.env.DEV) console.error("PDF generation error:", err);
-      toast({ title: "Erro ao gerar PDF", description: "Tente novamente", variant: "destructive" });
+      toast.error("Erro ao gerar PDF", { description: "Tente novamente" });
     } finally {
       setGenerating(false);
     }

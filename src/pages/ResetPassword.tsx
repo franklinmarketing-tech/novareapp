@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { ArrowRight, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import logoPreta from "@/assets/logo-preta.png";
@@ -16,7 +16,7 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [hasRecoverySession, setHasRecoverySession] = useState(false);
   const [done, setDone] = useState(false);
-  const { toast } = useToast();
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,11 +34,11 @@ const ResetPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      toast({ title: "As senhas não coincidem", variant: "destructive" });
+      toast.error("As senhas não coincidem");
       return;
     }
     if (password.length < 6) {
-      toast({ title: "A senha deve ter no mínimo 6 caracteres", variant: "destructive" });
+      toast.error("A senha deve ter no mínimo 6 caracteres");
       return;
     }
     setIsLoading(true);
@@ -46,17 +46,13 @@ const ResetPassword = () => {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       setDone(true);
-      toast({ title: "Senha atualizada com sucesso!", description: "Você já pode entrar com a nova senha." });
+      toast.success("Senha atualizada com sucesso!", { description: "Você já pode entrar com a nova senha." });
       setTimeout(async () => {
         await supabase.auth.signOut();
         navigate("/login", { replace: true });
       }, 1800);
     } catch (error: any) {
-      toast({
-        title: "Erro ao redefinir senha",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Erro ao redefinir senha", { description: error.message });
     } finally {
       setIsLoading(false);
     }

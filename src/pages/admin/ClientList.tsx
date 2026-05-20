@@ -34,8 +34,8 @@ import PageTransition from "@/components/PageTransition";
 import PageBanner from "@/components/PageBanner";
 import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
+import { STATUS_MAP, getStatusConfig } from "@/lib/statusConfig";
 import { PasswordConfirmDialog } from "@/components/super-admin/PasswordConfirmDialog";
 import {
   Dialog,
@@ -77,29 +77,8 @@ interface ClientRow {
   profiles: { full_name: string; email: string } | null;
 }
 
-const statusMap: Record<
-  string,
-  { label: string; variant: "outline" | "warning" | "accent" | "success"; dot: string; border: string }
-> = {
-  onboarding_pendente: {
-    label: "Pendente Onboarding",
-    variant: "warning",
-    dot: "bg-warning",
-    border: "before:bg-warning/70",
-  },
-  em_diagnostico: {
-    label: "Em Diagnóstico",
-    variant: "accent",
-    dot: "bg-accent",
-    border: "before:bg-accent/70",
-  },
-  em_acompanhamento: {
-    label: "Acompanhamento",
-    variant: "success",
-    dot: "bg-success",
-    border: "before:bg-success/70",
-  },
-};
+// Re-exported for local convenience
+const statusMap = STATUS_MAP as Record<string, ReturnType<typeof getStatusConfig>>;
 
 type FilterKey = "all" | "pendente" | "acompanhamento";
 type ViewMode = "list" | "grid";
@@ -176,7 +155,7 @@ const ClientList = () => {
   });
   const [sortBy, setSortBy] = useState<SortKey>("recent");
   const navigate = useNavigate();
-  const { toast } = useToast();
+
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -212,10 +191,8 @@ const ClientList = () => {
       return merged;
     } catch (error) {
       setLoadError(true);
-      toast({
-        title: "Não foi possível carregar os clientes",
+      sonnerToast.error("Não foi possível carregar os clientes", {
         description: error instanceof Error ? error.message : "Tente novamente em instantes.",
-        variant: "destructive",
       });
       return [] as ClientRow[];
     }
@@ -341,7 +318,7 @@ const ClientList = () => {
       });
       if (error || data?.error) {
         const message = data?.error ?? (await readEdgeError(error, "Não foi possível excluir o cliente."));
-        toast({ title: "Erro ao excluir", description: message, variant: "destructive" });
+        sonnerToast.error("Erro ao excluir", { description: message });
         return;
       }
       sonnerToast.success("Cliente excluído", { description: `${targetName} foi removido permanentemente.` });
@@ -364,7 +341,7 @@ const ClientList = () => {
       });
       if (error || data?.error) {
         const message = data?.error ?? (await readEdgeError(error, "Não foi possível redefinir a senha."));
-        toast({ title: "Erro ao redefinir senha", description: message, variant: "destructive" });
+        sonnerToast.error("Erro ao redefinir senha", { description: message });
         return;
       }
       const tempPassword = (data?.temp_password as string | undefined) ?? "";
@@ -430,7 +407,8 @@ const ClientList = () => {
                   <span className="relative flex h-2 w-2 shrink-0">
                     <span
                       className={cn(
-                        "absolute inline-flex h-full w-full rounded-full opacity-60 animate-ping",
+                        "absolute inline-flex h-full w-full rounded-full opacity-60",
+                        client.status === "onboarding_pendente" && "animate-ping",
                         st.dot
                       )}
                     />

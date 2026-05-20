@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, ShieldCheck, AlertCircle, CheckCircle2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 
@@ -20,7 +20,7 @@ type State =
 const AcceptInvite = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
+
   const [state, setState] = useState<State>({ kind: "loading" });
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
@@ -66,15 +66,15 @@ const AcceptInvite = () => {
   const submit = async () => {
     if (state.kind !== "ready") return;
     if (fullName.trim().length < 2) {
-      toast({ title: "Nome inválido", description: "Informe seu nome completo.", variant: "destructive" });
+      toast.error("Nome inválido", { description: "Informe seu nome completo." });
       return;
     }
     if (password.length < 8) {
-      toast({ title: "Senha curta", description: "Mínimo de 8 caracteres.", variant: "destructive" });
+      toast.error("Senha curta", { description: "Mínimo de 8 caracteres." });
       return;
     }
     if (password !== confirm) {
-      toast({ title: "Senhas diferentes", description: "Confirme a senha corretamente.", variant: "destructive" });
+      toast.error("Senhas diferentes", { description: "Confirme a senha corretamente." });
       return;
     }
     setState({ kind: "submitting", email: state.email, role: state.role });
@@ -96,7 +96,7 @@ const AcceptInvite = () => {
       if (!realError) realError = error.message;
     }
     if (realError) {
-      toast({ title: "Erro", description: realError, variant: "destructive" });
+      toast.error("Erro", { description: realError });
       setState({ kind: "ready", email: state.email, role: state.role });
       return;
     }
@@ -106,7 +106,7 @@ const AcceptInvite = () => {
       password,
     });
     if (signInErr) {
-      toast({ title: "Conta criada", description: "Faça login para continuar." });
+      toast.success("Conta criada", { description: "Faça login para continuar." });
       navigate("/login", { replace: true });
       return;
     }
