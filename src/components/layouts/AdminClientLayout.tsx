@@ -284,7 +284,7 @@ const AdminClientLayout = () => {
             }}
           />
 
-        {/* V10: Jornada da Consultoria — timeline horizontal premium minimalista */}
+        {/* V10: Jornada da Consultoria — timeline horizontal premium */}
         {(() => {
           const completed = completedByStatus[clientStatus] || [];
 
@@ -295,10 +295,9 @@ const AdminClientLayout = () => {
             return "available";
           };
 
-          // Posição de progresso da linha (0 → 1) baseada em quantas etapas concluídas
           const progressPct = Math.min(1, completed.length / (tabs.length - 1));
 
-          const renderNode = (tab: (typeof tabs)[number], idx: number) => {
+          const renderNode = (tab: (typeof tabs)[number]) => {
             const isLocked = disabled.includes(tab.path);
             return (
               <NavLink
@@ -313,7 +312,7 @@ const AdminClientLayout = () => {
                   const Icon = tab.icon;
                   return (
                     <>
-                      {/* Nó circular — destaque visual principal */}
+                      {/* Nó circular */}
                       <div
                         className={cn(
                           "relative h-10 w-10 rounded-full flex items-center justify-center transition-all duration-300 z-10",
@@ -326,16 +325,16 @@ const AdminClientLayout = () => {
                           state === "active"
                             ? {
                                 background:
-                                  "linear-gradient(145deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%)",
+                                  "linear-gradient(145deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.88) 100%)",
                                 boxShadow:
-                                  "0 0 0 4px hsl(var(--primary) / 0.18), 0 0 0 1px hsl(var(--primary) / 0.4), 0 6px 16px -4px hsl(var(--primary) / 0.45), 0 1px 0 hsl(0 0% 100% / 0.25) inset",
+                                  "0 0 0 1px hsl(var(--primary) / 0.4), 0 1px 0 hsl(0 0% 100% / 0.25) inset",
                               }
                             : state === "completed"
                             ? {
                                 background:
                                   "linear-gradient(145deg, hsl(var(--success) / 0.18) 0%, hsl(var(--success) / 0.08) 100%)",
                                 boxShadow:
-                                  "0 0 0 1px hsl(var(--success) / 0.35), 0 1px 3px hsl(var(--success) / 0.12), 0 1px 0 hsl(0 0% 100% / 0.4) inset",
+                                  "0 0 0 1px hsl(var(--success) / 0.35), 0 1px 0 hsl(0 0% 100% / 0.4) inset",
                               }
                             : state === "locked"
                             ? {
@@ -365,21 +364,9 @@ const AdminClientLayout = () => {
                             strokeWidth={2.2}
                           />
                         )}
-
-                        {/* Ping sutil no nó ativo */}
-                        {state === "active" && (
-                          <span
-                            aria-hidden
-                            className="absolute inset-0 rounded-full animate-ping"
-                            style={{
-                              background: "hsl(var(--primary) / 0.35)",
-                              animationDuration: "2.4s",
-                            }}
-                          />
-                        )}
                       </div>
 
-                      {/* Label compacto sob o nó */}
+                      {/* Label sob o nó */}
                       <div className="flex flex-col items-center text-center min-w-0 w-full px-1">
                         <span
                           className={cn(
@@ -415,11 +402,10 @@ const AdminClientLayout = () => {
             <div className="px-4 py-4 sm:px-6 sm:py-5">
               {/* Desktop: timeline horizontal única */}
               <div className="hidden md:block relative">
-                {/* Trilho de fundo + progresso */}
                 <div
                   aria-hidden
                   className="absolute left-[calc(100%/12)] right-[calc(100%/12)] top-5 h-[2px] rounded-full"
-                  style={{ background: "hsl(var(--border) / 0.6)" }}
+                  style={{ background: "hsl(var(--border) / 0.7)" }}
                 />
                 <div
                   aria-hidden
@@ -427,22 +413,21 @@ const AdminClientLayout = () => {
                   style={{
                     width: `calc((100% - (100%/6)) * ${progressPct})`,
                     background:
-                      "linear-gradient(90deg, hsl(var(--success) / 0.7) 0%, hsl(var(--primary) / 0.85) 100%)",
-                    boxShadow: "0 0 8px hsl(var(--primary) / 0.35)",
+                      "linear-gradient(90deg, hsl(var(--success) / 0.75) 0%, hsl(var(--primary) / 0.85) 100%)",
                   }}
                 />
 
                 <div className="relative flex items-start">
-                  {tabs.map((tab, i) => renderNode(tab, i))}
+                  {tabs.map((tab) => renderNode(tab))}
                 </div>
               </div>
 
               {/* Mobile: scroll horizontal */}
               <div className="md:hidden -mx-4 px-4">
-                <div className="flex items-start gap-1 overflow-x-auto pb-2 scrollbar-none overscroll-x-contain relative">
-                  {tabs.map((tab, i) => (
+                <div className="flex items-start gap-1 overflow-x-auto pb-2 scrollbar-none overscroll-x-contain">
+                  {tabs.map((tab) => (
                     <div key={tab.path} className="shrink-0 w-[88px] flex flex-col items-center">
-                      {renderNode(tab, i)}
+                      {renderNode(tab)}
                     </div>
                   ))}
                 </div>
