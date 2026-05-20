@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Users, Clock, AlertTriangle, CheckCircle, Target,
   ChevronRight, LayoutDashboard, TrendingUp, Sparkles,
-  ArrowRight, Zap, ClipboardCheck, CalendarDays, ChevronLeft, Hourglass,
+  ArrowRight, Zap, ClipboardCheck, CalendarDays, ChevronLeft, Hourglass, Activity,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
@@ -22,6 +22,7 @@ import AdvancedMetrics from "@/components/admin/AdvancedMetrics";
 import DashboardCharts from "@/components/admin/DashboardCharts";
 import { useCountUp } from "@/hooks/useCountUp";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -313,6 +314,19 @@ const AdminDashboard = () => {
       <SEO title="Dashboard" description="Visão geral da sua consultoria Novare: clientes, métricas e progresso." index={false} />
       <PageBanner title="Dashboard" description="Visão geral da sua consultoria" icon3D="dashboard" />
 
+      <Tabs defaultValue="visao-geral" className="space-y-6">
+        <TabsList className="h-10">
+          <TabsTrigger value="visao-geral" className="gap-2">
+            <LayoutDashboard className="h-4 w-4" />
+            Visão Geral
+          </TabsTrigger>
+          <TabsTrigger value="atividade" className="gap-2">
+            <Activity className="h-4 w-4" />
+            Atividade
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="visao-geral" className="space-y-6 mt-0">
       {/* ── Month Selector ── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
         className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-w-0">
@@ -679,6 +693,19 @@ const AdminDashboard = () => {
           </Card3D>
         </motion.div>
       )}
+        </TabsContent>
+
+        <TabsContent value="atividade" className="mt-0">
+          <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
+              <Activity className="h-7 w-7 text-muted-foreground/60" />
+            </div>
+            <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+              Em breve: feed de atividades dos clientes
+            </p>
+          </div>
+        </TabsContent>
+      </Tabs>
     </PageTransition>
   );
 };
