@@ -110,12 +110,16 @@ function MetaAcompRow({
   history,
   onSave,
   saving,
+  onConfirm,
+  confirming,
 }: {
   meta: MetaEntry;
   latestEntry?: AcompEntry;
   history: AcompEntry[];
   onSave: (metaId: string, estadoAtual: string, valorAtual: string) => void;
   saving: boolean;
+  onConfirm: (metaId: string) => void;
+  confirming: boolean;
 }) {
   const [estado, setEstado] = useState(latestEntry?.estado_atual || "");
   const [valor, setValor] = useState(
@@ -234,6 +238,26 @@ function MetaAcompRow({
                   style={{ width: `${Math.min(pct, 100)}%` }}
                 />
               </div>
+              {pct >= 100 && (
+                <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300/40 p-3 space-y-2 mt-2">
+                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4" /> Meta atingida!
+                  </p>
+                  <p className="text-xs text-emerald-600/80 dark:text-emerald-500/70">
+                    Confirme para arquivar. O item voltará ao Plano de Ação sem meta, pronto para um novo objetivo.
+                  </p>
+                  <Button
+                    onClick={() => onConfirm(meta.id)}
+                    disabled={confirming}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
+                  >
+                    {confirming
+                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Arquivando...</>
+                      : <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />Confirmar e arquivar meta</>
+                    }
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -410,9 +434,10 @@ function GoalDirectRow({
 
 export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const queryClient = useQueryClient();
-  const [savingId, setSavingId]               = useState<string | null>(null);
-  const [savingGoalId, setSavingGoalId]       = useState<string | null>(null);
+  const [savingId, setSavingId]                 = useState<string | null>(null);
+  const [savingGoalId, setSavingGoalId]         = useState<string | null>(null);
   const [confirmingGoalId, setConfirmingGoalId] = useState<string | null>(null);
+  const [confirmingMetaId, setConfirmingMetaId] = useState<string | null>(null);
 
   const { data: metas = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
@@ -501,6 +526,21 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
       { meta, estadoAtual, valorAtualStr },
       { onSettled: () => setSavingId(null) },
     );
+  };
+
+  const handleConfirmMetaDone = async (metaId: string) => {
+    setConfirmingMetaId(metaId);
+    try {
+      const { error } = await supabase.from("parecer_metas").delete().eq("id", metaId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
+      queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId] });
+      toast.success("Meta arquivada! O item voltou ao Plano de Ação para um novo objetivo.");
+    } catch (err: any) {
+      toast.error("Erro ao arquivar: " + (err?.message || "tente novamente"));
+    } finally {
+      setConfirmingMetaId(null);
+    }
   };
 
   const handleSaveGoalInvestment = async (goalId: string, amount: number) => {
@@ -615,6 +655,8 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                     history={metaHistory}
                     onSave={handleSave}
                     saving={savingId === meta.id}
+                    onConfirm={handleConfirmMetaDone}
+                    confirming={confirmingMetaId === meta.id}
                   />
                 );
               })}
