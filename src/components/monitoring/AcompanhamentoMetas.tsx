@@ -155,147 +155,149 @@ function MetaAcompRow({
     </Button>
   );
 
+  const dir = inferDirection(meta.source_table);
+  const DirIcon = dir.icon;
+
   return (
-    <div className="py-4 border-b border-border/30 last:border-0 space-y-3">
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 items-start">
+    <div className="rounded-xl border border-border/50 overflow-hidden bg-card">
 
-        {/* ── ESQUERDA: dados do Plano de Ação ── */}
-        <div className="space-y-1.5">
-          <div className="flex items-start gap-2">
-            <p className="text-sm font-semibold leading-tight flex-1">{meta.source_label}</p>
-            {(() => {
-              const dir = inferDirection(meta.source_table);
-              const DirIcon = dir.icon;
-              return (
-                <span className={cn("flex items-center gap-1 text-[0.6rem] font-semibold rounded-full px-1.5 py-0.5 shrink-0", dir.cls)}>
-                  <DirIcon className="w-2.5 h-2.5" />
-                  {dir.label}
-                </span>
-              );
-            })()}
+      {/* ── Header: nome + progresso ── */}
+      <div className="flex items-start gap-4 px-4 py-3 bg-muted/25 border-b border-border/30">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <p className="text-sm font-semibold leading-tight">{meta.source_label}</p>
+            <span className={cn("inline-flex items-center gap-1 text-[0.6rem] font-semibold rounded-full px-2 py-0.5 shrink-0", dir.cls)}>
+              <DirIcon className="w-2.5 h-2.5" />
+              {dir.label}
+            </span>
           </div>
-
           {meta.meta_text ? (
-            <div className="flex items-start gap-1.5 rounded-md bg-muted/40 px-2.5 py-1.5">
+            <div className="flex items-start gap-1.5">
               <Target className="w-3 h-3 mt-0.5 shrink-0 text-accent" />
-              <p className="text-xs text-foreground/80 leading-snug">{meta.meta_text}</p>
+              <p className="text-xs text-foreground/75 leading-snug">{meta.meta_text}</p>
             </div>
           ) : (
             <p className="text-xs text-muted-foreground/50 italic">Sem meta definida no plano</p>
           )}
-
-          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <div className="flex flex-wrap gap-3 mt-1.5 text-[10px] text-muted-foreground">
             {meta.prazo && (
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                Prazo: <span className="font-medium text-foreground/70">{formatDate(meta.prazo)}</span>
+                Prazo: <span className="font-medium text-foreground/60">{formatDate(meta.prazo)}</span>
               </span>
             )}
-            {meta.meta_valor ? (
+            {meta.meta_valor && (
               <span className="flex items-center gap-1">
                 <Target className="w-3 h-3" />
-                Meta alvo:
-                <span className="font-medium tabular-nums text-foreground/70">{formatBRL(meta.meta_valor)}</span>
+                Alvo: <span className="font-medium tabular-nums text-foreground/60">{formatBRL(meta.meta_valor)}</span>
               </span>
-            ) : null}
+            )}
           </div>
         </div>
 
-        {/* ── DIREITA: tracking ── */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <CurrencyInput
-              value={valor}
-              onChange={(v) => setValor(v)}
-              placeholder="Valor atual..."
-              className="h-8 text-sm flex-1"
-            />
-            {SaveBtn}
-          </div>
-
-          <Textarea
-            value={estado}
-            onChange={(e) => setEstado(e.target.value)}
-            placeholder="Como está agora? Descreva o estado atual..."
-            className="text-sm min-h-[60px] resize-none py-1.5"
-            rows={2}
-          />
-
-          {pct != null && (
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <span className={cn("text-sm font-bold tabular-nums", progressColor(pct))}>{pct}%</span>
-                <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
-                {latestEntry && (
-                  <span className="text-[10px] text-muted-foreground ml-auto">
-                    {formatDateTime(latestEntry.snapshotted_at)}
-                  </span>
-                )}
-              </div>
-              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className={cn("h-full rounded-full transition-all", progressBarColor(pct))}
-                  style={{ width: `${Math.min(pct, 100)}%` }}
-                />
-              </div>
-              {pct >= 100 && (
-                <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300/40 p-3 space-y-2 mt-2">
-                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4" /> Meta atingida!
-                  </p>
-                  <p className="text-xs text-emerald-600/80 dark:text-emerald-500/70">
-                    Confirme para arquivar. O item voltará ao Plano de Ação sem meta, pronto para um novo objetivo.
-                  </p>
-                  <Button
-                    onClick={() => onConfirm(meta.id)}
-                    disabled={confirming}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
-                  >
-                    {confirming
-                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Arquivando...</>
-                      : <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />Confirmar e arquivar meta</>
-                    }
-                  </Button>
-                </div>
-              )}
+        {/* Progresso em destaque */}
+        {pct != null && (
+          <div className="shrink-0 text-right pl-4 border-l border-border/30">
+            <div className="flex items-center gap-1.5 justify-end">
+              <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
+              <span className={cn("text-2xl font-bold tabular-nums leading-none", progressColor(pct))}>{pct}%</span>
             </div>
-          )}
-        </div>
+            {latestEntry && (
+              <p className="text-[10px] text-muted-foreground mt-0.5">{formatDateTime(latestEntry.snapshotted_at)}</p>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* ── Barra de progresso ── */}
+      {pct != null && (
+        <div className="h-1.5 bg-muted">
+          <div
+            className={cn("h-full transition-all duration-500", progressBarColor(pct))}
+            style={{ width: `${Math.min(pct, 100)}%` }}
+          />
+        </div>
+      )}
+
+      {/* ── Registrar estado atual ── */}
+      <div className="px-4 py-3 space-y-2.5">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Registrar estado atual</p>
+        <div className="flex items-center gap-2">
+          <CurrencyInput
+            value={valor}
+            onChange={(v) => setValor(v)}
+            placeholder="Valor atual..."
+            className="h-9 text-sm flex-1 bg-background"
+          />
+          {SaveBtn}
+        </div>
+        <Textarea
+          value={estado}
+          onChange={(e) => setEstado(e.target.value)}
+          placeholder="Como está agora? Descreva o estado atual..."
+          className="text-sm min-h-[52px] resize-none py-2 bg-background"
+          rows={2}
+        />
+
+        {/* Meta atingida */}
+        {pct != null && pct >= 100 && (
+          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300/40 p-3 space-y-2">
+            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4" /> Meta atingida!
+            </p>
+            <p className="text-xs text-emerald-600/80 dark:text-emerald-500/70">
+              Confirme para arquivar. O item volta ao Plano de Ação pronto para um novo objetivo.
+            </p>
+            <Button
+              onClick={() => onConfirm(meta.id)}
+              disabled={confirming}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
+            >
+              {confirming
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Arquivando...</>
+                : <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />Confirmar e arquivar meta</>
+              }
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* ── Histórico ── */}
       {history.length > 0 && (
-        <Collapsible open={histOpen} onOpenChange={setHistOpen}>
-          <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-            <History className="w-3 h-3" />
-            {history.length} registro{history.length > 1 ? "s" : ""} anterior{history.length > 1 ? "es" : ""}
-            {histOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-2 ml-1 border-l-2 border-border/40 pl-3 space-y-2">
-              {history.map((entry) => (
-                <div key={entry.id} className="text-xs text-muted-foreground space-y-0.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-foreground/70">{formatDateTime(entry.snapshotted_at)}</span>
-                    {entry.is_closing_snapshot && (
-                      <Badge variant="outline" className="text-[10px] py-0 h-4">fechamento</Badge>
-                    )}
-                    {entry.progresso_pct != null && (
-                      <span className={cn("font-semibold", progressColor(entry.progresso_pct))}>
-                        {entry.progresso_pct}%
-                      </span>
-                    )}
-                    {entry.valor_atual != null && (
-                      <span className="tabular-nums">{formatBRL(Number(entry.valor_atual))}</span>
+        <div className="border-t border-border/30 px-4 py-2.5">
+          <Collapsible open={histOpen} onOpenChange={setHistOpen}>
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <History className="w-3 h-3" />
+              {history.length} registro{history.length > 1 ? "s" : ""} anterior{history.length > 1 ? "es" : ""}
+              {histOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 ml-1 border-l-2 border-border/40 pl-3 space-y-2">
+                {history.map((entry) => (
+                  <div key={entry.id} className="text-xs text-muted-foreground space-y-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-foreground/70">{formatDateTime(entry.snapshotted_at)}</span>
+                      {entry.is_closing_snapshot && (
+                        <Badge variant="outline" className="text-[10px] py-0 h-4">fechamento</Badge>
+                      )}
+                      {entry.progresso_pct != null && (
+                        <span className={cn("font-semibold", progressColor(entry.progresso_pct))}>
+                          {entry.progresso_pct}%
+                        </span>
+                      )}
+                      {entry.valor_atual != null && (
+                        <span className="tabular-nums">{formatBRL(Number(entry.valor_atual))}</span>
+                      )}
+                    </div>
+                    {entry.estado_atual && (
+                      <p className="text-muted-foreground/80 line-clamp-2">{entry.estado_atual}</p>
                     )}
                   </div>
-                  {entry.estado_atual && (
-                    <p className="text-muted-foreground/80 line-clamp-2">{entry.estado_atual}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
       )}
     </div>
   );
@@ -642,7 +644,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
               <span>Acompanhamento atual</span>
             </div>
 
-            <div className="rounded-lg border border-border/60 bg-card px-4">
+            <div className="space-y-3">
               {items.map((meta) => {
                 const metaHistory = entradas
                   .filter((e) => e.meta_id === meta.id && !e.is_closing_snapshot)
@@ -688,7 +690,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
             <span>Investimento aplicado</span>
           </div>
 
-          <div className="rounded-lg border border-border/60 bg-card px-4">
+          <div className="space-y-3">
             {activeGoals.map((goal) => (
               <GoalDirectRow
                 key={goal.id}

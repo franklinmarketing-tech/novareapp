@@ -77,8 +77,12 @@ const SECTION_CONFIG: Record<SourceTable, { label: string; icon: LucideIcon; col
 
 const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance", "goals"];
 
-// Item | Valor atual | espaçador | Prazo | Meta
-const GRID = "grid-cols-[minmax(0,1fr)_96px_minmax(0,0.4fr)_148px_minmax(0,2fr)]";
+// direction auto-detect helper
+function inferDirection(table: SourceTable): Direction {
+  if (table === "expenses") return "reduce";
+  if (table === "debts")    return "eliminate";
+  return "increase";
+}
 
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
@@ -386,95 +390,99 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                   transition={{ duration: 0.22, ease: "easeInOut" }}
                   style={{ overflow: "hidden" }}
                 >
-                  <div className="px-4 pb-4 border-t border-border/30">
-                    {/* Column headers */}
-                    <div className={cn(`grid ${GRID} gap-3 pt-3 pb-2 text-xs text-muted-foreground font-medium border-b border-border/20`)}>
-                      <span>Item</span>
-                      <span>Valor atual</span>
-                      <span />
-                      <span>Prazo</span>
-                      <span>Meta</span>
-                    </div>
-
+                  <div className="px-4 pb-4 pt-3 border-t border-border/30 space-y-3">
                     {items.map((item) => {
                       const aiSugg = aiSuggestions.find(
                         (s) => s.source_table === item.source_table && s.source_id === item.source_id,
                       );
-                      const f = fields[item.source_id] || { metaText: "", prazo: "" };
+                      const f = fields[item.source_id] || { metaText: "", prazo: "", metaValor: "" };
                       const hasAI = !!aiSugg && aiSugg.suggestion_text !== f.metaText;
+                      const dir = aiSugg?.direction ?? inferDirection(item.source_table);
+                      const dcfg = DIRECTION_CONFIG[dir] || DIRECTION_CONFIG.increase;
+                      const DirIcon = dcfg.icon;
+                      const hasMeta = !!(f.metaText?.trim() || metas.find((m) => m.source_id === item.source_id && m.meta_text));
 
                       return (
                         <div
                           key={item.source_id}
-                          className={cn(`grid ${GRID} gap-3 items-start py-3 border-b border-border/20 last:border-0`)}
+                          className="rounded-xl border border-border/50 overflow-hidden bg-card"
                         >
-                          {/* Name */}
-                          <div className="min-w-0 pt-1">
-                            <p className="text-sm font-medium leading-tight">{item.source_label}</p>
-                            {item.detail && (
-                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.detail}</p>
-                            )}
+                          {/* Item header: name + current value */}
+                          <div className="flex items-start gap-4 px-4 py-3 bg-muted/30 border-b border-border/40">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                <p className="text-sm font-semibold leading-tight">{item.source_label}</p>
+                                <span className={cn("inline-flex items-center gap-1 text-[0.6rem] font-semibold rounded-full px-2 py-0.5 shrink-0", dcfg.badge)}>
+                                  <DirIcon className="w-2.5 h-2.5" />
+                                  {dcfg.label}
+                                </span>
+                              </div>
+                              {item.detail && (
+                                <p className="text-xs text-muted-foreground line-clamp-1">{item.detail}</p>
+                              )}
+                            </div>
+                            <div className="text-right shrink-0 pl-4 border-l border-border/40">
+                              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Hoje</p>
+                              <p className="text-sm font-bold tabular-nums text-foreground">
+                                {item.current_value > 0 ? formatBRL(item.current_value) : "—"}
+                              </p>
+                              {item.unit && <p className="text-[10px] text-muted-foreground">{item.unit}</p>}
+                            </div>
                           </div>
 
-                          {/* Current value */}
-                          <div className="text-sm text-muted-foreground tabular-nums pt-1.5">
-                            {item.current_value > 0 ? formatBRL(item.current_value) : "—"}
-                            {item.unit && (
-                              <span className="text-xs ml-0.5 text-muted-foreground/60">{item.unit}</span>
+                          {/* Meta fields */}
+                          <div className="px-4 py-3 space-y-3">
+                            {/* Meta text */}
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                Meta {hasMeta && <span className="text-emerald-600 ml-1">✓</span>}
+                              </label>
+                              <Input
+                                value={f.metaText}
+                                onChange={(e) => updateField(item.source_id, "metaText", e.target.value)}
+                                placeholder="Descreva a meta para este item..."
+                                className="h-9 text-sm bg-background"
+                              />
+                            </div>
+
+                            {/* Prazo + Valor alvo side by side */}
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Prazo</label>
+                                <DateInput value={f.prazo} onChange={(v) => updateField(item.source_id, "prazo", v)} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Valor alvo</label>
+                                <CurrencyInput
+                                  value={f.metaValor}
+                                  onChange={(v) => updateField(item.source_id, "metaValor", v)}
+                                  placeholder="R$ 0,00"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                            </div>
+
+                            {/* AI suggestion */}
+                            {hasAI && (
+                              <div className={cn("flex items-start gap-3 px-3 py-2.5 rounded-lg border", dcfg.card)}>
+                                <Sparkles className="w-3.5 h-3.5 text-novare-blue shrink-0 mt-0.5" />
+                                <p className="text-xs text-muted-foreground flex-1 leading-relaxed">
+                                  {aiSugg!.suggestion_text}
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    updateField(item.source_id, "metaText", aiSugg!.suggestion_text);
+                                    if (aiSugg!.target_value != null)
+                                      updateField(item.source_id, "metaValor", String(aiSugg!.target_value));
+                                    if (aiSugg!.suggested_prazo)
+                                      updateField(item.source_id, "prazo", aiSugg!.suggested_prazo);
+                                  }}
+                                  className="shrink-0 text-xs font-semibold px-2.5 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors self-start"
+                                >
+                                  Aplicar
+                                </button>
+                              </div>
                             )}
-                          </div>
-
-                          {/* Espaçador */}
-                          <div />
-
-                          {/* Prazo */}
-                          <DateInput value={f.prazo} onChange={(v) => updateField(item.source_id, "prazo", v)} />
-
-                          {/* Meta + IA suggestion */}
-                          <div className="space-y-1.5">
-                            <Input
-                              value={f.metaText}
-                              onChange={(e) => updateField(item.source_id, "metaText", e.target.value)}
-                              placeholder="Descreva a meta..."
-                              className="h-8 text-sm"
-                            />
-                            <CurrencyInput
-                              value={f.metaValor}
-                              onChange={(v) => updateField(item.source_id, "metaValor", v)}
-                              placeholder="Valor alvo..."
-                              className="h-8 text-sm"
-                            />
-                            {hasAI && (() => {
-                              const dir = aiSugg.direction ?? "increase";
-                              const dcfg = DIRECTION_CONFIG[dir] || DIRECTION_CONFIG.increase;
-                              const DirIcon = dcfg.icon;
-                              return (
-                                <div className={cn("flex items-start gap-2 px-2.5 py-2 rounded-lg border", dcfg.card)}>
-                                  <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
-                                    <Sparkles className="w-3.5 h-3.5 text-novare-blue" />
-                                    <span className={cn("flex items-center gap-0.5 text-[0.6rem] font-semibold rounded-full px-1.5 py-0.5 whitespace-nowrap", dcfg.badge)}>
-                                      <DirIcon className={cn("w-2.5 h-2.5", dcfg.iconClass)} />
-                                      {dcfg.label}
-                                    </span>
-                                  </div>
-                                  <span className="text-xs text-muted-foreground flex-1 leading-relaxed">
-                                    {aiSugg.suggestion_text}
-                                  </span>
-                                  <button
-                                    onClick={() => {
-                                      updateField(item.source_id, "metaText", aiSugg.suggestion_text);
-                                      if (aiSugg.target_value != null)
-                                        updateField(item.source_id, "metaValor", String(aiSugg.target_value));
-                                      if (aiSugg.suggested_prazo)
-                                        updateField(item.source_id, "prazo", aiSugg.suggested_prazo);
-                                    }}
-                                    className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors self-start"
-                                  >
-                                    Aplicar
-                                  </button>
-                                </div>
-                              );
-                            })()}
                           </div>
                         </div>
                       );
