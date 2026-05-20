@@ -344,9 +344,9 @@ const AdminClientLayout = () => {
                         }
                       >
                         {state === "completed" ? (
-                          <Check className="h-[18px] w-[18px] text-success" strokeWidth={3} />
+                          <Check className="h-[18px] w-[18px] text-white" strokeWidth={3} />
                         ) : state === "locked" ? (
-                          <Lock className="h-[13px] w-[13px] text-muted-foreground/55" strokeWidth={2.5} />
+                          <Lock className="h-[13px] w-[13px] text-muted-foreground" strokeWidth={2.5} />
                         ) : (
                           <Icon
                             className={cn(
