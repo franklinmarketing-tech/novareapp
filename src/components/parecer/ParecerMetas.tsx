@@ -115,7 +115,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   const [saving, setSaving] = useState(false);
   const [fields, setFields] = useState<Record<string, FieldState>>({});
   const [expanded, setExpanded] = useState<Record<SourceTable, boolean>>(
-    Object.fromEntries(SECTION_ORDER.map((s) => [s, true])) as Record<SourceTable, boolean>,
+    Object.fromEntries(SECTION_ORDER.map((s) => [s, false])) as Record<SourceTable, boolean>,
   );
 
   const { data: income = [] } = useQuery({
