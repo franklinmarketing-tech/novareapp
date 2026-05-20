@@ -103,6 +103,17 @@ interface GoalItem {
   amount_applied?: number | null;
 }
 
+function sectionBorderColor(sourceTable: string): string {
+  switch (sourceTable) {
+    case "income":   return "border-l-emerald-400";
+    case "expenses": return "border-l-amber-400";
+    case "debts":    return "border-l-rose-500";
+    case "assets":   return "border-l-novare-blue-bright";
+    case "insurance":return "border-l-purple-400";
+    default:         return "border-l-border";
+  }
+}
+
 // ── MetaAcompRow: income, expenses, debts, assets, insurance ──
 function MetaAcompRow({
   meta,
@@ -135,6 +146,8 @@ function MetaAcompRow({
       : latestEntry?.progresso_pct ?? null;
 
   const prevEntry = history[1];
+  const dir = inferDirection(meta.source_table);
+  const DirIcon = dir.icon;
 
   const handleSave = () => {
     if (!estado.trim() && !valor.trim()) return;
@@ -143,75 +156,29 @@ function MetaAcompRow({
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const SaveBtn = (
-    <Button
-      size="sm"
-      variant={saved ? "secondary" : "default"}
-      onClick={handleSave}
-      disabled={(!estado.trim() && !valor.trim()) || saving}
-      className="h-8 w-9 p-0 shrink-0"
-    >
-      {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
-    </Button>
-  );
-
-  const dir = inferDirection(meta.source_table);
-  const DirIcon = dir.icon;
-
   return (
-    <div className="rounded-xl border border-border/50 overflow-hidden bg-card">
+    <div className={cn("rounded-xl border border-border/50 border-l-[3px] overflow-hidden bg-card", sectionBorderColor(meta.source_table))}>
 
-      {/* ── Header: nome + progresso ── */}
-      <div className="flex items-start gap-4 px-4 py-3 bg-muted/25 border-b border-border/30">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <p className="text-sm font-semibold leading-tight">{meta.source_label}</p>
-            <span className={cn("inline-flex items-center gap-1 text-[0.6rem] font-semibold rounded-full px-2 py-0.5 shrink-0", dir.cls)}>
-              <DirIcon className="w-2.5 h-2.5" />
-              {dir.label}
-            </span>
-          </div>
-          {meta.meta_text ? (
-            <div className="flex items-start gap-1.5">
-              <Target className="w-3 h-3 mt-0.5 shrink-0 text-accent" />
-              <p className="text-xs text-foreground/75 leading-snug">{meta.meta_text}</p>
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground/50 italic">Sem meta definida no plano</p>
-          )}
-          <div className="flex flex-wrap gap-3 mt-1.5 text-[10px] text-muted-foreground">
-            {meta.prazo && (
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                Prazo: <span className="font-medium text-foreground/60">{formatDate(meta.prazo)}</span>
-              </span>
-            )}
-            {meta.meta_valor && (
-              <span className="flex items-center gap-1">
-                <Target className="w-3 h-3" />
-                Alvo: <span className="font-medium tabular-nums text-foreground/60">{formatBRL(meta.meta_valor)}</span>
-              </span>
-            )}
-          </div>
+      {/* ── Header: nome + direção + progresso ── */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-novare-blue-light/30 dark:bg-novare-blue/10">
+        <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-bold text-novare-blue dark:text-novare-blue-bright leading-tight">{meta.source_label}</p>
+          <span className={cn("inline-flex items-center gap-1 text-[0.6rem] font-semibold rounded-full px-2 py-0.5 shrink-0", dir.cls)}>
+            <DirIcon className="w-2.5 h-2.5" />
+            {dir.label}
+          </span>
         </div>
-
-        {/* Progresso em destaque */}
         {pct != null && (
-          <div className="shrink-0 text-right pl-4 border-l border-border/30">
-            <div className="flex items-center gap-1.5 justify-end">
-              <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
-              <span className={cn("text-2xl font-bold tabular-nums leading-none", progressColor(pct))}>{pct}%</span>
-            </div>
-            {latestEntry && (
-              <p className="text-[10px] text-muted-foreground mt-0.5">{formatDateTime(latestEntry.snapshotted_at)}</p>
-            )}
+          <div className="flex items-center gap-2 shrink-0">
+            <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
+            <span className={cn("text-2xl font-black tabular-nums leading-none", progressColor(pct))}>{pct}%</span>
           </div>
         )}
       </div>
 
-      {/* ── Barra de progresso ── */}
+      {/* ── Barra de progresso full-width ── */}
       {pct != null && (
-        <div className="h-1.5 bg-muted">
+        <div className="h-[4px] bg-muted">
           <div
             className={cn("h-full transition-all duration-500", progressBarColor(pct))}
             style={{ width: `${Math.min(pct, 100)}%` }}
@@ -219,52 +186,105 @@ function MetaAcompRow({
         </div>
       )}
 
-      {/* ── Registrar estado atual ── */}
-      <div className="px-4 py-3 space-y-2.5">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Registrar estado atual</p>
-        <div className="flex items-center gap-2">
-          <CurrencyInput
-            value={valor}
-            onChange={(v) => setValor(v)}
-            placeholder="Valor atual..."
-            className="h-9 text-sm flex-1 bg-background"
-          />
-          {SaveBtn}
-        </div>
-        <Textarea
-          value={estado}
-          onChange={(e) => setEstado(e.target.value)}
-          placeholder="Como está agora? Descreva o estado atual..."
-          className="text-sm min-h-[52px] resize-none py-2 bg-background"
-          rows={2}
-        />
+      {/* ── Corpo: Plano | Atualizar ── */}
+      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] divide-x divide-border/40">
 
-        {/* Meta atingida */}
-        {pct != null && pct >= 100 && (
-          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300/40 p-3 space-y-2">
-            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4" /> Meta atingida!
-            </p>
-            <p className="text-xs text-emerald-600/80 dark:text-emerald-500/70">
-              Confirme para arquivar. O item volta ao Plano de Ação pronto para um novo objetivo.
-            </p>
+        {/* LEFT — Plano de Ação */}
+        <div className="px-4 py-3 space-y-2.5">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-novare-terracotta">Plano de Ação</p>
+
+          {meta.meta_text ? (
+            <div className="rounded-lg bg-novare-terracotta-light dark:bg-novare-terracotta/10 border border-novare-terracotta/20 px-2.5 py-2">
+              <div className="flex items-start gap-1.5">
+                <Target className="w-3 h-3 mt-0.5 shrink-0 text-novare-terracotta" />
+                <p className="text-xs text-foreground/80 leading-snug">{meta.meta_text}</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground/50 italic">Sem meta definida</p>
+          )}
+
+          <div className="flex flex-col gap-1.5">
+            {meta.meta_valor && (
+              <div className="flex items-center gap-1.5 text-xs">
+                <Target className="w-3 h-3 text-novare-blue-bright shrink-0" />
+                <span className="text-muted-foreground">Alvo:</span>
+                <span className="font-semibold tabular-nums text-novare-blue dark:text-novare-blue-bright">{formatBRL(meta.meta_valor)}</span>
+              </div>
+            )}
+            {meta.prazo && (
+              <div className="flex items-center gap-1.5 text-xs">
+                <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">Prazo:</span>
+                <span className="font-medium text-foreground/70">{formatDate(meta.prazo)}</span>
+              </div>
+            )}
+            {latestEntry && (
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 mt-0.5">
+                <Clock className="w-2.5 h-2.5 shrink-0" />
+                últ: {formatDateTime(latestEntry.snapshotted_at)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT — Atualizar */}
+        <div className="px-4 py-3 space-y-2.5">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">Registrar estado atual</p>
+
+          <div className="flex items-center gap-2">
+            <CurrencyInput
+              value={valor}
+              onChange={(v) => setValor(v)}
+              placeholder="Valor atual..."
+              className="h-9 text-sm flex-1 bg-background border-border/60 focus:border-novare-blue-bright/50"
+            />
             <Button
-              onClick={() => onConfirm(meta.id)}
-              disabled={confirming}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
+              size="sm"
+              variant={saved ? "secondary" : "default"}
+              onClick={handleSave}
+              disabled={(!estado.trim() && !valor.trim()) || saving}
+              className={cn("h-9 w-9 p-0 shrink-0", !saved && "bg-novare-terracotta hover:bg-novare-terracotta/90 text-white border-0")}
             >
-              {confirming
-                ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Arquivando...</>
-                : <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />Confirmar e arquivar meta</>
-              }
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
             </Button>
           </div>
-        )}
+
+          <Textarea
+            value={estado}
+            onChange={(e) => setEstado(e.target.value)}
+            placeholder="Como está agora? Descreva brevemente..."
+            className="text-sm min-h-[52px] resize-none py-2 bg-background border-border/60"
+            rows={2}
+          />
+        </div>
       </div>
+
+      {/* ── Meta atingida ── */}
+      {pct != null && pct >= 100 && (
+        <div className="mx-4 mb-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300/40 p-3 space-y-2">
+          <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+            <CheckCircle2 className="h-4 w-4" /> Meta atingida!
+          </p>
+          <p className="text-xs text-emerald-600/80 dark:text-emerald-500/70">
+            Confirme para arquivar. O item volta ao Plano de Ação pronto para um novo objetivo.
+          </p>
+          <Button
+            onClick={() => onConfirm(meta.id)}
+            disabled={confirming}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
+          >
+            {confirming
+              ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Arquivando...</>
+              : <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />Confirmar e arquivar meta</>
+            }
+          </Button>
+        </div>
+      )}
 
       {/* ── Histórico ── */}
       {history.length > 0 && (
-        <div className="border-t border-border/30 px-4 py-2.5">
+        <div className="border-t border-border/30 px-4 py-2">
           <Collapsible open={histOpen} onOpenChange={setHistOpen}>
             <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
               <History className="w-3 h-3" />
@@ -633,18 +653,13 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
               <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", cfg.color)}>
                 <Icon className="w-3.5 h-3.5" />
               </div>
-              <h3 className="text-sm font-semibold">{cfg.label}</h3>
+              <h3 className="text-sm font-semibold text-novare-blue dark:text-novare-blue-bright">{cfg.label}</h3>
               <Badge variant="secondary" className="text-xs">{items.length}</Badge>
               {comAcomp > 0 && (
                 <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-600/30">
                   {comAcomp} atualizada{comAcomp !== 1 ? "s" : ""}
                 </Badge>
               )}
-            </div>
-
-            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 px-4 pb-1 text-xs text-muted-foreground font-medium border-b border-border/30">
-              <span>Meta definida no Plano de Ação</span>
-              <span>Acompanhamento atual</span>
             </div>
 
             <div className="space-y-3">
@@ -679,18 +694,13 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
             <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", SECTION_CONFIG.goals.color)}>
               <Target className="w-3.5 h-3.5" />
             </div>
-            <h3 className="text-sm font-semibold">Objetivos</h3>
+            <h3 className="text-sm font-semibold text-novare-blue dark:text-novare-blue-bright">Objetivos</h3>
             <Badge variant="secondary" className="text-xs">{activeGoals.length}</Badge>
             {goalsWithInvestment > 0 && (
               <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-600/30">
                 {goalsWithInvestment} em andamento
               </Badge>
             )}
-          </div>
-
-          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 px-4 pb-1 text-xs text-muted-foreground font-medium border-b border-border/30">
-            <span>Objetivo do cliente</span>
-            <span>Investimento aplicado</span>
           </div>
 
           <div className="space-y-3">

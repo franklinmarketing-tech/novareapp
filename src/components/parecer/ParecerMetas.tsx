@@ -365,7 +365,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                 <p className="text-sm font-semibold text-foreground">{cfg.label}</p>
                 <p className="text-[0.6875rem] text-muted-foreground">
                   {items.length} item{items.length !== 1 ? "s" : ""}
-                  {metasCount > 0 && ` · ${metasCount} com meta`}
+                  {metasCount > 0 && <> · <span className="text-novare-terracotta font-medium">{metasCount} com meta</span></>}
                   {aiSuggestions.filter((s) => s.source_table === section).length > 0 && (
                     <span className="ml-1.5 text-novare-blue font-medium">
                       · {aiSuggestions.filter((s) => s.source_table === section).length} sugestão IA
@@ -409,7 +409,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                       return (
                         <div
                           key={item.source_id}
-                          className="rounded-xl border border-border/50 overflow-hidden bg-card"
+                          className="rounded-xl border border-border/50 overflow-hidden bg-card border-l-[3px] border-l-novare-blue-bright/50"
                         >
                           {/* Item header: name + current value */}
                           <div className="flex items-start gap-4 px-4 py-3 bg-muted/30 border-b border-border/40">
@@ -426,8 +426,8 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                               )}
                             </div>
                             <div className="text-right shrink-0 pl-4 border-l border-border/40">
-                              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Hoje</p>
-                              <p className="text-sm font-bold tabular-nums text-foreground">
+                              <p className="text-[10px] uppercase tracking-wide text-novare-blue-bright font-semibold">Hoje</p>
+                              <p className="text-sm font-bold tabular-nums text-novare-blue">
                                 {item.current_value > 0 ? formatBRL(item.current_value) : "—"}
                               </p>
                               {item.unit && <p className="text-[10px] text-muted-foreground">{item.unit}</p>}
@@ -438,7 +438,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                           <div className="px-4 py-3 space-y-3">
                             {/* Meta text */}
                             <div className="space-y-1">
-                              <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                              <label className="text-[10px] font-semibold uppercase tracking-wide text-novare-terracotta">
                                 Meta {hasMeta && <span className="text-emerald-600 ml-1">✓</span>}
                               </label>
                               <Input
