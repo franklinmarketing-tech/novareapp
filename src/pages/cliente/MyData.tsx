@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
+import { pushNotification } from "@/hooks/useNotifications";
 import { LoadingState } from "@/components/ui/loading-state";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -115,6 +116,7 @@ const getFinancialNarrative = (renda: number, despesas: number, patrimonio: numb
 const MyData = () => {
   const { user } = useAuth();
   const [clientId, setClientId] = useState<string | null>(null);
+  const [clientSlug, setClientSlug] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [modifiedSections, setModifiedSections] = useState<Set<number>>(new Set());
@@ -186,6 +188,7 @@ const MyData = () => {
       const { data: clientData } = await supabase.from("clients").select("*").eq("user_id", user.id).maybeSingle();
       if (!clientData) { setLoading(false); return; }
       setClientId(clientData.id);
+      setClientSlug(clientData.slug);
 
       const { data: profileData } = await supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
       if (profileData) setProfileName(profileData.full_name || "");
@@ -243,6 +246,27 @@ const MyData = () => {
     if (!error) {
       setMonthlyConfirmed(new Date());
       toast({ title: "Dados confirmados! 🎉", description: "Seus dados deste mês foram confirmados com sucesso." });
+      // Notify all admins so they can review updated data
+      const { data: adminRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+      if (adminRoles && adminRoles.length > 0) {
+        const clientName = profileName || "Cliente";
+        const now = new Date();
+        const monthLabel = now.toLocaleString("pt-BR", { month: "long", year: "numeric" });
+        await Promise.all(
+          adminRoles.map((r) =>
+            pushNotification({
+              user_id: r.user_id,
+              type: "data_confirmed",
+              title: `${clientName} confirmou os dados`,
+              body: `Dados de ${monthLabel} confirmados — acompanhamento pronto para revisar.`,
+              link: clientSlug ? `/admin/cliente/${clientSlug}/acompanhamento` : null,
+            })
+          )
+        );
+      }
     } else {
       toast({ title: "Erro ao confirmar", description: error.message, variant: "destructive" });
     }

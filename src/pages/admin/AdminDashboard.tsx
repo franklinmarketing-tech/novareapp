@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Users, Clock, AlertTriangle, CheckCircle, Target,
   ChevronRight, LayoutDashboard, TrendingUp, Sparkles,
-  ArrowRight, Zap, ClipboardCheck, CalendarDays, ChevronLeft,
+  ArrowRight, Zap, ClipboardCheck, CalendarDays, ChevronLeft, Hourglass,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
@@ -59,6 +59,7 @@ const AdminDashboard = () => {
   const [recentClients, setRecentClients] = useState<{ id: string; slug: string; status: string; name: string; risk?: string }[]>([]);
   const [pendingActions, setPendingActions] = useState<{ id: string; description: string; area: string; client_name?: string; client_slug?: string }[]>([]);
   const [unconfirmedClients, setUnconfirmedClients] = useState<{ id: string; slug: string; name: string; lastConfirmed?: string }[]>([]);
+  const [stalledClients, setStalledClients] = useState<{ id: string; slug: string; name: string; status: string; daysSince: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Count-up animated KPIs
@@ -126,7 +127,7 @@ const AdminDashboard = () => {
       const endISO = endOfMonth.toISOString();
 
       const { data: clients } = await supabase
-        .from("clients").select("id, status, user_id, slug, created_at")
+        .from("clients").select("id, status, user_id, slug, created_at, updated_at")
         .lte("created_at", endISO)
         .order("created_at", { ascending: false });
       if (!clients || clients.length === 0) {
@@ -134,6 +135,7 @@ const AdminDashboard = () => {
         setRecentClients([]);
         setPendingActions([]);
         setUnconfirmedClients([]);
+        setStalledClients([]);
         setNetWealth(0);
         setAvgPlanProgress(0);
         setLoading(false);
@@ -165,6 +167,21 @@ const AdminDashboard = () => {
       profiles?.forEach((p) => { profileMap[p.user_id] = p.full_name || "Sem nome"; });
       const clientMap: Record<string, string> = {};
       clients.forEach((c) => { clientMap[c.id] = profileMap[c.user_id] || "Sem nome"; });
+
+      // ── Stalled clients: not updated in 7+ days ──
+      const now7 = Date.now();
+      const stalled = clients
+        .filter((c) => {
+          if (c.status === "onboarding_pendente") return false;
+          const ts = (c as any).updated_at ? new Date((c as any).updated_at).getTime() : new Date(c.created_at).getTime();
+          return Math.floor((now7 - ts) / 86_400_000) >= 7;
+        })
+        .slice(0, 5)
+        .map((c) => {
+          const ts = (c as any).updated_at ? new Date((c as any).updated_at).getTime() : new Date(c.created_at).getTime();
+          return { id: c.id, slug: c.slug, name: clientMap[c.id] || "—", status: c.status, daysSince: Math.floor((now7 - ts) / 86_400_000) };
+        });
+      setStalledClients(stalled);
 
       const diagMap: Record<string, string> = {};
       diagnoses?.forEach((d) => { diagMap[d.client_id] = d.risk_classification || "C"; });
@@ -266,6 +283,12 @@ const AdminDashboard = () => {
     onboarding_pendente: "Onboarding",
     em_diagnostico: "Diagnóstico",
     em_acompanhamento: "Acompanhamento",
+  };
+
+  const statusStep: Record<string, string> = {
+    onboarding_pendente: "onboarding",
+    em_diagnostico: "diagnostico",
+    em_acompanhamento: "acompanhamento",
   };
 
   const statusColors: Record<string, string> = {
@@ -550,6 +573,49 @@ const AdminDashboard = () => {
           </Card3D>
         </motion.div>
       </motion.div>
+
+      {/* ── Stalled clients ── */}
+      {stalledClients.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>
+          <Card3D>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Hourglass className="h-5 w-5 text-amber-500" />
+                  <p className="text-sm font-semibold text-foreground">Clientes parados</p>
+                  <Badge variant="secondary" className="text-[10px] font-semibold rounded-full px-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
+                    {stalledClients.length}
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground">Sem atualização há 7+ dias</p>
+              </div>
+              <div className="space-y-0.5">
+                {stalledClients.map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center gap-3 py-2.5 px-3 -mx-3 cursor-pointer hover:bg-muted/40 rounded-xl transition-all duration-200 group"
+                    onClick={() => navigate(`/admin/cliente/${c.slug}/${statusStep[c.status] || "onboarding"}`)}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-500/5 flex items-center justify-center shrink-0">
+                      <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">{c.name.charAt(0)}</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-sm font-medium text-foreground truncate block">{c.name}</span>
+                      <span className="text-[11px] text-muted-foreground">{statusLabels[c.status] || c.status}</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                        {c.daysSince}d
+                      </span>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground/0 group-hover:text-muted-foreground transition-all" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card3D>
+        </motion.div>
+      )}
 
       {/* ── Unconfirmed data clients ── */}
       {unconfirmedClients.length > 0 && (
