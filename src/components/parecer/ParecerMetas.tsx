@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -213,14 +214,16 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       unit: "/mês",
       detail: r.coverage_amount ? `Cobertura: ${formatBRL(Number(r.coverage_amount))}` : undefined,
     })),
-    ...(goals as any[]).map((r) => ({
+    ...(goals as any[]).filter((r) => !r.completed_at).map((r) => ({
       source_table: "goals" as SourceTable,
       source_id: r.id,
       source_label: r.description,
-      current_value: Number(r.target_amount || 0),
+      current_value: Number(r.amount_applied || 0),
+      unit: " aplicado",
       detail: [
+        r.target_amount ? `Meta total: ${formatBRL(Number(r.target_amount))}` : null,
         r.priority ? `Prioridade: ${r.priority}` : null,
-        r.deadline ? `Prazo atual: ${new Date(r.deadline).toLocaleDateString("pt-BR")}` : null,
+        r.deadline ? `Prazo: ${new Date(r.deadline).toLocaleDateString("pt-BR")}` : null,
       ].filter(Boolean).join(" · "),
     })),
   ];
@@ -435,13 +438,11 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                               placeholder="Descreva a meta..."
                               className="h-8 text-sm"
                             />
-                            <Input
+                            <CurrencyInput
                               value={f.metaValor}
-                              onChange={(e) => updateField(item.source_id, "metaValor", e.target.value)}
-                              placeholder="Valor alvo (R$)..."
-                              className="h-8 text-sm tabular-nums"
-                              type="number"
-                              min={0}
+                              onChange={(v) => updateField(item.source_id, "metaValor", v)}
+                              placeholder="Valor alvo..."
+                              className="h-8 text-sm"
                             />
                             {hasAI && (() => {
                               const dir = aiSugg.direction ?? "increase";

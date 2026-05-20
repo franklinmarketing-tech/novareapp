@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import {
@@ -39,9 +39,9 @@ const SECTION_CONFIG: Record<SourceTable, { label: string; icon: LucideIcon; col
   goals:     { label: "Objetivos",  icon: Target,    color: "bg-success/10 text-success" },
 };
 
-const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance", "goals"];
+// Goals come directly from the goals table — not via parecer_metas
+const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance"];
 
-// Infere a direção esperada a partir do tipo de item
 function inferDirection(sourceTable: string): { label: string; icon: LucideIcon; cls: string } {
   switch (sourceTable) {
     case "debts":    return { label: "Quitar",  icon: Trash2,      cls: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400" };
@@ -53,15 +53,15 @@ function inferDirection(sourceTable: string): { label: string; icon: LucideIcon;
 
 function progressColor(pct: number) {
   if (pct >= 100) return "text-emerald-600";
-  if (pct >= 60) return "text-blue-600";
-  if (pct >= 30) return "text-amber-600";
+  if (pct >= 60)  return "text-blue-600";
+  if (pct >= 30)  return "text-amber-600";
   return "text-rose-600";
 }
 
 function progressBarColor(pct: number) {
   if (pct >= 100) return "bg-emerald-500";
-  if (pct >= 60) return "bg-blue-500";
-  if (pct >= 30) return "bg-amber-500";
+  if (pct >= 60)  return "bg-blue-500";
+  if (pct >= 30)  return "bg-amber-500";
   return "bg-rose-500";
 }
 
@@ -93,22 +93,29 @@ interface AcompEntry {
   is_closing_snapshot: boolean;
 }
 
+interface GoalItem {
+  id: string;
+  description: string;
+  target_amount?: number | null;
+  deadline?: string | null;
+  priority?: string | null;
+  category?: string | null;
+  amount_applied?: number | null;
+}
+
+// ── MetaAcompRow: income, expenses, debts, assets, insurance ──
 function MetaAcompRow({
   meta,
   latestEntry,
   history,
   onSave,
   saving,
-  onConfirmGoalDone,
-  confirmingDone,
 }: {
   meta: MetaEntry;
   latestEntry?: AcompEntry;
   history: AcompEntry[];
   onSave: (metaId: string, estadoAtual: string, valorAtual: string) => void;
   saving: boolean;
-  onConfirmGoalDone?: (metaId: string, valor: string) => void;
-  confirmingDone?: boolean;
 }) {
   const [estado, setEstado] = useState(latestEntry?.estado_atual || "");
   const [valor, setValor] = useState(
@@ -118,17 +125,15 @@ function MetaAcompRow({
   const [histOpen, setHistOpen] = useState(false);
 
   const valorNum = parseFloat(valor) || 0;
-  const pct = meta.meta_valor && valorNum > 0
-    ? Math.round((valorNum / meta.meta_valor) * 100)
-    : latestEntry?.progresso_pct ?? null;
+  const pct =
+    meta.meta_valor && valorNum > 0
+      ? Math.round((valorNum / meta.meta_valor) * 100)
+      : latestEntry?.progresso_pct ?? null;
 
   const prevEntry = history[1];
 
-  const isGoal = meta.source_table === "goals";
-
   const handleSave = () => {
-    const canSave = isGoal ? !!valor.trim() : (!!(estado.trim() || valor.trim()));
-    if (!canSave) return;
+    if (!estado.trim() && !valor.trim()) return;
     onSave(meta.id, estado.trim(), valor.trim());
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -139,7 +144,7 @@ function MetaAcompRow({
       size="sm"
       variant={saved ? "secondary" : "default"}
       onClick={handleSave}
-      disabled={(isGoal ? !valor.trim() : (!estado.trim() && !valor.trim())) || saving}
+      disabled={(!estado.trim() && !valor.trim()) || saving}
       className="h-8 w-9 p-0 shrink-0"
     >
       {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
@@ -148,10 +153,9 @@ function MetaAcompRow({
 
   return (
     <div className="py-4 border-b border-border/30 last:border-0 space-y-3">
-      {/* Layout: Plano (esquerda) | Tracking (direita) */}
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 items-start">
 
-        {/* ── ESQUERDA: dados do Plano de Ação (read-only) ── */}
+        {/* ── ESQUERDA: dados do Plano de Ação ── */}
         <div className="space-y-1.5">
           <div className="flex items-start gap-2">
             <p className="text-sm font-semibold leading-tight flex-1">{meta.source_label}</p>
@@ -194,125 +198,47 @@ function MetaAcompRow({
         </div>
 
         {/* ── DIREITA: tracking ── */}
-        {isGoal ? (
-          /* ── OBJETIVO: investimento aplicado + % da meta ── */
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 relative">
-                <Input
-                  value={valor}
-                  onChange={(e) => setValor(e.target.value)}
-                  placeholder="Investimento aplicado (R$)"
-                  className="h-8 text-sm tabular-nums pr-2"
-                  type="number"
-                  min={0}
-                />
-              </div>
-              {SaveBtn}
-            </div>
-
-            {/* Bloco de progresso destacado */}
-            <div className="rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5 space-y-2">
-              <div className="flex items-end justify-between gap-2">
-                <div className="space-y-0.5">
-                  <p className="text-[0.6875rem] text-muted-foreground">Progresso da meta</p>
-                  {meta.meta_valor && (
-                    <p className="text-xs text-muted-foreground tabular-nums">
-                      {formatBRL(valorNum || latestEntry?.valor_atual || 0)}
-                      <span className="mx-1 text-border">/</span>
-                      {formatBRL(meta.meta_valor)}
-                    </p>
-                  )}
-                </div>
-                <span className={cn("text-2xl font-bold tabular-nums leading-none", pct != null ? progressColor(pct) : "text-muted-foreground")}>
-                  {pct != null ? `${pct}%` : "—"}
-                </span>
-              </div>
-
-              <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className={cn("h-full rounded-full transition-all duration-500", pct != null ? progressBarColor(pct) : "bg-muted-foreground/30")}
-                  style={{ width: pct != null ? `${Math.min(pct, 100)}%` : "0%" }}
-                />
-              </div>
-
-              {latestEntry && (
-                <p className="text-[10px] text-muted-foreground/60 text-right">
-                  {formatDateTime(latestEntry.snapshotted_at)}
-                </p>
-              )}
-            </div>
-
-            {/* Bloco de confirmação quando meta atingida */}
-            {pct != null && pct >= 100 && onConfirmGoalDone && (
-              <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300/40 p-3 space-y-2 mt-1">
-                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4" /> Meta atingida!
-                </p>
-                <p className="text-xs text-emerald-600/80 dark:text-emerald-500/70">
-                  Confirme para arquivar este objetivo. Ele voltará ao Plano de Ação para uma nova definição de meta.
-                </p>
-                <Button
-                  onClick={() => onConfirmGoalDone(meta.id, valor)}
-                  disabled={confirmingDone}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
-                >
-                  {confirmingDone
-                    ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> Arquivando...</>
-                    : <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Confirmar e arquivar meta</>
-                  }
-                </Button>
-              </div>
-            )}
-
-          </div>
-        ) : (
-          /* ── OUTROS: tracking padrão ── */
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Input
-                value={valor}
-                onChange={(e) => setValor(e.target.value)}
-                placeholder="Valor atual (R$)"
-                className="h-8 text-sm tabular-nums flex-1"
-                type="number"
-                min={0}
-              />
-              {SaveBtn}
-            </div>
-
-            <Textarea
-              value={estado}
-              onChange={(e) => setEstado(e.target.value)}
-              placeholder="Como está agora? Descreva o estado atual..."
-              className="text-sm min-h-[60px] resize-none py-1.5"
-              rows={2}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <CurrencyInput
+              value={valor}
+              onChange={(v) => setValor(v)}
+              placeholder="Valor atual..."
+              className="h-8 text-sm flex-1"
             />
-
-            {pct != null && (
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5">
-                  <span className={cn("text-sm font-bold tabular-nums", progressColor(pct))}>{pct}%</span>
-                  <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
-                  {latestEntry && (
-                    <span className="text-[10px] text-muted-foreground ml-auto">
-                      {formatDateTime(latestEntry.snapshotted_at)}
-                    </span>
-                  )}
-                </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={cn("h-full rounded-full transition-all", progressBarColor(pct))}
-                    style={{ width: `${Math.min(pct, 100)}%` }}
-                  />
-                </div>
-              </div>
-            )}
+            {SaveBtn}
           </div>
-        )}
+
+          <Textarea
+            value={estado}
+            onChange={(e) => setEstado(e.target.value)}
+            placeholder="Como está agora? Descreva o estado atual..."
+            className="text-sm min-h-[60px] resize-none py-1.5"
+            rows={2}
+          />
+
+          {pct != null && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className={cn("text-sm font-bold tabular-nums", progressColor(pct))}>{pct}%</span>
+                <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
+                {latestEntry && (
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {formatDateTime(latestEntry.snapshotted_at)}
+                  </span>
+                )}
+              </div>
+              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={cn("h-full rounded-full transition-all", progressBarColor(pct))}
+                  style={{ width: `${Math.min(pct, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Histórico colapsável */}
       {history.length > 0 && (
         <Collapsible open={histOpen} onOpenChange={setHistOpen}>
           <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
@@ -325,13 +251,9 @@ function MetaAcompRow({
               {history.map((entry) => (
                 <div key={entry.id} className="text-xs text-muted-foreground space-y-0.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-foreground/70">
-                      {formatDateTime(entry.snapshotted_at)}
-                    </span>
+                    <span className="font-medium text-foreground/70">{formatDateTime(entry.snapshotted_at)}</span>
                     {entry.is_closing_snapshot && (
-                      <Badge variant="outline" className="text-[10px] py-0 h-4">
-                        fechamento
-                      </Badge>
+                      <Badge variant="outline" className="text-[10px] py-0 h-4">fechamento</Badge>
                     )}
                     {entry.progresso_pct != null && (
                       <span className={cn("font-semibold", progressColor(entry.progresso_pct))}>
@@ -355,9 +277,141 @@ function MetaAcompRow({
   );
 }
 
+// ── GoalDirectRow: objectives linked directly to the goals table ──
+function GoalDirectRow({
+  goal,
+  onSave,
+  saving,
+  onConfirm,
+  confirming,
+}: {
+  goal: GoalItem;
+  onSave: (goalId: string, amount: number) => void;
+  saving: boolean;
+  onConfirm: (goalId: string, amount: number) => void;
+  confirming: boolean;
+}) {
+  const [valor, setValor] = useState(
+    goal.amount_applied != null && goal.amount_applied > 0 ? String(goal.amount_applied) : "",
+  );
+  const [saved, setSaved] = useState(false);
+
+  const applied = parseFloat(valor) || 0;
+  const target  = goal.target_amount || 0;
+  const pct     = target > 0 ? Math.min(Math.round((applied / target) * 100), 100) : null;
+
+  const handleSave = () => {
+    const num = parseFloat(valor);
+    if (!valor.trim() || isNaN(num)) return;
+    onSave(goal.id, num);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const PRIORITY_LABEL: Record<string, string> = { alta: "Alta", media: "Média", baixa: "Baixa" };
+
+  return (
+    <div className="py-4 border-b border-border/30 last:border-0 space-y-3">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 items-start">
+
+        {/* ── ESQUERDA: info do objetivo ── */}
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold leading-tight">{goal.description}</p>
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+            {target > 0 && (
+              <span className="flex items-center gap-1">
+                <Target className="w-3 h-3" />
+                Meta: <span className="font-medium tabular-nums text-foreground/70">{formatBRL(target)}</span>
+              </span>
+            )}
+            {goal.deadline && (
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Prazo: <span className="font-medium text-foreground/70">{formatDate(goal.deadline)}</span>
+              </span>
+            )}
+            {goal.priority && (
+              <Badge variant="outline" className="h-4 px-1.5 text-[10px]">
+                {PRIORITY_LABEL[goal.priority] || goal.priority}
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* ── DIREITA: investimento + progresso ── */}
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <CurrencyInput
+                value={valor}
+                onChange={(v) => setValor(v)}
+                placeholder="Investimento aplicado..."
+                className="h-8 text-sm"
+              />
+            </div>
+            <Button
+              size="sm"
+              variant={saved ? "secondary" : "default"}
+              onClick={handleSave}
+              disabled={!valor.trim() || saving}
+              className="h-8 w-9 p-0 shrink-0"
+            >
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+            </Button>
+          </div>
+
+          {target > 0 && (
+            <div className="rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5 space-y-2">
+              <div className="flex items-end justify-between gap-2">
+                <div className="space-y-0.5">
+                  <p className="text-[0.6875rem] text-muted-foreground">Progresso da meta</p>
+                  <p className="text-xs text-muted-foreground tabular-nums">
+                    {formatBRL(applied)} <span className="mx-0.5 opacity-40">/</span> {formatBRL(target)}
+                  </p>
+                </div>
+                <span className={cn("text-2xl font-bold tabular-nums leading-none", pct != null ? progressColor(pct) : "text-muted-foreground")}>
+                  {pct != null ? `${pct}%` : "—"}
+                </span>
+              </div>
+              <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={cn("h-full rounded-full transition-all duration-500", pct != null ? progressBarColor(pct) : "bg-muted-foreground/30")}
+                  style={{ width: pct != null ? `${pct}%` : "0%" }}
+                />
+              </div>
+            </div>
+          )}
+
+          {pct != null && pct >= 100 && (
+            <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300/40 p-3 space-y-2">
+              <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4" /> Meta atingida!
+              </p>
+              <p className="text-xs text-emerald-600/80 dark:text-emerald-500/70">
+                Confirme para arquivar. O objetivo aparece como concluído no painel de Objetivos.
+              </p>
+              <Button
+                onClick={() => onConfirm(goal.id, applied)}
+                disabled={confirming}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
+              >
+                {confirming
+                  ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Arquivando...</>
+                  : <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />Confirmar e arquivar meta</>
+                }
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const queryClient = useQueryClient();
-  const [savingId, setSavingId] = useState<string | null>(null);
+  const [savingId, setSavingId]               = useState<string | null>(null);
+  const [savingGoalId, setSavingGoalId]       = useState<string | null>(null);
   const [confirmingGoalId, setConfirmingGoalId] = useState<string | null>(null);
 
   const { data: metas = [] } = useQuery({
@@ -382,6 +436,20 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
         .eq("client_id", clientId)
         .order("snapshotted_at", { ascending: false });
       return (data || []) as AcompEntry[];
+    },
+    enabled: !!clientId,
+  });
+
+  const { data: activeGoals = [] } = useQuery({
+    queryKey: ["goals", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("goals")
+        .select("*")
+        .eq("client_id", clientId)
+        .is("completed_at", null)
+        .order("created_at");
+      return (data || []) as GoalItem[];
     },
     enabled: !!clientId,
   });
@@ -435,69 +503,54 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     );
   };
 
-  const handleConfirmGoalDone = async (metaId: string, valorStr: string) => {
-    const meta = metas.find((m) => m.id === metaId);
-    if (!meta) return;
-    setConfirmingGoalId(metaId);
-    try {
-      const valorAtual = valorStr ? parseFloat(valorStr) : null;
-
-      // 1. Insere entrada final de acompanhamento
-      await supabase.from("acompanhamento_entradas").insert({
-        client_id: clientId,
-        meta_id: meta.id,
-        source_table: meta.source_table,
-        source_id: meta.source_id,
-        source_label: meta.source_label,
-        valor_meta: meta.meta_valor ?? null,
-        prazo: meta.prazo ?? null,
-        valor_atual: valorAtual,
-        estado_atual: "Meta atingida e arquivada",
-        progresso_pct: 100,
-        is_closing_snapshot: false,
-        snapshotted_at: new Date().toISOString(),
-      });
-
-      // 2. Arquiva o objetivo (salva completed_at e amount_applied)
-      await supabase
-        .from("goals")
-        .update({ completed_at: new Date().toISOString(), amount_applied: valorAtual ?? 0 })
-        .eq("id", meta.source_id);
-
-      // 3. Remove a meta do parecer_metas para liberar nova definição no Plano de Ação
-      const { error: delError } = await supabase
-        .from("parecer_metas")
-        .delete()
-        .eq("id", metaId);
-      if (delError) throw delError;
-
-      queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
-      queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId] });
+  const handleSaveGoalInvestment = async (goalId: string, amount: number) => {
+    setSavingGoalId(goalId);
+    const { error } = await supabase.from("goals").update({ amount_applied: amount }).eq("id", goalId);
+    setSavingGoalId(null);
+    if (error) {
+      toast.error("Erro ao salvar: " + error.message);
+    } else {
       queryClient.invalidateQueries({ queryKey: ["goals", clientId] });
-      toast.success("Meta arquivada! O objetivo voltou ao Plano de Ação para nova definição.");
+      toast.success("Investimento registrado");
+    }
+  };
+
+  const handleConfirmGoalDone = async (goalId: string, amount: number) => {
+    setConfirmingGoalId(goalId);
+    try {
+      const { error } = await supabase
+        .from("goals")
+        .update({ completed_at: new Date().toISOString(), amount_applied: amount })
+        .eq("id", goalId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["goals", clientId] });
+      toast.success("Meta arquivada! Objetivo marcado como concluído no painel de Objetivos.");
     } catch (err: any) {
-      toast.error("Erro ao arquivar meta: " + (err?.message || "tente novamente"));
+      toast.error("Erro ao arquivar: " + (err?.message || "tente novamente"));
     } finally {
       setConfirmingGoalId(null);
     }
   };
 
+  // Only non-goal sections sourced from parecer_metas
   const bySection = SECTION_ORDER.reduce(
     (acc, section) => {
       acc[section] = metas.filter((m) => m.source_table === section);
       return acc;
     },
-    {} as Record<SourceTable, MetaEntry[]>,
+    {} as Record<string, MetaEntry[]>,
   );
 
-  const totalMetas = metas.length;
-  const totalComAcomp = new Set(entradas.map((e) => e.meta_id)).size;
+  const totalMetas             = metas.filter((m) => m.source_table !== "goals").length;
+  const totalComAcomp          = new Set(entradas.map((e) => e.meta_id)).size;
+  const goalsWithInvestment    = activeGoals.filter((g) => g.amount_applied && g.amount_applied > 0).length;
+  const hasContent             = totalMetas > 0 || activeGoals.length > 0;
 
-  if (totalMetas === 0) {
+  if (!hasContent) {
     return (
       <div className="text-center py-16 text-muted-foreground">
-        <p className="text-sm">Nenhuma meta definida.</p>
-        <p className="text-xs mt-1">Vá para Plano de Ação e salve as metas primeiro.</p>
+        <p className="text-sm">Nenhuma meta ou objetivo encontrado.</p>
+        <p className="text-xs mt-1">Configure o Plano de Ação e adicione Objetivos primeiro.</p>
       </div>
     );
   }
@@ -505,29 +558,32 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   return (
     <div className="space-y-6">
       {/* Resumo */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {totalComAcomp} de {totalMetas} metas com acompanhamento registrado
-        </p>
-        <div className="flex gap-4 text-xs text-muted-foreground">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+          {totalMetas > 0 && (
+            <span>{totalComAcomp} de {totalMetas} metas com acompanhamento</span>
+          )}
+          {activeGoals.length > 0 && (
+            <span>{goalsWithInvestment} de {activeGoals.length} objetivos com investimento</span>
+          )}
+        </div>
+        <div className="flex gap-3 text-xs text-muted-foreground">
           <span className="font-medium text-foreground/60">Plano de Ação</span>
           <span>→</span>
           <span className="font-medium text-foreground/60">Estado atual</span>
         </div>
       </div>
 
+      {/* Seções de metas do Plano de Ação */}
       {SECTION_ORDER.map((section) => {
         const items = bySection[section];
-        if (!items.length) return null;
-        const cfg = SECTION_CONFIG[section];
+        if (!items || !items.length) return null;
+        const cfg  = SECTION_CONFIG[section];
         const Icon = cfg.icon;
-        const comAcomp = items.filter((m) =>
-          entradas.some((e) => e.meta_id === m.id),
-        ).length;
+        const comAcomp = items.filter((m) => entradas.some((e) => e.meta_id === m.id)).length;
 
         return (
           <div key={section}>
-            {/* Cabeçalho da seção */}
             <div className="flex items-center gap-2 mb-2">
               <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", cfg.color)}>
                 <Icon className="w-3.5 h-3.5" />
@@ -541,7 +597,6 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
               )}
             </div>
 
-            {/* Cabeçalho das colunas */}
             <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 px-4 pb-1 text-xs text-muted-foreground font-medium border-b border-border/30">
               <span>Meta definida no Plano de Ação</span>
               <span>Acompanhamento atual</span>
@@ -552,18 +607,14 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                 const metaHistory = entradas
                   .filter((e) => e.meta_id === meta.id && !e.is_closing_snapshot)
                   .slice(0, 10);
-                const latest = metaHistory[0];
-
                 return (
                   <MetaAcompRow
                     key={meta.id}
                     meta={meta}
-                    latestEntry={latest}
+                    latestEntry={metaHistory[0]}
                     history={metaHistory}
                     onSave={handleSave}
                     saving={savingId === meta.id}
-                    onConfirmGoalDone={meta.source_table === "goals" ? handleConfirmGoalDone : undefined}
-                    confirmingDone={confirmingGoalId === meta.id}
                   />
                 );
               })}
@@ -573,11 +624,49 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
           </div>
         );
       })}
+
+      {/* Objetivos — direto da tabela goals (vinculados ao painel de Objetivos do diagnóstico) */}
+      {activeGoals.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", SECTION_CONFIG.goals.color)}>
+              <Target className="w-3.5 h-3.5" />
+            </div>
+            <h3 className="text-sm font-semibold">Objetivos</h3>
+            <Badge variant="secondary" className="text-xs">{activeGoals.length}</Badge>
+            {goalsWithInvestment > 0 && (
+              <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-600/30">
+                {goalsWithInvestment} em andamento
+              </Badge>
+            )}
+          </div>
+
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 px-4 pb-1 text-xs text-muted-foreground font-medium border-b border-border/30">
+            <span>Objetivo do cliente</span>
+            <span>Investimento aplicado</span>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-card px-4">
+            {activeGoals.map((goal) => (
+              <GoalDirectRow
+                key={goal.id}
+                goal={goal}
+                onSave={handleSaveGoalInvestment}
+                saving={savingGoalId === goal.id}
+                onConfirm={handleConfirmGoalDone}
+                confirming={confirmingGoalId === goal.id}
+              />
+            ))}
+          </div>
+
+          <Separator className="mt-6" />
+        </div>
+      )}
     </div>
   );
 }
 
-// Exporta função utilitária usada pelo MonthlyClosings para criar snapshots de fechamento
+// Usado pelo MonthlyClosings para criar snapshots de fechamento
 export async function criarSnapshotFechamento(
   clientId: string,
   monthClosingId: string,
@@ -587,9 +676,7 @@ export async function criarSnapshotFechamento(
   if (!metas.length) return;
 
   const rows = metas.map((meta) => {
-    const latest = entradas.find(
-      (e) => e.meta_id === meta.id && !e.is_closing_snapshot,
-    );
+    const latest = entradas.find((e) => e.meta_id === meta.id && !e.is_closing_snapshot);
     return {
       client_id: clientId,
       meta_id: meta.id,

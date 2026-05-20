@@ -48,16 +48,16 @@ const AdminMonitoring = () => {
             Acompanhamento — {client?.full_name ?? "Cliente"}
           </h2>
           <p className="text-xs text-muted-foreground">
-            Registre o estado atual de cada meta. Cada save cria um snapshot com data e hora.
+            Veja a evolução mensal do cliente e registre o estado atual de cada meta e objetivo.
           </p>
         </div>
       </div>
 
-      {/* Painel principal de metas */}
-      <AcompanhamentoMetas clientId={clientId} />
-
-      {/* Fechamento mensal com evolução */}
+      {/* Histórico de fechamentos mensais e evolução */}
       <MonthlyClosings clientId={clientId} />
+
+      {/* Acompanhamento de metas e objetivos */}
+      <AcompanhamentoMetas clientId={clientId} />
 
       <JourneyFooterNav
         current="acompanhamento"
