@@ -12,6 +12,7 @@ import {
   Save, Loader2, Check, ChevronDown, ChevronRight,
   Clock, Target, TrendingUp, TrendingDown, Minus, History,
   Wallet, Receipt, CreditCard, Building2, Shield, Trash2,
+  CheckCircle2,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -98,12 +99,16 @@ function MetaAcompRow({
   history,
   onSave,
   saving,
+  onConfirmGoalDone,
+  confirmingDone,
 }: {
   meta: MetaEntry;
   latestEntry?: AcompEntry;
   history: AcompEntry[];
   onSave: (metaId: string, estadoAtual: string, valorAtual: string) => void;
   saving: boolean;
+  onConfirmGoalDone?: (metaId: string, valor: string) => void;
+  confirmingDone?: boolean;
 }) {
   const [estado, setEstado] = useState(latestEntry?.estado_atual || "");
   const [valor, setValor] = useState(
@@ -231,16 +236,35 @@ function MetaAcompRow({
                 />
               </div>
 
-              {pct != null && pct >= 100 && (
-                <p className="text-xs font-semibold text-emerald-600">Meta atingida!</p>
-              )}
-
               {latestEntry && (
                 <p className="text-[10px] text-muted-foreground/60 text-right">
                   {formatDateTime(latestEntry.snapshotted_at)}
                 </p>
               )}
             </div>
+
+            {/* Bloco de confirmação quando meta atingida */}
+            {pct != null && pct >= 100 && onConfirmGoalDone && (
+              <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300/40 p-3 space-y-2 mt-1">
+                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4" /> Meta atingida!
+                </p>
+                <p className="text-xs text-emerald-600/80 dark:text-emerald-500/70">
+                  Confirme para arquivar este objetivo. Ele voltará ao Plano de Ação para uma nova definição de meta.
+                </p>
+                <Button
+                  onClick={() => onConfirmGoalDone(meta.id, valor)}
+                  disabled={confirmingDone}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
+                >
+                  {confirmingDone
+                    ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> Arquivando...</>
+                    : <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Confirmar e arquivar meta</>
+                  }
+                </Button>
+              </div>
+            )}
+
           </div>
         ) : (
           /* ── OUTROS: tracking padrão ── */
@@ -334,6 +358,7 @@ function MetaAcompRow({
 export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const queryClient = useQueryClient();
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [confirmingGoalId, setConfirmingGoalId] = useState<string | null>(null);
 
   const { data: metas = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
@@ -408,6 +433,53 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
       { meta, estadoAtual, valorAtualStr },
       { onSettled: () => setSavingId(null) },
     );
+  };
+
+  const handleConfirmGoalDone = async (metaId: string, valorStr: string) => {
+    const meta = metas.find((m) => m.id === metaId);
+    if (!meta) return;
+    setConfirmingGoalId(metaId);
+    try {
+      const valorAtual = valorStr ? parseFloat(valorStr) : null;
+
+      // 1. Insere entrada final de acompanhamento
+      await supabase.from("acompanhamento_entradas").insert({
+        client_id: clientId,
+        meta_id: meta.id,
+        source_table: meta.source_table,
+        source_id: meta.source_id,
+        source_label: meta.source_label,
+        valor_meta: meta.meta_valor ?? null,
+        prazo: meta.prazo ?? null,
+        valor_atual: valorAtual,
+        estado_atual: "Meta atingida e arquivada",
+        progresso_pct: 100,
+        is_closing_snapshot: false,
+        snapshotted_at: new Date().toISOString(),
+      });
+
+      // 2. Arquiva o objetivo (salva completed_at e amount_applied)
+      await supabase
+        .from("goals")
+        .update({ completed_at: new Date().toISOString(), amount_applied: valorAtual ?? 0 })
+        .eq("id", meta.source_id);
+
+      // 3. Remove a meta do parecer_metas para liberar nova definição no Plano de Ação
+      const { error: delError } = await supabase
+        .from("parecer_metas")
+        .delete()
+        .eq("id", metaId);
+      if (delError) throw delError;
+
+      queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
+      queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId] });
+      queryClient.invalidateQueries({ queryKey: ["goals", clientId] });
+      toast.success("Meta arquivada! O objetivo voltou ao Plano de Ação para nova definição.");
+    } catch (err: any) {
+      toast.error("Erro ao arquivar meta: " + (err?.message || "tente novamente"));
+    } finally {
+      setConfirmingGoalId(null);
+    }
   };
 
   const bySection = SECTION_ORDER.reduce(
@@ -490,6 +562,8 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                     history={metaHistory}
                     onSave={handleSave}
                     saving={savingId === meta.id}
+                    onConfirmGoalDone={meta.source_table === "goals" ? handleConfirmGoalDone : undefined}
+                    confirmingDone={confirmingGoalId === meta.id}
                   />
                 );
               })}

@@ -15,6 +15,7 @@ import {
   Target, Plus, Pencil, Trash2, Calendar, Loader2,
   Clock, Wallet, Home, Plane, GraduationCap, HeartPulse,
   Shield, PiggyBank, Sparkles, CheckCircle2, TrendingUp, Save, Check,
+  ChevronDown, ChevronRight, Archive,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -26,6 +27,7 @@ interface Goal {
   priority: string | null;
   category?: string | null;
   amount_applied?: number | null;
+  completed_at?: string | null;
 }
 
 interface GoalFormData {
@@ -266,17 +268,19 @@ const AdminObjetivos = () => {
 
   useEffect(() => { loadGoals(); }, [clientId]);
 
-  // Métricas
+  const [showArchived, setShowArchived] = useState(false);
+
+  const activeGoals   = useMemo(() => goals.filter((g) => !g.completed_at), [goals]);
+  const archivedGoals = useMemo(() => goals.filter((g) => !!g.completed_at), [goals]);
+
+  // Métricas (apenas objetivos ativos)
   const metrics = useMemo(() => {
-    const total      = goals.length;
-    const totalAlvo  = goals.reduce((s, g) => s + (g.target_amount || 0), 0);
-    const totalAplic = goals.reduce((s, g) => s + (g.amount_applied || 0), 0);
-    const concluidos = goals.filter((g) => {
-      const t = g.target_amount || 0;
-      return t > 0 && (g.amount_applied || 0) >= t;
-    }).length;
+    const total      = activeGoals.length;
+    const totalAlvo  = activeGoals.reduce((s, g) => s + (g.target_amount || 0), 0);
+    const totalAplic = activeGoals.reduce((s, g) => s + (g.amount_applied || 0), 0);
+    const concluidos = archivedGoals.length;
     return { total, totalAlvo, totalAplic, concluidos };
-  }, [goals]);
+  }, [activeGoals, archivedGoals]);
 
   const openCreate = () => { setEditingId(null); setForm(emptyForm()); setDialogOpen(true); };
   const openEdit   = (g: Goal) => {
@@ -355,24 +359,32 @@ const AdminObjetivos = () => {
         </div>
       )}
 
-      {/* Cards de objetivos */}
-      {goals.length === 0 ? (
+      {/* Cards de objetivos ativos */}
+      {activeGoals.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/60 bg-card py-14 flex flex-col items-center gap-3 text-center px-6">
           <div className="h-12 w-12 rounded-2xl bg-muted/60 flex items-center justify-center">
             <Target className="h-6 w-6 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">Nenhum objetivo cadastrado</p>
-            <p className="text-xs text-muted-foreground mt-1">Crie o primeiro objetivo financeiro do cliente.</p>
+            <p className="text-sm font-semibold text-foreground">
+              {archivedGoals.length > 0 ? "Todos os objetivos foram concluídos!" : "Nenhum objetivo cadastrado"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {archivedGoals.length > 0
+                ? "Os objetivos arquivados estão disponíveis abaixo."
+                : "Crie o primeiro objetivo financeiro do cliente."}
+            </p>
           </div>
-          <Button onClick={openCreate} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 mt-1">
-            <Plus className="h-4 w-4" /> Criar Objetivo
-          </Button>
+          {archivedGoals.length === 0 && (
+            <Button onClick={openCreate} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 mt-1">
+              <Plus className="h-4 w-4" /> Criar Objetivo
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <AnimatePresence mode="popLayout">
-            {goals.map((goal) => (
+            {activeGoals.map((goal) => (
               <GoalCard
                 key={goal.id}
                 goal={goal}
@@ -382,6 +394,54 @@ const AdminObjetivos = () => {
               />
             ))}
           </AnimatePresence>
+        </div>
+      )}
+
+      {/* Objetivos arquivados (concluídos) */}
+      {archivedGoals.length > 0 && (
+        <div className="rounded-2xl border border-emerald-300/40 bg-emerald-50/30 dark:bg-emerald-900/10 p-4 space-y-3">
+          <button
+            className="flex w-full items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400"
+            onClick={() => setShowArchived((p) => !p)}
+          >
+            <Archive className="h-4 w-4" />
+            Objetivos Concluídos ({archivedGoals.length})
+            {showArchived ? <ChevronDown className="h-3.5 w-3.5 ml-auto" /> : <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
+          </button>
+
+          {showArchived && (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {archivedGoals.map((goal) => {
+                const cat = categoryMeta[goal.category || "geral"] || categoryMeta.geral;
+                const CatIcon = cat.icon;
+                const completedDate = goal.completed_at
+                  ? new Date(goal.completed_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })
+                  : null;
+                return (
+                  <div key={goal.id} className="rounded-xl border border-emerald-300/50 bg-card p-4 space-y-2 opacity-80">
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                        <CatIcon className="h-3.5 w-3.5 text-emerald-600" />
+                      </div>
+                      <p className="text-xs text-muted-foreground font-medium">{cat.label}</p>
+                      <Badge className="ml-auto text-[10px] h-5 px-1.5 bg-emerald-100 text-emerald-700 border-emerald-300/50 dark:bg-emerald-900/30 dark:text-emerald-400">
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Concluído
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-semibold text-foreground/80 line-clamp-2">{goal.description}</p>
+                    {goal.target_amount && (
+                      <p className="text-base font-bold text-foreground/70 tabular-nums">{fmtBRL(goal.target_amount)}</p>
+                    )}
+                    {completedDate && (
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Arquivado em {completedDate}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
