@@ -707,9 +707,34 @@ const AdminReport = () => {
         {debts.length > 0 && (
           <section>
             <SectionHeader number={sectionNumber()} title="Mapa de Dívidas" subtitle={`${debts.length} dívida${debts.length !== 1 ? "s" : ""} ativa${debts.length !== 1 ? "s" : ""}`} />
-            <Card>
+
+            {/* Mobile: cards */}
+            <div className="sm:hidden space-y-2">
+              {debts.map((d) => (
+                <div key={d.id} className="rounded-xl border border-border/50 bg-card p-3.5">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground capitalize">{d.type}</p>
+                      {d.creditor && <p className="text-xs text-muted-foreground">{d.creditor}</p>}
+                    </div>
+                    <p className="text-sm font-bold text-foreground tabular-nums">{fmt(d.total_amount || 0)}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <span>Parcela: <span className="font-medium text-foreground">{fmt(d.monthly_payment || 0)}</span></span>
+                    {d.interest_rate && <span className={d.interest_rate > 5 ? "text-red-500 font-semibold" : ""}>Juros: {d.interest_rate}% a.m.</span>}
+                    {d.remaining_months && <span>Prazo: {d.remaining_months} meses</span>}
+                  </div>
+                </div>
+              ))}
+              <div className="flex justify-between text-sm font-bold px-1 pt-1 border-t border-border">
+                <span>Total</span>
+                <span className="tabular-nums">{fmt(totalDebts)}</span>
+              </div>
+            </div>
+
+            {/* Desktop: tabela */}
+            <Card className="hidden sm:block">
               <CardContent className="py-4">
-                <p className="text-[10px] text-muted-foreground sm:hidden mb-2 text-center">← Arraste para ver mais →</p>
                 <ScrollableTable>
                   <table className="w-full text-sm min-w-[560px]">
                     <thead>
@@ -721,15 +746,13 @@ const AdminReport = () => {
                     </thead>
                     <tbody>
                       {debts.map((d) => (
-                        <tr key={d.id} className="border-b border-border/30 ">
+                        <tr key={d.id} className="border-b border-border/30">
                           <td className="py-2.5 px-2 text-foreground capitalize">{d.type}</td>
                           <td className="py-2.5 px-2 text-muted-foreground">{d.creditor || "—"}</td>
                           <td className="py-2.5 px-2 text-right font-semibold text-foreground tabular-nums">{fmt(d.total_amount || 0)}</td>
                           <td className="py-2.5 px-2 text-right tabular-nums text-muted-foreground">{fmt(d.monthly_payment || 0)}</td>
                           <td className="py-2.5 px-2 text-right tabular-nums">
-                            {d.interest_rate ? (
-                              <span className={d.interest_rate > 5 ? "text-red-500 font-semibold" : "text-muted-foreground"}>{d.interest_rate}% a.m.</span>
-                            ) : "—"}
+                            {d.interest_rate ? <span className={d.interest_rate > 5 ? "text-red-500 font-semibold" : "text-muted-foreground"}>{d.interest_rate}% a.m.</span> : "—"}
                           </td>
                           <td className="py-2.5 px-2 text-right tabular-nums text-muted-foreground">{d.remaining_months ? `${d.remaining_months} meses` : "—"}</td>
                         </tr>
@@ -902,10 +925,34 @@ const AdminReport = () => {
               </Card>
             </div>
 
-            {/* Action items table */}
-            <Card>
+            {/* Mobile: action cards */}
+            <div className="sm:hidden space-y-2">
+              {actionItems.map((a) => {
+                const st = STATUS_MAP[a.status] || STATUS_MAP.pendente;
+                return (
+                  <div key={a.id} className="rounded-xl border border-border/50 bg-card p-3.5">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <Badge variant="outline" className="text-[10px] shrink-0">{AREA_LABELS[a.area] || a.area}</Badge>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap shrink-0 ${st.color}`}>
+                        {a.status === "concluido" && <CheckCircle2 className="h-3 w-3" />}
+                        {st.label}
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground leading-snug">{a.description}</p>
+                    {(a.responsible || a.deadline) && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {a.responsible || "Novare"}
+                        {a.deadline && <> · {new Date(a.deadline).toLocaleDateString("pt-BR")}</>}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop: tabela */}
+            <Card className="hidden sm:block">
               <CardContent className="py-4">
-                <p className="text-[10px] text-muted-foreground sm:hidden mb-2 text-center">← Arraste para ver mais →</p>
                 <ScrollableTable>
                   <table className="w-full text-sm min-w-[640px]">
                     <thead>
@@ -919,7 +966,7 @@ const AdminReport = () => {
                       {actionItems.map((a) => {
                         const st = STATUS_MAP[a.status] || STATUS_MAP.pendente;
                         return (
-                          <tr key={a.id} className="border-b border-border/30 ">
+                          <tr key={a.id} className="border-b border-border/30">
                             <td className="py-2.5 px-2">
                               <Badge variant="outline" className="text-[10px]">{AREA_LABELS[a.area] || a.area}</Badge>
                             </td>

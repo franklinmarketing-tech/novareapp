@@ -554,13 +554,25 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const handleConfirmMetaDone = async (metaId: string) => {
     setConfirmingMetaId(metaId);
     try {
+      const completedAt = new Date().toISOString();
       const { error } = await supabase
         .from("parecer_metas")
-        .update({ completed_at: new Date().toISOString() })
+        .update({ completed_at: completedAt })
         .eq("id", metaId);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
-      toast.success("Meta arquivada! Ficará registrada no fechamento do mês como conquista.");
+      toast.success("Meta concluída!", {
+        description: "Ficará registrada no fechamento do mês como conquista.",
+        action: {
+          label: "Desfazer",
+          onClick: async () => {
+            await supabase.from("parecer_metas").update({ completed_at: null }).eq("id", metaId);
+            queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
+            toast.success("Meta reativada");
+          },
+        },
+        duration: 6000,
+      });
     } catch (err: any) {
       toast.error("Erro ao arquivar: " + (err?.message || "tente novamente"));
     } finally {
@@ -589,7 +601,18 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
         .eq("id", goalId);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["goals", clientId] });
-      toast.success("Meta arquivada! Objetivo marcado como concluído no painel de Objetivos.");
+      toast.success("Objetivo concluído!", {
+        description: "Marcado como conquista no painel de Objetivos.",
+        action: {
+          label: "Desfazer",
+          onClick: async () => {
+            await supabase.from("goals").update({ completed_at: null }).eq("id", goalId);
+            queryClient.invalidateQueries({ queryKey: ["goals", clientId] });
+            toast.success("Objetivo reativado");
+          },
+        },
+        duration: 6000,
+      });
     } catch (err: any) {
       toast.error("Erro ao arquivar: " + (err?.message || "tente novamente"));
     } finally {

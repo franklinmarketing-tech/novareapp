@@ -14,6 +14,7 @@ import {
   Target,
   Check,
   Lock,
+  Clock,
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { ClientProvider } from "@/contexts/ClientContext";
@@ -73,6 +74,7 @@ const AdminClientLayout = () => {
 
   // V9: timestamps de quando cada etapa foi efetivamente concluida/iniciada
   const [stageTimestamps, setStageTimestamps] = useState<Record<string, string | null>>({});
+  const [clientUpdatedAt, setClientUpdatedAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (!clientSlug) return;
@@ -87,6 +89,7 @@ const AdminClientLayout = () => {
       setClientId(client.id);
       setClientStatus(client.status);
       setConsultant(client.assigned_consultant || "");
+      setClientUpdatedAt((client as any).updated_at || null);
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -168,6 +171,9 @@ const AdminClientLayout = () => {
   const st = statusMap[clientStatus] || statusMap.onboarding_pendente;
   const disabled = disabledByStatus[clientStatus] || [];
   const completedSteps = (completedByStatus[clientStatus] || []).length;
+  const daysSinceActivity = clientUpdatedAt
+    ? Math.floor((Date.now() - new Date(clientUpdatedAt).getTime()) / 86_400_000)
+    : null;
 
   if (loading || !clientId) {
     return <div className="flex items-center justify-center py-20"><span className="animate-pulse text-muted-foreground">Carregando...</span></div>;
@@ -246,6 +252,12 @@ const AdminClientLayout = () => {
               <Badge variant="outline" className="text-[10px] gap-1 border-foreground/15 text-muted-foreground shrink-0 font-mono">
                 {completedSteps}/6 etapas
               </Badge>
+              {daysSinceActivity !== null && daysSinceActivity >= 7 && (
+                <Badge variant="outline" className="text-[10px] gap-1 border-amber-500/40 bg-amber-500/8 text-amber-600 dark:text-amber-400 shrink-0">
+                  <Clock className="h-3 w-3" />
+                  Parado há {daysSinceActivity}d
+                </Badge>
+              )}
             </div>
 
             {/* Consultor dropdown — compacto */}

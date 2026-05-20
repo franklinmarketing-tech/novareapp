@@ -132,7 +132,7 @@ export const JourneyFooterNav = ({
           {next ? (
             <Button
               onClick={() => goTo(next)}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
+              className="bg-novare-terracotta hover:bg-novare-terracotta/90 text-white gap-2 shadow-sm shadow-novare-terracotta/25"
             >
               {primaryLabel || `Avançar para ${STEP_INFO[next].label}`}
               <ArrowRight className="h-4 w-4" />

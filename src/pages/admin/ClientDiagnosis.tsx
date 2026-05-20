@@ -427,7 +427,7 @@ const ClientDiagnosis = () => {
           </Button>
           <Button
             onClick={() => navigate(`/admin/cliente/${clientSlug}/parecer`)}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
+            className="bg-novare-terracotta hover:bg-novare-terracotta/90 text-white gap-2 shadow-sm shadow-novare-terracotta/25"
           >
             Avançar para Parecer
             <ArrowRight className="h-4 w-4" />
