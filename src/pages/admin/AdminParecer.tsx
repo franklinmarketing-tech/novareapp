@@ -42,84 +42,61 @@ const AdminParecer = () => {
   ];
 
   return (
-    <div className="space-y-5">
-      {/* Hero header — guia consultivo */}
+    <div className="space-y-4">
+      {/* Hero header compacto */}
       <section
-        className="relative overflow-hidden rounded-2xl"
+        className="relative overflow-hidden rounded-xl"
         style={{
-          background:
-            "linear-gradient(135deg, hsl(var(--accent) / 0.06) 0%, hsl(var(--card)) 45%, hsl(var(--card)) 100%)",
-          border: "1px solid hsl(var(--foreground) / 0.10)",
-          boxShadow:
-            "0 1px 0 hsl(0 0% 100% / 0.55) inset, 0 2px 6px -2px hsl(0 0% 0% / 0.05), 0 12px 28px -16px hsl(0 0% 0% / 0.10)",
+          background: "linear-gradient(135deg, hsl(var(--accent) / 0.05) 0%, hsl(var(--card)) 50%)",
+          border: "1px solid hsl(var(--foreground) / 0.08)",
+          boxShadow: "0 1px 0 hsl(0 0% 100% / 0.5) inset, 0 2px 8px -4px hsl(0 0% 0% / 0.06)",
         }}
       >
-        {/* Decorative accent */}
-        <div
-          aria-hidden
-          className="absolute -top-16 -right-16 h-48 w-48 rounded-full opacity-50 blur-3xl"
-          style={{ background: "hsl(var(--accent) / 0.18)" }}
-        />
+        <div className="relative px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
 
-        <div className="relative px-5 sm:px-6 py-5 sm:py-6 flex flex-col gap-5">
-          {/* Top: title + cliente */}
-          <div className="flex items-start gap-4">
+          {/* Left: icon + title */}
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <div
-              className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
+              className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
               style={{
-                background: "linear-gradient(145deg, hsl(var(--accent) / 0.22) 0%, hsl(var(--accent) / 0.08) 100%)",
-                border: "1px solid hsl(var(--accent) / 0.35)",
-                boxShadow: "0 1px 0 hsl(0 0% 100% / 0.5) inset, 0 2px 6px hsl(var(--accent) / 0.18)",
+                background: "hsl(var(--accent) / 0.12)",
+                border: "1px solid hsl(var(--accent) / 0.28)",
               }}
             >
-              <Target className="h-5 w-5 text-accent" strokeWidth={2.2} />
+              <Target className="h-4 w-4 text-accent" strokeWidth={2.2} />
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-accent">
-                  Etapa 3 · Plano de Ação
-                </span>
-              </div>
-              <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-tight">
+            <div className="min-w-0">
+              <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-accent block leading-none mb-0.5">
+                Etapa 3 · Plano de Ação
+              </span>
+              <h1 className="text-sm sm:text-base font-bold text-foreground tracking-tight leading-tight truncate">
                 Defina as metas de {client?.full_name?.split(" ")[0] ?? "do cliente"}
               </h1>
-              <p className="text-[13px] text-muted-foreground mt-1 leading-snug max-w-2xl">
-                Transforme o diagnóstico em ação. Para cada item financeiro abaixo, defina uma meta clara —
-                aumentar, reduzir, quitar ou manter — com prazo e valor.
-              </p>
             </div>
           </div>
 
-          {/* Steps trail */}
-          <ol className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {steps.map((s) => {
+          {/* Right: steps inline */}
+          <ol className="flex items-center gap-1.5 shrink-0 flex-wrap">
+            {steps.map((s, i) => {
               const Icon = s.icon;
               return (
-                <li
-                  key={s.n}
-                  className="flex items-start gap-3 rounded-xl px-3.5 py-2.5 transition-colors hover:bg-muted/30"
-                  style={{
-                    background: "hsl(var(--background) / 0.5)",
-                    border: "1px solid hsl(var(--border) / 0.7)",
-                  }}
-                >
-                  <div className="flex flex-col items-center shrink-0 pt-0.5">
+                <li key={s.n} className="flex items-center gap-1">
+                  {i > 0 && <span className="w-3 h-px bg-border/60" />}
+                  <div
+                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5"
+                    style={{
+                      background: "hsl(var(--background) / 0.6)",
+                      border: "1px solid hsl(var(--border) / 0.6)",
+                    }}
+                  >
                     <span
-                      className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-accent"
-                      style={{
-                        background: "hsl(var(--accent) / 0.12)",
-                        border: "1px solid hsl(var(--accent) / 0.3)",
-                      }}
+                      className="h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-bold text-accent shrink-0"
+                      style={{ background: "hsl(var(--accent) / 0.12)" }}
                     >
                       {s.n}
                     </span>
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <Icon className="h-3.5 w-3.5 text-foreground/70" strokeWidth={2.2} />
-                      <p className="text-[12.5px] font-semibold text-foreground leading-tight">{s.label}</p>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{s.desc}</p>
+                    <Icon className="h-3 w-3 text-foreground/60" strokeWidth={2.2} />
+                    <span className="text-[11px] font-medium text-foreground/80 whitespace-nowrap">{s.label}</span>
                   </div>
                 </li>
               );
