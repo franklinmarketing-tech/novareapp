@@ -22,6 +22,147 @@ const loadImageAsDataUrl = (src: string): Promise<{ dataUrl: string; w: number; 
   });
 
 // ──────────────────────────────────────────────────────────
+// Canvas chart renderers (retornam dataURL PNG para pdf.addImage)
+// ──────────────────────────────────────────────────────────
+const CP = [
+  "#1e3a5f", "#d97757", "#16a34a", "#dc2626", "#d97706",
+  "#2563eb", "#7c3aed", "#0891b2", "#be185d", "#65a30d",
+];
+
+const _rr = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
+  r = Math.min(r, w / 2, h / 2, 99);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+};
+
+// Gráfico de pizza/donut — retorna dataURL
+const canvasDonut = (
+  items: Array<{ label: string; value: number }>,
+  pw: number, ph: number
+): string => {
+  const dpr = 2;
+  const cvs = document.createElement("canvas");
+  cvs.width = pw * dpr; cvs.height = ph * dpr;
+  const ctx = cvs.getContext("2d")!;
+  ctx.scale(dpr, dpr);
+  const total = items.reduce((s, i) => s + i.value, 0);
+  if (!total) return cvs.toDataURL();
+  const cx = pw * 0.34; const cy = ph / 2;
+  const OR = Math.min(cx, cy) * 0.9; const IR = OR * 0.54;
+  let a = -Math.PI / 2;
+  items.forEach((item, i) => {
+    const sweep = (item.value / total) * 2 * Math.PI;
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, OR, a, a + sweep); ctx.closePath();
+    ctx.fillStyle = CP[i % CP.length]; ctx.fill();
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.stroke();
+    a += sweep;
+  });
+  ctx.beginPath(); ctx.arc(cx, cy, IR, 0, 2 * Math.PI);
+  ctx.fillStyle = "#ffffff"; ctx.fill();
+  // legend
+  const fs = Math.max(Math.round(pw * 0.032), 10);
+  ctx.font = `${fs}px Arial`; ctx.textBaseline = "middle";
+  const maxI = Math.min(items.length, 8);
+  const rowH = Math.min(ph / (maxI + 1), 20);
+  const startY = cy - ((maxI - 1) * rowH) / 2;
+  const lx = pw * 0.7;
+  for (let i = 0; i < maxI; i++) {
+    const ly = startY + i * rowH;
+    const pct = ((items[i].value / total) * 100).toFixed(0);
+    ctx.beginPath(); ctx.arc(lx - 8, ly, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = CP[i % CP.length]; ctx.fill();
+    ctx.fillStyle = "#404050"; ctx.textAlign = "left";
+    ctx.fillText(`${items[i].label.slice(0, 14)}  ${pct}%`, lx, ly);
+  }
+  return cvs.toDataURL("image/png");
+};
+
+// Gráfico de barras verticais
+const canvasBarV = (
+  bars: Array<{ label: string; value: number; color: string }>,
+  pw: number, ph: number,
+  fmtFn: (v: number) => string
+): string => {
+  const dpr = 2;
+  const cvs = document.createElement("canvas");
+  cvs.width = pw * dpr; cvs.height = ph * dpr;
+  const ctx = cvs.getContext("2d")!;
+  ctx.scale(dpr, dpr);
+  const pL = 10; const pR = 10; const pT = 26; const pB = 32;
+  const cW = pw - pL - pR; const cH = ph - pT - pB;
+  const maxV = Math.max(...bars.map((b) => b.value), 1);
+  const bW = Math.min((cW / bars.length) * 0.6, 50);
+  const bSpace = cW / bars.length;
+  // grid
+  ctx.strokeStyle = "#e8e8ec"; ctx.lineWidth = 0.8;
+  [0, 0.25, 0.5, 0.75, 1].forEach((t) => {
+    const gy = pT + cH * (1 - t);
+    ctx.beginPath(); ctx.moveTo(pL, gy); ctx.lineTo(pL + cW, gy); ctx.stroke();
+  });
+  const fs = Math.max(Math.round(pw * 0.028), 9);
+  bars.forEach((bar, i) => {
+    const bH = Math.max((bar.value / maxV) * cH, 2);
+    const x = pL + bSpace * i + bSpace / 2 - bW / 2;
+    const y = pT + cH - bH;
+    ctx.fillStyle = bar.color;
+    _rr(ctx, x, y, bW, bH, Math.min(6, bW / 2));
+    ctx.fill();
+    // value above bar
+    ctx.font = `bold ${fs}px Arial`; ctx.fillStyle = "#1e1e23";
+    ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    const vStr = bar.value >= 1000000
+      ? `${(bar.value / 1000000).toFixed(1)}M`
+      : bar.value >= 1000 ? `${(bar.value / 1000).toFixed(0)}k` : fmtFn(bar.value);
+    ctx.fillText(vStr, x + bW / 2, y - 5);
+    // label
+    ctx.font = `${Math.max(Math.round(pw * 0.026), 9)}px Arial`; ctx.fillStyle = "#787880";
+    ctx.fillText(bar.label.slice(0, 12), x + bW / 2, pT + cH + 18);
+  });
+  return cvs.toDataURL("image/png");
+};
+
+// Gráfico de barras horizontais
+const canvasBarH = (
+  bars: Array<{ label: string; value: number; color: string }>,
+  pw: number, ph: number,
+  fmtFn: (v: number) => string
+): string => {
+  const dpr = 2;
+  const cvs = document.createElement("canvas");
+  cvs.width = pw * dpr; cvs.height = ph * dpr;
+  const ctx = cvs.getContext("2d")!;
+  ctx.scale(dpr, dpr);
+  const pL = 95; const pR = 60; const pT = 8; const pB = 8;
+  const cW = pw - pL - pR; const cH = ph - pT - pB;
+  const rowH = cH / (bars.length || 1);
+  const bH = Math.min(rowH * 0.5, 14);
+  const maxV = Math.max(...bars.map((b) => b.value), 1);
+  const fs = Math.max(Math.round(ph * 0.065), 9);
+  ctx.font = `${fs}px Arial`; ctx.textBaseline = "middle";
+  bars.forEach((bar, i) => {
+    const y = pT + rowH * i + (rowH - bH) / 2;
+    const bW = (bar.value / maxV) * cW;
+    ctx.fillStyle = "#f0f0f4";
+    _rr(ctx, pL, y, cW, bH, bH / 2); ctx.fill();
+    if (bW > 1) {
+      ctx.fillStyle = bar.color;
+      _rr(ctx, pL, y, Math.max(bW, 2), bH, bH / 2); ctx.fill();
+    }
+    ctx.fillStyle = "#1e1e23"; ctx.textAlign = "right";
+    ctx.fillText(bar.label.slice(0, 18), pL - 8, y + bH / 2);
+    ctx.fillStyle = "#505060"; ctx.textAlign = "left";
+    ctx.fillText(fmtFn(bar.value), pL + bW + 6, y + bH / 2);
+  });
+  return cvs.toDataURL("image/png");
+};
+
+// ──────────────────────────────────────────────────────────
 // Tipos
 // ──────────────────────────────────────────────────────────
 export interface ReportData {
@@ -438,7 +579,27 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       margin: { left: MARGIN, right: MARGIN },
       didDrawPage: () => { addHeader(); },
     });
-    y = (pdf as any).lastAutoTable.finalY + 6;
+    y = (pdf as any).lastAutoTable.finalY + 4;
+
+    // Gráfico de barras horizontais — composição de ativos
+    if (data.assets.length >= 2) {
+      const assetBars = data.assets
+        .filter((a) => (a.estimated_value || 0) > 0)
+        .sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0))
+        .slice(0, 8)
+        .map((a, i) => ({
+          label: (a.description || a.type || "Ativo").slice(0, 18),
+          value: a.estimated_value || 0,
+          color: CP[i % CP.length],
+        }));
+      if (assetBars.length >= 2) {
+        const chartH = Math.min(assetBars.length * 10 + 12, 70);
+        ensureSpace(chartH + 4);
+        const img = canvasBarH(assetBars, 900, assetBars.length * 28 + 16, fmt);
+        pdf.addImage(img, "PNG", MARGIN, y, CONTENT_W, chartH);
+        y += chartH + 6;
+      }
+    }
   }
 
   // ── 4. Fluxo de caixa
@@ -517,6 +678,35 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     { align: "right" }
   );
   y += 22;
+
+  // Gráficos do fluxo de caixa — barra de comparação + donut de despesas
+  {
+    const halfW = (CONTENT_W - 4) / 2;
+
+    // Barra de comparação: Receitas | Despesas | Saldo
+    const flowBars = [
+      { label: "Receitas",  value: data.totalIncome,    color: "#16a34a" },
+      { label: "Despesas",  value: data.totalExpenses + data.monthlyDebtPayments, color: "#dc2626" },
+      { label: "Saldo",     value: Math.max(data.netCashFlow, 0), color: data.netCashFlow >= 0 ? "#2563eb" : "#d97706" },
+    ];
+
+    ensureSpace(56);
+
+    // Barra de comparação à esquerda
+    const barImg = canvasBarV(flowBars, 540, 220, fmt);
+    pdf.addImage(barImg, "PNG", MARGIN, y, halfW, 46);
+
+    // Donut de despesas à direita
+    if (data.expensesByCategory.length >= 2) {
+      const donutImg = canvasDonut(
+        data.expensesByCategory.map((e) => ({ label: e.category, value: e.amount })),
+        580, 220
+      );
+      pdf.addImage(donutImg, "PNG", MARGIN + halfW + 4, y, halfW, 46);
+    }
+
+    y += 50;
+  }
 
   // ── 5. Dívidas
   if (data.debts.length > 0) {
@@ -1090,66 +1280,27 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       .slice()
       .sort((a, b) => new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime());
 
-    const rChartH = 60;
-    const rChartX = MARGIN;
-    const rChartY = y;
-    const rPadL = 22; const rPadR = 6; const rPadT = 6; const rPadB = 12;
-    const rInnerX = rChartX + rPadL;
-    const rInnerY = rChartY + rPadT;
-    const rInnerW = CONTENT_W - rPadL - rPadR;
-    const rInnerH = rChartH - rPadT - rPadB;
-
-    pdf.setFillColor(...C.bgSoft);
-    pdf.roundedRect(rChartX, rChartY, CONTENT_W, rChartH, 2, 2, "F");
-
     const rVals = rateSorted.map((s) => s.savings_rate!);
-    const rRawMax = Math.max(...rVals, 0);
-    const rRawMin = Math.min(...rVals, 0);
-    const rNiceMax = Math.ceil(Math.max(rRawMax, 10) / 5) * 5;
-    const rNiceMin = rRawMin < 0 ? Math.floor(rRawMin / 5) * 5 : 0;
-    const rRange = rNiceMax - rNiceMin || 10;
-
-    const ryToPx = (v: number) => rInnerY + rInnerH - ((v - rNiceMin) / rRange) * rInnerH;
-    const rxToPx = (i: number) =>
-      rateSorted.length === 1 ? rInnerX + rInnerW / 2 : rInnerX + (i / (rateSorted.length - 1)) * rInnerW;
-
-    pdf.setDrawColor(...C.border); pdf.setLineWidth(0.15);
-    pdf.setFont("helvetica", "normal"); pdf.setFontSize(6); pdf.setTextColor(...C.muted);
-    [0, 0.5, 1].forEach((t) => {
-      const v = rNiceMin + rRange * t;
-      const py = ryToPx(v);
-      pdf.line(rInnerX, py, rInnerX + rInnerW, py);
-      pdf.text(`${v.toFixed(0)}%`, rInnerX - 2, py + 1.5, { align: "right" });
-    });
-
-    if (rNiceMin < 0) {
-      pdf.setDrawColor(...C.muted); pdf.setLineWidth(0.3);
-      pdf.line(rInnerX, ryToPx(0), rInnerX + rInnerW, ryToPx(0));
-    }
-
-    const rStepX = Math.max(1, Math.ceil(rateSorted.length / 6));
-    rateSorted.forEach((s, i) => {
-      if (i % rStepX !== 0 && i !== rateSorted.length - 1) return;
-      const px = rxToPx(i);
-      const lbl = new Date(s.snapshot_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-      pdf.setTextColor(...C.muted); pdf.setFontSize(6);
-      pdf.text(lbl, px, rChartY + rChartH - 2, { align: "center" });
-    });
-
-    const rBlue: [number, number, number] = [37, 99, 235];
-    pdf.setDrawColor(...rBlue); pdf.setLineWidth(0.7);
-    for (let i = 0; i < rVals.length - 1; i++) {
-      pdf.line(rxToPx(i), ryToPx(rVals[i]), rxToPx(i + 1), ryToPx(rVals[i + 1]));
-    }
-    pdf.setFillColor(...rBlue);
-    rVals.forEach((v, i) => { pdf.circle(rxToPx(i), ryToPx(v), 0.9, "F"); });
-
-    y = rChartY + rChartH + 6;
-
     const firstRate = rVals[0];
     const lastRate = rVals[rVals.length - 1];
     const deltaRate = lastRate - firstRate;
     const avgRate = rVals.reduce((a, b) => a + b, 0) / rVals.length;
+
+    // Gráfico de barras coloridas por período
+    const rateBars = rateSorted.map((s) => {
+      const v = s.savings_rate!;
+      const color = v >= 30 ? "#16a34a" : v >= 10 ? "#2563eb" : v >= 0 ? "#d97706" : "#dc2626";
+      const lbl = new Date(s.snapshot_date).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
+      return { label: lbl, value: Math.max(v, 0.1), color };
+    });
+
+    const rChartMmH = 60;
+    ensureSpace(rChartMmH + 6);
+    const rImg = canvasBarV(rateBars, Math.max(rateBars.length * 80 + 40, 540), 220, (v) => `${v.toFixed(0)}%`);
+    pdf.addImage(rImg, "PNG", MARGIN, y, CONTENT_W, rChartMmH);
+    y += rChartMmH + 4;
+
+    // Linha de resumo
     ensureSpace(14);
     pdf.setFillColor(...C.bgSoft);
     pdf.roundedRect(MARGIN, y, CONTENT_W, 12, 2, 2, "F");
