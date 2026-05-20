@@ -981,59 +981,135 @@ const KpiLine = ({
   </div>
 );
 
+const INSIGHT_STYLES: Record<Insight["kind"], {
+  glow: string; gradientFrom: string; gradientTo: string;
+  iconRing: string; metricBg: string; metricText: string; divider: string;
+}> = {
+  critico: {
+    glow: "hsl(0 72% 55% / 0.12)",
+    gradientFrom: "hsl(0 72% 55% / 0.08)",
+    gradientTo: "transparent",
+    iconRing: "ring-red-500/20",
+    metricBg: "bg-red-500/10",
+    metricText: "text-red-600 dark:text-red-400",
+    divider: "from-red-500/30 via-red-500/10 to-transparent",
+  },
+  alerta: {
+    glow: "hsl(38 95% 48% / 0.12)",
+    gradientFrom: "hsl(38 95% 48% / 0.08)",
+    gradientTo: "transparent",
+    iconRing: "ring-amber-500/20",
+    metricBg: "bg-amber-500/10",
+    metricText: "text-amber-600 dark:text-amber-400",
+    divider: "from-amber-500/30 via-amber-500/10 to-transparent",
+  },
+  oportunidade: {
+    glow: "hsl(var(--accent) / 0.12)",
+    gradientFrom: "hsl(var(--accent) / 0.07)",
+    gradientTo: "transparent",
+    iconRing: "ring-accent/20",
+    metricBg: "bg-accent/10",
+    metricText: "text-accent",
+    divider: "from-accent/30 via-accent/10 to-transparent",
+  },
+  ponto_forte: {
+    glow: "hsl(var(--success) / 0.12)",
+    gradientFrom: "hsl(var(--success) / 0.07)",
+    gradientTo: "transparent",
+    iconRing: "ring-success/20",
+    metricBg: "bg-success/10",
+    metricText: "text-success",
+    divider: "from-success/30 via-success/10 to-transparent",
+  },
+};
+
 const InsightCard = ({ insight, index }: { insight: Insight; index: number }) => {
   const tone = INSIGHT_TONES[insight.kind];
+  const style = INSIGHT_STYLES[insight.kind];
   const Icon = tone.icon;
   const textColor = tone.iconBg.split(" ").find(c => c.startsWith("text-")) || "text-foreground";
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ delay: Math.min(index * 0.05, 0.3), duration: 0.3, ease: "easeOut" }}
-      className="group relative rounded-xl border border-border/60 bg-card overflow-hidden flex flex-col shadow-[0_1px_4px_hsl(0_0%_0%/0.04)]"
-      style={{ boxShadow: "0 1px 3px hsl(0 0% 0% / 0.06), 0 1px 0 hsl(0 0% 100% / 0.6) inset" }}
+      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ delay: Math.min(index * 0.06, 0.3), duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="group relative rounded-2xl border border-border/50 bg-card overflow-hidden flex flex-col"
+      style={{
+        boxShadow: `0 0 0 1px hsl(0 0% 0% / 0.04), 0 2px 8px -2px hsl(0 0% 0% / 0.08), 0 0 32px -8px ${style.glow}`,
+      }}
     >
-      {/* Barra lateral colorida */}
+      {/* Gradiente de fundo */}
       <div
-        className={cn("absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl", tone.border.replace("border-", "bg-").replace("/35", "").replace("/30", ""))}
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: `radial-gradient(ellipse at top left, ${style.gradientFrom}, ${style.gradientTo} 65%)` }}
       />
 
-      <div className="pl-5 pr-4 py-4 flex flex-col gap-2.5 flex-1">
-        {/* Linha 1: tipo + métrica */}
-        <div className="flex items-center justify-between gap-2">
-          <div className={cn("flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-widest", textColor)}>
-            <Icon className="h-3 w-3" strokeWidth={2.5} />
-            {tone.label}
+      {/* Brilho interno no topo */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+
+      <div className="relative z-10 p-4 flex flex-col gap-3 flex-1">
+
+        {/* Header: ícone + label + métrica */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className={cn(
+              "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ring-1",
+              tone.iconBg, style.iconRing,
+            )}
+              style={{ boxShadow: `0 2px 8px -2px ${style.glow}` }}
+            >
+              <Icon className="h-4 w-4" strokeWidth={2} />
+            </div>
+            <div>
+              <span className={cn("text-[10px] font-bold uppercase tracking-[0.12em]", textColor)}>
+                {tone.label}
+              </span>
+              {insight.severity === "alta" && (
+                <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
+                  Alta
+                </span>
+              )}
+            </div>
           </div>
+
           {insight.metric_value != null && (
-            <span className="text-[10.5px] font-semibold tabular-nums text-muted-foreground">
-              {insight.metric_label ? `${insight.metric_label}: ` : ""}
-              {insight.metric_value < 100 && insight.metric_value > -100
-                ? `${insight.metric_value.toFixed(1)}%`
-                : fmtBRL(insight.metric_value)}
-            </span>
+            <div className={cn("flex flex-col items-end shrink-0 px-2.5 py-1.5 rounded-xl", style.metricBg)}>
+              <span className={cn("text-sm font-bold tabular-nums leading-none", style.metricText)}>
+                {insight.metric_value < 100 && insight.metric_value > -100
+                  ? `${insight.metric_value.toFixed(1)}%`
+                  : fmtBRL(insight.metric_value)}
+              </span>
+              {insight.metric_label && (
+                <span className="text-[9px] text-muted-foreground mt-0.5 leading-none">{insight.metric_label}</span>
+              )}
+            </div>
           )}
         </div>
 
+        {/* Divisor gradiente */}
+        <div className={cn("h-px w-full bg-gradient-to-r", style.divider)} />
+
         {/* Título + descrição */}
-        <div>
-          <p className="text-[0.9375rem] font-semibold text-foreground tracking-tight leading-snug">
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold text-foreground tracking-tight leading-snug">
             {insight.title}
           </p>
-          <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">
+          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
             {insight.description}
           </p>
         </div>
 
         {/* Sugestão */}
         {insight.suggested_action && (
-          <div className="mt-auto pt-2.5 border-t border-border/40 flex items-start gap-2">
-            <ArrowRight className={cn("h-3 w-3 mt-0.5 shrink-0", textColor)} strokeWidth={2.5} />
-            <p className="text-[11px] leading-snug text-muted-foreground">
-              <span className="font-medium text-foreground/80">Sugestão: </span>
+          <div className="mt-auto pt-3 flex items-start gap-2">
+            <div className={cn("h-5 w-5 rounded-lg flex items-center justify-center shrink-0 mt-0.5", tone.iconBg)}>
+              <ArrowRight className="h-2.5 w-2.5" strokeWidth={2.5} />
+            </div>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              <span className={cn("font-semibold", textColor)}>Ação recomendada: </span>
               {insight.suggested_action}
             </p>
           </div>
