@@ -1,23 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import {
-  Target, Plus, Pencil, Trash2, Calendar, Loader2, Copy, CheckCircle2,
-  Filter, ArrowUpDown, TrendingUp, Clock, AlertTriangle, Wallet, Home,
-  Plane, GraduationCap, HeartPulse, Shield, PiggyBank, Sparkles
+  Target, Plus, Pencil, Trash2, Calendar, Loader2,
+  Clock, Wallet, Home, Plane, GraduationCap, HeartPulse,
+  Shield, PiggyBank, Sparkles, CheckCircle2, TrendingUp, Save, Check,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -28,13 +25,7 @@ interface Goal {
   deadline: string | null;
   priority: string | null;
   category?: string | null;
-}
-
-interface ActionItem {
-  id: string;
-  goal_id: string | null;
-  status: string;
-  financial_impact: number | null;
+  amount_applied?: number | null;
 }
 
 interface GoalFormData {
@@ -46,33 +37,31 @@ interface GoalFormData {
 }
 
 const emptyForm = (): GoalFormData => ({
-  description: "", target_amount: "", deadline: "", priority: "media", category: "geral"
+  description: "", target_amount: "", deadline: "", priority: "media", category: "geral",
 });
 
-const fmt = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+const fmtBRL = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
 const priorityMeta: Record<string, { label: string; dot: string; badge: string; weight: number }> = {
   alta:  { label: "Alta",  dot: "bg-destructive", badge: "border-destructive/30 text-destructive bg-destructive/10", weight: 0 },
-  media: { label: "Média", dot: "bg-warning",     badge: "border-warning/30 text-warning bg-warning/10", weight: 1 },
-  baixa: { label: "Baixa", dot: "bg-primary",     badge: "border-primary/30 text-primary bg-primary/10", weight: 2 },
+  media: { label: "Média", dot: "bg-warning",      badge: "border-warning/30 text-warning bg-warning/10",           weight: 1 },
+  baixa: { label: "Baixa", dot: "bg-primary",      badge: "border-primary/30 text-primary bg-primary/10",           weight: 2 },
 };
 
 const categoryMeta: Record<string, { label: string; icon: typeof Target }> = {
-  geral:        { label: "Geral",          icon: Target },
-  aposentadoria:{ label: "Aposentadoria",  icon: PiggyBank },
-  reserva:      { label: "Reserva",        icon: Shield },
-  imovel:       { label: "Imóvel",         icon: Home },
-  viagem:       { label: "Viagem",         icon: Plane },
-  educacao:     { label: "Educação",       icon: GraduationCap },
-  saude:        { label: "Saúde",          icon: HeartPulse },
-  patrimonio:   { label: "Patrimônio",     icon: Wallet },
-  sonho:        { label: "Sonho",          icon: Sparkles },
+  geral:         { label: "Geral",         icon: Target },
+  aposentadoria: { label: "Aposentadoria", icon: PiggyBank },
+  reserva:       { label: "Reserva",       icon: Shield },
+  imovel:        { label: "Imóvel",        icon: Home },
+  viagem:        { label: "Viagem",        icon: Plane },
+  educacao:      { label: "Educação",      icon: GraduationCap },
+  saude:         { label: "Saúde",         icon: HeartPulse },
+  patrimonio:    { label: "Patrimônio",    icon: Wallet },
+  sonho:         { label: "Sonho",         icon: Sparkles },
 };
 
 const categoryOptions = Object.entries(categoryMeta).map(([value, m]) => ({ value, label: m.label }));
-
-type FilterStatus = "todos" | "ativos" | "concluidos" | "atrasados";
-type SortBy = "prioridade" | "prazo" | "valor" | "recente";
 
 const daysUntil = (deadline: string | null) => {
   if (!deadline) return null;
@@ -81,113 +70,223 @@ const daysUntil = (deadline: string | null) => {
   return Math.ceil((d - now) / (1000 * 60 * 60 * 24));
 };
 
+function progressBarColor(pct: number) {
+  if (pct >= 100) return "bg-emerald-500";
+  if (pct >= 60)  return "bg-blue-500";
+  if (pct >= 30)  return "bg-amber-500";
+  return "bg-rose-500";
+}
+
+function progressTextColor(pct: number) {
+  if (pct >= 100) return "text-emerald-600";
+  if (pct >= 60)  return "text-blue-600";
+  if (pct >= 30)  return "text-amber-600";
+  return "text-rose-600";
+}
+
+// Card individual de objetivo
+function GoalCard({ goal, onEdit, onDelete, onApplyInvestment }: {
+  goal: Goal;
+  onEdit: (g: Goal) => void;
+  onDelete: (id: string) => void;
+  onApplyInvestment: (id: string, amount: number) => Promise<void>;
+}) {
+  const [inputVal, setInputVal] = useState(
+    goal.amount_applied != null && goal.amount_applied > 0 ? String(goal.amount_applied) : "",
+  );
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const applied   = parseFloat(inputVal) || goal.amount_applied || 0;
+  const target    = goal.target_amount || 0;
+  const pct       = target > 0 ? Math.min(Math.round((applied / target) * 100), 100) : 0;
+  const isDone    = pct >= 100;
+  const days      = daysUntil(goal.deadline);
+  const isOverdue = days !== null && days < 0 && !isDone;
+  const prio      = priorityMeta[goal.priority || "media"] || priorityMeta.media;
+  const cat       = categoryMeta[goal.category || "geral"] || categoryMeta.geral;
+  const CatIcon   = cat.icon;
+
+  const handleSave = async () => {
+    const num = parseFloat(inputVal);
+    if (isNaN(num) || num < 0) return;
+    setSaving(true);
+    await onApplyInvestment(goal.id, num);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ duration: 0.22 }}
+      className={cn(
+        "group relative flex flex-col rounded-2xl border bg-card p-4 gap-3 transition-shadow hover:shadow-[0_8px_24px_-12px_hsl(var(--foreground)/0.18)]",
+        isDone     ? "border-emerald-400/50" :
+        isOverdue  ? "border-destructive/40" :
+                    "border-border/60 hover:border-border",
+      )}
+    >
+      {/* Topo: categoria + prioridade + ações */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-8 w-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+            <CatIcon className="h-4 w-4 text-foreground/70" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{cat.label}</p>
+            <Badge variant="outline" className={cn("mt-0.5 h-5 px-1.5 text-[10px] font-medium", prio.badge)}>
+              <span className={cn("mr-1 h-1.5 w-1.5 rounded-full", prio.dot)} /> {prio.label}
+            </Badge>
+          </div>
+        </div>
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(goal)}>
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-destructive" onClick={() => onDelete(goal.id)}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Nome + valor alvo */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 break-words">
+          {goal.description}
+        </h3>
+        {target > 0 ? (
+          <p className="text-xl font-bold text-foreground tracking-tight mt-0.5">{fmtBRL(target)}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground italic mt-0.5">Sem valor alvo definido</p>
+        )}
+      </div>
+
+      {/* Investimento aplicado */}
+      <div className="space-y-1.5">
+        <p className="text-[11px] text-muted-foreground font-medium">Investimento aplicado</p>
+        <div className="flex gap-2">
+          <Input
+            type="number"
+            min={0}
+            value={inputVal}
+            onChange={(e) => setInputVal(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+            placeholder="R$ 0"
+            className="h-8 text-sm tabular-nums flex-1"
+          />
+          <Button
+            size="sm"
+            variant={saved ? "secondary" : "default"}
+            onClick={handleSave}
+            disabled={saving || inputVal === ""}
+            className="h-8 w-9 p-0 shrink-0"
+          >
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> :
+             saved   ? <Check className="h-3.5 w-3.5" /> :
+                       <Save className="h-3.5 w-3.5" />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Barra de progresso */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-muted-foreground tabular-nums">
+            {applied > 0 ? fmtBRL(applied) : "—"}
+            {target > 0 && applied > 0 && <span className="mx-1 opacity-40">/</span>}
+            {target > 0 && applied > 0 && <span className="text-muted-foreground/70">{fmtBRL(target)}</span>}
+          </span>
+          <span className={cn("font-bold tabular-nums text-sm", progressTextColor(pct))}>
+            {pct}%
+          </span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div
+            className={cn("h-full rounded-full transition-all duration-500", progressBarColor(pct))}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        {isDone && (
+          <p className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" /> Meta atingida!
+          </p>
+        )}
+      </div>
+
+      {/* Rodapé: prazo */}
+      <div className="pt-1 border-t border-border/40 flex items-center justify-between gap-2 text-[11px]">
+        {goal.deadline ? (
+          <span className={cn("flex items-center gap-1", isOverdue ? "text-destructive font-medium" : "text-muted-foreground")}>
+            <Calendar className="h-3 w-3" />
+            {new Date(goal.deadline + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+            {days !== null && (
+              <span className="ml-1">
+                ({isOverdue ? `${Math.abs(days)}d atraso` : days === 0 ? "hoje" : `${days}d`})
+              </span>
+            )}
+          </span>
+        ) : (
+          <span className="flex items-center gap-1 text-muted-foreground">
+            <Clock className="h-3 w-3" /> Sem prazo
+          </span>
+        )}
+        {!isDone && pct > 0 && (
+          <Badge variant="outline" className="h-5 px-1.5 text-[10px] border-blue-300/40 text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400">
+            <TrendingUp className="h-3 w-3 mr-1" /> Em andamento
+          </Badge>
+        )}
+      </div>
+    </motion.article>
+  );
+}
+
+// Componente principal
 const AdminObjetivos = () => {
   const { clientId } = useClientId();
-  const [loading, setLoading] = useState(true);
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [actionItems, setActionItems] = useState<ActionItem[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [goals, setGoals]           = useState<Goal[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<GoalFormData>(emptyForm());
-  const [saving, setSaving] = useState(false);
-  const [filter, setFilter] = useState<FilterStatus>("todos");
-  const [sortBy, setSortBy] = useState<SortBy>("prioridade");
+  const [editingId, setEditingId]   = useState<string | null>(null);
+  const [form, setForm]             = useState<GoalFormData>(emptyForm());
+  const [saving, setSaving]         = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const loadData = async () => {
+  const loadGoals = async () => {
     if (!clientId) return;
     setLoading(true);
-    const [goalsRes, plansRes] = await Promise.all([
-      supabase.from("goals").select("*").eq("client_id", clientId),
-      supabase.from("action_plans").select("id").eq("client_id", clientId).maybeSingle(),
-    ]);
-    setGoals((goalsRes.data as Goal[]) || []);
-    if (plansRes.data?.id) {
-      const { data: ai } = await supabase
-        .from("action_items")
-        .select("id, goal_id, status, financial_impact")
-        .eq("action_plan_id", plansRes.data.id);
-      setActionItems((ai as ActionItem[]) || []);
-    } else {
-      setActionItems([]);
-    }
+    const { data } = await supabase.from("goals").select("*").eq("client_id", clientId).order("created_at");
+    setGoals((data as Goal[]) || []);
     setLoading(false);
   };
 
-  useEffect(() => { loadData(); }, [clientId]);
+  useEffect(() => { loadGoals(); }, [clientId]);
 
-  // Compute progress per goal from linked action_items
-  const progressByGoal = useMemo(() => {
-    const map = new Map<string, { total: number; done: number; pct: number; status: "concluido" | "andamento" | "pendente" }>();
-    for (const g of goals) {
-      const items = actionItems.filter((i) => i.goal_id === g.id);
-      const total = items.length;
-      const done = items.filter((i) => i.status === "concluido").length;
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-      const status: "concluido" | "andamento" | "pendente" =
-        total > 0 && done === total ? "concluido" : done > 0 ? "andamento" : "pendente";
-      map.set(g.id, { total, done, pct, status });
-    }
-    return map;
-  }, [goals, actionItems]);
-
-  // Metrics
+  // Métricas
   const metrics = useMemo(() => {
-    const total = goals.length;
-    let totalTarget = 0;
-    let concluidos = 0;
-    let atrasados = 0;
-    let andamento = 0;
-    for (const g of goals) {
-      totalTarget += g.target_amount || 0;
-      const p = progressByGoal.get(g.id);
-      if (p?.status === "concluido") concluidos++;
-      else if (p?.status === "andamento") andamento++;
-      const d = daysUntil(g.deadline);
-      if (d !== null && d < 0 && p?.status !== "concluido") atrasados++;
-    }
-    return { total, totalTarget, concluidos, andamento, atrasados };
-  }, [goals, progressByGoal]);
-
-  // Filter + sort
-  const visibleGoals = useMemo(() => {
-    let arr = [...goals];
-    if (filter !== "todos") {
-      arr = arr.filter((g) => {
-        const p = progressByGoal.get(g.id);
-        const d = daysUntil(g.deadline);
-        if (filter === "concluidos") return p?.status === "concluido";
-        if (filter === "ativos") return p?.status !== "concluido";
-        if (filter === "atrasados") return d !== null && d < 0 && p?.status !== "concluido";
-        return true;
-      });
-    }
-    arr.sort((a, b) => {
-      if (sortBy === "prioridade") {
-        return (priorityMeta[a.priority || "media"]?.weight ?? 1) - (priorityMeta[b.priority || "media"]?.weight ?? 1);
-      }
-      if (sortBy === "prazo") {
-        const da = a.deadline ? new Date(a.deadline).getTime() : Infinity;
-        const db = b.deadline ? new Date(b.deadline).getTime() : Infinity;
-        return da - db;
-      }
-      if (sortBy === "valor") {
-        return (b.target_amount || 0) - (a.target_amount || 0);
-      }
-      return 0;
-    });
-    return arr;
-  }, [goals, filter, sortBy, progressByGoal]);
+    const total      = goals.length;
+    const totalAlvo  = goals.reduce((s, g) => s + (g.target_amount || 0), 0);
+    const totalAplic = goals.reduce((s, g) => s + (g.amount_applied || 0), 0);
+    const concluidos = goals.filter((g) => {
+      const t = g.target_amount || 0;
+      return t > 0 && (g.amount_applied || 0) >= t;
+    }).length;
+    return { total, totalAlvo, totalAplic, concluidos };
+  }, [goals]);
 
   const openCreate = () => { setEditingId(null); setForm(emptyForm()); setDialogOpen(true); };
-  const openEdit = (g: Goal) => {
+  const openEdit   = (g: Goal) => {
     setEditingId(g.id);
     setForm({
-      description: g.description,
+      description:   g.description,
       target_amount: g.target_amount?.toString() || "",
-      deadline: g.deadline || "",
-      priority: g.priority || "media",
-      category: g.category || "geral",
+      deadline:      g.deadline || "",
+      priority:      g.priority || "media",
+      category:      g.category || "geral",
     });
     setDialogOpen(true);
   };
@@ -196,11 +295,12 @@ const AdminObjetivos = () => {
     if (!clientId || !form.description.trim()) return;
     setSaving(true);
     const payload: any = {
-      client_id: clientId,
-      description: form.description.trim(),
+      client_id:     clientId,
+      description:   form.description.trim(),
       target_amount: parseFloat(form.target_amount) || null,
-      deadline: form.deadline || null,
-      priority: form.priority,
+      deadline:      form.deadline || null,
+      priority:      form.priority,
+      category:      form.category,
     };
     if (editingId) {
       await supabase.from("goals").update(payload).eq("id", editingId);
@@ -209,29 +309,21 @@ const AdminObjetivos = () => {
     }
     setDialogOpen(false);
     toast({ title: editingId ? "Objetivo atualizado" : "Objetivo criado" });
-    await loadData();
+    await loadGoals();
     setSaving(false);
   };
 
-  const duplicateGoal = async (g: Goal) => {
-    if (!clientId) return;
-    await supabase.from("goals").insert({
-      client_id: clientId,
-      description: `${g.description} (cópia)`,
-      target_amount: g.target_amount,
-      deadline: g.deadline,
-      priority: g.priority,
-    });
-    toast({ title: "Objetivo duplicado" });
-    await loadData();
+  const applyInvestment = async (id: string, amount: number) => {
+    await supabase.from("goals" as any).update({ amount_applied: amount }).eq("id", id);
+    setGoals((prev) => prev.map((g) => g.id === id ? { ...g, amount_applied: amount } : g));
+    toast({ title: "Investimento registrado" });
   };
 
   const deleteGoal = async (id: string) => {
     await supabase.from("goals").delete().eq("id", id);
-    await supabase.from("action_items").update({ goal_id: null }).eq("goal_id", id);
     toast({ title: "Objetivo removido" });
     setConfirmDelete(null);
-    await loadData();
+    await loadGoals();
   };
 
   if (loading) {
@@ -245,7 +337,7 @@ const AdminObjetivos = () => {
         <div>
           <h2 className="text-base font-semibold text-foreground">Objetivos do Cliente</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Cadastre, priorize e acompanhe a evolução dos objetivos financeiros.
+            Defina metas financeiras e registre o investimento aplicado em cada uma.
           </p>
         </div>
         <Button onClick={openCreate} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 self-start sm:self-auto">
@@ -253,230 +345,100 @@ const AdminObjetivos = () => {
         </Button>
       </div>
 
-      {/* Metrics */}
+      {/* Métricas */}
       {goals.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricCard icon={Target}        label="Total"        value={metrics.total.toString()}       tone="primary" />
-          <MetricCard icon={Wallet}        label="Valor alvo"   value={fmt(metrics.totalTarget)}        tone="accent" />
-          <MetricCard icon={CheckCircle2}  label="Concluídos"   value={metrics.concluidos.toString()}   tone="success" />
-          <MetricCard icon={AlertTriangle} label="Atrasados"    value={metrics.atrasados.toString()}    tone="destructive" />
+          <MetricCard icon={Target}       label="Total"           value={metrics.total.toString()}     tone="primary" />
+          <MetricCard icon={Wallet}       label="Valor alvo total" value={fmtBRL(metrics.totalAlvo)}   tone="accent" />
+          <MetricCard icon={TrendingUp}   label="Total aplicado"  value={fmtBRL(metrics.totalAplic)}   tone="blue" />
+          <MetricCard icon={CheckCircle2} label="Concluídos"      value={metrics.concluidos.toString()} tone="success" />
         </div>
       )}
 
-      {/* Filters */}
-      {goals.length > 0 && (
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 flex-1">
-            <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-            <Select value={filter} onValueChange={(v) => setFilter(v as FilterStatus)}>
-              <SelectTrigger className="h-9 text-xs w-full sm:w-[180px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos os objetivos</SelectItem>
-                <SelectItem value="ativos">Ativos</SelectItem>
-                <SelectItem value="concluidos">Concluídos</SelectItem>
-                <SelectItem value="atrasados">Atrasados</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2 flex-1">
-            <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-              <SelectTrigger className="h-9 text-xs w-full sm:w-[180px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="prioridade">Por prioridade</SelectItem>
-                <SelectItem value="prazo">Por prazo</SelectItem>
-                <SelectItem value="valor">Por valor</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )}
-
-      {/* Goals list */}
+      {/* Cards de objetivos */}
       {goals.length === 0 ? (
-        <Card>
-          <CardContent className="py-10">
-            <EmptyState
-              icon={Target}
-              title="Nenhum objetivo cadastrado"
-              description="Comece criando o primeiro objetivo financeiro do cliente."
-              action={<Button onClick={openCreate} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"><Plus className="h-4 w-4" /> Criar Objetivo</Button>}
-            />
-          </CardContent>
-        </Card>
-      ) : visibleGoals.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Nenhum objetivo corresponde a este filtro.
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl border border-dashed border-border/60 bg-card py-14 flex flex-col items-center gap-3 text-center px-6">
+          <div className="h-12 w-12 rounded-2xl bg-muted/60 flex items-center justify-center">
+            <Target className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">Nenhum objetivo cadastrado</p>
+            <p className="text-xs text-muted-foreground mt-1">Crie o primeiro objetivo financeiro do cliente.</p>
+          </div>
+          <Button onClick={openCreate} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 mt-1">
+            <Plus className="h-4 w-4" /> Criar Objetivo
+          </Button>
+        </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <AnimatePresence mode="popLayout">
-            {visibleGoals.map((goal, i) => {
-              const prio = priorityMeta[goal.priority || "media"] || priorityMeta.media;
-              const prog = progressByGoal.get(goal.id);
-              const days = daysUntil(goal.deadline);
-              const isOverdue = days !== null && days < 0 && prog?.status !== "concluido";
-              const isDone = prog?.status === "concluido";
-              const cat = categoryMeta[goal.category || "geral"] || categoryMeta.geral;
-              const CatIcon = cat.icon;
-              return (
-                <motion.article
-                  key={goal.id}
-                  layout
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ delay: i * 0.04, duration: 0.25 }}
-                  className={`group relative flex flex-col rounded-2xl border bg-card p-4 transition-all hover:shadow-[0_8px_24px_-12px_hsl(var(--foreground)/0.18)] ${
-                    isDone ? "border-success/40" : isOverdue ? "border-destructive/40" : "border-border/60 hover:border-border"
-                  }`}
-                >
-                  {/* Top row: category + priority */}
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="h-8 w-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
-                        <CatIcon className="h-4 w-4 text-foreground/70" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{cat.label}</p>
-                        <Badge variant="outline" className={`mt-0.5 h-5 px-1.5 text-[10px] font-medium ${prio.badge}`}>
-                          <span className={`mr-1 h-1.5 w-1.5 rounded-full ${prio.dot}`} /> {prio.label}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Hover actions */}
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => duplicateGoal(goal)} title="Duplicar">
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(goal)} title="Editar">
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-destructive" onClick={() => setConfirmDelete(goal.id)} title="Remover">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 mb-2 break-words">
-                    {goal.description}
-                  </h3>
-
-                  {/* Target amount */}
-                  {goal.target_amount ? (
-                    <p className="text-lg font-bold text-foreground tracking-tight">{fmt(goal.target_amount)}</p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic">Sem valor alvo definido</p>
-                  )}
-
-                  {/* Progress */}
-                  <div className="mt-3 space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-muted-foreground">
-                        {prog && prog.total > 0
-                          ? `${prog.done}/${prog.total} ações`
-                          : "Sem ações vinculadas"}
-                      </span>
-                      <span className={`font-semibold ${isDone ? "text-success" : "text-foreground"}`}>
-                        {prog?.pct ?? 0}%
-                      </span>
-                    </div>
-                    <Progress
-                      value={prog?.pct ?? 0}
-                      className={`h-1.5 ${isDone ? "[&>div]:bg-success" : ""}`}
-                    />
-                  </div>
-
-                  {/* Footer: deadline + status */}
-                  <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between gap-2 text-[11px]">
-                    {goal.deadline ? (
-                      <span className={`flex items-center gap-1 ${isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}`}>
-                        <Calendar className="h-3 w-3" />
-                        {new Date(goal.deadline + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
-                        {days !== null && (
-                          <span className="ml-1">
-                            ({isOverdue ? `${Math.abs(days)}d atraso` : days === 0 ? "hoje" : `${days}d`})
-                          </span>
-                        )}
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-muted-foreground">
-                        <Clock className="h-3 w-3" /> Sem prazo
-                      </span>
-                    )}
-                    {isDone && (
-                      <Badge className="h-5 px-1.5 text-[10px] bg-success/15 text-success border-success/30 hover:bg-success/15">
-                        <CheckCircle2 className="h-3 w-3 mr-1" /> Concluído
-                      </Badge>
-                    )}
-                    {!isDone && prog && prog.pct > 0 && (
-                      <Badge variant="outline" className="h-5 px-1.5 text-[10px] border-warning/30 text-warning bg-warning/10">
-                        <TrendingUp className="h-3 w-3 mr-1" /> Em andamento
-                      </Badge>
-                    )}
-                  </div>
-                </motion.article>
-              );
-            })}
+            {goals.map((goal) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                onEdit={openEdit}
+                onDelete={(id) => setConfirmDelete(id)}
+                onApplyInvestment={applyInvestment}
+              />
+            ))}
           </AnimatePresence>
         </div>
       )}
 
-      {/* Goal Dialog */}
+      {/* Dialog criar/editar */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-lg">{editingId ? "Editar Objetivo" : "Novo Objetivo"}</DialogTitle>
             <DialogDescription className="text-xs">
-              Defina descrição, categoria, valor e prazo. O progresso vem das ações vinculadas no Plano.
+              Defina a descrição, categoria, valor alvo e prazo do objetivo.
             </DialogDescription>
           </DialogHeader>
+
           <div className="space-y-4 py-1">
             <div className="space-y-2">
               <Label className="text-xs font-medium">Descrição *</Label>
               <Textarea
                 value={form.description}
-                onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))}
+                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                 placeholder="Ex: Aposentadoria aos 60 anos com R$ 8.000/mês"
                 rows={2}
                 className="resize-none text-sm"
                 autoFocus
               />
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label className="text-xs font-medium">Categoria</Label>
-                <SelectWithCustom
-                  value={form.category}
-                  onValueChange={(v) => setForm(p => ({ ...p, category: v }))}
-                  options={categoryOptions}
-                  inputPlaceholder="Outra..."
-                />
+                <Select value={form.category} onValueChange={(v) => setForm((p) => ({ ...p, category: v }))}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {categoryOptions.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-medium">Prioridade</Label>
-                <SelectWithCustom
-                  value={form.priority}
-                  onValueChange={(v) => setForm(p => ({ ...p, priority: v }))}
-                  options={[
-                    { value: "alta", label: "🔴 Alta" },
-                    { value: "media", label: "🟡 Média" },
-                    { value: "baixa", label: "🔵 Baixa" },
-                  ]}
-                  inputPlaceholder="Ex: Urgente"
-                />
+                <Select value={form.priority} onValueChange={(v) => setForm((p) => ({ ...p, priority: v }))}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="alta">🔴 Alta</SelectItem>
+                    <SelectItem value="media">🟡 Média</SelectItem>
+                    <SelectItem value="baixa">🔵 Baixa</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label className="text-xs font-medium">Valor alvo</Label>
                 <CurrencyInput
                   value={form.target_amount}
-                  onChange={(v) => setForm(p => ({ ...p, target_amount: v }))}
+                  onChange={(v) => setForm((p) => ({ ...p, target_amount: v }))}
                 />
               </div>
               <div className="space-y-2">
@@ -484,24 +446,33 @@ const AdminObjetivos = () => {
                 <Input
                   type="date"
                   value={form.deadline}
-                  onChange={(e) => setForm(p => ({ ...p, deadline: e.target.value }))}
+                  onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
                 />
               </div>
             </div>
+
+            {/* Aporte estimado */}
             {form.target_amount && form.deadline && (
               <div className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground border border-border/50">
-                <strong className="text-foreground">Aporte mensal estimado:</strong>{" "}
+                <strong className="text-foreground">Aporte mensal estimado: </strong>
                 {(() => {
-                  const months = Math.max(1, Math.ceil((new Date(form.deadline + "T12:00:00").getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30)));
+                  const months = Math.max(1, Math.ceil(
+                    (new Date(form.deadline + "T12:00:00").getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30),
+                  ));
                   const monthly = (parseFloat(form.target_amount) || 0) / months;
-                  return `${fmt(monthly)} / mês durante ${months} ${months === 1 ? "mês" : "meses"}`;
+                  return `${fmtBRL(monthly)} / mês durante ${months} ${months === 1 ? "mês" : "meses"}`;
                 })()}
               </div>
             )}
           </div>
+
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={saveGoal} disabled={saving || !form.description.trim()} className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
+            <Button
+              onClick={saveGoal}
+              disabled={saving || !form.description.trim()}
+              className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
+            >
               {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               {saving ? "Salvando..." : editingId ? "Atualizar" : "Criar Objetivo"}
             </Button>
@@ -509,14 +480,12 @@ const AdminObjetivos = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Confirm Delete */}
+      {/* Confirmar exclusão */}
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-base">Remover objetivo?</DialogTitle>
-            <DialogDescription className="text-xs">
-              As ações vinculadas serão desconectadas mas não removidas.
-            </DialogDescription>
+            <DialogDescription className="text-xs">Esta ação não pode ser desfeita.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setConfirmDelete(null)}>Cancelar</Button>
@@ -534,17 +503,18 @@ const MetricCard = ({
   icon: typeof Target;
   label: string;
   value: string;
-  tone: "primary" | "accent" | "success" | "destructive";
+  tone: "primary" | "accent" | "success" | "destructive" | "blue";
 }) => {
-  const toneCls = {
+  const toneCls: Record<string, string> = {
     primary:     "bg-primary/10 text-primary",
     accent:      "bg-accent/10 text-accent",
-    success:     "bg-success/10 text-success",
+    success:     "bg-emerald-500/10 text-emerald-600",
     destructive: "bg-destructive/10 text-destructive",
-  }[tone];
+    blue:        "bg-blue-500/10 text-blue-600",
+  };
   return (
     <div className="rounded-xl border border-border/60 bg-card p-3 flex items-center gap-3">
-      <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${toneCls}`}>
+      <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", toneCls[tone])}>
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0">
