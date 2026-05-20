@@ -138,10 +138,20 @@ ALTER TABLE public.goals ADD COLUMN IF NOT EXISTS amount_applied numeric DEFAULT
 ALTER TABLE public.goals ADD COLUMN IF NOT EXISTS completed_at   timestamptz DEFAULT NULL;
 
 
+-- -----------------------------------------------------------
+-- 4. TABELA parecer_metas - coluna nova
+--    completed_at : quando a meta foi atingida e arquivada
+--    Substitui a exclusao da linha -- preserva historico e
+--    permite o fechamento mensal mostrar conquistas.
+-- -----------------------------------------------------------
+
+ALTER TABLE public.parecer_metas ADD COLUMN IF NOT EXISTS completed_at timestamptz DEFAULT NULL;
+
+
 -- ===========================================================
 -- FIM DO SCRIPT
 -- Verifique no Table Editor que:
---   - parecer_metas existe
+--   - parecer_metas existe (com coluna completed_at)
 --   - acompanhamento_entradas existe
 --   - goals tem as colunas amount_applied e completed_at
 -- ===========================================================

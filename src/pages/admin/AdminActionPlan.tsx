@@ -81,6 +81,7 @@ const AdminActionPlan = () => {
         .from("parecer_metas")
         .select("*")
         .eq("client_id", clientId)
+        .is("completed_at", null)
         .order("source_table");
       return (data || []).filter((m: any) => m.source_table !== "goals");
     },

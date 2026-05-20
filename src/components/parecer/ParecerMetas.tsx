@@ -146,7 +146,11 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   const { data: metas = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
     queryFn: async () => {
-      const { data } = await supabase.from("parecer_metas").select("*").eq("client_id", clientId);
+      const { data } = await supabase
+        .from("parecer_metas")
+        .select("*")
+        .eq("client_id", clientId)
+        .is("completed_at", null);
       return (data || []) as ParecerMeta[];
     },
   });

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import {
   Lock, Unlock, FileDown, Loader2, CalendarCheck2, ChevronDown,
-  TrendingUp, TrendingDown, Minus,
+  TrendingUp, TrendingDown, Minus, Trophy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateMonthlyClosingPdf } from "@/lib/generateMonthlyClosingPdf";
@@ -102,11 +102,29 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
   const [targetYear, setTargetYear] = useState(now.getFullYear());
   const [targetMonth, setTargetMonth] = useState(now.getMonth());
 
-  // Metas e entradas de acompanhamento para snapshot no fechamento
+  // Metas ativas (para snapshot no fechamento)
   const { data: metas = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
     queryFn: async () => {
-      const { data } = await supabase.from("parecer_metas").select("*").eq("client_id", clientId);
+      const { data } = await supabase
+        .from("parecer_metas")
+        .select("*")
+        .eq("client_id", clientId)
+        .is("completed_at", null);
+      return data || [];
+    },
+  });
+
+  // Metas concluidas (para mostrar conquistas no fechamento)
+  const { data: metasConcluidas = [] } = useQuery({
+    queryKey: ["parecer_metas_concluidas", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("parecer_metas")
+        .select("*")
+        .eq("client_id", clientId)
+        .not("completed_at", "is", null)
+        .order("completed_at", { ascending: false });
       return data || [];
     },
   });
@@ -460,6 +478,47 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
                               </div>
                             ))}
                           </div>
+                          {/* Conquistas do mês — metas arquivadas dentro do periodo do fechamento */}
+                          {(() => {
+                            const monthStart = new Date(c.month_ref + "T00:00:00");
+                            const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59);
+                            const conquistas = (metasConcluidas as any[]).filter((m) => {
+                              if (!m.completed_at) return false;
+                              const d = new Date(m.completed_at);
+                              return d >= monthStart && d <= monthEnd;
+                            });
+                            const goalsConquistas = (() => {
+                              return [];
+                            })();
+                            if (!conquistas.length) return null;
+                            return (
+                              <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300/40 p-3 space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Trophy className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                                    {conquistas.length} meta{conquistas.length !== 1 ? "s" : ""} atingida{conquistas.length !== 1 ? "s" : ""} neste mês
+                                  </p>
+                                </div>
+                                <div className="space-y-1.5">
+                                  {conquistas.map((m: any) => (
+                                    <div key={m.id} className="flex items-start gap-2">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300">{m.source_label}</p>
+                                        {m.meta_text && (
+                                          <p className="text-[10px] text-emerald-600/80 dark:text-emerald-500/70 line-clamp-1">{m.meta_text}</p>
+                                        )}
+                                      </div>
+                                      <p className="text-[10px] text-emerald-600/60 dark:text-emerald-500/50 shrink-0 ml-auto">
+                                        {new Date(m.completed_at).toLocaleDateString("pt-BR")}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })()}
+
                           {c.notes && (
                             <div className="rounded-lg bg-muted/30 p-3 border-l-2 border-primary/40">
                               <p className="text-[11px] italic text-muted-foreground">💬 {c.notes}</p>

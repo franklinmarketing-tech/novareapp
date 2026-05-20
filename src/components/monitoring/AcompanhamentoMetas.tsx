@@ -448,6 +448,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
         .from("parecer_metas")
         .select("*")
         .eq("client_id", clientId)
+        .is("completed_at", null)
         .order("source_table");
       return (data || []) as MetaEntry[];
     },
@@ -533,11 +534,13 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const handleConfirmMetaDone = async (metaId: string) => {
     setConfirmingMetaId(metaId);
     try {
-      const { error } = await supabase.from("parecer_metas").delete().eq("id", metaId);
+      const { error } = await supabase
+        .from("parecer_metas")
+        .update({ completed_at: new Date().toISOString() })
+        .eq("id", metaId);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
-      queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId] });
-      toast.success("Meta arquivada! O item voltou ao Plano de Ação para um novo objetivo.");
+      toast.success("Meta arquivada! Ficará registrada no fechamento do mês como conquista.");
     } catch (err: any) {
       toast.error("Erro ao arquivar: " + (err?.message || "tente novamente"));
     } finally {
