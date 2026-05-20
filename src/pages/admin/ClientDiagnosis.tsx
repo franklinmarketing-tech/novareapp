@@ -436,58 +436,82 @@ const ClientDiagnosis = () => {
       </div>
 
       {/* ── 1. CLASSIFICAÇÃO HERO ─────────────────── */}
-      <Card className={cn("border overflow-hidden", risk.borderColor)}>
-        <div className={cn("bg-gradient-to-r", risk.gradient)}>
-          <CardContent className="py-5 sm:py-6 px-5 sm:px-6">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-5">
-              {/* Grade */}
-              <div className="flex items-start gap-4">
-                <div
-                  className={cn(
-                    "flex flex-col items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-2xl shrink-0",
-                    risk.bgColor,
-                  )}
-                >
-                  <span className={cn("text-2xl sm:text-3xl font-black", risk.textColor)}>
-                    {diagnosis.riskClassification}
-                  </span>
-                  <span className={cn("text-[10px] font-semibold mt-0.5", risk.textColor)}>
-                    {risk.label}
-                  </span>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-foreground/85">{risk.description}</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    {risk.advice}
-                  </p>
-                </div>
+      <div
+        className={cn("rounded-2xl border overflow-hidden", risk.borderColor)}
+        style={{
+          background: "hsl(var(--card))",
+          boxShadow: "0 2px 12px -4px hsl(0 0% 0% / 0.08), 0 1px 3px hsl(0 0% 0% / 0.04)",
+        }}
+      >
+        {/* Barra colorida topo */}
+        <div className={cn("h-1 w-full bg-gradient-to-r", risk.gradient.replace("/15", "").replace("/5", "/60"))} />
+
+        <div className={cn("bg-gradient-to-br", risk.gradient, "px-5 sm:px-6 py-5")}>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+
+            {/* Grade badge + descrição */}
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div
+                className={cn(
+                  "flex flex-col items-center justify-center h-[72px] w-[72px] rounded-2xl shrink-0 border",
+                  risk.bgColor,
+                  risk.borderColor,
+                )}
+                style={{
+                  boxShadow: `0 0 0 4px hsl(var(--background)), 0 4px 16px -4px ${
+                    risk.textColor.includes("emerald") ? "hsl(142 65% 42% / 0.35)"
+                    : risk.textColor.includes("blue") ? "hsl(215 65% 55% / 0.35)"
+                    : risk.textColor.includes("amber") ? "hsl(38 95% 48% / 0.35)"
+                    : risk.textColor.includes("orange") ? "hsl(25 90% 50% / 0.35)"
+                    : "hsl(0 72% 55% / 0.35)"
+                  }`,
+                }}
+              >
+                <span className={cn("text-[2rem] font-black leading-none", risk.textColor)}>
+                  {diagnosis.riskClassification}
+                </span>
+                <span className={cn("text-[9px] font-bold uppercase tracking-widest mt-1", risk.textColor)}>
+                  {risk.label}
+                </span>
               </div>
 
-              {/* Indicadores */}
-              <div className="flex flex-wrap gap-x-5 gap-y-2 lg:flex-1">
-                <IndicatorMini
-                  icon={PiggyBank}
-                  label="Poupança"
-                  value={fmtPct(diagnosis.savingsCapacity)}
-                  tone={risk.textColor}
-                />
-                <IndicatorMini
-                  icon={Scale}
-                  label="Comprometimento"
-                  value={fmtPct(diagnosis.debtRatio)}
-                  tone={diagnosis.debtRatio > 30 ? "text-red-500" : "text-foreground"}
-                />
-                <IndicatorMini
-                  icon={Gauge}
-                  label="Despesas/renda"
-                  value={fmtPct(diagnosis.expenseRatio)}
-                  tone={diagnosis.expenseRatio > 80 ? "text-orange-500" : "text-foreground"}
-                />
+              <div className="min-w-0 flex-1">
+                <p className="text-[0.9375rem] font-semibold text-foreground leading-snug">
+                  {risk.description}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                  {risk.advice}
+                </p>
               </div>
             </div>
-          </CardContent>
+
+            {/* Divider vertical (desktop) */}
+            <div className="hidden sm:block self-stretch w-px bg-foreground/[0.08] shrink-0" />
+
+            {/* Indicadores */}
+            <div className="flex gap-3 shrink-0">
+              <IndicatorMini
+                icon={PiggyBank}
+                label="Poupança"
+                value={fmtPct(diagnosis.savingsCapacity)}
+                tone={risk.textColor}
+              />
+              <IndicatorMini
+                icon={Scale}
+                label="Compromet."
+                value={fmtPct(diagnosis.debtRatio)}
+                tone={diagnosis.debtRatio > 30 ? "text-red-500" : "text-foreground"}
+              />
+              <IndicatorMini
+                icon={Gauge}
+                label="Desp./renda"
+                value={fmtPct(diagnosis.expenseRatio)}
+                tone={diagnosis.expenseRatio > 80 ? "text-orange-500" : "text-foreground"}
+              />
+            </div>
+          </div>
         </div>
-      </Card>
+      </div>
 
       {/* ── 2. RESUMO DA IA + KPIs ────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -785,10 +809,19 @@ const IndicatorMini = ({
   value: string;
   tone: string;
 }) => (
-  <div className="flex items-center gap-2 min-w-0">
-    <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-    <span className="text-xs text-muted-foreground">{label}:</span>
-    <span className={cn("text-sm font-bold tabular-nums", tone)}>{value}</span>
+  <div
+    className="flex flex-col items-center gap-1.5 px-3.5 py-2.5 rounded-xl min-w-[80px]"
+    style={{
+      background: "hsl(var(--background) / 0.6)",
+      border: "1px solid hsl(var(--foreground) / 0.07)",
+      backdropFilter: "blur(8px)",
+    }}
+  >
+    <div className="flex items-center gap-1.5">
+      <Icon className={cn("h-3.5 w-3.5 shrink-0", tone)} />
+      <span className="text-[10px] text-muted-foreground font-medium leading-none">{label}</span>
+    </div>
+    <span className={cn("text-xl font-black tabular-nums leading-none", tone)}>{value}</span>
   </div>
 );
 
