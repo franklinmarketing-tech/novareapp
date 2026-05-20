@@ -429,7 +429,7 @@ const ClientDiagnosis = () => {
             onClick={() => navigate(`/admin/cliente/${clientSlug}/parecer`)}
             className="bg-novare-terracotta hover:bg-novare-terracotta/90 text-white gap-2 shadow-sm shadow-novare-terracotta/25"
           >
-            Avançar para Parecer
+            Avançar para Plano de Ação
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
