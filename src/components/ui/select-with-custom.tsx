@@ -30,7 +30,8 @@ export const SelectWithCustom = ({
   const normalizedValue = normalizeCustomValue(value);
   const safeOptions = mergeCustomOptions(options, [value]);
   const [showCustomInput, setShowCustomInput] = useState(isCustom);
-  const customText = isCustom ? normalizedValue : "";
+  // Deriva sem trim para preservar espaços durante digitação; trim só ocorre no commit
+  const customText = isCustom ? (value?.slice(7) ?? "") : "";
 
   useEffect(() => {
     setShowCustomInput(!!value?.startsWith("custom:"));

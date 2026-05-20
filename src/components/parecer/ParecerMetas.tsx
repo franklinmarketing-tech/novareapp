@@ -48,6 +48,7 @@ interface AiSuggestion {
 interface FieldState {
   metaText: string;
   prazo: string;
+  metaValor: string;
 }
 
 const SECTION_CONFIG: Record<SourceTable, { label: string; icon: LucideIcon; color: string }> = {
@@ -138,7 +139,11 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       const next = { ...prev };
       for (const m of metas) {
         if (next[m.source_id] === undefined) {
-          next[m.source_id] = { metaText: m.meta_text || "", prazo: m.prazo || "" };
+          next[m.source_id] = {
+            metaText: m.meta_text || "",
+            prazo: m.prazo || "",
+            metaValor: m.meta_valor != null ? String(m.meta_valor) : "",
+          };
         }
       }
       return next;
@@ -148,7 +153,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   const updateField = (sourceId: string, key: keyof FieldState, value: string) => {
     setFields((prev) => ({
       ...prev,
-      [sourceId]: { metaText: "", prazo: "", ...prev[sourceId], [key]: value },
+      [sourceId]: { metaText: "", prazo: "", metaValor: "", ...prev[sourceId], [key]: value },
     }));
   };
 
@@ -221,6 +226,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     try {
       const rows = toSave.map((item) => {
         const f = fields[item.source_id];
+        const metaValorNum = f.metaValor ? (parseFloat(f.metaValor) || null) : null;
         return {
           client_id: clientId,
           source_table: item.source_table,
@@ -229,6 +235,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
           current_value: item.current_value,
           meta_text: f.metaText.trim(),
           prazo: f.prazo || null,
+          meta_valor: metaValorNum,
           updated_at: new Date().toISOString(),
         };
       });
@@ -411,8 +418,16 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                             <Input
                               value={f.metaText}
                               onChange={(e) => updateField(item.source_id, "metaText", e.target.value)}
-                              placeholder="Defina a meta..."
+                              placeholder="Descreva a meta..."
                               className="h-8 text-sm"
+                            />
+                            <Input
+                              value={f.metaValor}
+                              onChange={(e) => updateField(item.source_id, "metaValor", e.target.value)}
+                              placeholder="Valor alvo (R$)..."
+                              className="h-8 text-sm tabular-nums"
+                              type="number"
+                              min={0}
                             />
                             {hasAI && (
                               <div className="flex items-start gap-2 px-2.5 py-2 rounded-lg bg-novare-blue/5 border border-novare-blue/20">
@@ -422,11 +437,11 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                                 </span>
                                 <button
                                   onClick={() => {
-                                    const val = aiSugg.target_value != null
-                                      ? String(aiSugg.target_value)
-                                      : aiSugg.suggestion_text;
-                                    updateField(item.source_id, "metaText", val);
-                                    if (aiSugg.suggested_prazo) updateField(item.source_id, "prazo", aiSugg.suggested_prazo);
+                                    updateField(item.source_id, "metaText", aiSugg.suggestion_text);
+                                    if (aiSugg.target_value != null)
+                                      updateField(item.source_id, "metaValor", String(aiSugg.target_value));
+                                    if (aiSugg.suggested_prazo)
+                                      updateField(item.source_id, "prazo", aiSugg.suggested_prazo);
                                   }}
                                   className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
                                 >

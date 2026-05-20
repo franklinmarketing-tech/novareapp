@@ -219,8 +219,9 @@ export const StepDespesas = ({ data, onChange }: Props) => {
                     <button
                       type="button"
                       onClick={() => {
-                        update(i, "is_fixed", false);
-                        update(i, "due_day", "");
+                        const next = [...items];
+                        next[i] = { ...next[i], is_fixed: false, due_day: "" };
+                        onChange(next);
                       }}
                       className={`h-10 rounded-lg border text-[0.875rem] font-medium transition-all ${
                         !item.is_fixed
