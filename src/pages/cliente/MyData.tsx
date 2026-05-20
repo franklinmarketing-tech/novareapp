@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { type IncomeItem } from "@/components/onboarding/StepRenda";
 import { type ExpenseItem } from "@/components/onboarding/StepDespesas";
 import { type DebtItem } from "@/components/onboarding/StepDividas";
@@ -20,7 +20,7 @@ import { StepObjetivos } from "@/components/onboarding/StepObjetivos";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  Pencil, Save, X, User,
+  Pencil, Save, X, User, Loader2,
   Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain,
   type LucideIcon,
   CheckCircle2, AlertTriangle, Heart, Flame, Sparkles, RefreshCw,
@@ -168,7 +168,7 @@ const MyData = () => {
       if (savedDraft.comportamental) setComportamental(savedDraft.comportamental);
       // Mark all as modified so user knows there's unsaved work to flush.
       setModifiedSections(new Set([0, 1, 2, 3, 4, 5, 6, 7]));
-      toast({ title: "Rascunho restaurado", description: "Recuperamos suas últimas edições não salvas." });
+      toast.info("Rascunho restaurado", { description: "Recuperamos suas últimas edições não salvas." });
     } catch {
       // ignore
     }
@@ -245,7 +245,7 @@ const MyData = () => {
 
     if (!error) {
       setMonthlyConfirmed(new Date());
-      toast({ title: "Dados confirmados! 🎉", description: "Seus dados deste mês foram confirmados com sucesso." });
+      toast.success("Dados confirmados!", { description: "Seus dados deste mês foram confirmados com sucesso." });
       // Notify all admins so they can review updated data
       const { data: adminRoles } = await supabase
         .from("user_roles")
@@ -268,7 +268,7 @@ const MyData = () => {
         );
       }
     } else {
-      toast({ title: "Erro ao confirmar", description: error.message, variant: "destructive" });
+      toast.error("Erro ao confirmar", { description: error.message });
     }
     setConfirmingData(false);
   };
@@ -338,7 +338,7 @@ const MyData = () => {
       if (n.size === 0) clearDraft();
       return n;
     });
-    toast({ title: "Salvo com sucesso! ✨", description: "Suas alterações foram registradas." });
+    toast.success("Salvo com sucesso!", { description: "Suas alterações foram registradas." });
   };
 
   if (loading) {
@@ -710,9 +710,19 @@ const MyData = () => {
                   if (editingDialog !== null && modifiedSections.has(editingDialog) &&
                       !window.confirm("Existem alterações não salvas. Deseja sair sem salvar?")) return;
                   setEditingDialog(null);
-                }} className="rounded-xl gap-1.5"><X className="h-6 w-6" /> Cancelar</Button>
-                <Button variant="premium" onClick={() => handleSaveDialog(editingSection.key)} disabled={submitting} className="rounded-xl gap-1.5">
-                  <Save className="h-6 w-6" /> {submitting ? "Salvando..." : "Salvar"}
+                }} className="rounded-xl gap-1.5"><X className="h-4 w-4" /> Cancelar</Button>
+                <Button variant="premium" onClick={() => handleSaveDialog(editingSection.key)} disabled={submitting} className="rounded-xl gap-2 min-w-[110px]">
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Salvar alterações
+                    </>
+                  )}
                 </Button>
               </div>
             </>

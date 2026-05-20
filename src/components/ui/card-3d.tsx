@@ -17,6 +17,16 @@ const Card3D = React.forwardRef<HTMLDivElement, Card3DProps>(
   ({ className, children, interactive = false, clickable = false, glowColor, gradient, onClick, ...props }, ref) => {
     const [tilt, setTilt] = React.useState({ x: 0, y: 0 });
 
+    const handleKeyDown = React.useCallback(
+      (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (clickable && onClick && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick(e as any);
+        }
+      },
+      [clickable, onClick],
+    );
+
     const handleMouseMove = React.useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
         if (!interactive) return;
@@ -37,9 +47,12 @@ const Card3D = React.forwardRef<HTMLDivElement, Card3DProps>(
         ref={ref}
         className={cn(
           "relative rounded-2xl overflow-hidden",
-          clickable && "cursor-pointer",
+          clickable && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
           className
         )}
+        role={clickable ? "button" : undefined}
+        tabIndex={clickable ? 0 : undefined}
+        onKeyDown={handleKeyDown}
         style={{
           background: gradient || "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%)",
           border: "1px solid hsl(var(--border) / 0.4)",

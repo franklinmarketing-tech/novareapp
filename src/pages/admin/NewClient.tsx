@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { UserPlus, ArrowRight, RefreshCw, Eye, EyeOff, ClipboardList, UserCircle2, Mail, Copy, Check } from "lucide-react";
@@ -36,7 +36,7 @@ const NewClient = () => {
   const [password, setPassword] = useState(() => generatePassword());
   const [showPassword, setShowPassword] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+
   const navigate = useNavigate();
 
   // Estado do diálogo pós-cadastro
@@ -55,14 +55,14 @@ const NewClient = () => {
       setCopiedField(field);
       setTimeout(() => setCopiedField(null), 1500);
     } catch {
-      toast({ title: "Não foi possível copiar", variant: "destructive" });
+      toast.error("Não foi possível copiar");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
-      toast({ title: "Senha muito curta", description: "Use pelo menos 8 caracteres.", variant: "destructive" });
+      toast.error("Senha muito curta", { description: "Use pelo menos 8 caracteres." });
       return;
     }
     setIsLoading(true);
@@ -77,8 +77,7 @@ const NewClient = () => {
 
       const slug = data?.slug;
       const clientId = data?.clientId;
-      toast({
-        title: data?.alreadyExisted ? "Cliente já existia" : "Cliente cadastrado!",
+      toast.success(data?.alreadyExisted ? "Cliente já existia" : "Cliente cadastrado!", {
         description: data?.alreadyExisted
           ? `Senha redefinida e e-mail reenviado para ${email}.`
           : `E-mail com credenciais enviado para ${email}.`,
@@ -99,11 +98,7 @@ const NewClient = () => {
         name,
       });
     } catch (error: any) {
-      toast({
-        title: "Erro ao cadastrar cliente",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Erro ao cadastrar cliente", { description: error.message });
     } finally {
       setIsLoading(false);
     }

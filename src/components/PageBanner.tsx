@@ -53,7 +53,7 @@ const PageBanner = forwardRef<HTMLDivElement, PageBannerProps>(({ title, descrip
         ) : null}
 
         {/* Title */}
-        <h1 className="text-base sm:text-lg font-bold text-white tracking-[-0.02em] leading-none shrink-0">
+        <h1 className="text-xl sm:text-2xl font-bold text-white tracking-[-0.02em] leading-none shrink-0">
           {title}
         </h1>
 

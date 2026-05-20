@@ -491,6 +491,17 @@ export const AdminLayout = ({ children }: Props) => {
         </div>
 
         <div className="pt-2 sm:pt-3 px-4 sm:px-6 xl:px-8 pb-6 sm:pb-8 max-w-[1600px] mx-auto w-full min-w-0">{children}</div>
+
+        {/* Trust footer */}
+        <footer className="px-4 sm:px-6 xl:px-8 py-3 border-t border-border/40 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground/60">
+            <Lock className="h-3 w-3" />
+            <span>Dados protegidos conforme a LGPD · Criptografia de ponta a ponta</span>
+          </div>
+          <span className="text-[0.6875rem] text-muted-foreground/40">
+            Novare Consultoria Financeira © {new Date().getFullYear()}
+          </span>
+        </footer>
       </main>
 
       {/* Global ⌘K palette (admin only) */}

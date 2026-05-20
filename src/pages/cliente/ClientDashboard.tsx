@@ -32,26 +32,26 @@ import goalCheckDoneIcon from "@/assets/icons/goal-check-done.png";
 
 // ── Goal style detection ──
 const goalTypeConfig = [
-  { keywords: ["dívida", "divida", "quitar", "pagar dívida", "sair das dívidas"], accent: "#f87171", bg: "linear-gradient(145deg, #2a1215 0%, #7f1d1d 50%, #2a1215 100%)", icon3d: goalDividasIcon, label: "Dívidas" },
-  { keywords: ["emergência", "emergencia", "reserva"], accent: "#fbbf24", bg: "linear-gradient(145deg, #2d2a1a 0%, #422006 50%, #2d2a1a 100%)", icon3d: goalReservaIcon, label: "Reserva" },
-  { keywords: ["invest", "aplicar", "renda passiva", "começar a investir"], accent: "#34d399", bg: "linear-gradient(145deg, #0f2d2a 0%, #064e3b 50%, #0f2d2a 100%)", icon3d: goalInvestimentosIcon, label: "Investimentos" },
-  { keywords: ["aposentadoria", "previdência", "previdencia", "futuro"], accent: "#a78bfa", bg: "linear-gradient(145deg, #1e1a33 0%, #312e81 50%, #1e1a33 100%)", icon3d: goalAposentadoriaIcon, label: "Aposentadoria" },
-  { keywords: ["casa", "imóvel", "imovel", "apartamento", "moradia"], accent: "#38bdf8", bg: "linear-gradient(145deg, #0c2a3d 0%, #0c4a6e 50%, #0c2a3d 100%)", icon3d: goalImovelIcon, label: "Imóvel" },
-  { keywords: ["filho", "filhos", "educação", "educacao", "faculdade", "escola", "vida melhor"], accent: "#f472b6", bg: "linear-gradient(145deg, #2d1a28 0%, #831843 50%, #2d1a28 100%)", icon3d: goalFamiliaIcon, label: "Família" },
-  { keywords: ["viagem", "viajar", "férias"], accent: "#22d3ee", bg: "linear-gradient(145deg, #0c2a33 0%, #155e75 50%, #0c2a33 100%)", icon3d: goalViagemIcon, label: "Viagem" },
-  { keywords: ["carro", "veículo", "veiculo", "moto"], accent: "#94a3b8", bg: "linear-gradient(145deg, #111827 0%, #1e293b 50%, #111827 100%)", icon3d: goalVeiculoIcon, label: "Veículo" },
-  { keywords: ["curso", "estudo", "formação", "formacao", "certificação"], accent: "#818cf8", bg: "linear-gradient(145deg, #1a1a33 0%, #312e81 50%, #1a1a33 100%)", icon3d: goalEducacaoIcon, label: "Educação" },
-  { keywords: ["protecao", "proteção", "seguro", "segurança"], accent: "#2dd4bf", bg: "linear-gradient(145deg, #0d2926 0%, #134e4a 50%, #0d2926 100%)", icon3d: goalProtecaoIcon, label: "Proteção" },
+  { keywords: ["dívida", "divida", "quitar", "pagar dívida", "sair das dívidas"], cssVar: "--goal-dividas", icon3d: goalDividasIcon, label: "Dívidas" },
+  { keywords: ["emergência", "emergencia", "reserva"], cssVar: "--goal-reserva", icon3d: goalReservaIcon, label: "Reserva" },
+  { keywords: ["invest", "aplicar", "renda passiva", "começar a investir"], cssVar: "--goal-investimentos", icon3d: goalInvestimentosIcon, label: "Investimentos" },
+  { keywords: ["aposentadoria", "previdência", "previdencia", "futuro"], cssVar: "--goal-aposentadoria", icon3d: goalAposentadoriaIcon, label: "Aposentadoria" },
+  { keywords: ["casa", "imóvel", "imovel", "apartamento", "moradia"], cssVar: "--goal-imovel", icon3d: goalImovelIcon, label: "Imóvel" },
+  { keywords: ["filho", "filhos", "educação", "educacao", "faculdade", "escola", "vida melhor"], cssVar: "--goal-familia", icon3d: goalFamiliaIcon, label: "Família" },
+  { keywords: ["viagem", "viajar", "férias"], cssVar: "--goal-viagem", icon3d: goalViagemIcon, label: "Viagem" },
+  { keywords: ["carro", "veículo", "veiculo", "moto"], cssVar: "--goal-veiculo", icon3d: goalVeiculoIcon, label: "Veículo" },
+  { keywords: ["curso", "estudo", "formação", "formacao", "certificação"], cssVar: "--goal-educacao", icon3d: goalEducacaoIcon, label: "Educação" },
+  { keywords: ["protecao", "proteção", "seguro", "segurança"], cssVar: "--goal-protecao", icon3d: goalProtecaoIcon, label: "Proteção" },
 ];
 
 const getGoalStyle = (description: string) => {
   const lower = description.toLowerCase();
   for (const cfg of goalTypeConfig) {
     if (cfg.keywords.some(k => lower.includes(k))) {
-      return { accent: cfg.accent, bg: cfg.bg, icon3d: cfg.icon3d, badge: cfg.label };
+      return { cssVar: cfg.cssVar, icon3d: cfg.icon3d, badge: cfg.label };
     }
   }
-  return { accent: "#60a5fa", bg: "linear-gradient(145deg, #111c2e 0%, #1e3a5f 50%, #111c2e 100%)", icon3d: goalDefaultIcon, badge: "Objetivo" };
+  return { cssVar: "--goal-default", icon3d: goalDefaultIcon, badge: "Objetivo" };
 };
 
 const fadeUp = {
@@ -233,7 +233,7 @@ const ClientDashboard = () => {
               <Button onClick={() => navigate("/cliente/onboarding")} variant="premium" className="shrink-0 rounded-2xl gap-2">
                 Preencher
                 <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-accent-foreground/20">
-                  <ArrowRight className="h-6 w-6" />
+                  <ArrowRight className="h-4 w-4" />
                 </span>
               </Button>
             </CardContent>
@@ -249,7 +249,7 @@ const ClientDashboard = () => {
             <p className="text-sm text-foreground flex-1 font-medium">{insight.text}</p>
             {insight.action && (
               <Button size="sm" variant="ghost" onClick={() => navigate(insight.action!)} className="shrink-0 text-accent hover:text-accent gap-1">
-                {insight.actionLabel} <ChevronRight className="h-6 w-6" />
+                {insight.actionLabel} <ChevronRight className="h-4 w-4" />
               </Button>
             )}
           </div>
@@ -263,7 +263,7 @@ const ClientDashboard = () => {
             <AlertTriangle className="h-6 w-6 text-warning shrink-0" />
             <p className="text-sm text-foreground flex-1">Revise seus dados financeiros deste mês</p>
             <Button size="sm" variant="ghost" onClick={() => navigate("/cliente/meus-dados")} className="shrink-0 text-warning hover:text-warning">
-              Revisar <ChevronRight className="h-6 w-6" />
+              Revisar <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </motion.div>
@@ -325,13 +325,11 @@ const ClientDashboard = () => {
                 <motion.div key={goal.id} variants={fadeUp} custom={i}>
                   <div className="relative">
                     <div
-                      className="group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+                      className="group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5 bg-card"
                       style={{
-                        background: config.bg,
-                        border: `1px solid ${config.accent}18`,
-                        borderTop: `1px solid ${config.accent}25`,
-                        borderBottom: "1px solid rgba(0,0,0,0.3)",
-                        boxShadow: `0 1px 0 ${config.accent}08 inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 8px 24px -6px rgba(0,0,0,0.4)`,
+                        border: `1px solid hsl(var(${config.cssVar}) / 0.2)`,
+                        borderTop: `2px solid hsl(var(${config.cssVar}) / 0.5)`,
+                        boxShadow: `0 2px 12px -4px hsl(var(${config.cssVar}) / 0.15), 0 1px 0 hsl(var(${config.cssVar}) / 0.08) inset`,
                       }}
                       onClick={() => navigate("/cliente/plano-acao")}
                     >
@@ -341,19 +339,19 @@ const ClientDashboard = () => {
                         animate={{ y: [0, -3, 0], rotate: [0, 2, 0] }}
                         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                       >
-                        <img src={config.icon3d} alt="" className="w-full h-full object-contain opacity-[0.12] group-hover:opacity-[0.2] transition-opacity duration-700" loading="lazy" />
+                        <img src={config.icon3d} alt="" className="w-full h-full object-contain opacity-[0.10] group-hover:opacity-[0.18] transition-opacity duration-700" loading="lazy" />
                       </motion.div>
 
                       <div className="relative z-10 p-5">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-[11px] font-medium tracking-wide uppercase" style={{ color: `${config.accent}99` }}>
+                          <span className="text-[11px] font-semibold tracking-wide uppercase" style={{ color: `hsl(var(${config.cssVar}))` }}>
                             {config.badge}
                           </span>
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
                             style={{
-                              background: `${config.accent}15`,
-                              color: config.accent,
-                              border: `1px solid ${config.accent}25`,
+                              background: `hsl(var(${config.cssVar}) / 0.12)`,
+                              color: `hsl(var(${config.cssVar}))`,
+                              border: `1px solid hsl(var(${config.cssVar}) / 0.25)`,
                             }}>
                             {goal.priority === "alta" ? "Alta" : goal.priority === "baixa" ? "Baixa" : "Média"}
                           </span>
@@ -364,15 +362,15 @@ const ClientDashboard = () => {
                             <img src={config.icon3d} alt="" className="w-full h-full object-contain" loading="lazy" />
                           </motion.div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-white text-[15px] leading-snug truncate">{goal.description}</h3>
+                            <h3 className="font-bold text-foreground text-[15px] leading-snug truncate">{goal.description}</h3>
                             <div className="flex items-center gap-2 mt-0.5">
                               {goal.target_amount && (
-                                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                                <span className="text-[11px] font-medium text-muted-foreground">
                                   Meta: {fmtShort(goal.target_amount)}
                                 </span>
                               )}
                               {deadlineStr && (
-                                <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                <span className="text-[11px] text-muted-foreground/70">
                                   até {deadlineStr}
                                 </span>
                               )}
@@ -382,19 +380,19 @@ const ClientDashboard = () => {
 
                         <div className="flex items-end justify-between">
                           <div>
-                            <span className="text-3xl font-black text-white tracking-tight">{taskPct}%</span>
-                            <span className="ml-1.5 text-xs font-medium" style={{ color: config.accent }}>
+                            <span className="text-3xl font-black text-foreground tracking-tight">{taskPct}%</span>
+                            <span className="ml-1.5 text-xs font-medium" style={{ color: `hsl(var(${config.cssVar}))` }}>
                               {goal.tasksDone}/{goal.tasksTotal}
-                              {taskPct > 0 && <TrendingUp className="inline-block h-6 w-6 ml-1 -mt-0.5" />}
+                              {taskPct > 0 && <TrendingUp className="inline-block h-4 w-4 ml-1 -mt-0.5" />}
                             </span>
                           </div>
-                          <span className="text-[10px] font-medium text-white/30 bg-white/[0.06] px-2.5 py-1 rounded-md">
+                          <span className="text-[10px] font-medium text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md">
                             {goal.tasksTotal} {goal.tasksTotal === 1 ? "ação" : "ações"}
                           </span>
                         </div>
 
-                        <div className="mt-3 h-1.5 rounded-full overflow-hidden bg-white/[0.08]">
-                          <motion.div className="h-full rounded-full" style={{ backgroundColor: config.accent }}
+                        <div className="mt-3 h-1.5 rounded-full overflow-hidden bg-muted/40">
+                          <motion.div className="h-full rounded-full" style={{ backgroundColor: `hsl(var(${config.cssVar}))` }}
                             initial={{ width: 0 }} animate={{ width: `${taskPct}%` }} transition={{ duration: 1, delay: i * 0.08 }} />
                         </div>
                       </div>
@@ -611,7 +609,7 @@ const ClientDashboard = () => {
 
                 <div className="flex justify-end mt-2">
                   <Button variant="ghost" size="sm" onClick={() => navigate("/cliente/plano-acao")} className="text-[11px] text-primary hover:text-primary gap-1 h-7 px-2">
-                    Ver próximas tarefas <ChevronRight className="h-6 w-6" />
+                    Ver próximas tarefas <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
