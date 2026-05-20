@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import {
   Save, Loader2, Check, ChevronDown, ChevronRight,
   Clock, Target, TrendingUp, TrendingDown, Minus, History,
-  Wallet, Receipt, CreditCard, Building2, Shield,
+  Wallet, Receipt, CreditCard, Building2, Shield, Trash2,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,16 @@ const SECTION_CONFIG: Record<SourceTable, { label: string; icon: LucideIcon; col
 };
 
 const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance", "goals"];
+
+// Infere a direção esperada a partir do tipo de item
+function inferDirection(sourceTable: string): { label: string; icon: LucideIcon; cls: string } {
+  switch (sourceTable) {
+    case "debts":    return { label: "Quitar",  icon: Trash2,      cls: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400" };
+    case "expenses": return { label: "Reduzir", icon: TrendingDown, cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" };
+    case "income":   return { label: "Crescer", icon: TrendingUp,   cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" };
+    default:         return { label: "Crescer", icon: TrendingUp,   cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" };
+  }
+}
 
 function progressColor(pct: number) {
   if (pct >= 100) return "text-emerald-600";
@@ -123,7 +133,19 @@ function MetaAcompRow({
 
         {/* ── ESQUERDA: dados do Plano de Ação (read-only) ── */}
         <div className="space-y-1.5">
-          <p className="text-sm font-semibold leading-tight">{meta.source_label}</p>
+          <div className="flex items-start gap-2">
+            <p className="text-sm font-semibold leading-tight flex-1">{meta.source_label}</p>
+            {(() => {
+              const dir = inferDirection(meta.source_table);
+              const DirIcon = dir.icon;
+              return (
+                <span className={cn("flex items-center gap-1 text-[0.6rem] font-semibold rounded-full px-1.5 py-0.5 shrink-0", dir.cls)}>
+                  <DirIcon className="w-2.5 h-2.5" />
+                  {dir.label}
+                </span>
+              );
+            })()}
+          </div>
 
           {meta.meta_text ? (
             <div className="flex items-start gap-1.5 rounded-md bg-muted/40 px-2.5 py-1.5">
@@ -143,7 +165,8 @@ function MetaAcompRow({
             )}
             {meta.meta_valor ? (
               <span className="flex items-center gap-1">
-                <span>Meta:</span>
+                <Target className="w-3 h-3" />
+                Meta alvo:
                 <span className="font-medium tabular-nums text-foreground/70">{formatBRL(meta.meta_valor)}</span>
               </span>
             ) : null}

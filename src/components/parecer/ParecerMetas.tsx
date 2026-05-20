@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles, Save, Loader2, ChevronDown, CalendarDays,
   Wallet, Receipt, CreditCard, Building2, Shield, Target,
+  TrendingUp, TrendingDown, Trash2, Minus,
   type LucideIcon,
 } from "lucide-react";
 
@@ -37,13 +38,26 @@ interface ParecerMeta {
   meta_valor?: number;
 }
 
+type Direction = "increase" | "reduce" | "eliminate" | "maintain";
+
 interface AiSuggestion {
   source_table: string;
   source_id: string;
   suggestion_text: string;
   target_value?: number;
   suggested_prazo?: string;
+  direction?: Direction;
 }
+
+const DIRECTION_CONFIG: Record<Direction, {
+  label: string; icon: LucideIcon;
+  card: string; badge: string; iconClass: string;
+}> = {
+  increase:  { label: "Crescer",  icon: TrendingUp,   card: "bg-emerald-500/5 border-emerald-500/25",  badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", iconClass: "text-emerald-500" },
+  reduce:    { label: "Reduzir",  icon: TrendingDown,  card: "bg-amber-500/5 border-amber-500/25",      badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",       iconClass: "text-amber-500" },
+  eliminate: { label: "Quitar",   icon: Trash2,        card: "bg-rose-500/5 border-rose-500/25",        badge: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",           iconClass: "text-rose-500" },
+  maintain:  { label: "Manter",   icon: Minus,         card: "bg-blue-500/5 border-blue-500/25",        badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",           iconClass: "text-blue-500" },
+};
 
 interface FieldState {
   metaText: string;
@@ -429,26 +443,37 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                               type="number"
                               min={0}
                             />
-                            {hasAI && (
-                              <div className="flex items-start gap-2 px-2.5 py-2 rounded-lg bg-novare-blue/5 border border-novare-blue/20">
-                                <Sparkles className="w-3.5 h-3.5 mt-0.5 shrink-0 text-novare-blue" />
-                                <span className="text-xs text-muted-foreground flex-1 leading-relaxed">
-                                  {aiSugg.suggestion_text}
-                                </span>
-                                <button
-                                  onClick={() => {
-                                    updateField(item.source_id, "metaText", aiSugg.suggestion_text);
-                                    if (aiSugg.target_value != null)
-                                      updateField(item.source_id, "metaValor", String(aiSugg.target_value));
-                                    if (aiSugg.suggested_prazo)
-                                      updateField(item.source_id, "prazo", aiSugg.suggested_prazo);
-                                  }}
-                                  className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
-                                >
-                                  Aplicar
-                                </button>
-                              </div>
-                            )}
+                            {hasAI && (() => {
+                              const dir = aiSugg.direction ?? "increase";
+                              const dcfg = DIRECTION_CONFIG[dir] || DIRECTION_CONFIG.increase;
+                              const DirIcon = dcfg.icon;
+                              return (
+                                <div className={cn("flex items-start gap-2 px-2.5 py-2 rounded-lg border", dcfg.card)}>
+                                  <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-novare-blue" />
+                                    <span className={cn("flex items-center gap-0.5 text-[0.6rem] font-semibold rounded-full px-1.5 py-0.5 whitespace-nowrap", dcfg.badge)}>
+                                      <DirIcon className={cn("w-2.5 h-2.5", dcfg.iconClass)} />
+                                      {dcfg.label}
+                                    </span>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground flex-1 leading-relaxed">
+                                    {aiSugg.suggestion_text}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      updateField(item.source_id, "metaText", aiSugg.suggestion_text);
+                                      if (aiSugg.target_value != null)
+                                        updateField(item.source_id, "metaValor", String(aiSugg.target_value));
+                                      if (aiSugg.suggested_prazo)
+                                        updateField(item.source_id, "prazo", aiSugg.suggested_prazo);
+                                    }}
+                                    className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors self-start"
+                                  >
+                                    Aplicar
+                                  </button>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       );
