@@ -700,28 +700,20 @@ const ClientDiagnosis = () => {
 
       {/* ── 3. INSIGHTS DA IA AGRUPADOS ───────────── */}
       {aiInsights.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-accent/10">
+        <div className="space-y-4">
+          {/* Header da seção */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Sparkles className="h-4 w-4 text-accent" />
               </div>
-              Pontos identificados pela IA
-              <Badge variant="outline" className="text-[10px]">
-                {aiInsights.length}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <AnimatePresence initial={false}>
-                {aiInsights.map((ins, i) => (
-                  <InsightCard key={`${ins.kind}-${i}`} insight={ins} index={i} />
-                ))}
-              </AnimatePresence>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">Pontos identificados pela IA</h3>
+                <p className="text-[10px] text-muted-foreground">{aiInsights.length} pontos analisados</p>
+              </div>
             </div>
-            {/* Resumo por categoria */}
-            <div className="mt-4 pt-3 border-t border-border/40 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {/* Resumo por categoria — inline no header */}
+            <div className="hidden sm:flex items-center gap-1.5">
               {(["critico", "alerta", "oportunidade", "ponto_forte"] as const).map((k) => {
                 const tone = INSIGHT_TONES[k];
                 const count = groupedInsights[k].length;
@@ -730,24 +722,50 @@ const ClientDiagnosis = () => {
                   <div
                     key={k}
                     className={cn(
-                      "rounded-lg border px-2.5 py-2 flex items-center gap-2 text-[11px]",
-                      tone.border,
-                      tone.bg,
+                      "flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold border",
+                      tone.bg, tone.border,
+                      tone.iconBg.split(" ").find(c => c.startsWith("text-")) || "text-foreground"
                     )}
                   >
-                    <div className={cn("h-5 w-5 rounded flex items-center justify-center shrink-0", tone.iconBg)}>
-                      <Icon className="h-3 w-3" strokeWidth={2.5} />
-                    </div>
-                    <span className="text-foreground">
-                      <span className="font-bold">{count}</span> {tone.label.toLowerCase()}
-                      {count !== 1 && "s"}
-                    </span>
+                    <Icon className="h-3 w-3" strokeWidth={2.5} />
+                    <span>{count}</span>
                   </div>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Grid de cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <AnimatePresence initial={false}>
+              {aiInsights.map((ins, i) => (
+                <InsightCard key={`${ins.kind}-${i}`} insight={ins} index={i} />
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Resumo mobile */}
+          <div className="flex sm:hidden gap-2 flex-wrap">
+            {(["critico", "alerta", "oportunidade", "ponto_forte"] as const).map((k) => {
+              const tone = INSIGHT_TONES[k];
+              const count = groupedInsights[k].length;
+              const Icon = tone.icon;
+              return (
+                <div
+                  key={k}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold border",
+                    tone.bg, tone.border,
+                    tone.iconBg.split(" ").find(c => c.startsWith("text-")) || "text-foreground"
+                  )}
+                >
+                  <Icon className="h-3 w-3" strokeWidth={2.5} />
+                  {count} {tone.label.toLowerCase()}{count !== 1 ? "s" : ""}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* ── 4. DISTRIBUIÇÃO DE DESPESAS ─────────── */}
@@ -962,53 +980,72 @@ const KpiLine = ({
 const InsightCard = ({ insight, index }: { insight: Insight; index: number }) => {
   const tone = INSIGHT_TONES[insight.kind];
   const Icon = tone.icon;
+
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ delay: Math.min(index * 0.04, 0.3) }}
-      className={cn("rounded-xl border p-3.5", tone.bg, tone.border)}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ delay: Math.min(index * 0.05, 0.3), duration: 0.3, ease: "easeOut" }}
+      className={cn(
+        "group relative rounded-2xl border overflow-hidden flex flex-col",
+        tone.bg, tone.border
+      )}
     >
-      <div className="flex items-start gap-3">
-        <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", tone.iconBg)}>
-          <Icon className="h-4 w-4" strokeWidth={2} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", tone.border)}>
-              {tone.label}
-            </Badge>
-            {insight.severity === "alta" && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-destructive/40 text-destructive">
-                Alta
-              </Badge>
-            )}
-            {insight.metric_value != null && (
-              <span className="text-[10.5px] font-semibold tabular-nums text-foreground/85">
-                {insight.metric_label ? `${insight.metric_label}: ` : ""}
-                {insight.metric_value < 100 && insight.metric_value > -100
-                  ? `${insight.metric_value.toFixed(1)}%`
-                  : fmtBRL(insight.metric_value)}
-              </span>
-            )}
-          </div>
-          <p className="text-sm font-semibold text-foreground tracking-tight leading-snug">
-            {insight.title}
-          </p>
-          <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-            {insight.description}
-          </p>
-          {insight.suggested_action && (
-            <div className="mt-2 pt-2 border-t border-border/40 flex items-start gap-1.5">
-              <ArrowRight className="h-3 w-3 text-accent mt-0.5 shrink-0" />
-              <p className="text-[11.5px] text-foreground/85">
-                <span className="font-semibold">Sugestão:</span> {insight.suggested_action}
-              </p>
+      {/* Linha de cor no topo */}
+      <div className={cn("h-0.5 w-full", tone.border.replace("border-", "bg-").replace("/35", "/60").replace("/30", "/60"))} />
+
+      <div className="p-4 flex flex-col gap-3 flex-1">
+        {/* Topo: ícone + tipo + metric */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", tone.iconBg)}>
+              <Icon className="h-3.5 w-3.5" strokeWidth={2.5} />
             </div>
+            <span className={cn(
+              "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
+              tone.bg, tone.border,
+              // extrai só a cor de texto do iconBg
+              tone.iconBg.split(" ").find(c => c.startsWith("text-")) || "text-foreground"
+            )}>
+              {tone.label}
+            </span>
+          </div>
+          {insight.metric_value != null && (
+            <span className="text-[11px] font-bold tabular-nums text-foreground/70 bg-background/60 px-2 py-0.5 rounded-lg border border-border/40">
+              {insight.metric_label ? `${insight.metric_label}: ` : ""}
+              {insight.metric_value < 100 && insight.metric_value > -100
+                ? `${insight.metric_value.toFixed(1)}%`
+                : fmtBRL(insight.metric_value)}
+            </span>
           )}
         </div>
+
+        {/* Título */}
+        <div>
+          <p className="text-[0.9375rem] font-bold text-foreground tracking-tight leading-snug">
+            {insight.title}
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">
+            {insight.description}
+          </p>
+        </div>
+
+        {/* Sugestão */}
+        {insight.suggested_action && (
+          <div className="mt-auto pt-3 border-t border-border/30">
+            <div className="flex items-start gap-2">
+              <div className={cn("h-4 w-4 rounded flex items-center justify-center shrink-0 mt-0.5", tone.iconBg)}>
+                <ArrowRight className="h-2.5 w-2.5" strokeWidth={3} />
+              </div>
+              <p className="text-[11.5px] leading-snug text-foreground/80">
+                <span className="font-semibold">Sugestão: </span>
+                {insight.suggested_action}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );
