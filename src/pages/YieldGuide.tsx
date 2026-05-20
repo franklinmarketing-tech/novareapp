@@ -80,7 +80,6 @@ const featurePills: { label: string; target: string }[] = [
   { label: "Simulador", target: "#simulador" },
   { label: "Selic", target: "#renda-fixa" },
   { label: "CDI", target: "#renda-fixa" },
-  { label: "IPCA+", target: "#renda-fixa" },
   { label: "CDB", target: "#renda-fixa" },
   { label: "Tesouro Direto", target: "#renda-fixa" },
   { label: "FGC", target: "#faq" },
@@ -93,7 +92,6 @@ const featurePills: { label: string; target: string }[] = [
 const tableData = [
   { ativo: "CDB Prefixado", rent: "14,20%", v50: "R$ 55.857", v100: "R$ 111.715", v1m: "R$ 1.117.150" },
   { ativo: "CDB Pós-fixado – 104% CDI", rent: "14,73%", v50: "R$ 56.076", v100: "R$ 112.153", v1m: "R$ 1.121.535" },
-  { ativo: "IPCA + 7% (isento IR)", rent: "11,51%", v50: "R$ 55.755", v100: "R$ 111.510", v1m: "R$ 1.115.100" },
 ];
 
 interface BentoFeature {
@@ -127,16 +125,6 @@ const bentoFeatures: BentoFeature[] = [
     span: "md:col-span-1",
     variant: "default",
     rentAnual: 14.73,
-  },
-  {
-    title: "IPCA+",
-    desc: "Protege da inflação com ganho real.",
-    icon: Shield,
-    rate: "IPCA + 7%",
-    rateLabel: "Ganho real",
-    span: "md:col-span-1",
-    variant: "default",
-    rentAnual: 11.51,
   },
 ];
 
@@ -979,7 +967,7 @@ const YieldGuide = () => {
                 <p className="text-[10px] md:text-[11px] uppercase tracking-[0.28em] text-muted-foreground font-bold text-center lg:text-left">
                   Entenda cada tipo de Renda Fixa — selecione um
                 </p>
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:gap-3 items-stretch">
                   {currentBento.map((f, i) => {
                     const isHero = f.variant === "hero";
                     const isSelected = selectedFaixa === f.title;
@@ -1255,69 +1243,75 @@ const YieldGuide = () => {
                   </div>
                 </div>
 
-                {/* Grupo 4 — IMPOSTO DE RENDA NA APLICAÇÃO (100% automático) */}
-                <div className="space-y-2">
-                  <p className="sim-group-label">
-                    <Receipt className="h-3.5 w-3.5" />
-                    Imposto de Renda na Aplicação
-                  </p>
-                  <p className="text-[10.5px] text-muted-foreground -mt-0.5 leading-snug">
-                    Calculado automaticamente conforme o <span className="font-semibold text-foreground/80">tipo de renda</span> e o <span className="font-semibold text-foreground/80">prazo</span> escolhidos.
-                  </p>
-                  <div className="grid sm:grid-cols-2 gap-x-3 gap-y-2.5">
-                    {/* Card 1 — Alíquota automática */}
-                    <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">
-                        Alíquota de IR (Renda Fixa)
-                      </label>
-                      <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
-                        <span className="text-base font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
-                          {aliquotaEfetivaAtual.toString().replace(".", ",")}%
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-novare-blue/10 dark:bg-novare-blue-bright/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">
-                          <Sparkles className="h-2.5 w-2.5" />
-                          Auto
-                        </span>
-                      </div>
-                      <p className="text-[9.5px] text-muted-foreground/80 leading-snug truncate" title={regraIRTexto}>{regraIRTexto}</p>
-                    </div>
-
-                    {/* Card 2 — Rendimento líquido após IR */}
-                    <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">Rendimento líquido após IR</label>
-                      <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
-                        <span className="text-base font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
-                          {sim.rentabilidade
-                            ? `${(rentAnual * (1 - aliquotaEfetivaAtual / 100)).toFixed(2).replace(".", ",")}%`
-                            : "—"}
-                        </span>
-                        <span className="text-[9px] font-bold text-novare-blue/70 dark:text-novare-blue-bright/70 uppercase tracking-wider">a.a.</span>
-                      </div>
-                      <p className="text-[9.5px] text-muted-foreground/80 leading-snug truncate">
-                        Bruto {rentAnual.toFixed(2).replace(".", ",")}% − IR {aliquotaEfetivaAtual.toString().replace(".", ",")}%
+                {/* Grupo 4 — IMPOSTO DE RENDA NA APLICAÇÃO (sanfona fechada) */}
+                <Accordion type="single" collapsible className="border border-border/40 rounded-xl overflow-hidden">
+                  <AccordionItem value="ir" className="border-none">
+                    <AccordionTrigger className="px-3.5 py-2.5 hover:no-underline hover:bg-muted/30 [&>svg]:h-3.5 [&>svg]:w-3.5">
+                      <span className="sim-group-label mb-0">
+                        <Receipt className="h-3.5 w-3.5" />
+                        Imposto de Renda na Aplicação
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-3.5 pb-3.5 pt-1 space-y-2">
+                      <p className="text-[10.5px] text-muted-foreground leading-snug">
+                        Calculado automaticamente conforme o <span className="font-semibold text-foreground/80">tipo de renda</span> e o <span className="font-semibold text-foreground/80">prazo</span> escolhidos.
                       </p>
-                    </div>
+                      <div className="grid sm:grid-cols-2 gap-x-3 gap-y-2.5">
+                        {/* Card 1 — Alíquota automática */}
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">
+                            Alíquota de IR (Renda Fixa)
+                          </label>
+                          <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
+                            <span className="text-base font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
+                              {aliquotaEfetivaAtual.toString().replace(".", ",")}%
+                            </span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-novare-blue/10 dark:bg-novare-blue-bright/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">
+                              <Sparkles className="h-2.5 w-2.5" />
+                              Auto
+                            </span>
+                          </div>
+                          <p className="text-[9.5px] text-muted-foreground/80 leading-snug truncate" title={regraIRTexto}>{regraIRTexto}</p>
+                        </div>
 
-                    {/* Card 3 — Valor de IR estimado sobre o ganho */}
-                    <div className="space-y-1 sm:col-span-2">
-                      <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">Imposto estimado no resgate</label>
-                      <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-amber-100/40 to-transparent dark:from-amber-900/15">
-                        <span className="text-base font-extrabold text-amber-700 dark:text-amber-400 tabular-nums tracking-tight">
-                          {result ? result.irDevido : "—"}
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 dark:bg-amber-400/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                          <Receipt className="h-2.5 w-2.5" />
-                          IR devido
-                        </span>
+                        {/* Card 2 — Rendimento líquido após IR */}
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">Rendimento líquido após IR</label>
+                          <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-novare-blue-light/40 to-transparent dark:from-novare-blue/15">
+                            <span className="text-base font-extrabold text-novare-blue dark:text-novare-blue-bright tabular-nums tracking-tight">
+                              {sim.rentabilidade
+                                ? `${(rentAnual * (1 - aliquotaEfetivaAtual / 100)).toFixed(2).replace(".", ",")}%`
+                                : "—"}
+                            </span>
+                            <span className="text-[9px] font-bold text-novare-blue/70 dark:text-novare-blue-bright/70 uppercase tracking-wider">a.a.</span>
+                          </div>
+                          <p className="text-[9.5px] text-muted-foreground/80 leading-snug truncate">
+                            Bruto {rentAnual.toFixed(2).replace(".", ",")}% − IR {aliquotaEfetivaAtual.toString().replace(".", ",")}%
+                          </p>
+                        </div>
+
+                        {/* Card 3 — Valor de IR estimado sobre o ganho */}
+                        <div className="space-y-1 sm:col-span-2">
+                          <label className="text-[11px] font-semibold text-foreground/85 leading-tight block">Imposto estimado no resgate</label>
+                          <div className="calc-input !h-10 pl-3 pr-3 flex items-center justify-between bg-gradient-to-br from-amber-100/40 to-transparent dark:from-amber-900/15">
+                            <span className="text-base font-extrabold text-amber-700 dark:text-amber-400 tabular-nums tracking-tight">
+                              {result ? result.irDevido : "—"}
+                            </span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 dark:bg-amber-400/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                              <Receipt className="h-2.5 w-2.5" />
+                              IR devido
+                            </span>
+                          </div>
+                          <p className="text-[9.5px] text-muted-foreground/80 leading-snug truncate">
+                            {result
+                              ? `${aliquotaEfetivaAtual.toString().replace(".", ",")}% sobre o ganho bruto de ${result.ganhoBruto}.`
+                              : "Será calculado após você simular a aposentadoria."}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-[9.5px] text-muted-foreground/80 leading-snug truncate">
-                        {result
-                          ? `${aliquotaEfetivaAtual.toString().replace(".", ",")}% sobre o ganho bruto de ${result.ganhoBruto}.`
-                          : "Será calculado após você simular a aposentadoria."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
 
                 <p className="text-[10px] text-muted-foreground/70 leading-snug border-t border-border/40 pt-2">
                   <span className="font-bold text-foreground/70">*</span> Valores em rentabilidade nominal (bruta). IR deduzido apenas no resgate conforme tabela regressiva. Resultados são estimativas.
@@ -1389,58 +1383,27 @@ const YieldGuide = () => {
                 </div>
 
                 {/* 3 KPIs laterais */}
-                <div className="grid sm:grid-cols-3 gap-2.5 md:gap-3">
-                  {[
-                    {
-                      label: "Renda mensal",
-                      icon: Wallet,
-                      value: result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "R$ —",
-                      sub: "em valores de hoje",
-                    },
-                    {
-                      label: "Renda anual",
-                      icon: Calendar,
-                      value: result ? formatCompactBRL(result.rendaMensalLiquidaNum * 12) : "R$ —",
-                      sub: "em valores de hoje",
-                    },
-                    {
-                      label: "Taxa de reposição",
-                      icon: Percent,
-                      value: result && result.rendaDesejadaNum > 0
-                        ? `${Math.min(999, Math.round(result.rendaVsDesejada))}%`
-                        : "—",
-                      sub: "da renda desejada\nem valores de hoje",
-                    },
-                  ].map((k) => {
-                    const Icon = k.icon;
-                    return (
-                      <div key={k.label} className="sim-kpi min-w-0">
-                        <div className="flex items-center gap-2.5 mb-3">
-                          <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                            style={{
-                              background: "linear-gradient(135deg, hsl(var(--novare-blue) / 0.18), hsl(var(--novare-blue-bright) / 0.06))",
-                              border: "1px solid hsl(var(--novare-blue) / 0.20)",
-                              boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.7)",
-                            }}
-                          >
-                            <Icon className="h-[18px] w-[18px] text-novare-blue dark:text-novare-blue-bright" strokeWidth={2.25} />
-                          </div>
-                          <p className="text-[11px] md:text-xs uppercase tracking-[0.12em] text-foreground/75 font-bold leading-tight">{k.label}</p>
-                        </div>
-                        <p
-                          className="calc-num font-black text-novare-blue dark:text-novare-blue-bright leading-[1.1] tabular-nums tracking-tight whitespace-nowrap overflow-hidden"
-                          style={{ fontSize: "clamp(0.95rem, 3.6vw, 1.35rem)" }}
-                          title={k.value}
-                        >
-                          {k.value}
-                        </p>
-                        <p className="text-[10.5px] text-muted-foreground mt-1.5 leading-snug whitespace-pre-line font-medium">
-                          {k.sub}
-                        </p>
-                      </div>
-                    );
-                  })}
+                <div className="sim-kpi min-w-0">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{
+                        background: "linear-gradient(135deg, hsl(var(--novare-blue) / 0.18), hsl(var(--novare-blue-bright) / 0.06))",
+                        border: "1px solid hsl(var(--novare-blue) / 0.20)",
+                        boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.7)",
+                      }}
+                    >
+                      <Wallet className="h-[18px] w-[18px] text-novare-blue dark:text-novare-blue-bright" strokeWidth={2.25} />
+                    </div>
+                    <p className="text-[11px] md:text-xs uppercase tracking-[0.12em] text-foreground/75 font-bold leading-tight">Renda mensal</p>
+                  </div>
+                  <p
+                    className="calc-num font-black text-novare-blue dark:text-novare-blue-bright leading-[1.1] tabular-nums tracking-tight whitespace-nowrap overflow-hidden"
+                    style={{ fontSize: "clamp(0.95rem, 3.6vw, 1.35rem)" }}
+                  >
+                    {result ? formatCompactBRL(result.rendaMensalLiquidaNum) : "R$ —"}
+                  </p>
+                  <p className="text-[10.5px] text-muted-foreground mt-1.5 leading-snug font-medium">em valores de hoje</p>
                 </div>
 
                 {/* Gráfico de evolução do patrimônio líquido */}
