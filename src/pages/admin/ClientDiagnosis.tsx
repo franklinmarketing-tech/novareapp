@@ -983,6 +983,8 @@ const KpiLine = ({
 
 const InsightCard = ({ insight, index }: { insight: Insight; index: number }) => {
   const tone = INSIGHT_TONES[insight.kind];
+  const Icon = tone.icon;
+  const textColor = tone.iconBg.split(" ").find(c => c.startsWith("text-")) || "text-foreground";
 
   return (
     <motion.div
@@ -991,31 +993,23 @@ const InsightCard = ({ insight, index }: { insight: Insight; index: number }) =>
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ delay: Math.min(index * 0.05, 0.3), duration: 0.3, ease: "easeOut" }}
-      className={cn(
-        "group relative rounded-2xl border overflow-hidden flex flex-col",
-        tone.bg, tone.border
-      )}
+      className="group relative rounded-xl border border-border/60 bg-card overflow-hidden flex flex-col shadow-[0_1px_4px_hsl(0_0%_0%/0.04)]"
+      style={{ boxShadow: "0 1px 3px hsl(0 0% 0% / 0.06), 0 1px 0 hsl(0 0% 100% / 0.6) inset" }}
     >
-      {/* Linha de cor no topo */}
-      <div className={cn("h-0.5 w-full", tone.border.replace("border-", "bg-").replace("/35", "/60").replace("/30", "/60"))} />
+      {/* Barra lateral colorida */}
+      <div
+        className={cn("absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl", tone.border.replace("border-", "bg-").replace("/35", "").replace("/30", ""))}
+      />
 
-      <div className="p-4 flex flex-col gap-3 flex-1">
-        {/* Topo: emoji + tipo + metric */}
+      <div className="pl-5 pr-4 py-4 flex flex-col gap-2.5 flex-1">
+        {/* Linha 1: tipo + métrica */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shrink-0 text-lg leading-none", tone.iconBg)}>
-              {tone.emoji}
-            </div>
-            <span className={cn(
-              "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
-              tone.bg, tone.border,
-              tone.iconBg.split(" ").find(c => c.startsWith("text-")) || "text-foreground"
-            )}>
-              {tone.label}
-            </span>
+          <div className={cn("flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-widest", textColor)}>
+            <Icon className="h-3 w-3" strokeWidth={2.5} />
+            {tone.label}
           </div>
           {insight.metric_value != null && (
-            <span className="text-[11px] font-bold tabular-nums text-foreground/70 bg-background/60 px-2 py-0.5 rounded-lg border border-border/40">
+            <span className="text-[10.5px] font-semibold tabular-nums text-muted-foreground">
               {insight.metric_label ? `${insight.metric_label}: ` : ""}
               {insight.metric_value < 100 && insight.metric_value > -100
                 ? `${insight.metric_value.toFixed(1)}%`
@@ -1024,9 +1018,9 @@ const InsightCard = ({ insight, index }: { insight: Insight; index: number }) =>
           )}
         </div>
 
-        {/* Título */}
+        {/* Título + descrição */}
         <div>
-          <p className="text-[0.9375rem] font-bold text-foreground tracking-tight leading-snug">
+          <p className="text-[0.9375rem] font-semibold text-foreground tracking-tight leading-snug">
             {insight.title}
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">
@@ -1036,16 +1030,12 @@ const InsightCard = ({ insight, index }: { insight: Insight; index: number }) =>
 
         {/* Sugestão */}
         {insight.suggested_action && (
-          <div className="mt-auto pt-3 border-t border-border/30">
-            <div className="flex items-start gap-2">
-              <div className={cn("h-4 w-4 rounded flex items-center justify-center shrink-0 mt-0.5", tone.iconBg)}>
-                <ArrowRight className="h-2.5 w-2.5" strokeWidth={3} />
-              </div>
-              <p className="text-[11.5px] leading-snug text-foreground/80">
-                <span className="font-semibold">Sugestão: </span>
-                {insight.suggested_action}
-              </p>
-            </div>
+          <div className="mt-auto pt-2.5 border-t border-border/40 flex items-start gap-2">
+            <ArrowRight className={cn("h-3 w-3 mt-0.5 shrink-0", textColor)} strokeWidth={2.5} />
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              <span className="font-medium text-foreground/80">Sugestão: </span>
+              {insight.suggested_action}
+            </p>
           </div>
         )}
       </div>
