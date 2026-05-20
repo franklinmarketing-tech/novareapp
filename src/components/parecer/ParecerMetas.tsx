@@ -449,17 +449,33 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
               >
                 <Icon className="w-4 h-4" style={{ color: accent }} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground">{cfg.label}</p>
-                <p className="text-[0.6875rem] text-muted-foreground">
-                  {items.length} item{items.length !== 1 ? "s" : ""}
-                  {metasCount > 0 && <> · <span className="text-novare-terracotta font-semibold">{metasCount} com meta ✓</span></>}
-                  {aiSuggestions.filter((s) => s.source_table === section).length > 0 && (
-                    <span className="ml-1.5 text-novare-blue-bright font-medium">
-                      · {aiSuggestions.filter((s) => s.source_table === section).length} sugestão IA
-                    </span>
-                  )}
-                </p>
+              <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-foreground/60">{cfg.label}</span>
+
+                {/* Contagem de itens */}
+                <span
+                  className="text-[10px] font-bold tabular-nums h-[18px] min-w-[18px] px-1.5 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: `${accent}15`, color: accent, border: `1px solid ${accent}25` }}
+                >
+                  {items.length}
+                </span>
+
+                {/* Com meta */}
+                {metasCount > 0 && (
+                  <span
+                    className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+                    style={{ background: `${accent}12`, color: accent, border: `1px solid ${accent}28` }}
+                  >
+                    {metasCount} com meta
+                  </span>
+                )}
+
+                {/* Sugestão IA */}
+                {aiSuggestions.filter((s) => s.source_table === section).length > 0 && (
+                  <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 border border-novare-blue/20 bg-novare-blue-light/40 text-novare-blue dark:text-novare-blue-bright">
+                    IA · {aiSuggestions.filter((s) => s.source_table === section).length}
+                  </span>
+                )}
               </div>
               <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-muted-foreground/40 shrink-0">
                 <ChevronDown className="w-4 h-4" />

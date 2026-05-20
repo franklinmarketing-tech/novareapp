@@ -647,19 +647,51 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
         const Icon = cfg.icon;
         const comAcomp = items.filter((m) => entradas.some((e) => e.meta_id === m.id)).length;
 
+        const sectionAccent: Record<string, string> = {
+            income:    "hsl(142 65% 42%)",
+            expenses:  "hsl(0 72% 55%)",
+            debts:     "hsl(38 95% 48%)",
+            assets:    "hsl(210 75% 62%)",
+            insurance: "hsl(260 60% 58%)",
+            goals:     "hsl(142 65% 42%)",
+          };
+          const accent = sectionAccent[section] ?? "hsl(var(--primary))";
+
         return (
           <div key={section}>
-            <div className="flex items-center gap-2 mb-2">
-              <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", cfg.color)}>
-                <Icon className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2.5 mb-3">
+              {/* Barra lateral colorida */}
+              <div className="h-5 w-[3px] rounded-full shrink-0" style={{ background: accent }} />
+
+              {/* Ícone */}
+              <div
+                className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+                style={{ background: `${accent}18`, border: `1px solid ${accent}30` }}
+              >
+                <Icon className="w-3 h-3" style={{ color: accent }} />
               </div>
-              <h3 className="text-sm font-semibold text-novare-blue dark:text-novare-blue-bright">{cfg.label}</h3>
-              <Badge variant="secondary" className="text-xs">{items.length}</Badge>
+
+              {/* Label uppercase */}
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground/55">{cfg.label}</h3>
+
+              {/* Contagem */}
+              <span
+                className="text-[10px] font-bold tabular-nums h-[18px] min-w-[18px] px-1.5 rounded-full flex items-center justify-center"
+                style={{ background: `${accent}15`, color: accent, border: `1px solid ${accent}25` }}
+              >
+                {items.length}
+              </span>
+
+              {/* Badge "com entrada" */}
               {comAcomp > 0 && (
-                <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-600/30">
-                  {comAcomp} atualizada{comAcomp !== 1 ? "s" : ""}
-                </Badge>
+                <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                  <CheckCircle2 className="w-3 h-3" />
+                  {comAcomp} com entrada
+                </span>
               )}
+
+              {/* Linha separadora */}
+              <div className="flex-1 h-px bg-border/50" />
             </div>
 
             <div className="space-y-3">
@@ -690,17 +722,28 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
       {/* Objetivos — direto da tabela goals (vinculados ao painel de Objetivos do diagnóstico) */}
       {activeGoals.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", SECTION_CONFIG.goals.color)}>
-              <Target className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="h-5 w-[3px] rounded-full shrink-0 bg-success" />
+            <div
+              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+              style={{ background: "hsl(142 65% 42% / 0.12)", border: "1px solid hsl(142 65% 42% / 0.28)" }}
+            >
+              <Target className="w-3 h-3" style={{ color: "hsl(142 65% 42%)" }} />
             </div>
-            <h3 className="text-sm font-semibold text-novare-blue dark:text-novare-blue-bright">Objetivos</h3>
-            <Badge variant="secondary" className="text-xs">{activeGoals.length}</Badge>
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground/55">Objetivos</h3>
+            <span
+              className="text-[10px] font-bold tabular-nums h-[18px] min-w-[18px] px-1.5 rounded-full flex items-center justify-center"
+              style={{ background: "hsl(142 65% 42% / 0.12)", color: "hsl(142 65% 42%)", border: "1px solid hsl(142 65% 42% / 0.22)" }}
+            >
+              {activeGoals.length}
+            </span>
             {goalsWithInvestment > 0 && (
-              <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-600/30">
+              <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                <CheckCircle2 className="w-3 h-3" />
                 {goalsWithInvestment} em andamento
-              </Badge>
+              </span>
             )}
+            <div className="flex-1 h-px bg-border/50" />
           </div>
 
           <div className="space-y-3">
