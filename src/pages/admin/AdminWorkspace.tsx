@@ -132,8 +132,8 @@ const AdminWorkspace = () => {
             <a
               key={project.name}
               href={project.url}
-              target={isExternal ? "_blank" : "_self"}
-              rel={isExternal ? "noopener noreferrer" : undefined}
+              target="_blank"
+              rel="noopener noreferrer"
               className="group relative bg-card border border-border/50 rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:border-border"
               style={{
                 boxShadow: "0 1px 2px hsl(var(--foreground) / 0.04), 0 8px 24px -12px hsl(var(--foreground) / 0.08)",
