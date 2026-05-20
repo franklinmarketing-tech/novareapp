@@ -14,7 +14,7 @@ import {
   Printer, TrendingUp, TrendingDown, Wallet, Shield, AlertTriangle,
   CheckCircle2, Target, Banknote, PiggyBank, Scale, ArrowRight,
   Calendar, CreditCard, BarChart3, Gem, Clock, ArrowUpRight,
-  Download, Loader2,
+  Download, Loader2, Gauge,
 } from "lucide-react";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import { toast } from "@/hooks/use-toast";
@@ -31,13 +31,14 @@ const CHART_COLORS = [
 // ── Classification ───────────────────────────────────
 const classificationConfig: Record<string, {
   label: string; gradient: string; textColor: string;
-  bgColor: string; borderColor: string; description: string;
+  bgColor: string; borderColor: string; description: string; advice: string;
+  glowColor: string;
 }> = {
-  A: { label: "Excelente", gradient: "from-emerald-500/15 to-emerald-500/5", textColor: "text-emerald-600", bgColor: "bg-emerald-500/10", borderColor: "border-emerald-500/20", description: "Capacidade de poupança acima de 30%" },
-  B: { label: "Bom", gradient: "from-blue-500/15 to-blue-500/5", textColor: "text-blue-600", bgColor: "bg-blue-500/10", borderColor: "border-blue-500/20", description: "Capacidade de poupança entre 10% e 30%" },
-  C: { label: "Neutro", gradient: "from-amber-500/15 to-amber-500/5", textColor: "text-amber-600", bgColor: "bg-amber-500/10", borderColor: "border-amber-500/20", description: "Capacidade de poupança entre 0% e 10%" },
-  D: { label: "Atenção", gradient: "from-orange-500/15 to-orange-500/5", textColor: "text-orange-600", bgColor: "bg-orange-500/10", borderColor: "border-orange-500/20", description: "Déficit ou próximo de zero" },
-  E: { label: "Crítico", gradient: "from-red-500/15 to-red-500/5", textColor: "text-red-600", bgColor: "bg-red-500/10", borderColor: "border-red-500/20", description: "Endividamento elevado" },
+  A: { label: "Excelente", gradient: "from-emerald-500/15 to-emerald-500/5", textColor: "text-emerald-600", bgColor: "bg-emerald-500/10", borderColor: "border-emerald-500/20", description: "Capacidade de poupança acima de 30%", advice: "Excelente saúde financeira. Foco em otimização e crescimento patrimonial.", glowColor: "hsl(142 65% 42% / 0.35)" },
+  B: { label: "Bom", gradient: "from-blue-500/15 to-blue-500/5", textColor: "text-blue-600", bgColor: "bg-blue-500/10", borderColor: "border-blue-500/20", description: "Capacidade de poupança entre 10% e 30%", advice: "Bom potencial. Trabalhar para aumentar poupança e diversificar.", glowColor: "hsl(215 65% 55% / 0.35)" },
+  C: { label: "Neutro", gradient: "from-amber-500/15 to-amber-500/5", textColor: "text-amber-600", bgColor: "bg-amber-500/10", borderColor: "border-amber-500/20", description: "Capacidade de poupança entre 0% e 10%", advice: "Precisa reduzir despesas e criar margem de poupança.", glowColor: "hsl(38 95% 48% / 0.35)" },
+  D: { label: "Atenção", gradient: "from-orange-500/15 to-orange-500/5", textColor: "text-orange-600", bgColor: "bg-orange-500/10", borderColor: "border-orange-500/20", description: "Déficit ou próximo de zero", advice: "Requer intervenção imediata em despesas e dívidas.", glowColor: "hsl(25 90% 50% / 0.35)" },
+  E: { label: "Crítico", gradient: "from-red-500/15 to-red-500/5", textColor: "text-red-600", bgColor: "bg-red-500/10", borderColor: "border-red-500/20", description: "Endividamento elevado", advice: "Situação crítica. Priorizar renegociação e corte drástico.", glowColor: "hsl(0 72% 55% / 0.35)" },
 };
 
 const AREA_LABELS: Record<string, string> = {
@@ -56,13 +57,20 @@ const fmtPct = (v: number) => `${v.toFixed(1)}%`;
 // ── Section header ───────────────────────────────────
 const SectionHeader = ({ number, title, subtitle }: { number: number; title: string; subtitle?: string }) => (
   <div className="flex items-center gap-3 mb-5">
-    <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary text-primary-foreground text-sm font-bold shrink-0">
-      {number}
+    <div
+      className="flex items-center justify-center w-8 h-8 rounded-xl text-[11px] font-black shrink-0 text-white"
+      style={{
+        background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.72) 100%)",
+        boxShadow: "0 2px 8px hsl(var(--primary) / 0.28)",
+      }}
+    >
+      {String(number).padStart(2, "0")}
     </div>
-    <div>
-      <h2 className="text-xl font-bold text-foreground tracking-tight">{title}</h2>
-      {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+    <div className="min-w-0">
+      <h2 className="text-base font-bold text-foreground tracking-tight leading-tight">{title}</h2>
+      {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
     </div>
+    <div className="hidden sm:block flex-1 h-px bg-border/50" />
   </div>
 );
 
@@ -70,15 +78,27 @@ const SectionHeader = ({ number, title, subtitle }: { number: number; title: str
 const StatCard = ({ label, value, icon: Icon, color = "bg-muted/60 text-muted-foreground", className = "" }: {
   label: string; value: string; icon: React.ElementType; color?: string; className?: string;
 }) => (
-  <Card className={`${className}`}>
-    <CardContent className="p-5 text-center">
+  <div
+    className={`rounded-2xl overflow-hidden ${className}`}
+    style={{
+      background: "hsl(var(--card))",
+      border: "1.5px solid hsl(var(--foreground) / 0.08)",
+      borderTopColor: "hsl(var(--foreground) / 0.13)",
+      boxShadow: [
+        "0 1px 0 hsl(0 0% 100% / 0.55) inset",
+        "0 -1px 0 hsl(0 0% 0% / 0.03) inset",
+        "0 2px 10px -3px hsl(0 0% 0% / 0.08)",
+      ].join(", "),
+    }}
+  >
+    <div className="p-5 text-center">
       <div className={`p-2.5 rounded-xl ${color} w-fit mx-auto mb-3`}>
-        <Icon className="h-6 w-6" />
+        <Icon className="h-5 w-5" />
       </div>
-      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mb-1">{label}</p>
-      <p className="text-xl font-bold text-foreground tracking-tight">{value}</p>
-    </CardContent>
-  </Card>
+      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mb-1.5">{label}</p>
+      <p className="text-xl font-black text-foreground tracking-tight tabular-nums">{value}</p>
+    </div>
+  </div>
 );
 
 // ── Domain types ─────────────────────────────────────
@@ -457,44 +477,80 @@ const AdminReport = () => {
         {/* ══════ 2. CLASSIFICAÇÃO ══════ */}
         <section className="print:break-before-page">
           <SectionHeader number={sectionNumber()} title="Classificação de Risco" subtitle="Saúde financeira baseada na capacidade de poupança" />
-          <Card className={`border ${riskInfo.borderColor} overflow-hidden`}>
-            <div className={`bg-gradient-to-r ${riskInfo.gradient}`}>
-              <CardContent className="py-5 sm:py-6 px-4 sm:px-6">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                  <div className={`flex flex-col items-center justify-center h-20 w-20 sm:h-24 sm:w-24 rounded-2xl ${riskInfo.bgColor} shrink-0 self-start sm:self-auto`}>
-                    <span className={`text-3xl sm:text-4xl font-black ${riskInfo.textColor}`}>{risk}</span>
-                    <span className={`text-[10px] font-semibold ${riskInfo.textColor} mt-0.5`}>{riskInfo.label}</span>
+          <div
+            className={`rounded-2xl border overflow-hidden ${riskInfo.borderColor}`}
+            style={{
+              background: "hsl(var(--card))",
+              boxShadow: "0 2px 12px -4px hsl(0 0% 0% / 0.08), 0 1px 3px hsl(0 0% 0% / 0.04)",
+            }}
+          >
+            {/* Barra colorida topo */}
+            <div className={`h-1 w-full bg-gradient-to-r ${riskInfo.gradient.replace("/15", "").replace("/5", "/60")}`} />
+
+            <div className={`bg-gradient-to-br ${riskInfo.gradient} px-5 sm:px-6 py-5`}>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+                {/* Grade badge + descrição */}
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div
+                    className={`flex flex-col items-center justify-center h-[72px] w-[72px] rounded-2xl shrink-0 border ${riskInfo.bgColor} ${riskInfo.borderColor}`}
+                    style={{ boxShadow: `0 0 0 4px hsl(var(--background)), 0 4px 16px -4px ${riskInfo.glowColor}` }}
+                  >
+                    <span className={`text-[2rem] font-black leading-none ${riskInfo.textColor}`}>{risk}</span>
+                    <span className={`text-[9px] font-bold uppercase tracking-widest mt-1 ${riskInfo.textColor}`}>{riskInfo.label}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-muted-foreground mb-3">{riskInfo.description}</p>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                      <div className="min-w-0">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Poupança</p>
-                        <p className={`text-base sm:text-lg font-bold ${riskInfo.textColor}`}>{fmtPct(savingsRate)}</p>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Comprom.</p>
-                        <p className={`text-base sm:text-lg font-bold ${debtRatio > 30 ? "text-red-500" : "text-foreground"}`}>{fmtPct(debtRatio)}</p>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Desp/Renda</p>
-                        <p className={`text-base sm:text-lg font-bold ${expenseRatio > 80 ? "text-orange-500" : "text-foreground"}`}>{fmtPct(expenseRatio)}</p>
-                      </div>
-                    </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[0.9375rem] font-semibold text-foreground leading-snug">{riskInfo.description}</p>
+                    <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{riskInfo.advice}</p>
                   </div>
                 </div>
-                {/* Scale */}
-                <div className="grid grid-cols-5 gap-1 mt-5">
-                  {(["A", "B", "C", "D", "E"] as const).map((l) => (
-                    <div key={l} className={`text-center py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-medium transition-all ${l === risk ? `${riskInfo.bgColor} ${riskInfo.textColor} ring-1 ring-current/20` : "bg-muted/50 text-muted-foreground"}`}>
-                      <span className="hidden sm:inline">{l} — {classificationConfig[l].label}</span>
-                      <span className="sm:hidden">{l}</span>
+
+                {/* Divider vertical (desktop) */}
+                <div className="hidden sm:block self-stretch w-px bg-foreground/[0.08] shrink-0" />
+
+                {/* Indicadores mini cards */}
+                <div className="flex gap-3 shrink-0">
+                  {([
+                    { icon: PiggyBank, label: "Poupança",    value: fmtPct(savingsRate),  tone: riskInfo.textColor },
+                    { icon: Scale,     label: "Compromet.",  value: fmtPct(debtRatio),    tone: debtRatio > 30 ? "text-red-500" : "text-foreground" },
+                    { icon: Gauge,     label: "Desp./renda", value: fmtPct(expenseRatio), tone: expenseRatio > 80 ? "text-orange-500" : "text-foreground" },
+                  ] as const).map(({ icon: Icon, label, value, tone }) => (
+                    <div
+                      key={label}
+                      className="flex flex-col items-center gap-1.5 px-3.5 py-2.5 rounded-xl min-w-[80px]"
+                      style={{
+                        background: "hsl(var(--background) / 0.6)",
+                        border: "1px solid hsl(var(--foreground) / 0.07)",
+                        backdropFilter: "blur(8px)",
+                      }}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Icon className={`h-3.5 w-3.5 shrink-0 ${tone}`} />
+                        <span className="text-[10px] text-muted-foreground font-medium leading-none">{label}</span>
+                      </div>
+                      <span className={`text-xl font-black tabular-nums leading-none ${tone}`}>{value}</span>
                     </div>
                   ))}
                 </div>
-              </CardContent>
+              </div>
+
+              {/* Escala de classificação */}
+              <div className="grid grid-cols-5 gap-1.5 mt-5 pt-5 border-t border-foreground/[0.06]">
+                {(["A", "B", "C", "D", "E"] as const).map((l) => (
+                  <div
+                    key={l}
+                    className={`text-center py-2 rounded-xl text-[10px] sm:text-xs font-medium transition-all border ${
+                      l === risk
+                        ? `${riskInfo.bgColor} ${riskInfo.textColor} ${riskInfo.borderColor}`
+                        : "bg-muted/40 text-muted-foreground border-transparent"
+                    }`}
+                  >
+                    <span className="hidden sm:inline">{l} — {classificationConfig[l].label}</span>
+                    <span className="sm:hidden font-bold">{l}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </Card>
+          </div>
         </section>
 
         {/* ══════ 3. BALANÇO ══════ */}
