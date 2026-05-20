@@ -286,7 +286,7 @@ const AdminClientLayout = () => {
             }}
           />
 
-        {/* V9: Jornada da Consultoria — stepper consultivo 3+3 */}
+        {/* V10: Jornada da Consultoria — timeline horizontal premium */}
         {(() => {
           const completed = completedByStatus[clientStatus] || [];
 
@@ -297,125 +297,9 @@ const AdminClientLayout = () => {
             return "available";
           };
 
-          // V9 CLEAN: cards minimalistas — sem glow nem sombras pesadas
-          const cardStyle = (state: JourneyState): React.CSSProperties => {
-            switch (state) {
-              case "active":
-                return {
-                  background: "hsl(var(--primary))",
-                  border: "1px solid hsl(var(--primary))",
-                  boxShadow: "none",
-                };
-              case "completed":
-                return {
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--success) / 0.4)",
-                  boxShadow: "none",
-                };
-              case "available":
-                return {
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  boxShadow: "none",
-                };
-              case "locked":
-                return {
-                  background: "hsl(var(--muted) / 0.3)",
-                  border: "1px solid hsl(var(--border) / 0.6)",
-                  boxShadow: "none",
-                };
-            }
-          };
+          const progressPct = Math.min(1, completed.length / (tabs.length - 1));
 
-          const cardClasses = (state: JourneyState) =>
-            cn(
-              "group relative flex items-center gap-2 w-full h-full",
-              "rounded-md px-2 py-1.5 transition-colors duration-200 overflow-hidden",
-              "min-h-[44px] min-w-0 select-none",
-              state === "active" && "text-primary-foreground",
-              state === "completed" && "text-foreground hover:bg-muted/30 cursor-pointer",
-              state === "available" && "text-foreground hover:bg-muted/30 cursor-pointer",
-              state === "locked" && "text-muted-foreground/50 cursor-not-allowed",
-            );
-
-          const stepLabelClasses = (state: JourneyState) =>
-            cn(
-              "text-[9px] font-semibold uppercase tracking-[0.14em] leading-none mb-0.5",
-              state === "active" && "text-primary-foreground/80",
-              state === "completed" && "text-success",
-              state === "available" && "text-muted-foreground/75",
-              state === "locked" && "text-muted-foreground/40",
-            );
-
-          const iconBoxStyle = (state: JourneyState): React.CSSProperties => {
-            switch (state) {
-              case "active":
-                return {
-                  background: "hsl(0 0% 100% / 0.16)",
-                  border: "1px solid hsl(0 0% 100% / 0.22)",
-                  boxShadow: "none",
-                };
-              case "completed":
-                return {
-                  background: "hsl(var(--success) / 0.12)",
-                  border: "1px solid hsl(var(--success) / 0.25)",
-                  boxShadow: "none",
-                };
-              case "available":
-                return {
-                  background: "hsl(var(--muted) / 0.5)",
-                  border: "1px solid hsl(var(--border))",
-                  boxShadow: "none",
-                };
-              case "locked":
-                return {
-                  background: "hsl(var(--muted) / 0.4)",
-                  border: "1px solid hsl(var(--border) / 0.4)",
-                  boxShadow: "none",
-                };
-            }
-          };
-
-          const iconBoxClasses = (_state: JourneyState) =>
-            "h-7 w-7 rounded flex items-center justify-center shrink-0";
-
-          const iconClasses = (state: JourneyState) =>
-            cn(
-              "h-[14px] w-[14px] transition-all duration-300",
-              state === "active" && "text-primary-foreground drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.3)]",
-              state === "completed" && "text-success",
-              state === "available" && "text-foreground/70 group-hover:text-primary group-hover:scale-105",
-              state === "locked" && "text-muted-foreground/45",
-            );
-
-          const titleClasses = (state: JourneyState) =>
-            cn(
-              "text-[12px] font-semibold tracking-tight leading-tight truncate",
-              state === "active" && "text-primary-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]",
-              state === "completed" && "text-foreground",
-              state === "available" && "text-foreground",
-              state === "locked" && "text-muted-foreground/55",
-            );
-
-          // V9: formata um timestamp como "10/05" (curto) ou "há X dias"
-          const formatStageTime = (iso: string | null, state: JourneyState): string | null => {
-            if (state === "locked") return "Aguardando";
-            if (!iso) return null;
-            const date = new Date(iso);
-            if (isNaN(date.getTime())) return null;
-            const diffMs = Date.now() - date.getTime();
-            const diffDays = Math.floor(diffMs / 86400000);
-            if (state === "active") {
-              if (diffDays === 0) return "Iniciada hoje";
-              if (diffDays === 1) return "há 1 dia";
-              if (diffDays < 30) return `há ${diffDays} dias`;
-              return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-            }
-            // completed
-            return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
-          };
-
-          const renderCard = (tab: (typeof tabs)[number]) => {
+          const renderNode = (tab: (typeof tabs)[number]) => {
             const isLocked = disabled.includes(tab.path);
             return (
               <NavLink
@@ -423,210 +307,130 @@ const AdminClientLayout = () => {
                 to={`/admin/cliente/${clientSlug}/${tab.path}`}
                 onClick={(e) => isLocked && e.preventDefault()}
                 aria-disabled={isLocked}
-                className="flex-1 min-w-0 outline-none rounded-xl focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                style={{ perspective: "800px" }}
+                className="group relative flex flex-col items-center gap-2 flex-1 min-w-0 outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-lg"
               >
                 {({ isActive }) => {
                   const state = stateOf(tab.path, isActive && !isLocked);
                   const Icon = tab.icon;
                   return (
-                    <div
-                      className={cardClasses(state)}
-                      style={{ ...cardStyle(state), transformStyle: "preserve-3d" }}
-                    >
-                      {/* Icon box */}
-                      <div className={iconBoxClasses(state)} style={iconBoxStyle(state)}>
-                        <Icon className={iconClasses(state)} strokeWidth={2} />
+                    <>
+                      {/* Nó circular */}
+                      <div
+                        className={cn(
+                          "relative h-10 w-10 rounded-full flex items-center justify-center transition-all duration-300 z-10",
+                          state === "active" && "scale-110",
+                          state === "available" && "group-hover:scale-105 group-hover:-translate-y-0.5 cursor-pointer",
+                          state === "completed" && "group-hover:scale-105 cursor-pointer",
+                          state === "locked" && "cursor-not-allowed",
+                        )}
+                        style={
+                          state === "active"
+                            ? {
+                                background:
+                                  "linear-gradient(145deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.88) 100%)",
+                                boxShadow:
+                                  "0 0 0 1px hsl(var(--primary) / 0.4), 0 1px 0 hsl(0 0% 100% / 0.25) inset",
+                              }
+                            : state === "completed"
+                            ? {
+                                background:
+                                  "linear-gradient(145deg, hsl(var(--success) / 0.18) 0%, hsl(var(--success) / 0.08) 100%)",
+                                boxShadow:
+                                  "0 0 0 1px hsl(var(--success) / 0.35), 0 1px 0 hsl(0 0% 100% / 0.4) inset",
+                              }
+                            : state === "locked"
+                            ? {
+                                background: "hsl(var(--muted) / 0.5)",
+                                boxShadow:
+                                  "0 0 0 1px hsl(var(--border) / 0.6), 0 1px 0 hsl(0 0% 100% / 0.3) inset",
+                              }
+                            : {
+                                background:
+                                  "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.4) 100%)",
+                                boxShadow:
+                                  "0 0 0 1px hsl(var(--foreground) / 0.14), 0 1px 2px hsl(0 0% 0% / 0.05), 0 1px 0 hsl(0 0% 100% / 0.5) inset",
+                              }
+                        }
+                      >
+                        {state === "completed" ? (
+                          <Check className="h-[18px] w-[18px] text-success" strokeWidth={3} />
+                        ) : state === "locked" ? (
+                          <Lock className="h-[13px] w-[13px] text-muted-foreground/55" strokeWidth={2.5} />
+                        ) : (
+                          <Icon
+                            className={cn(
+                              "h-[17px] w-[17px] transition-colors",
+                              state === "active" && "text-primary-foreground",
+                              state === "available" && "text-foreground/70 group-hover:text-primary",
+                            )}
+                            strokeWidth={2.2}
+                          />
+                        )}
                       </div>
 
-                      <div className="min-w-0 flex-1 relative">
-                        <span className={stepLabelClasses(state)}>{String(tab.step).padStart(2, "0")}</span>
-                        <span className={cn(titleClasses(state), "block")}>{tab.label}</span>
+                      {/* Label sob o nó */}
+                      <div className="flex flex-col items-center text-center min-w-0 w-full px-1">
+                        <span
+                          className={cn(
+                            "text-[9px] font-bold uppercase tracking-[0.16em] tabular-nums leading-none mb-1",
+                            state === "active" && "text-primary",
+                            state === "completed" && "text-success",
+                            state === "available" && "text-muted-foreground/60",
+                            state === "locked" && "text-muted-foreground/40",
+                          )}
+                        >
+                          {String(tab.step).padStart(2, "0")}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[11.5px] font-semibold tracking-tight leading-tight truncate max-w-full",
+                            state === "active" && "text-foreground",
+                            state === "completed" && "text-foreground/85",
+                            state === "available" && "text-foreground/70 group-hover:text-foreground",
+                            state === "locked" && "text-muted-foreground/50",
+                          )}
+                        >
+                          {tab.label}
+                        </span>
                       </div>
-
-                      {/* Status chip a direita (3D) */}
-                      {state === "completed" && (
-                        <span
-                          className="inline-flex items-center justify-center h-[20px] w-[20px] rounded-full shrink-0"
-                          style={{
-                            background: "linear-gradient(145deg, hsl(var(--success) / 0.25) 0%, hsl(var(--success) / 0.1) 100%)",
-                            border: "1px solid hsl(var(--success) / 0.35)",
-                            boxShadow: "0 1px 0 hsl(0 0% 100% / 0.3) inset, 0 1px 3px hsl(var(--success) / 0.15)",
-                          }}
-                        >
-                          <Check className="h-[12px] w-[12px] text-success" strokeWidth={3} />
-                        </span>
-                      )}
-                      {state === "locked" && (
-                        <span
-                          className="inline-flex items-center justify-center h-[20px] w-[20px] rounded-full shrink-0"
-                          style={{
-                            background: "hsl(var(--muted) / 0.7)",
-                            border: "1px solid hsl(var(--border) / 0.5)",
-                            boxShadow: "0 1px 2px hsl(0 0% 0% / 0.05) inset",
-                          }}
-                        >
-                          <Lock className="h-2.5 w-2.5 text-muted-foreground/55" strokeWidth={2.5} />
-                        </span>
-                      )}
-
-                    </div>
+                    </>
                   );
                 }}
               </NavLink>
             );
           };
 
-          // Seta horizontal premium entre cards
-          const HArrow = ({ flowing = false }: { flowing?: boolean }) => (
-            <div className="shrink-0 self-center flex items-center justify-center w-5 lg:w-6 relative" aria-hidden>
-              {/* Trilho horizontal opcional (apenas quando flowing) */}
-              {flowing && (
+          return (
+            <div className="px-4 py-4 sm:px-6 sm:py-5">
+              {/* Desktop: timeline horizontal única */}
+              <div className="hidden md:block relative">
                 <div
-                  className="absolute h-px w-full"
+                  aria-hidden
+                  className="absolute left-[calc(100%/12)] right-[calc(100%/12)] top-5 h-[2px] rounded-full"
+                  style={{ background: "hsl(var(--border) / 0.7)" }}
+                />
+                <div
+                  aria-hidden
+                  className="absolute left-[calc(100%/12)] top-5 h-[2px] rounded-full transition-all duration-700 ease-out"
                   style={{
+                    width: `calc((100% - (100%/6)) * ${progressPct})`,
                     background:
-                      "linear-gradient(90deg, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.45) 50%, hsl(var(--primary) / 0.05))",
+                      "linear-gradient(90deg, hsl(var(--success) / 0.75) 0%, hsl(var(--primary) / 0.85) 100%)",
                   }}
                 />
-              )}
-              <div
-                className="relative h-6 w-6 rounded-full flex items-center justify-center transition-all duration-300"
-                style={
-                  flowing
-                    ? {
-                        background:
-                          "linear-gradient(145deg, hsl(var(--primary) / 0.22) 0%, hsl(var(--primary) / 0.08) 100%)",
-                        border: "1px solid hsl(var(--primary) / 0.45)",
-                        borderTopColor: "hsl(var(--primary) / 0.6)",
-                        boxShadow: [
-                          "0 1px 0 hsl(0 0% 100% / 0.5) inset",
-                          "0 -1px 0 hsl(var(--primary) / 0.15) inset",
-                          "0 2px 4px -1px hsl(var(--primary) / 0.22)",
-                          "0 0 0 1px hsl(var(--primary) / 0.12)",
-                        ].join(", "),
-                      }
-                    : {
-                        background:
-                          "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.4) 100%)",
-                        border: "1px solid hsl(var(--foreground) / 0.18)",
-                        borderTopColor: "hsl(var(--foreground) / 0.24)",
-                        boxShadow: [
-                          "0 1px 0 hsl(0 0% 100% / 0.6) inset",
-                          "0 -1px 0 hsl(0 0% 0% / 0.05) inset",
-                          "0 1px 2px hsl(0 0% 0% / 0.06)",
-                        ].join(", "),
-                      }
-                }
-              >
-                <ChevronRight
-                  className={cn(
-                    "h-3 w-3 transition-all",
-                    flowing
-                      ? "text-primary drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
-                      : "text-muted-foreground/65",
-                  )}
-                  strokeWidth={2.75}
-                />
-              </div>
-            </div>
-          );
 
-          // Cada seta horizontal "flui" se o card anterior estiver concluído
-          const flowsAfter = (path: string) => completed.includes(path);
-          const verticalFlows =
-            completed.includes("parecer") || completed.includes("plano-acao");
-
-          return (
-            <div className="px-2.5 py-2 sm:px-3 sm:py-2.5">
-
-              {/* Desktop / tablet: 2 linhas de 3 cards com bridge vertical */}
-              <div className="hidden md:block">
-                <div className="flex items-stretch gap-2 lg:gap-2.5">
-                  {renderCard(tabs[0])}
-                  <HArrow flowing={flowsAfter("onboarding")} />
-                  {renderCard(tabs[1])}
-                  <HArrow flowing={flowsAfter("diagnostico")} />
-                  {renderCard(tabs[2])}
-                </div>
-
-                {/* Bridge vertical ultra compacto entre as duas linhas */}
-                <div className="flex justify-center py-1.5" aria-hidden>
-                  <div className="flex flex-col items-center">
-                    <div
-                      className="h-1 w-[2px] rounded-full transition-colors"
-                      style={{
-                        background: verticalFlows
-                          ? "linear-gradient(180deg, hsl(var(--primary) / 0.7) 0%, hsl(var(--primary) / 0.35) 100%)"
-                          : "linear-gradient(180deg, hsl(var(--foreground) / 0.3) 0%, hsl(var(--foreground) / 0.12) 100%)",
-                        boxShadow: verticalFlows
-                          ? "0 0 6px hsl(var(--primary) / 0.4)"
-                          : undefined,
-                      }}
-                    />
-                    <div
-                      className="h-4 w-4 -mt-0.5 rounded-full flex items-center justify-center transition-all"
-                      style={
-                        verticalFlows
-                          ? {
-                              background:
-                                "linear-gradient(145deg, hsl(var(--primary) / 0.25) 0%, hsl(var(--primary) / 0.08) 100%)",
-                              border: "1px solid hsl(var(--primary) / 0.45)",
-                              borderTopColor: "hsl(var(--primary) / 0.6)",
-                              boxShadow: [
-                                "0 1px 0 hsl(0 0% 100% / 0.5) inset",
-                                "0 2px 5px -1px hsl(var(--primary) / 0.25)",
-                              ].join(", "),
-                            }
-                          : {
-                              background:
-                                "linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.4) 100%)",
-                              border: "1px solid hsl(var(--foreground) / 0.2)",
-                              borderTopColor: "hsl(var(--foreground) / 0.26)",
-                              boxShadow: "0 1px 0 hsl(0 0% 100% / 0.55) inset, 0 1px 2px hsl(0 0% 0% / 0.05)",
-                            }
-                      }
-                    >
-                      <ChevronDown
-                        className={cn(
-                          "h-3 w-3 transition-all",
-                          verticalFlows
-                            ? "text-primary drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]"
-                            : "text-muted-foreground/65",
-                        )}
-                        strokeWidth={2.75}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-stretch gap-2 lg:gap-2.5">
-                  {renderCard(tabs[3])}
-                  <HArrow flowing={flowsAfter("plano-acao")} />
-                  {renderCard(tabs[4])}
-                  <HArrow flowing={flowsAfter("acompanhamento")} />
-                  {renderCard(tabs[5])}
+                <div className="relative flex items-start">
+                  {tabs.map((tab) => renderNode(tab))}
                 </div>
               </div>
 
-              {/* Mobile: stepper horizontal compacto */}
+              {/* Mobile: scroll horizontal */}
               <div className="md:hidden -mx-4 px-4">
-                <div className="flex items-stretch gap-1.5 overflow-x-auto pb-2 scrollbar-none overscroll-x-contain">
-                  {tabs.map((tab, i) => (
-                    <Fragment key={tab.path}>
-                      <div className="shrink-0 w-[180px]">{renderCard(tab)}</div>
-                      {i < tabs.length - 1 && (
-                        <div className="shrink-0 self-center">
-                          <ChevronRight
-                            className={cn(
-                              "h-3.5 w-3.5",
-                              flowsAfter(tab.path) ? "text-accent/70" : "text-muted-foreground/30",
-                            )}
-                            strokeWidth={2.5}
-                          />
-                        </div>
-                      )}
-                    </Fragment>
+                <div className="flex items-start gap-1 overflow-x-auto pb-2 scrollbar-none overscroll-x-contain">
+                  {tabs.map((tab) => (
+                    <div key={tab.path} className="shrink-0 w-[88px] flex flex-col items-center">
+                      {renderNode(tab)}
+                    </div>
                   ))}
                 </div>
               </div>
