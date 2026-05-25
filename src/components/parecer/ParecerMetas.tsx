@@ -15,6 +15,18 @@ import {
   TrendingUp, TrendingDown, Trash2, Minus,
   type LucideIcon,
 } from "lucide-react";
+import { AddSectionItemDialog, type SectionKind } from "@/components/admin/AddSectionItemDialog";
+
+const SECTION_KIND_MAP: Partial<Record<SourceTable, SectionKind>> = {
+  income: "income",
+  expenses: "expenses",
+  goals: "goals",
+};
+
+const MONTH_NAMES_PT = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
