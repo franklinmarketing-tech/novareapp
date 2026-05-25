@@ -14,13 +14,15 @@ import {
   Printer, TrendingUp, TrendingDown, Wallet, Shield, AlertTriangle,
   CheckCircle2, Target, Banknote, PiggyBank, Scale, ArrowRight,
   Calendar, CreditCard, BarChart3, Gem, Clock, ArrowUpRight,
-  Download, Loader2, Gauge,
+  Download, Loader2, Gauge, Sparkles,
 } from "lucide-react";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import { toast } from "sonner";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { ScrollableTable } from "@/components/ui/scrollable-table";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 // ── Palette ──────────────────────────────────────────
 const CHART_COLORS = [
@@ -218,6 +220,10 @@ const AdminReport = () => {
   const { clientId } = useClientId();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [goalsCommentOpen, setGoalsCommentOpen] = useState(false);
+  const [goalsCommentLoading, setGoalsCommentLoading] = useState(false);
+  const [goalsCommentDraft, setGoalsCommentDraft] = useState("");
+  const [goalsComment, setGoalsComment] = useState<string>("");
   const reportRef = useRef<HTMLDivElement>(null);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
@@ -377,6 +383,48 @@ const AdminReport = () => {
 
   const handlePrint = () => window.print();
 
+  const handleOpenGoalsComment = async () => {
+    setGoalsCommentOpen(true);
+    if (goalsComment || goalsCommentLoading) return;
+    setGoalsCommentLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
+        body: { clientId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setGoalsCommentDraft(data?.comment || "");
+    } catch (err: any) {
+      toast.error("Erro ao gerar análise", { description: err?.message || "Tente novamente" });
+    } finally {
+      setGoalsCommentLoading(false);
+    }
+  };
+
+  const handleRegenerateGoalsComment = async () => {
+    setGoalsCommentLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
+        body: { clientId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setGoalsCommentDraft(data?.comment || "");
+      toast.success("Análise regenerada");
+    } catch (err: any) {
+      toast.error("Erro ao regenerar", { description: err?.message || "Tente novamente" });
+    } finally {
+      setGoalsCommentLoading(false);
+    }
+  };
+
+  const handleValidateGoalsComment = () => {
+    setGoalsComment(goalsCommentDraft.trim());
+    setGoalsCommentOpen(false);
+    toast.success("Comentário validado", { description: "Será incluído ao final do PDF." });
+  };
+
+
   const handleDownloadPDF = async () => {
     setGenerating(true);
     try {
@@ -468,6 +516,7 @@ const AdminReport = () => {
               variants: activePlan.ai_generated_plans || null,
             }
           : null,
+        goalsAnalysisComment: goalsComment || undefined,
       });
       toast.success("PDF gerado com sucesso!");
     } catch (err) {
@@ -488,7 +537,11 @@ const AdminReport = () => {
           <h1 className="text-lg font-semibold text-foreground tracking-tight">Relatório Final</h1>
           <p className="text-xs text-muted-foreground mt-0.5">Documento consolidado para entrega ao cliente</p>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <Button onClick={handleOpenGoalsComment} variant="secondary" className="gap-2 flex-1 sm:flex-none">
+            <Sparkles className="h-5 w-5" />
+            {goalsComment ? "Editar Análise IA" : "Análise de Metas (IA)"}
+          </Button>
           <Button onClick={handleDownloadPDF} disabled={generating} className="gap-2 flex-1 sm:flex-none">
             {generating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             {generating ? "Gerando..." : "Baixar PDF"}
@@ -498,6 +551,42 @@ const AdminReport = () => {
           </Button>
         </div>
       </div>
+
+      {/* Dialog: Análise de Metas e Objetivos (IA) */}
+      <Dialog open={goalsCommentOpen} onOpenChange={setGoalsCommentOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-accent" />
+              Análise de Metas e Objetivos
+            </DialogTitle>
+            <DialogDescription>
+              Comentário gerado pela IA da Novare sobre o alcance das metas e o trabalho do consultor. Edite à vontade e valide para incluir ao final do relatório.
+            </DialogDescription>
+          </DialogHeader>
+          {goalsCommentLoading ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" /> Gerando análise...
+            </div>
+          ) : (
+            <Textarea
+              value={goalsCommentDraft}
+              onChange={(e) => setGoalsCommentDraft(e.target.value)}
+              rows={12}
+              className="resize-none text-sm"
+              placeholder="O comentário aparecerá aqui..."
+            />
+          )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={handleRegenerateGoalsComment} disabled={goalsCommentLoading} className="gap-2">
+              <Sparkles className="h-4 w-4" /> Regenerar
+            </Button>
+            <Button onClick={handleValidateGoalsComment} disabled={goalsCommentLoading || !goalsCommentDraft.trim()} className="gap-2">
+              <CheckCircle2 className="h-4 w-4" /> Validar e incluir no PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div ref={reportRef} className="space-y-10 print:space-y-8">
 
