@@ -588,7 +588,9 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                                 <DateInput value={f.prazo} onChange={(v) => updateField(item.source_id, "prazo", v)} />
                               </div>
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Valor alvo</label>
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                  {section === "income" ? "Aumento alvo" : section === "expenses" ? "Redução alvo" : "Valor alvo"}
+                                </label>
                                 <CurrencyInput
                                   value={f.metaValor}
                                   onChange={(v) => updateField(item.source_id, "metaValor", v)}
