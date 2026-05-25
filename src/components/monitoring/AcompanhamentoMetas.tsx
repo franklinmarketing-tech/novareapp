@@ -464,7 +464,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const [confirmingGoalId, setConfirmingGoalId] = useState<string | null>(null);
   const [confirmingMetaId, setConfirmingMetaId] = useState<string | null>(null);
 
-  const { data: metas = [] } = useQuery({
+  const { data: metasRaw = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
     queryFn: async () => {
       const { data } = await supabase
@@ -477,6 +477,59 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     },
     enabled: !!clientId,
   });
+
+  // ── Onboarding raw items (todas as fontes, mesmo sem meta) ──
+  const { data: onboarding } = useQuery({
+    queryKey: ["onboarding_full", clientId],
+    queryFn: async () => {
+      const [income, expenses, debts, assets, insurance] = await Promise.all([
+        supabase.from("income").select("id, description, amount, frequency").eq("client_id", clientId),
+        supabase.from("expenses").select("id, category, description, amount, is_fixed").eq("client_id", clientId),
+        supabase.from("debts").select("id, type, creditor, total_amount, monthly_payment").eq("client_id", clientId),
+        supabase.from("assets").select("id, type, description, estimated_value").eq("client_id", clientId),
+        supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount").eq("client_id", clientId),
+      ]);
+      return {
+        income:    (income.data    || []).map((r: any) => ({ id: r.id, label: r.description || "Renda", value: Number(r.amount || 0) })),
+        expenses:  (expenses.data  || []).map((r: any) => ({ id: r.id, label: r.description || r.category || "Despesa", value: Number(r.amount || 0) })),
+        debts:     (debts.data     || []).map((r: any) => ({ id: r.id, label: [r.type, r.creditor].filter(Boolean).join(" — ") || "Dívida", value: Number(r.total_amount || 0) })),
+        assets:    (assets.data    || []).map((r: any) => ({ id: r.id, label: r.description || r.type || "Patrimônio", value: Number(r.estimated_value || 0) })),
+        insurance: (insurance.data || []).map((r: any) => ({ id: r.id, label: [r.type, r.provider].filter(Boolean).join(" — ") || "Seguro", value: Number(r.monthly_premium || 0) })),
+      } as Record<SourceTable, Array<{ id: string; label: string; value: number }>>;
+    },
+    enabled: !!clientId,
+  });
+
+  // Mescla: para cada item do onboarding, usa a meta existente OU cria um item sintético
+  const metas: MetaEntry[] = (() => {
+    if (!onboarding) return metasRaw.map((m) => ({ ...m }));
+    const out: MetaEntry[] = [];
+    SECTION_ORDER.forEach((section) => {
+      const items = onboarding[section] || [];
+      items.forEach((it) => {
+        const existing = metasRaw.find((m) => m.source_table === section && m.source_id === it.id);
+        if (existing) {
+          out.push({ ...existing, source_label: existing.source_label || it.label, current_value: it.value });
+        } else {
+          out.push({
+            id: `synthetic-${section}-${it.id}`,
+            source_table: section,
+            source_id: it.id,
+            source_label: it.label,
+            current_value: it.value,
+            is_synthetic: true,
+          });
+        }
+      });
+    });
+    // mantém metas órfãs (de itens já removidos) por segurança
+    metasRaw.forEach((m) => {
+      if (!out.some((o) => o.source_table === m.source_table && o.source_id === m.source_id)) {
+        out.push(m);
+      }
+    });
+    return out;
+  })();
 
   const { data: entradas = [] } = useQuery({
     queryKey: ["acompanhamento_entradas", clientId],
