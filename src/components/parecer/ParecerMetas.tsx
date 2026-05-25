@@ -266,7 +266,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       });
 
   const bySection = SECTION_ORDER.reduce(
-    (acc, s) => { acc[s] = allItems.filter((i) => i.source_table === s); return acc; },
+    (acc, s) => { acc[s] = filteredItems.filter((i) => i.source_table === s); return acc; },
     {} as Record<SourceTable, FinancialItem[]>,
   );
 
