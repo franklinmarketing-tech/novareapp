@@ -53,14 +53,14 @@ const monthStartISO = (year: number, month: number) =>
 
 function progressBarColor(pct: number) {
   if (pct >= 100) return "bg-emerald-500";
-  if (pct >= 60)  return "bg-indigo-500";
+  if (pct >= 60)  return "bg-novare-blue";
   if (pct >= 30)  return "bg-amber-500";
   return "bg-rose-500";
 }
 
 function progressTextColor(pct: number) {
   if (pct >= 100) return "text-emerald-600";
-  if (pct >= 60)  return "text-indigo-600";
+  if (pct >= 60)  return "text-novare-blue dark:text-novare-blue-bright";
   if (pct >= 30)  return "text-amber-600";
   return "text-rose-600";
 }
