@@ -143,7 +143,7 @@ ${metasCtx}
 
 Escreva o comentário final.`;
 
-    const OPENAI_KEY = Deno.env.get("Open IA GPT") || Deno.env.get("OPENAI_API_KEY");
+    const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") || Deno.env.get("Open IA GPT");
     if (!OPENAI_KEY) {
       return new Response(JSON.stringify({ error: "Chave OpenAI não configurada" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
