@@ -109,15 +109,15 @@ const canvasDonut = (
   if (!total) return cvs.toDataURL();
 
   // Posicionamento: donut à esquerda, legenda à direita
-  const cx = pw * 0.30;
+  const cx = pw * 0.28;
   const cy = ph / 2;
-  const OR = Math.min(pw * 0.27, ph * 0.42);
-  const IR = OR * 0.55;
+  const OR = Math.min(pw * 0.26, ph * 0.46);
+  const IR = OR * 0.58;
 
   // Sombra suave atrás do donut
   ctx.save();
   ctx.shadowColor = "rgba(20, 30, 50, 0.18)";
-  ctx.shadowBlur = 10;
+  ctx.shadowBlur = 12;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 2;
   ctx.fillStyle = "#ffffff";
@@ -140,7 +140,7 @@ const canvasDonut = (
     ctx.closePath();
     ctx.fillStyle = grad;
     ctx.fill();
-    // Separadores brancos de 3px
+    // Separadores brancos
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 3;
     ctx.stroke();
@@ -155,56 +155,62 @@ const canvasDonut = (
 
   // Centro: total de categorias
   const biggest = items.reduce((a, b) => (a.value > b.value ? a : b));
+  const centerNumSize = Math.max(Math.round(OR * 0.38), 18);
+  const centerLblSize = Math.max(Math.round(OR * 0.16), 10);
   ctx.fillStyle = "#1e3a5f";
-  ctx.font = `bold ${Math.max(Math.round(pw * 0.05), 14)}px Arial`;
+  ctx.font = `bold ${centerNumSize}px Arial`;
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   ctx.fillText(String(items.length), cx, cy - 2);
   ctx.fillStyle = "#787880";
-  ctx.font = `${Math.max(Math.round(pw * 0.025), 9)}px Arial`;
-  ctx.fillText("categorias", cx, cy + 12);
+  ctx.font = `${centerLblSize}px Arial`;
+  ctx.fillText("categorias", cx, cy + centerLblSize + 2);
   // Label da maior
   if (biggest && items.length <= 12) {
-    ctx.font = `${Math.max(Math.round(pw * 0.022), 9)}px Arial`;
+    ctx.font = `${Math.max(Math.round(OR * 0.14), 9)}px Arial`;
     ctx.fillStyle = "#a0a0a8";
-    ctx.fillText(biggest.label.slice(0, 14), cx, cy + 24);
+    ctx.fillText(biggest.label.slice(0, 14), cx, cy + centerLblSize * 2 + 4);
   }
 
   // Legenda à direita
-  const lx = pw * 0.62;
-  const fs = Math.max(Math.round(pw * 0.028), 10);
+  const lx = pw * 0.60;
+  const rx = pw - 8;
+  const fs = Math.max(Math.round(pw * 0.030), 11);
   ctx.font = `${fs}px Arial`;
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
-  const maxI = Math.min(items.length, 8);
-  const rowH = Math.min((ph - 20) / maxI, fs * 1.7);
+  const maxI = Math.min(items.length, 7);
+  const rowH = Math.min((ph - 24) / maxI, fs * 1.9);
   const startY = cy - ((maxI - 1) * rowH) / 2;
   const sorted = items.slice().sort((a, b) => b.value - a.value).slice(0, maxI);
   sorted.forEach((it, i) => {
     const orig = items.indexOf(it);
     const color = CP[orig % CP.length];
     const ly = startY + i * rowH;
-    // Círculo
+    // Marcador arredondado
+    const dotR = Math.max(fs * 0.42, 5);
     ctx.beginPath();
-    ctx.arc(lx + 4, ly, 4, 0, 2 * Math.PI);
+    ctx.arc(lx + dotR, ly, dotR, 0, 2 * Math.PI);
     ctx.fillStyle = color;
     ctx.fill();
     // Texto
     const pct = ((it.value / total) * 100).toFixed(0);
     ctx.fillStyle = "#404050";
     ctx.font = `${fs}px Arial`;
-    const lbl = it.label.length > 16 ? it.label.slice(0, 16) + "…" : it.label;
-    ctx.fillText(lbl, lx + 12, ly);
-    // Porcentagem em negrito
+    const maxChars = Math.max(10, Math.floor((rx - (lx + dotR * 2 + 8) - fs * 3) / (fs * 0.55)));
+    const lbl = it.label.length > maxChars ? it.label.slice(0, maxChars) + "…" : it.label;
+    ctx.textAlign = "left";
+    ctx.fillText(lbl, lx + dotR * 2 + 8, ly);
+    // Porcentagem em negrito alinhada à direita
     ctx.fillStyle = color;
     ctx.font = `bold ${fs}px Arial`;
     ctx.textAlign = "right";
-    ctx.fillText(`${pct}%`, pw - 6, ly);
-    ctx.textAlign = "left";
+    ctx.fillText(`${pct}%`, rx, ly);
   });
 
   return cvs.toDataURL("image/png");
 };
+
 
 // ──────────────────────────────────────────────────────────
 // Barras verticais — gradiente, top arredondado, grid claro
@@ -1301,8 +1307,8 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
 
   // Gráficos do fluxo de caixa — barra de comparação + donut de despesas
   {
-    const halfW = (CONTENT_W - 4) / 2;
-    const chartH = 60;
+    const halfW = (CONTENT_W - 6) / 2;
+    const chartH = 78;
 
     // Barra de comparação: Receitas | Despesas | Saldo
     const flowBars = [
@@ -1311,23 +1317,24 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       { label: "Saldo",     value: Math.max(data.netCashFlow, 0), color: data.netCashFlow >= 0 ? "#2563eb" : "#d97706" },
     ];
 
-    ensureSpace(chartH + 6);
+    ensureSpace(chartH + 8);
 
     // Barra de comparação à esquerda
-    const barImg = canvasBarV(flowBars, 640, 360, fmt);
+    const barImg = canvasBarV(flowBars, 640, 460, fmt);
     pdf.addImage(barImg, "PNG", MARGIN, y, halfW, chartH);
 
     // Donut de despesas à direita
     if (data.expensesByCategory.length >= 2) {
       const donutImg = canvasDonut(
         data.expensesByCategory.map((e) => ({ label: e.category, value: e.amount })),
-        680, 360
+        820, 480
       );
-      pdf.addImage(donutImg, "PNG", MARGIN + halfW + 4, y, halfW, chartH);
+      pdf.addImage(donutImg, "PNG", MARGIN + halfW + 6, y, halfW, chartH);
     }
 
-    y += chartH + 4;
+    y += chartH + 6;
   }
+
 
   // ── 5. Mapa de Dívidas
   if (data.debts.length > 0) {
