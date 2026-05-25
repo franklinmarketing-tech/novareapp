@@ -212,14 +212,12 @@ const AdminActionPlan = () => {
         <div className="text-center py-12 text-muted-foreground">
           <Circle className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
           <p className="text-sm">Nenhuma meta ou objetivo neste período.</p>
-          <p className="text-xs mt-1">Use os botões "Adicionar nesta seção" abaixo para criar itens para {monthLabel}.</p>
         </div>
       )}
 
       {/* Seções de metas */}
       {SECTION_ORDER.map((section) => {
         const items = bySection[section];
-        const sectionKind = sectionKindMap[section];
 
         return (
           <div key={section}>
@@ -228,17 +226,6 @@ const AdminActionPlan = () => {
                 {SECTION_LABELS[section]}
               </h3>
               <Badge variant="secondary" className="text-xs">{items.length}</Badge>
-              <div className="ml-auto">
-                {sectionKind && (
-                  <AddSectionItemDialog
-                    kind={sectionKind}
-                    clientId={clientId}
-                    monthRef={monthRef}
-                    monthLabel={monthLabel}
-                    invalidateKeys={[["parecer_metas", clientId]]}
-                  />
-                )}
-              </div>
             </div>
 
             {items.length > 0 ? (
