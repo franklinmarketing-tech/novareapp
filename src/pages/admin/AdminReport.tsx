@@ -401,8 +401,16 @@ const AdminReport = () => {
     const goalTasks = parentItems.filter((a) => a.goal_id === g.id);
     const done = goalTasks.filter((a) => a.status === "concluido").length;
     const total = goalTasks.length;
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-    return { ...g, tasksDone: done, tasksTotal: total, pct };
+    const applied = Number(g.amount_applied || 0);
+    const target = Number(g.target_amount || 0);
+    // Preferir progresso financeiro (valor aplicado / meta) quando houver meta financeira.
+    // Caso contrário, usar conclusão das tarefas.
+    const pct = target > 0
+      ? Math.min(Math.round((applied / target) * 100), 100)
+      : total > 0
+        ? Math.round((done / total) * 100)
+        : 0;
+    return { ...g, tasksDone: done, tasksTotal: total, pct, appliedValue: applied };
   });
 
   const priorityLabels: Record<string, string> = { alta: "Alta", media: "Média", baixa: "Baixa" };
