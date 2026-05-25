@@ -797,6 +797,7 @@ export interface ReportData {
       }>;
     }> | null;
   } | null;
+  goalsAnalysisComment?: string;
 }
 
 // ──────────────────────────────────────────────────────────
