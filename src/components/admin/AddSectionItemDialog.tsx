@@ -62,26 +62,26 @@ export function AddSectionItemDialog({ kind, clientId, monthRef, monthLabel, act
           client_id: clientId, description, amount: amt, frequency, month_ref: monthRef,
         }]));
       } else if (kind === "expenses") {
-        ({ error } = await supabase.from("expenses").insert({
+        ({ error } = await supabase.from("expenses").insert([{
           client_id: clientId, category: category || "outros", description: description || null,
           amount: amt, is_fixed: true, month_ref: monthRef,
-        }));
+        }]));
       } else if (kind === "goals") {
-        ({ error } = await supabase.from("goals").insert({
+        ({ error } = await supabase.from("goals").insert([{
           client_id: clientId, description, target_amount: amt || null,
           deadline: deadline || null, priority, month_ref: monthRef,
-        }));
+        }]));
       } else if (kind === "action_items") {
         if (!actionPlanId) {
           toast.error("Plano de ação não encontrado");
           setSaving(false);
           return;
         }
-        ({ error } = await supabase.from("action_items").insert({
+        ({ error } = await supabase.from("action_items").insert([{
           action_plan_id: actionPlanId, area, description,
           financial_impact: amt || 0, deadline: deadline || null,
           status: "pendente", month_ref: monthRef,
-        }));
+        }]));
       }
       if (error) throw error;
       toast.success("Adicionado para " + monthLabel);
