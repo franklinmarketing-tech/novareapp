@@ -173,7 +173,7 @@ type ReportSnapshot = {
   total_debts?: number | null;
   savings_rate?: number | null;
 };
-type GoalProgress = ReportGoal & { tasksDone: number; tasksTotal: number; pct: number };
+type GoalProgress = ReportGoal & { tasksDone: number; tasksTotal: number; pct: number; appliedValue: number };
 
 type ParecerMeta = {
   id: string;
