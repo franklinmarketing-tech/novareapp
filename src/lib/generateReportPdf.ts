@@ -733,6 +733,7 @@ const canvasBarStacked = (
 export interface ReportData {
   clientName: string;
   clientEmail?: string;
+  cpf?: string;
   profession?: string;
   risk: string;
   riskLabel: string;
