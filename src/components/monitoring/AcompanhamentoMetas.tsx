@@ -191,58 +191,70 @@ function MetaAcompRow({
         </div>
       )}
 
-      {/* ── Corpo: Plano | Atualizar ── */}
-      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] divide-x divide-border/40">
+      {/* ── Corpo: Plano | Atualizar  (ou só Atualizar quando não há meta) ── */}
+      <div className={cn(
+        "grid divide-x divide-border/40",
+        meta.is_synthetic ? "grid-cols-1" : "grid-cols-[minmax(0,2fr)_minmax(0,3fr)]",
+      )}>
 
-        {/* LEFT — Plano de Ação */}
-        <div className="px-4 py-3 space-y-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-novare-terracotta">Plano de Ação</p>
+        {/* LEFT — Plano de Ação (só quando há meta cadastrada) */}
+        {!meta.is_synthetic && (
+          <div className="px-4 py-3 space-y-2.5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-novare-terracotta">Plano de Ação</p>
 
-          {meta.meta_text ? (
-            <div className="rounded-lg bg-novare-terracotta-light dark:bg-novare-terracotta/10 border border-novare-terracotta/20 px-2.5 py-2">
-              <div className="flex items-start gap-1.5">
-                <Target className="w-3 h-3 mt-0.5 shrink-0 text-novare-terracotta" />
-                <p className="text-xs text-foreground/80 leading-snug">{meta.meta_text}</p>
+            {meta.meta_text ? (
+              <div className="rounded-lg bg-novare-terracotta-light dark:bg-novare-terracotta/10 border border-novare-terracotta/20 px-2.5 py-2">
+                <div className="flex items-start gap-1.5">
+                  <Target className="w-3 h-3 mt-0.5 shrink-0 text-novare-terracotta" />
+                  <p className="text-xs text-foreground/80 leading-snug">{meta.meta_text}</p>
+                </div>
               </div>
+            ) : (
+              <p className="text-xs text-muted-foreground/60 italic">Sem descrição.</p>
+            )}
+
+            <div className="flex flex-col gap-1.5">
+              {meta.current_value != null && meta.current_value > 0 && (
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Wallet className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">Cadastrado:</span>
+                  <span className="font-semibold tabular-nums text-foreground/80">{formatBRL(meta.current_value)}</span>
+                </div>
+              )}
+              {meta.meta_valor && (
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Target className="w-3 h-3 text-novare-blue-bright shrink-0" />
+                  <span className="text-muted-foreground">Alvo:</span>
+                  <span className="font-semibold tabular-nums text-novare-blue dark:text-novare-blue-bright">{formatBRL(meta.meta_valor)}</span>
+                </div>
+              )}
+              {meta.prazo && (
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">Prazo:</span>
+                  <span className="font-medium text-foreground/70">{formatDate(meta.prazo)}</span>
+                </div>
+              )}
+              {latestEntry && (
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 mt-0.5">
+                  <Clock className="w-2.5 h-2.5 shrink-0" />
+                  últ: {formatDateTime(latestEntry.snapshotted_at)}
+                </div>
+              )}
             </div>
-          ) : (
-            <p className="text-xs text-muted-foreground/60 italic">Sem meta definida — registre apenas o estado atual.</p>
-          )}
-
-          <div className="flex flex-col gap-1.5">
-            {meta.current_value != null && meta.current_value > 0 && (
-              <div className="flex items-center gap-1.5 text-xs">
-                <Wallet className="w-3 h-3 text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">Cadastrado:</span>
-                <span className="font-semibold tabular-nums text-foreground/80">{formatBRL(meta.current_value)}</span>
-              </div>
-            )}
-            {meta.meta_valor && (
-              <div className="flex items-center gap-1.5 text-xs">
-                <Target className="w-3 h-3 text-novare-blue-bright shrink-0" />
-                <span className="text-muted-foreground">Alvo:</span>
-                <span className="font-semibold tabular-nums text-novare-blue dark:text-novare-blue-bright">{formatBRL(meta.meta_valor)}</span>
-              </div>
-            )}
-            {meta.prazo && (
-              <div className="flex items-center gap-1.5 text-xs">
-                <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">Prazo:</span>
-                <span className="font-medium text-foreground/70">{formatDate(meta.prazo)}</span>
-              </div>
-            )}
-            {latestEntry && (
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 mt-0.5">
-                <Clock className="w-2.5 h-2.5 shrink-0" />
-                últ: {formatDateTime(latestEntry.snapshotted_at)}
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
         {/* RIGHT — Atualizar */}
         <div className="px-4 py-3 space-y-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">Registrar estado atual</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">Registrar estado atual</p>
+            {meta.is_synthetic && meta.current_value != null && meta.current_value > 0 && (
+              <span className="text-[10px] text-muted-foreground tabular-nums">
+                Cadastrado: <span className="font-semibold text-foreground/80">{formatBRL(meta.current_value)}</span>
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <CurrencyInput
