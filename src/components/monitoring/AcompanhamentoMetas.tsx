@@ -86,8 +86,9 @@ interface MetaEntry {
 
 interface AcompEntry {
   id: string;
-  meta_id: string;
+  meta_id: string | null;
   source_id: string;
+  source_table?: string;
   valor_atual?: number;
   estado_atual?: string;
   progresso_pct?: number;
