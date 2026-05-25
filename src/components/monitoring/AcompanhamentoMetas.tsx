@@ -12,7 +12,7 @@ import {
   Save, Loader2, Check, ChevronDown, ChevronRight,
   Clock, Target, TrendingUp, TrendingDown, Minus, History,
   Wallet, Receipt, CreditCard, Building2, Shield, Trash2,
-  CheckCircle2,
+  CheckCircle2, CalendarDays,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -73,19 +73,22 @@ function TrendIcon({ current, prev }: { current?: number | null; prev?: number |
 }
 
 interface MetaEntry {
-  id: string;
+  id: string;                    // meta_id quando existe; senão "synthetic-<source_table>-<source_id>"
   source_table: string;
   source_id: string;
   source_label: string;
   meta_text?: string;
   meta_valor?: number;
   prazo?: string;
+  current_value?: number | null; // valor cadastrado no onboarding (renda, despesa, dívida etc.)
+  is_synthetic?: boolean;        // true quando não há meta cadastrada
 }
 
 interface AcompEntry {
   id: string;
-  meta_id: string;
+  meta_id: string | null;
   source_id: string;
+  source_table?: string;
   valor_atual?: number;
   estado_atual?: string;
   progresso_pct?: number;
@@ -201,10 +204,17 @@ function MetaAcompRow({
               </div>
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground/50 italic">Sem meta definida</p>
+            <p className="text-xs text-muted-foreground/60 italic">Sem meta definida — registre apenas o estado atual.</p>
           )}
 
           <div className="flex flex-col gap-1.5">
+            {meta.current_value != null && meta.current_value > 0 && (
+              <div className="flex items-center gap-1.5 text-xs">
+                <Wallet className="w-3 h-3 text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">Cadastrado:</span>
+                <span className="font-semibold tabular-nums text-foreground/80">{formatBRL(meta.current_value)}</span>
+              </div>
+            )}
             {meta.meta_valor && (
               <div className="flex items-center gap-1.5 text-xs">
                 <Target className="w-3 h-3 text-novare-blue-bright shrink-0" />
@@ -462,7 +472,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const [confirmingGoalId, setConfirmingGoalId] = useState<string | null>(null);
   const [confirmingMetaId, setConfirmingMetaId] = useState<string | null>(null);
 
-  const { data: metas = [] } = useQuery({
+  const { data: metasRaw = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
     queryFn: async () => {
       const { data } = await supabase
@@ -475,6 +485,59 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     },
     enabled: !!clientId,
   });
+
+  // ── Onboarding raw items (todas as fontes, mesmo sem meta) ──
+  const { data: onboarding } = useQuery({
+    queryKey: ["onboarding_full", clientId],
+    queryFn: async () => {
+      const [income, expenses, debts, assets, insurance] = await Promise.all([
+        supabase.from("income").select("id, description, amount, frequency").eq("client_id", clientId),
+        supabase.from("expenses").select("id, category, description, amount, is_fixed").eq("client_id", clientId),
+        supabase.from("debts").select("id, type, creditor, total_amount, monthly_payment").eq("client_id", clientId),
+        supabase.from("assets").select("id, type, description, estimated_value").eq("client_id", clientId),
+        supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount").eq("client_id", clientId),
+      ]);
+      return {
+        income:    (income.data    || []).map((r: any) => ({ id: r.id, label: r.description || "Renda", value: Number(r.amount || 0) })),
+        expenses:  (expenses.data  || []).map((r: any) => ({ id: r.id, label: r.description || r.category || "Despesa", value: Number(r.amount || 0) })),
+        debts:     (debts.data     || []).map((r: any) => ({ id: r.id, label: [r.type, r.creditor].filter(Boolean).join(" — ") || "Dívida", value: Number(r.total_amount || 0) })),
+        assets:    (assets.data    || []).map((r: any) => ({ id: r.id, label: r.description || r.type || "Patrimônio", value: Number(r.estimated_value || 0) })),
+        insurance: (insurance.data || []).map((r: any) => ({ id: r.id, label: [r.type, r.provider].filter(Boolean).join(" — ") || "Seguro", value: Number(r.monthly_premium || 0) })),
+      } as Record<SourceTable, Array<{ id: string; label: string; value: number }>>;
+    },
+    enabled: !!clientId,
+  });
+
+  // Mescla: para cada item do onboarding, usa a meta existente OU cria um item sintético
+  const metas: MetaEntry[] = (() => {
+    if (!onboarding) return metasRaw.map((m) => ({ ...m }));
+    const out: MetaEntry[] = [];
+    SECTION_ORDER.forEach((section) => {
+      const items = onboarding[section] || [];
+      items.forEach((it) => {
+        const existing = metasRaw.find((m) => m.source_table === section && m.source_id === it.id);
+        if (existing) {
+          out.push({ ...existing, source_label: existing.source_label || it.label, current_value: it.value });
+        } else {
+          out.push({
+            id: `synthetic-${section}-${it.id}`,
+            source_table: section,
+            source_id: it.id,
+            source_label: it.label,
+            current_value: it.value,
+            is_synthetic: true,
+          });
+        }
+      });
+    });
+    // mantém metas órfãs (de itens já removidos) por segurança
+    metasRaw.forEach((m) => {
+      if (!out.some((o) => o.source_table === m.source_table && o.source_id === m.source_id)) {
+        out.push(m);
+      }
+    });
+    return out;
+  })();
 
   const { data: entradas = [] } = useQuery({
     queryKey: ["acompanhamento_entradas", clientId],
@@ -521,7 +584,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
 
       const { error } = await supabase.from("acompanhamento_entradas").insert({
         client_id: clientId,
-        meta_id: meta.id,
+        meta_id: meta.is_synthetic ? null : meta.id,
         source_table: meta.source_table,
         source_id: meta.source_id,
         source_label: meta.source_label,
@@ -557,8 +620,8 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     const meta = metas.find((m) => m.id === metaId);
     if (!meta) return;
     setSavingId(metaId);
-    // Reset completed_at if new progress drops below 100%
-    if (meta.meta_valor && valorAtualStr) {
+    // Reset completed_at if new progress drops below 100% (apenas para metas reais)
+    if (!meta.is_synthetic && meta.meta_valor && valorAtualStr) {
       const newPct = Math.round((parseFloat(valorAtualStr) / meta.meta_valor) * 100);
       if (newPct < 100) {
         await supabase.from("parecer_metas").update({ completed_at: null }).eq("id", metaId);
@@ -665,25 +728,41 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     );
   }
 
+  const currentMonth = new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const currentMonthLabel = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
+
   return (
     <div className="space-y-6">
+      {/* Cabeçalho do mês corrente */}
+      <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-novare-blue/20 bg-gradient-to-r from-novare-blue/10 via-novare-blue-light/30 to-transparent px-4 py-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-10 w-10 rounded-xl bg-novare-blue text-white flex items-center justify-center shrink-0 shadow-sm">
+            <CalendarDays className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-novare-blue/70 dark:text-novare-blue-bright/80">Mês corrente</p>
+            <p className="text-base font-bold text-novare-blue dark:text-novare-blue-bright leading-tight truncate">{currentMonthLabel}</p>
+          </div>
+        </div>
+        {lastSyncDate && (
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success border border-success/20 text-[11px] font-semibold">
+            <Clock className="h-3 w-3" />
+            Sincronizado em {lastSyncDate}
+          </span>
+        )}
+      </div>
+
       {/* Resumo */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
           {totalMetas > 0 && (
-            <span>{totalComAcomp} de {totalMetas} metas com acompanhamento</span>
+            <span>{totalComAcomp} de {totalMetas} itens com acompanhamento</span>
           )}
           {activeGoals.length > 0 && (
             <span>{goalsWithInvestment} de {activeGoals.length} objetivos com investimento</span>
           )}
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-          {lastSyncDate && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/20 text-[10px] font-medium">
-              <Clock className="h-2.5 w-2.5" />
-              Sincronizado em {lastSyncDate}
-            </span>
-          )}
           <span className="font-medium text-foreground/60">Plano de Ação</span>
           <span>→</span>
           <span className="font-medium text-foreground/60">Estado atual</span>
@@ -696,7 +775,11 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
         if (!items || !items.length) return null;
         const cfg  = SECTION_CONFIG[section];
         const Icon = cfg.icon;
-        const comAcomp = items.filter((m) => entradas.some((e) => e.meta_id === m.id)).length;
+        const matchEntry = (e: AcompEntry, m: MetaEntry) =>
+          m.is_synthetic
+            ? (e.meta_id == null && e.source_table === m.source_table && e.source_id === m.source_id)
+            : e.meta_id === m.id;
+        const comAcomp = items.filter((m) => entradas.some((e) => matchEntry(e, m))).length;
 
         const sectionAccent: Record<string, string> = {
             income:    "hsl(142 65% 42%)",
@@ -748,7 +831,11 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
             <div className="space-y-3">
               {items.map((meta) => {
                 const metaHistory = entradas
-                  .filter((e) => e.meta_id === meta.id && !e.is_closing_snapshot)
+                  .filter((e) => !e.is_closing_snapshot && (
+                    meta.is_synthetic
+                      ? (e.meta_id == null && e.source_table === meta.source_table && e.source_id === meta.source_id)
+                      : e.meta_id === meta.id
+                  ))
                   .slice(0, 10);
                 return (
                   <MetaAcompRow
