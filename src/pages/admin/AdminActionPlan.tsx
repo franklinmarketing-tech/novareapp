@@ -80,7 +80,7 @@ interface GoalItem {
 const PRIORITY_LABEL: Record<string, { label: string; cls: string }> = {
   alta:  { label: "Alta",  cls: "bg-rose-100 text-rose-700" },
   media: { label: "Média", cls: "bg-amber-100 text-amber-700" },
-  baixa: { label: "Baixa", cls: "bg-indigo-100 text-indigo-700" },
+  baixa: { label: "Baixa", cls: "bg-novare-blue-light text-novare-blue" },
 };
 
 const SectionHeader = ({
