@@ -183,7 +183,12 @@ type ParecerMeta = {
 
 type AcompEntry = {
   id: string;
-  meta_id: string;
+  meta_id: string | null;
+  source_table?: string | null;
+  source_id?: string | null;
+  source_label?: string | null;
+  valor_meta?: number | null;
+  prazo?: string | null;
   valor_atual?: number | null;
   estado_atual?: string | null;
   progresso_pct?: number | null;
