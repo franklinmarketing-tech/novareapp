@@ -245,44 +245,46 @@ function MetaAcompRow({
           </div>
         )}
 
-        {/* RIGHT — Atualizar */}
-        <div className="px-4 py-3 space-y-2.5">
-          <div className="flex items-center justify-between gap-2">
+        {/* RIGHT — Atualizar (apenas para itens com meta definida) */}
+        {meta.is_synthetic ? (
+          <div className="px-4 py-3 flex items-center justify-between gap-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Valor cadastrado</p>
+            <span className="text-lg font-bold tabular-nums text-foreground">
+              {meta.current_value != null && meta.current_value > 0 ? formatBRL(meta.current_value) : "—"}
+            </span>
+          </div>
+        ) : (
+          <div className="px-4 py-3 space-y-2.5">
             <p className="text-[10px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">Registrar estado atual</p>
-            {meta.is_synthetic && meta.current_value != null && meta.current_value > 0 && (
-              <span className="text-[10px] text-muted-foreground tabular-nums">
-                Cadastrado: <span className="font-semibold text-foreground/80">{formatBRL(meta.current_value)}</span>
-              </span>
-            )}
-          </div>
 
-          <div className="flex items-center gap-2">
-            <CurrencyInput
-              value={valor}
-              onChange={(v) => setValor(v)}
-              placeholder="Valor atual..."
-              className="h-9 text-sm flex-1 bg-background border-border/60 focus:border-novare-blue-bright/50"
+            <div className="flex items-center gap-2">
+              <CurrencyInput
+                value={valor}
+                onChange={(v) => setValor(v)}
+                placeholder="Valor atual..."
+                className="h-9 text-sm flex-1 bg-background border-border/60 focus:border-novare-blue-bright/50"
+              />
+              <Button
+                size="sm"
+                variant={saved ? "secondary" : "default"}
+                onClick={handleSave}
+                disabled={(!estado.trim() && !valor.trim()) || saving}
+                title={(!estado.trim() && !valor.trim()) ? "Preencha o valor ou o estado atual para salvar" : "Salvar registro"}
+                className={cn("h-9 w-9 p-0 shrink-0", !saved && "bg-novare-terracotta hover:bg-novare-terracotta/90 text-white border-0")}
+              >
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+              </Button>
+            </div>
+
+            <Textarea
+              value={estado}
+              onChange={(e) => setEstado(e.target.value)}
+              placeholder="Como está agora? Descreva brevemente..."
+              className="text-sm min-h-[52px] resize-none py-2 bg-background border-border/60"
+              rows={2}
             />
-            <Button
-              size="sm"
-              variant={saved ? "secondary" : "default"}
-              onClick={handleSave}
-              disabled={(!estado.trim() && !valor.trim()) || saving}
-              title={(!estado.trim() && !valor.trim()) ? "Preencha o valor ou o estado atual para salvar" : "Salvar registro"}
-              className={cn("h-9 w-9 p-0 shrink-0", !saved && "bg-novare-terracotta hover:bg-novare-terracotta/90 text-white border-0")}
-            >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
-            </Button>
           </div>
-
-          <Textarea
-            value={estado}
-            onChange={(e) => setEstado(e.target.value)}
-            placeholder="Como está agora? Descreva brevemente..."
-            className="text-sm min-h-[52px] resize-none py-2 bg-background border-border/60"
-            rows={2}
-          />
-        </div>
+        )}
       </div>
 
       {/* ── Meta atingida ── */}
