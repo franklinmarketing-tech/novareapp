@@ -38,7 +38,7 @@ export function AddSectionItemDialog({ kind, clientId, monthRef, monthLabel, act
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
-  const [frequency, setFrequency] = useState<"mensal" | "anual" | "unica">("mensal");
+  const [frequency, setFrequency] = useState<"mensal" | "anual" | "eventual">("mensal");
   const [deadline, setDeadline] = useState("");
   const [priority, setPriority] = useState<"alta" | "media" | "baixa">("media");
   const [area, setArea] = useState<"renda" | "despesas" | "dividas" | "investimentos" | "protecao" | "impostos">("despesas");
