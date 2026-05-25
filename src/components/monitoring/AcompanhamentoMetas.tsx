@@ -542,6 +542,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const [savingId, setSavingId]                 = useState<string | null>(null);
   const [savingGoalId, setSavingGoalId]         = useState<string | null>(null);
   const [confirmingGoalId, setConfirmingGoalId] = useState<string | null>(null);
+  const [confirmingMetaId, setConfirmingMetaId] = useState<string | null>(null);
   const [revalidating, setRevalidating] = useState(false);
 
   const handleRevalidate = async () => {
