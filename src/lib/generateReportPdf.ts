@@ -733,6 +733,7 @@ const canvasBarStacked = (
 export interface ReportData {
   clientName: string;
   clientEmail?: string;
+  cpf?: string;
   profession?: string;
   risk: string;
   riskLabel: string;
@@ -839,7 +840,18 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 // Geração
 // ──────────────────────────────────────────────────────────
 export async function generateReportPdf(data: ReportData): Promise<void> {
-  const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+  // Senha = primeiros 4 dígitos do CPF (apenas dígitos)
+  const cpfDigits = (data.cpf || "").replace(/\D/g, "");
+  const pdfPassword = cpfDigits.slice(0, 4);
+  const pdfOptions: any = { unit: "mm", format: "a4", orientation: "portrait" };
+  if (pdfPassword.length === 4) {
+    pdfOptions.encryption = {
+      userPassword: pdfPassword,
+      ownerPassword: pdfPassword,
+      userPermissions: ["print", "copy"],
+    };
+  }
+  const pdf = new jsPDF(pdfOptions);
   let y = 0;
   let pageNumber = 1;
   let sectionNum = 0;
@@ -1013,11 +1025,25 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     pdf.text(data.profession, MARGIN, dy + 42);
   }
 
+  if (data.cpf) {
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
+    pdf.setGState(pdf.GState({ opacity: 0.5 }));
+    pdf.text("CPF", MARGIN, dy + 54);
+    pdf.setGState(pdf.GState({ opacity: 1 }));
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.text(data.cpf, MARGIN, dy + 60);
+  }
+
   // Rodapé da capa
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8);
   pdf.setGState(pdf.GState({ opacity: 0.4 }));
-  pdf.text("Documento confidencial · Para uso exclusivo do cliente", MARGIN, PAGE_H - 18);
+  pdf.text("Documento confidencial · Para uso exclusivo do cliente", MARGIN, PAGE_H - 22);
+  if (pdfPassword.length === 4) {
+    pdf.text(`Protegido por senha · 4 primeiros dígitos do CPF`, MARGIN, PAGE_H - 17);
+  }
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
   // ═════════════ Páginas internas ═════════════
