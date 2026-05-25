@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Clock, Circle, Target, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AddSectionItemDialog } from "@/components/admin/AddSectionItemDialog";
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -28,6 +30,14 @@ const SECTION_LABELS: Record<SourceTable, string> = {
 const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance"];
 
 const GRID = "grid-cols-[minmax(0,1.8fr)_120px_110px_minmax(0,2fr)]";
+
+const MONTH_NAMES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+const monthStartISO = (year: number, month: number) =>
+  `${year}-${String(month).padStart(2, "0")}-01`;
 
 function progressBarColor(pct: number) {
   if (pct >= 100) return "bg-emerald-500";
@@ -52,6 +62,7 @@ interface GoalItem {
   category?: string | null;
   amount_applied?: number | null;
   completed_at?: string | null;
+  month_ref?: string | null;
 }
 
 const PRIORITY_LABEL: Record<string, { label: string; cls: string }> = {
@@ -62,6 +73,12 @@ const PRIORITY_LABEL: Record<string, { label: string; cls: string }> = {
 
 const AdminActionPlan = () => {
   const { clientId } = useClientId();
+  const now = new Date();
+  const [filterMonth, setFilterMonth] = useState(now.getMonth() + 1);
+  const [filterYear, setFilterYear] = useState(now.getFullYear());
+  const monthRef = monthStartISO(filterYear, filterMonth);
+  const monthLabel = `${MONTH_NAMES[filterMonth - 1]} ${filterYear}`;
+  const monthFilter = `month_ref.is.null,month_ref.eq.${monthRef}`;
 
   const { data: client } = useQuery({
     queryKey: ["client", clientId],
@@ -89,15 +106,30 @@ const AdminActionPlan = () => {
   });
 
   const { data: activeGoals = [], isLoading: loadingGoals } = useQuery({
-    queryKey: ["goals", clientId],
+    queryKey: ["goals_plan", clientId, monthRef],
     queryFn: async () => {
       const { data } = await supabase
         .from("goals")
         .select("*")
         .eq("client_id", clientId)
         .is("completed_at", null)
+        .or(monthFilter)
         .order("created_at");
       return (data || []) as GoalItem[];
+    },
+    enabled: !!clientId,
+  });
+
+  // plano de ação para permitir adicionar ações
+  const { data: actionPlan } = useQuery({
+    queryKey: ["action_plan", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("action_plans")
+        .select("id")
+        .eq("client_id", clientId)
+        .maybeSingle();
+      return data;
     },
     enabled: !!clientId,
   });
@@ -126,6 +158,11 @@ const AdminActionPlan = () => {
   const totalGoals      = activeGoals.length;
   const goalsEmAndamento = activeGoals.filter((g) => g.amount_applied && g.amount_applied > 0).length;
 
+  const sectionKindMap: Partial<Record<SourceTable, "income" | "expenses">> = {
+    income: "income",
+    expenses: "expenses",
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -135,11 +172,29 @@ const AdminActionPlan = () => {
             Ver Ações — {client?.full_name ?? "Cliente"}
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {totalComMeta} de {totalMetas} metas definidas
-            {totalGoals > 0 && ` · ${totalGoals} objetivo${totalGoals !== 1 ? "s" : ""} financeiro${totalGoals !== 1 ? "s" : ""}`}
+            Período: <span className="font-semibold">{monthLabel}</span> · {totalComMeta} de {totalMetas} metas definidas
+            {totalGoals > 0 && ` · ${totalGoals} objetivo${totalGoals !== 1 ? "s" : ""}`}
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-center">
+          <select
+            value={filterMonth}
+            onChange={(e) => setFilterMonth(Number(e.target.value))}
+            className="h-9 rounded-md border border-input bg-background px-2 text-xs"
+            aria-label="Mês"
+          >
+            {MONTH_NAMES.map((n, i) => <option key={i} value={i + 1}>{n}</option>)}
+          </select>
+          <select
+            value={filterYear}
+            onChange={(e) => setFilterYear(Number(e.target.value))}
+            className="h-9 rounded-md border border-input bg-background px-2 text-xs"
+            aria-label="Ano"
+          >
+            {Array.from({ length: 4 }, (_, i) => now.getFullYear() - 2 + i).map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
           <Badge variant="outline" className="text-xs gap-1">
             <CheckCircle2 className="w-3 h-3 text-green-500" />
             {totalComMeta} metas
@@ -150,12 +205,6 @@ const AdminActionPlan = () => {
               {totalComPrazo} com prazo
             </Badge>
           )}
-          {totalGoals > 0 && (
-            <Badge variant="outline" className="text-xs gap-1">
-              <Target className="w-3 h-3 text-emerald-500" />
-              {totalGoals} objetivo{totalGoals !== 1 ? "s" : ""}
-            </Badge>
-          )}
         </div>
       </div>
 
@@ -164,102 +213,119 @@ const AdminActionPlan = () => {
       )}
 
       {!isLoading && totalMetas === 0 && totalGoals === 0 && (
-        <div className="text-center py-16 text-muted-foreground">
+        <div className="text-center py-12 text-muted-foreground">
           <Circle className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
-          <p className="text-sm">Nenhuma meta ou objetivo definido ainda.</p>
-          <p className="text-xs mt-1">Vá para Plano de Ação para definir as metas e adicione Objetivos.</p>
+          <p className="text-sm">Nenhuma meta ou objetivo neste período.</p>
+          <p className="text-xs mt-1">Use os botões "Adicionar nesta seção" abaixo para criar itens para {monthLabel}.</p>
         </div>
       )}
 
-      {/* Seções de metas (income, expenses, debts, assets, insurance) */}
+      {/* Seções de metas */}
       {SECTION_ORDER.map((section) => {
         const items = bySection[section];
-        if (!items.length) return null;
-        const comMeta = items.filter((i: any) => i.meta_text).length;
+        const sectionKind = sectionKindMap[section];
 
         return (
           <div key={section}>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 {SECTION_LABELS[section]}
               </h3>
               <Badge variant="secondary" className="text-xs">{items.length}</Badge>
-              {comMeta > 0 && (
-                <Badge variant="outline" className="text-xs text-green-600 border-green-600/30">
-                  {comMeta} com meta
-                </Badge>
-              )}
+              <div className="ml-auto">
+                {sectionKind && (
+                  <AddSectionItemDialog
+                    kind={sectionKind}
+                    clientId={clientId}
+                    monthRef={monthRef}
+                    monthLabel={monthLabel}
+                    invalidateKeys={[["parecer_metas", clientId]]}
+                  />
+                )}
+              </div>
             </div>
 
-            <div className={`grid ${GRID} gap-3 pb-1 mb-1`}>
-              <p className="text-xs text-muted-foreground font-medium">Item</p>
-              <p className="text-xs text-muted-foreground font-medium">Valor atual</p>
-              <p className="text-xs text-muted-foreground font-medium">Prazo</p>
-              <p className="text-xs text-muted-foreground font-medium">Meta</p>
-            </div>
-
-            <div className="rounded-lg border border-border/60 bg-card px-4">
-              {items.map((item: any) => (
-                <div
-                  key={item.id}
-                  className={`grid ${GRID} gap-3 items-start py-3 border-b border-border/40 last:border-0`}
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">{item.source_label}</p>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground tabular-nums pt-0.5">
-                    {item.current_value > 0 ? formatBRL(Number(item.current_value)) : "—"}
-                  </p>
-
-                  <p className="text-sm tabular-nums pt-0.5">
-                    {item.prazo ? (
-                      <span className="text-blue-600 font-medium">{formatDate(item.prazo)}</span>
-                    ) : (
-                      <span className="text-muted-foreground/50">—</span>
-                    )}
-                  </p>
-
-                  <div className="flex flex-col gap-0.5 pt-0.5">
-                    {item.meta_text ? (
-                      <div className="flex items-start gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                        <p className="text-sm">{item.meta_text}</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground/50 italic">Sem meta definida</p>
-                    )}
-                    {item.meta_valor && item.meta_valor > 0 && (
-                      <p className="text-xs text-muted-foreground tabular-nums flex items-center gap-1 mt-0.5">
-                        <Target className="w-3 h-3" />
-                        Alvo: <span className="font-semibold text-foreground/80">{formatBRL(Number(item.meta_valor))}</span>
-                      </p>
-                    )}
-                  </div>
+            {items.length > 0 ? (
+              <>
+                <div className={`grid ${GRID} gap-3 pb-1 mb-1`}>
+                  <p className="text-xs text-muted-foreground font-medium">Item</p>
+                  <p className="text-xs text-muted-foreground font-medium">Valor atual</p>
+                  <p className="text-xs text-muted-foreground font-medium">Prazo</p>
+                  <p className="text-xs text-muted-foreground font-medium">Meta</p>
                 </div>
-              ))}
-            </div>
+
+                <div className="rounded-lg border border-border/60 bg-card px-4">
+                  {items.map((item: any) => (
+                    <div
+                      key={item.id}
+                      className={`grid ${GRID} gap-3 items-start py-3 border-b border-border/40 last:border-0`}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium">{item.source_label}</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground tabular-nums pt-0.5">
+                        {item.current_value > 0 ? formatBRL(Number(item.current_value)) : "—"}
+                      </p>
+                      <p className="text-sm tabular-nums pt-0.5">
+                        {item.prazo ? (
+                          <span className="text-blue-600 font-medium">{formatDate(item.prazo)}</span>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </p>
+                      <div className="flex flex-col gap-0.5 pt-0.5">
+                        {item.meta_text ? (
+                          <div className="flex items-start gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
+                            <p className="text-sm">{item.meta_text}</p>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground/50 italic">Sem meta definida</p>
+                        )}
+                        {item.meta_valor && item.meta_valor > 0 && (
+                          <p className="text-xs text-muted-foreground tabular-nums flex items-center gap-1 mt-0.5">
+                            <Target className="w-3 h-3" />
+                            Alvo: <span className="font-semibold text-foreground/80">{formatBRL(Number(item.meta_valor))}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground/70 italic px-1">Nenhum item nesta seção.</p>
+            )}
 
             <Separator className="mt-6" />
           </div>
         );
       })}
 
-      {/* Objetivos financeiros — direto da tabela goals */}
-      {activeGoals.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Objetivos
-            </h3>
-            <Badge variant="secondary" className="text-xs">{activeGoals.length}</Badge>
-            {goalsEmAndamento > 0 && (
-              <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-600/30">
-                {goalsEmAndamento} em andamento
-              </Badge>
-            )}
+      {/* Objetivos */}
+      <div>
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Objetivos
+          </h3>
+          <Badge variant="secondary" className="text-xs">{activeGoals.length}</Badge>
+          {goalsEmAndamento > 0 && (
+            <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-600/30">
+              {goalsEmAndamento} em andamento
+            </Badge>
+          )}
+          <div className="ml-auto">
+            <AddSectionItemDialog
+              kind="goals"
+              clientId={clientId}
+              monthRef={monthRef}
+              monthLabel={monthLabel}
+              invalidateKeys={[["goals_plan", clientId, monthRef]]}
+            />
           </div>
+        </div>
 
+        {activeGoals.length > 0 ? (
           <div className="rounded-lg border border-border/60 bg-card divide-y divide-border/40">
             {activeGoals.map((goal) => {
               const applied = goal.amount_applied || 0;
@@ -284,7 +350,6 @@ const AdminActionPlan = () => {
                       )}
                     </div>
                   </div>
-
                   <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                     {target > 0 && (
                       <span className="flex items-center gap-1">
@@ -305,7 +370,6 @@ const AdminActionPlan = () => {
                       </span>
                     )}
                   </div>
-
                   {pct != null && target > 0 && (
                     <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                       <div
@@ -318,10 +382,35 @@ const AdminActionPlan = () => {
               );
             })}
           </div>
+        ) : (
+          <p className="text-xs text-muted-foreground/70 italic px-1">Nenhum objetivo neste período.</p>
+        )}
 
-          <Separator className="mt-6" />
+        <Separator className="mt-6" />
+      </div>
+
+      {/* Ações do Plano */}
+      <div>
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Ações do Plano
+          </h3>
+          <div className="ml-auto">
+            <AddSectionItemDialog
+              kind="action_items"
+              clientId={clientId}
+              monthRef={monthRef}
+              monthLabel={monthLabel}
+              actionPlanId={actionPlan?.id}
+              invalidateKeys={[["action_items", clientId, monthRef]]}
+            />
+          </div>
         </div>
-      )}
+        <p className="text-xs text-muted-foreground/70 italic px-1">
+          Use o botão acima para registrar uma ação específica deste período.
+        </p>
+        <Separator className="mt-6" />
+      </div>
 
       <JourneyFooterNav
         current="plano-acao"
