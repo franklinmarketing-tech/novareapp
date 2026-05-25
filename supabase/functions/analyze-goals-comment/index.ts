@@ -1,5 +1,5 @@
 // Gera um comentário em texto simples sobre o alcance das metas e objetivos
-// do cliente, usando Lovable AI (Gemini). Retorna { comment: string }.
+// do cliente, usando OpenAI (gpt-4o-mini). Retorna { comment: string }.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -44,6 +44,10 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const clientId: string | undefined = body.clientId;
+    const periodLabel: string | undefined = body.periodLabel;
+    const monthStart: string | undefined = body.monthStart; // 'YYYY-MM-01'
+    const monthEnd: string | undefined = body.monthEnd;     // 'YYYY-MM-01' do próximo mês
+
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!clientId || !uuidRegex.test(clientId)) {
       return new Response(JSON.stringify({ error: "clientId inválido" }), {
@@ -53,14 +57,15 @@ Deno.serve(async (req) => {
 
     const service = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-    const [goalsRes, plansRes, metasRes, profileRes] = await Promise.all([
-      service.from("goals").select("description, target_amount, priority, deadline").eq("client_id", clientId),
+    const [goalsRes, plansRes, metasRes, profileLookup] = await Promise.all([
+      service.from("goals").select("id, description, target_amount, priority, deadline, amount_applied").eq("client_id", clientId),
       service.from("action_plans").select("id, objective, applied_variant, applied_at").eq("client_id", clientId).maybeSingle(),
       service.from("parecer_metas").select("id, source_label, meta_valor, meta_text, prazo").eq("client_id", clientId),
-      service.from("profiles").select("full_name").eq("user_id",
-        (await service.from("clients").select("user_id").eq("id", clientId).maybeSingle()).data?.user_id ?? "00000000-0000-0000-0000-000000000000"
-      ).maybeSingle(),
+      service.from("clients").select("user_id").eq("id", clientId).maybeSingle(),
     ]);
+
+    const userId = profileLookup.data?.user_id ?? "00000000-0000-0000-0000-000000000000";
+    const { data: profile } = await service.from("profiles").select("full_name").eq("user_id", userId).maybeSingle();
 
     const goals = goalsRes.data || [];
     const plan = plansRes.data;
@@ -74,11 +79,14 @@ Deno.serve(async (req) => {
       actions = data || [];
     }
 
-    // Últimos registros de acompanhamento por meta
-    const { data: acomp } = await service.from("acompanhamento_entries")
+    let acompQuery = service.from("acompanhamento_entradas")
       .select("meta_id, valor_atual, estado_atual, progresso_pct, snapshotted_at")
       .eq("client_id", clientId)
       .order("snapshotted_at", { ascending: false });
+    if (monthStart && monthEnd) {
+      acompQuery = acompQuery.gte("snapshotted_at", monthStart).lt("snapshotted_at", monthEnd);
+    }
+    const { data: acomp } = await acompQuery;
 
     const latestByMeta: Record<string, any> = {};
     (acomp || []).forEach((e: any) => {
@@ -93,7 +101,10 @@ Deno.serve(async (req) => {
       const related = actions.filter((a) => a.goal_id === g.id);
       const done = related.filter((a) => a.status === "concluido").length;
       const pct = related.length > 0 ? Math.round((done / related.length) * 100) : 0;
-      return `- ${g.description} | meta: R$ ${Number(g.target_amount || 0).toFixed(0)} | prazo: ${g.deadline || "—"} | progresso: ${done}/${related.length} ações (${pct}%)`;
+      const applied = Number(g.amount_applied || 0);
+      const target = Number(g.target_amount || 0);
+      const pctApplied = target > 0 ? Math.round((applied / target) * 100) : null;
+      return `- ${g.description} | meta: R$ ${target.toFixed(0)} | aplicado: R$ ${applied.toFixed(0)}${pctApplied != null ? ` (${pctApplied}%)` : ""} | prazo: ${g.deadline || "—"} | ações: ${done}/${related.length} (${pct}%)`;
     }).join("\n") || "- (sem objetivos cadastrados)";
 
     const metasCtx = metas.map((m: any) => {
@@ -116,7 +127,8 @@ Conteúdo obrigatório:
 
 Não invente números; use os fornecidos abaixo.`;
 
-    const userPrompt = `CLIENTE: ${profileRes.data?.full_name || "—"}
+    const userPrompt = `CLIENTE: ${profile?.full_name || "—"}
+${periodLabel ? `PERÍODO DE REFERÊNCIA: ${periodLabel}` : ""}
 
 PLANO DE AÇÃO:
 - Objetivo: ${plan?.objective || "—"}
@@ -131,21 +143,22 @@ ${metasCtx}
 
 Escreva o comentário final.`;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY não configurada" }), {
+    const OPENAI_KEY = Deno.env.get("Open IA GPT") || Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_KEY) {
+      return new Response(JSON.stringify({ error: "Chave OpenAI não configurada" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Lovable-API-Key": LOVABLE_API_KEY,
+        "Authorization": `Bearer ${OPENAI_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gpt-4o-mini",
+        temperature: 0.6,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -154,18 +167,14 @@ Escreva o comentário final.`;
     });
 
     if (!aiRes.ok) {
+      const errText = await aiRes.text();
+      console.error("OpenAI error:", aiRes.status, errText);
       if (aiRes.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições excedido" }), {
+        return new Response(JSON.stringify({ error: "Limite de requisições excedido na OpenAI" }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (aiRes.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos de IA esgotados" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      console.error("AI gateway error:", aiRes.status, await aiRes.text());
-      return new Response(JSON.stringify({ error: "Erro ao gerar comentário" }), {
+      return new Response(JSON.stringify({ error: "Erro ao gerar comentário (OpenAI)" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

@@ -216,14 +216,33 @@ type AIPlanVariant = {
 };
 
 // ── Main ─────────────────────────────────────────────
+// Helpers de mês
+const monthStartISO = (year: number, month: number) => {
+  const d = new Date(year, month - 1, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+};
+const nextMonthStartISO = (year: number, month: number) => {
+  const d = new Date(year, month, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+};
+const monthLabel = (year: number, month: number) =>
+  new Date(year, month - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+
+const MONTH_NAMES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
 const AdminReport = () => {
   const { clientId } = useClientId();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [goalsCommentOpen, setGoalsCommentOpen] = useState(false);
-  const [goalsCommentLoading, setGoalsCommentLoading] = useState(false);
-  const [goalsCommentDraft, setGoalsCommentDraft] = useState("");
-  const [goalsComment, setGoalsComment] = useState<string>("");
+  const now = new Date();
+  const [filterMonth, setFilterMonth] = useState<number>(now.getMonth() + 1);
+  const [filterYear, setFilterYear] = useState<number>(now.getFullYear());
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiDraft, setAiDraft] = useState("");
   const reportRef = useRef<HTMLDivElement>(null);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
@@ -248,6 +267,11 @@ const AdminReport = () => {
     goal_id: string | null;
     ai_generated_plans: AIPlanVariant[] | null;
   } | null>(null);
+
+  const periodLabel = monthLabel(filterYear, filterMonth);
+  const monthStart = monthStartISO(filterYear, filterMonth);
+  const monthEnd = nextMonthStartISO(filterYear, filterMonth);
+
 
   useEffect(() => {
     if (!clientId) return;
@@ -383,49 +407,8 @@ const AdminReport = () => {
 
   const handlePrint = () => window.print();
 
-  const handleOpenGoalsComment = async () => {
-    setGoalsCommentOpen(true);
-    if (goalsComment || goalsCommentLoading) return;
-    setGoalsCommentLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
-        body: { clientId },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setGoalsCommentDraft(data?.comment || "");
-    } catch (err: any) {
-      toast.error("Erro ao gerar análise", { description: err?.message || "Tente novamente" });
-    } finally {
-      setGoalsCommentLoading(false);
-    }
-  };
-
-  const handleRegenerateGoalsComment = async () => {
-    setGoalsCommentLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
-        body: { clientId },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setGoalsCommentDraft(data?.comment || "");
-      toast.success("Análise regenerada");
-    } catch (err: any) {
-      toast.error("Erro ao regenerar", { description: err?.message || "Tente novamente" });
-    } finally {
-      setGoalsCommentLoading(false);
-    }
-  };
-
-  const handleValidateGoalsComment = () => {
-    setGoalsComment(goalsCommentDraft.trim());
-    setGoalsCommentOpen(false);
-    toast.success("Comentário validado", { description: "Será incluído ao final do PDF." });
-  };
-
-
-  const handleDownloadPDF = async () => {
+  // Gera o PDF de fato (usa o texto já validado pela IA)
+  const buildAndDownloadPdf = async (aiComment: string) => {
     setGenerating(true);
     try {
       const { generateReportPdf } = await import("@/lib/generateReportPdf");
@@ -507,7 +490,6 @@ const AdminReport = () => {
               };
             });
         })(),
-        // V9: plano aplicado + variantes geradas pela IA
         activePlan: activePlan
           ? {
               objective: activePlan.objective,
@@ -516,7 +498,7 @@ const AdminReport = () => {
               variants: activePlan.ai_generated_plans || null,
             }
           : null,
-        goalsAnalysisComment: goalsComment || undefined,
+        goalsAnalysisComment: aiComment || undefined,
       });
       toast.success("PDF gerado com sucesso!");
     } catch (err) {
@@ -527,6 +509,56 @@ const AdminReport = () => {
     }
   };
 
+  // Etapa 1: ao clicar em "Baixar PDF" → chama IA OpenAI e abre o popup
+  const handleDownloadPDF = async () => {
+    setAiDialogOpen(true);
+    setAiLoading(true);
+    setAiDraft("");
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
+        body: { clientId, periodLabel, monthStart, monthEnd },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAiDraft(data?.comment || "");
+    } catch (err: any) {
+      toast.error("Erro ao gerar análise", { description: err?.message || "Tente novamente" });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleRegenerateAi = async () => {
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
+        body: { clientId, periodLabel, monthStart, monthEnd },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAiDraft(data?.comment || "");
+      toast.success("Análise regenerada");
+    } catch (err: any) {
+      toast.error("Erro ao regenerar", { description: err?.message || "Tente novamente" });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Etapa 2: validar comentário e baixar PDF
+  const handleValidateAndDownload = async () => {
+    const comment = aiDraft.trim();
+    setAiDialogOpen(false);
+    await buildAndDownloadPdf(comment);
+  };
+
+  // Baixar sem análise IA
+  const handleSkipAi = async () => {
+    setAiDialogOpen(false);
+    await buildAndDownloadPdf("");
+  };
+
+
   const sectionNumber = (() => { let n = 0; return () => ++n; })();
 
   return (
@@ -535,16 +567,36 @@ const AdminReport = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8 print:hidden">
         <div className="min-w-0">
           <h1 className="text-lg font-semibold text-foreground tracking-tight">Relatório Final</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Documento consolidado para entrega ao cliente</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Documento consolidado · Período: <span className="font-semibold capitalize">{periodLabel}</span>
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <Button onClick={handleOpenGoalsComment} variant="secondary" className="gap-2 flex-1 sm:flex-none">
-            <Sparkles className="h-5 w-5" />
-            {goalsComment ? "Editar Análise IA" : "Análise de Metas (IA)"}
-          </Button>
-          <Button onClick={handleDownloadPDF} disabled={generating} className="gap-2 flex-1 sm:flex-none">
-            {generating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
-            {generating ? "Gerando..." : "Baixar PDF"}
+          {/* Filtro Mês */}
+          <select
+            value={filterMonth}
+            onChange={(e) => setFilterMonth(Number(e.target.value))}
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+            aria-label="Mês"
+          >
+            {MONTH_NAMES.map((n, i) => (
+              <option key={i} value={i + 1}>{n}</option>
+            ))}
+          </select>
+          {/* Filtro Ano */}
+          <select
+            value={filterYear}
+            onChange={(e) => setFilterYear(Number(e.target.value))}
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+            aria-label="Ano"
+          >
+            {Array.from({ length: 4 }, (_, i) => now.getFullYear() - 2 + i).map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+          <Button onClick={handleDownloadPDF} disabled={generating || aiLoading} className="gap-2 flex-1 sm:flex-none">
+            {generating || aiLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+            {generating ? "Gerando PDF..." : aiLoading ? "Analisando..." : "Baixar PDF"}
           </Button>
           <Button onClick={handlePrint} variant="outline" className="gap-2 flex-1 sm:flex-none">
             <Printer className="h-5 w-5" /> Imprimir
@@ -552,8 +604,8 @@ const AdminReport = () => {
         </div>
       </div>
 
-      {/* Dialog: Análise de Metas e Objetivos (IA) */}
-      <Dialog open={goalsCommentOpen} onOpenChange={setGoalsCommentOpen}>
+      {/* Dialog: Análise IA + Validação antes de baixar */}
+      <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -561,32 +613,37 @@ const AdminReport = () => {
               Análise de Metas e Objetivos
             </DialogTitle>
             <DialogDescription>
-              Comentário gerado pela IA da Novare sobre o alcance das metas e o trabalho do consultor. Edite à vontade e valide para incluir ao final do relatório.
+              A IA analisou o alcance das metas no período <span className="font-semibold capitalize">{periodLabel}</span>.
+              Edite à vontade e valide para gerar o PDF com o comentário ao final.
             </DialogDescription>
           </DialogHeader>
-          {goalsCommentLoading ? (
+          {aiLoading ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground gap-2">
               <Loader2 className="h-5 w-5 animate-spin" /> Gerando análise...
             </div>
           ) : (
             <Textarea
-              value={goalsCommentDraft}
-              onChange={(e) => setGoalsCommentDraft(e.target.value)}
+              value={aiDraft}
+              onChange={(e) => setAiDraft(e.target.value)}
               rows={12}
               className="resize-none text-sm"
               placeholder="O comentário aparecerá aqui..."
             />
           )}
-          <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={handleRegenerateGoalsComment} disabled={goalsCommentLoading} className="gap-2">
+          <DialogFooter className="gap-2 sm:gap-2 flex-wrap">
+            <Button variant="ghost" onClick={handleSkipAi} disabled={aiLoading} className="gap-2">
+              Pular e baixar sem análise
+            </Button>
+            <Button variant="outline" onClick={handleRegenerateAi} disabled={aiLoading} className="gap-2">
               <Sparkles className="h-4 w-4" /> Regenerar
             </Button>
-            <Button onClick={handleValidateGoalsComment} disabled={goalsCommentLoading || !goalsCommentDraft.trim()} className="gap-2">
-              <CheckCircle2 className="h-4 w-4" /> Validar e incluir no PDF
+            <Button onClick={handleValidateAndDownload} disabled={aiLoading || !aiDraft.trim()} className="gap-2">
+              <CheckCircle2 className="h-4 w-4" /> Validar e baixar PDF
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
 
       <div ref={reportRef} className="space-y-10 print:space-y-8">
 

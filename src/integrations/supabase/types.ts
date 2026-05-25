@@ -100,6 +100,7 @@ export type Database = {
           financial_impact: number | null
           goal_id: string | null
           id: string
+          month_ref: string | null
           objective: string | null
           parent_id: string | null
           realized_impact: number | null
@@ -116,6 +117,7 @@ export type Database = {
           financial_impact?: number | null
           goal_id?: string | null
           id?: string
+          month_ref?: string | null
           objective?: string | null
           parent_id?: string | null
           realized_impact?: number | null
@@ -132,6 +134,7 @@ export type Database = {
           financial_impact?: number | null
           goal_id?: string | null
           id?: string
+          month_ref?: string | null
           objective?: string | null
           parent_id?: string | null
           realized_impact?: number | null
@@ -916,6 +919,7 @@ export type Database = {
           due_day: number | null
           id: string
           is_fixed: boolean | null
+          month_ref: string | null
           updated_at: string
         }
         Insert: {
@@ -927,6 +931,7 @@ export type Database = {
           due_day?: number | null
           id?: string
           is_fixed?: boolean | null
+          month_ref?: string | null
           updated_at?: string
         }
         Update: {
@@ -938,6 +943,7 @@ export type Database = {
           due_day?: number | null
           id?: string
           is_fixed?: boolean | null
+          month_ref?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1049,6 +1055,7 @@ export type Database = {
           deadline: string | null
           description: string
           id: string
+          month_ref: string | null
           priority: string | null
           target_amount: number | null
           updated_at: string
@@ -1061,6 +1068,7 @@ export type Database = {
           deadline?: string | null
           description: string
           id?: string
+          month_ref?: string | null
           priority?: string | null
           target_amount?: number | null
           updated_at?: string
@@ -1073,6 +1081,7 @@ export type Database = {
           deadline?: string | null
           description?: string
           id?: string
+          month_ref?: string | null
           priority?: string | null
           target_amount?: number | null
           updated_at?: string
@@ -1140,6 +1149,7 @@ export type Database = {
           frequency: Database["public"]["Enums"]["income_frequency"]
           id: string
           is_primary: boolean | null
+          month_ref: string | null
           stability: Database["public"]["Enums"]["income_stability"] | null
           updated_at: string
         }
@@ -1151,6 +1161,7 @@ export type Database = {
           frequency?: Database["public"]["Enums"]["income_frequency"]
           id?: string
           is_primary?: boolean | null
+          month_ref?: string | null
           stability?: Database["public"]["Enums"]["income_stability"] | null
           updated_at?: string
         }
@@ -1162,6 +1173,7 @@ export type Database = {
           frequency?: Database["public"]["Enums"]["income_frequency"]
           id?: string
           is_primary?: boolean | null
+          month_ref?: string | null
           stability?: Database["public"]["Enums"]["income_stability"] | null
           updated_at?: string
         }
