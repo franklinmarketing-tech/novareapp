@@ -537,7 +537,11 @@ const AdminReport = () => {
           <h1 className="text-lg font-semibold text-foreground tracking-tight">Relatório Final</h1>
           <p className="text-xs text-muted-foreground mt-0.5">Documento consolidado para entrega ao cliente</p>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <Button onClick={handleOpenGoalsComment} variant="secondary" className="gap-2 flex-1 sm:flex-none">
+            <Sparkles className="h-5 w-5" />
+            {goalsComment ? "Editar Análise IA" : "Análise de Metas (IA)"}
+          </Button>
           <Button onClick={handleDownloadPDF} disabled={generating} className="gap-2 flex-1 sm:flex-none">
             {generating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             {generating ? "Gerando..." : "Baixar PDF"}
@@ -547,6 +551,42 @@ const AdminReport = () => {
           </Button>
         </div>
       </div>
+
+      {/* Dialog: Análise de Metas e Objetivos (IA) */}
+      <Dialog open={goalsCommentOpen} onOpenChange={setGoalsCommentOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-accent" />
+              Análise de Metas e Objetivos
+            </DialogTitle>
+            <DialogDescription>
+              Comentário gerado pela IA da Novare sobre o alcance das metas e o trabalho do consultor. Edite à vontade e valide para incluir ao final do relatório.
+            </DialogDescription>
+          </DialogHeader>
+          {goalsCommentLoading ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" /> Gerando análise...
+            </div>
+          ) : (
+            <Textarea
+              value={goalsCommentDraft}
+              onChange={(e) => setGoalsCommentDraft(e.target.value)}
+              rows={12}
+              className="resize-none text-sm"
+              placeholder="O comentário aparecerá aqui..."
+            />
+          )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={handleRegenerateGoalsComment} disabled={goalsCommentLoading} className="gap-2">
+              <Sparkles className="h-4 w-4" /> Regenerar
+            </Button>
+            <Button onClick={handleValidateGoalsComment} disabled={goalsCommentLoading || !goalsCommentDraft.trim()} className="gap-2">
+              <CheckCircle2 className="h-4 w-4" /> Validar e incluir no PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div ref={reportRef} className="space-y-10 print:space-y-8">
 
