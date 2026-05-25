@@ -868,12 +868,23 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
             <p className="text-base font-bold text-novare-blue dark:text-novare-blue-bright leading-tight truncate">{currentMonthLabel}</p>
           </div>
         </div>
-        {lastSyncDate && (
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success border border-success/20 text-[11px] font-semibold">
-            <Clock className="h-3 w-3" />
-            Sincronizado em {lastSyncDate}
-          </span>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {lastSyncDate && (
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success border border-success/20 text-[11px] font-semibold">
+              <Clock className="h-3 w-3" />
+              Sincronizado em {lastSyncDate}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleRevalidate}
+            disabled={revalidating}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-novare-blue text-white text-[11px] font-semibold shadow-sm hover:bg-novare-blue/90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            <RefreshCw className={cn("h-3.5 w-3.5", revalidating && "animate-spin")} />
+            {revalidating ? "Revalidando..." : "Revalidar metas"}
+          </button>
+        </div>
       </div>
 
       {/* Resumo */}
