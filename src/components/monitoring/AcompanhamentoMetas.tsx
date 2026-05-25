@@ -576,7 +576,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
 
       const { error } = await supabase.from("acompanhamento_entradas").insert({
         client_id: clientId,
-        meta_id: meta.id,
+        meta_id: meta.is_synthetic ? null : meta.id,
         source_table: meta.source_table,
         source_id: meta.source_id,
         source_label: meta.source_label,
