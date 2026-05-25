@@ -879,11 +879,16 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
             type="button"
             onClick={handleRevalidate}
             disabled={revalidating}
+            title="Recarrega os dados do Plano de Ação e mostra quantos itens já têm meta cadastrada (parecer_metas)."
+            aria-label="Revalidar metas: recarrega e confirma quais itens têm parecer_metas cadastrados"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-novare-blue text-white text-[11px] font-semibold shadow-sm hover:bg-novare-blue/90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
             <RefreshCw className={cn("h-3.5 w-3.5", revalidating && "animate-spin")} />
             {revalidating ? "Revalidando..." : "Revalidar metas"}
           </button>
+          <span className="text-[11px] text-muted-foreground italic basis-full sm:basis-auto">
+            Recarrega o Plano de Ação e confirma quantos itens já têm meta cadastrada.
+          </span>
         </div>
       </div>
 
