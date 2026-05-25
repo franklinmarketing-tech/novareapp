@@ -15,6 +15,18 @@ import {
   TrendingUp, TrendingDown, Trash2, Minus,
   type LucideIcon,
 } from "lucide-react";
+import { AddSectionItemDialog, type SectionKind } from "@/components/admin/AddSectionItemDialog";
+
+const SECTION_KIND_MAP: Partial<Record<SourceTable, SectionKind>> = {
+  income: "income",
+  expenses: "expenses",
+  goals: "goals",
+};
+
+const MONTH_NAMES_PT = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -562,6 +574,29 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                     className="px-4 pb-4 pt-3 space-y-3"
                     style={{ borderTop: "1px solid hsl(var(--border) / 0.3)" }}
                   >
+                    {SECTION_KIND_MAP[section] && (() => {
+                      const now = new Date();
+                      const [yy, mm] = monthFilter !== "all"
+                        ? monthFilter.split("-").map(Number)
+                        : [now.getFullYear(), now.getMonth() + 1];
+                      const monthRef = `${yy}-${String(mm).padStart(2, "0")}-01`;
+                      const monthLabel = `${MONTH_NAMES_PT[mm - 1]} ${yy}`;
+                      return (
+                        <div className="flex justify-end">
+                          <AddSectionItemDialog
+                            kind={SECTION_KIND_MAP[section]!}
+                            clientId={clientId}
+                            monthRef={monthRef}
+                            monthLabel={monthLabel}
+                            invalidateKeys={[
+                              ["financial_items", clientId],
+                              ["parecer_metas", clientId],
+                              ["goals_plan", clientId, monthRef],
+                            ]}
+                          />
+                        </div>
+                      );
+                    })()}
                     {items.map((item) => {
                       const aiSugg = aiSuggestions.find(
                         (s) => s.source_table === item.source_table && s.source_id === item.source_id,

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Clock, Circle, Target, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AddSectionItemDialog } from "@/components/admin/AddSectionItemDialog";
+
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -158,10 +158,6 @@ const AdminActionPlan = () => {
   const totalGoals      = activeGoals.length;
   const goalsEmAndamento = activeGoals.filter((g) => g.amount_applied && g.amount_applied > 0).length;
 
-  const sectionKindMap: Partial<Record<SourceTable, "income" | "expenses">> = {
-    income: "income",
-    expenses: "expenses",
-  };
 
   return (
     <div className="space-y-6">
@@ -216,14 +212,12 @@ const AdminActionPlan = () => {
         <div className="text-center py-12 text-muted-foreground">
           <Circle className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
           <p className="text-sm">Nenhuma meta ou objetivo neste período.</p>
-          <p className="text-xs mt-1">Use os botões "Adicionar nesta seção" abaixo para criar itens para {monthLabel}.</p>
         </div>
       )}
 
       {/* Seções de metas */}
       {SECTION_ORDER.map((section) => {
         const items = bySection[section];
-        const sectionKind = sectionKindMap[section];
 
         return (
           <div key={section}>
@@ -232,17 +226,6 @@ const AdminActionPlan = () => {
                 {SECTION_LABELS[section]}
               </h3>
               <Badge variant="secondary" className="text-xs">{items.length}</Badge>
-              <div className="ml-auto">
-                {sectionKind && (
-                  <AddSectionItemDialog
-                    kind={sectionKind}
-                    clientId={clientId}
-                    monthRef={monthRef}
-                    monthLabel={monthLabel}
-                    invalidateKeys={[["parecer_metas", clientId]]}
-                  />
-                )}
-              </div>
             </div>
 
             {items.length > 0 ? (
@@ -314,15 +297,6 @@ const AdminActionPlan = () => {
               {goalsEmAndamento} em andamento
             </Badge>
           )}
-          <div className="ml-auto">
-            <AddSectionItemDialog
-              kind="goals"
-              clientId={clientId}
-              monthRef={monthRef}
-              monthLabel={monthLabel}
-              invalidateKeys={[["goals_plan", clientId, monthRef]]}
-            />
-          </div>
         </div>
 
         {activeGoals.length > 0 ? (
@@ -389,28 +363,6 @@ const AdminActionPlan = () => {
         <Separator className="mt-6" />
       </div>
 
-      {/* Ações do Plano */}
-      <div>
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Ações do Plano
-          </h3>
-          <div className="ml-auto">
-            <AddSectionItemDialog
-              kind="action_items"
-              clientId={clientId}
-              monthRef={monthRef}
-              monthLabel={monthLabel}
-              actionPlanId={actionPlan?.id}
-              invalidateKeys={[["action_items", clientId, monthRef]]}
-            />
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground/70 italic px-1">
-          Use o botão acima para registrar uma ação específica deste período.
-        </p>
-        <Separator className="mt-6" />
-      </div>
 
       <JourneyFooterNav
         current="plano-acao"
