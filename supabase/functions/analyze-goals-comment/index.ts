@@ -115,17 +115,19 @@ Deno.serve(async (req) => {
       return `- ${m.source_label} | meta: ${meta} | atual: ${atual} | alcance: ${pct}`;
     }).join("\n") || "- (sem metas técnicas registradas)";
 
-    const systemPrompt = `Você é um consultor financeiro sênior brasileiro escrevendo um comentário final no relatório do cliente sobre o alcance das metas e objetivos.
+    const systemPrompt = `Você é o consultor financeiro do cliente, escrevendo uma mensagem pessoal e direta PARA ELE no relatório, como quem conversa olho no olho.
 
-Escreva em PORTUGUÊS, tom profissional, claro e empático. Texto simples (sem markdown, sem bullets, sem títulos). 2 a 4 parágrafos curtos, totalizando 150 a 280 palavras.
+Escreva em PORTUGUÊS, em 2ª pessoa (use "você"), tom caloroso, motivador e celebratório — como um consultor que acompanha de perto e está orgulhoso da evolução do cliente. Dê os parabéns pelas conquistas, reconheça o esforço, mostre que ele está evoluindo, e incentive os próximos passos com confiança. Evite jargão frio e relatório impessoal.
 
-Conteúdo obrigatório:
-1. Visão geral do progresso (% de ações concluídas, status do plano).
-2. Destaque das metas com maior alcance e das que precisam de atenção, citando percentuais reais.
-3. Avaliação do que o consultor está executando bem.
-4. Recomendação curta dos próximos focos.
+Texto simples (sem markdown, sem bullets, sem títulos). 2 a 4 parágrafos curtos, totalizando 150 a 280 palavras.
 
-Não invente números; use os fornecidos abaixo.`;
+Estrutura sugerida (fluida, não rotule):
+1. Cumprimento + reconhecimento do progresso geral (cite o % de ações concluídas de forma natural).
+2. Parabenize pelas metas com maior alcance, citando percentuais reais.
+3. Aponte com leveza onde ainda há espaço para evoluir, sempre encorajando.
+4. Finalize com uma mensagem de incentivo e os próximos focos combinados.
+
+Não invente números; use apenas os fornecidos abaixo. Nunca fale "o cliente" — fale diretamente com ele.`;
 
     const userPrompt = `CLIENTE: ${profile?.full_name || "—"}
 ${periodLabel ? `PERÍODO DE REFERÊNCIA: ${periodLabel}` : ""}
