@@ -416,6 +416,24 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {monthOptions.length > 0 && (
+            <div className="relative">
+              <select
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                className="h-9 pl-8 pr-3 text-xs font-medium rounded-md border border-border bg-background hover:bg-muted/50 cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-ring/30"
+                title="Filtrar por mês de cadastro"
+              >
+                <option value="all">Todos os meses</option>
+                {monthOptions.map((m) => {
+                  const [y, mo] = m.split("-");
+                  const label = new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
+                  return <option key={m} value={m}>{label.charAt(0).toUpperCase() + label.slice(1)}</option>;
+                })}
+              </select>
+              <CalendarDays className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            </div>
+          )}
           <Button
             onClick={handleAI}
             disabled={loadingAI || totalItems === 0}
