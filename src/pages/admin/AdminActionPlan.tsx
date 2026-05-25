@@ -102,8 +102,41 @@ const EmptyState = ({ message }: { message: string }) => (
 const AdminActionPlan = () => {
   const { clientId } = useClientId();
   const now = new Date();
-  const [filterMonth, setFilterMonth] = useState(now.getMonth() + 1);
-  const [filterYear, setFilterYear] = useState(now.getFullYear());
+
+  // Meses disponíveis = apenas meses com dados salvos (goals.month_ref ou parecer_metas/source linked).
+  const { data: availableMonths = [] } = useQuery({
+    queryKey: ["available_action_months", clientId],
+    queryFn: async () => {
+      const [{ data: g }, { data: i }, { data: e }] = await Promise.all([
+        supabase.from("goals").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("income").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("expenses").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+      ]);
+      const set = new Set<string>();
+      [...(g || []), ...(i || []), ...(e || [])].forEach((r: any) => {
+        if (r.month_ref) set.add(String(r.month_ref).slice(0, 7)); // YYYY-MM
+      });
+      return Array.from(set).sort().reverse(); // mais recente primeiro
+    },
+    enabled: !!clientId,
+  });
+
+  // Default: mês salvo mais recente; fallback para mês atual
+  const defaultYM =
+    availableMonths[0] ||
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const [selectedYM, setSelectedYM] = useState<string>(defaultYM);
+
+  // Sincroniza quando a lista carrega
+  if (availableMonths.length > 0 && !availableMonths.includes(selectedYM) &&
+      selectedYM === `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`) {
+    // primeiro carregamento — alinha ao mais recente salvo
+    setTimeout(() => setSelectedYM(availableMonths[0]), 0);
+  }
+
+  const [yStr, mStr] = selectedYM.split("-");
+  const filterYear = Number(yStr);
+  const filterMonth = Number(mStr);
   const monthRef = monthStartISO(filterYear, filterMonth);
   const monthLabel = `${MONTH_NAMES[filterMonth - 1]} ${filterYear}`;
   const monthFilter = `month_ref.is.null,month_ref.eq.${monthRef}`;
