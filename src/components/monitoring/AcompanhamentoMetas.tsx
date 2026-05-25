@@ -12,7 +12,7 @@ import {
   Save, Loader2, Check, ChevronDown, ChevronRight,
   Clock, Target, TrendingUp, TrendingDown, Minus, History,
   Wallet, Receipt, CreditCard, Building2, Shield, Trash2,
-  CheckCircle2, CalendarDays,
+  CheckCircle2, CalendarDays, RefreshCw,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -543,6 +543,35 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const [savingGoalId, setSavingGoalId]         = useState<string | null>(null);
   const [confirmingGoalId, setConfirmingGoalId] = useState<string | null>(null);
   const [confirmingMetaId, setConfirmingMetaId] = useState<string | null>(null);
+  const [revalidating, setRevalidating] = useState(false);
+
+  const handleRevalidate = async () => {
+    setRevalidating(true);
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["onboarding_full", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["active_goals", clientId], refetchType: "all" }),
+      ]);
+      const { data } = await supabase
+        .from("parecer_metas")
+        .select("source_table, meta_text")
+        .eq("client_id", clientId)
+        .is("completed_at", null);
+      const rows = (data || []) as Array<{ source_table: string; meta_text: string | null }>;
+      const withMeta = rows.filter((r) => r.source_table !== "goals" && r.meta_text && r.meta_text.trim().length > 0).length;
+      const total = rows.filter((r) => r.source_table !== "goals").length;
+      toast.success("Metas revalidadas", {
+        description: `${withMeta} de ${total} itens com parecer_metas cadastrado.`,
+      });
+    } catch (err: any) {
+      toast.error("Erro ao revalidar: " + (err?.message || "tente novamente"));
+    } finally {
+      setRevalidating(false);
+    }
+  };
+
 
   const { data: metasRaw = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
@@ -839,12 +868,23 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
             <p className="text-base font-bold text-novare-blue dark:text-novare-blue-bright leading-tight truncate">{currentMonthLabel}</p>
           </div>
         </div>
-        {lastSyncDate && (
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success border border-success/20 text-[11px] font-semibold">
-            <Clock className="h-3 w-3" />
-            Sincronizado em {lastSyncDate}
-          </span>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {lastSyncDate && (
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success border border-success/20 text-[11px] font-semibold">
+              <Clock className="h-3 w-3" />
+              Sincronizado em {lastSyncDate}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleRevalidate}
+            disabled={revalidating}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-novare-blue text-white text-[11px] font-semibold shadow-sm hover:bg-novare-blue/90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            <RefreshCw className={cn("h-3.5 w-3.5", revalidating && "animate-spin")} />
+            {revalidating ? "Revalidando..." : "Revalidar metas"}
+          </button>
+        </div>
       </div>
 
       {/* Resumo */}
