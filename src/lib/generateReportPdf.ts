@@ -840,7 +840,18 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 // Geração
 // ──────────────────────────────────────────────────────────
 export async function generateReportPdf(data: ReportData): Promise<void> {
-  const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+  // Senha = primeiros 4 dígitos do CPF (apenas dígitos)
+  const cpfDigits = (data.cpf || "").replace(/\D/g, "");
+  const pdfPassword = cpfDigits.slice(0, 4);
+  const pdfOptions: any = { unit: "mm", format: "a4", orientation: "portrait" };
+  if (pdfPassword.length === 4) {
+    pdfOptions.encryption = {
+      userPassword: pdfPassword,
+      ownerPassword: pdfPassword,
+      userPermissions: ["print", "copy"],
+    };
+  }
+  const pdf = new jsPDF(pdfOptions);
   let y = 0;
   let pageNumber = 1;
   let sectionNum = 0;
