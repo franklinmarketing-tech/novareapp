@@ -278,7 +278,7 @@ const AdminActionPlan = () => {
                         </Badge>
                       )}
                       {pct != null && (
-                        <span className={cn("text-sm font-bold tabular-nums", progressTextColor(pct))}>
+                        <span className={cn("text-4xl sm:text-[2.6rem] font-black tabular-nums leading-none tracking-tight", progressTextColor(pct))}>
                           {pct}%
                         </span>
                       )}
