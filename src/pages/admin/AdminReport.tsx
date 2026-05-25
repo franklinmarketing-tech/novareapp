@@ -1128,7 +1128,89 @@ const AdminReport = () => {
           </Card>
         </section>
 
+        {/* ══════ ACOMPANHAMENTO ══════ */}
+        {acompEntries.length > 0 && (() => {
+          const groups: Record<string, { label: string; meta?: ParecerMeta; entries: AcompEntry[] }> = {};
+          acompEntries.forEach((e) => {
+            const key = e.meta_id || `${e.source_table || "x"}:${e.source_id || e.id}`;
+            const meta = e.meta_id ? parecerMetas.find((m) => m.id === e.meta_id) : undefined;
+            const label = meta?.source_label || e.source_label || "Item acompanhado";
+            if (!groups[key]) groups[key] = { label, meta, entries: [] };
+            groups[key].entries.push(e);
+          });
+          const grouped = Object.values(groups).map((g) => ({
+            ...g,
+            entries: [...g.entries].sort((a, b) => b.snapshotted_at.localeCompare(a.snapshotted_at)),
+          }));
+          const totalRegistros = acompEntries.length;
+          return (
+            <section className="print:break-before-page">
+              <SectionHeader
+                number={sectionNumber()}
+                title="Acompanhamento"
+                subtitle={`${grouped.length} item${grouped.length !== 1 ? "ns" : ""} acompanhado${grouped.length !== 1 ? "s" : ""} • ${totalRegistros} registro${totalRegistros !== 1 ? "s" : ""}`}
+              />
+              <div className="space-y-3">
+                {grouped.map((g, idx) => {
+                  const latest = g.entries[0];
+                  const target = g.meta?.meta_valor ?? latest?.valor_meta ?? null;
+                  const pct = latest?.progresso_pct ?? null;
+                  return (
+                    <Card key={idx}>
+                      <CardContent className="p-5">
+                        <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-foreground">{g.label}</p>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-muted-foreground">
+                              {target != null && <span>Alvo: <span className="font-semibold text-foreground">{fmt(target)}</span></span>}
+                              {latest?.valor_atual != null && <span>Atual: <span className="font-semibold text-foreground">{fmt(latest.valor_atual)}</span></span>}
+                              {g.meta?.prazo && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  {new Date(g.meta.prazo).toLocaleDateString("pt-BR")}
+                                </span>
+                              )}
+                              <span>Última atualização: {new Date(latest.snapshotted_at).toLocaleDateString("pt-BR")}</span>
+                            </div>
+                          </div>
+                          {pct != null && (
+                            <span className={`text-xs font-bold tabular-nums ${pct >= 100 ? "text-emerald-600" : "text-accent"}`}>{Math.round(pct)}%</span>
+                          )}
+                        </div>
+                        {pct != null && (
+                          <div className="w-full h-2 rounded-full bg-muted overflow-hidden mb-3">
+                            <div
+                              className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-emerald-500" : "bg-accent"}`}
+                              style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+                            />
+                          </div>
+                        )}
+                        {latest?.estado_atual && (
+                          <p className="text-xs text-foreground/80 italic mb-2">"{latest.estado_atual}"</p>
+                        )}
+                        {g.entries.length > 1 && (
+                          <div className="border-t border-border/50 pt-2 mt-2 space-y-1">
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-1">Histórico</p>
+                            {g.entries.slice(0, 6).map((e) => (
+                              <div key={e.id} className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                                <span className="tabular-nums shrink-0">{new Date(e.snapshotted_at).toLocaleDateString("pt-BR")}</span>
+                                {e.valor_atual != null && <span className="font-semibold text-foreground tabular-nums">{fmt(e.valor_atual)}</span>}
+                                {e.progresso_pct != null && <span className="ml-auto tabular-nums">{Math.round(e.progresso_pct)}%</span>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })()}
+
         {/* ══════ 10. EVOLUÇÃO ══════ */}
+
         {chartData.length >= 2 && (
           <section>
             <SectionHeader number={sectionNumber()} title="Evolução Histórica" subtitle="Acompanhamento ao longo dos registros periódicos" />
