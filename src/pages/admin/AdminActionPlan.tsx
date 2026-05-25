@@ -88,7 +88,7 @@ const SectionHeader = ({
 }: { label: string; count: number | string; theme: typeof SECTION_THEME[SourceTable] }) => (
   <div className="flex items-center gap-3 mb-4">
     <div className={cn("h-8 w-1.5 rounded-full", theme.bar)} />
-    <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight uppercase">{label}</h2>
+    <h2 className="text-base font-bold text-foreground tracking-tight leading-tight">{label}</h2>
     <span className={cn("px-2 py-0.5 text-xs font-bold rounded-full", theme.chipBg, theme.chipText)}>{count}</span>
   </div>
 );
