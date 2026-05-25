@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Clock, Circle, Target, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AddSectionItemDialog } from "@/components/admin/AddSectionItemDialog";
+
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
