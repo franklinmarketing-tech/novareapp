@@ -86,10 +86,10 @@ const PRIORITY_LABEL: Record<string, { label: string; cls: string }> = {
 const SectionHeader = ({
   label, count, theme,
 }: { label: string; count: number | string; theme: typeof SECTION_THEME[SourceTable] }) => (
-  <div className="flex items-center gap-3 mb-4">
-    <div className={cn("h-8 w-1.5 rounded-full", theme.bar)} />
-    <h2 className="text-base font-bold text-foreground tracking-tight leading-tight">{label}</h2>
-    <span className={cn("px-2 py-0.5 text-xs font-bold rounded-full", theme.chipBg, theme.chipText)}>{count}</span>
+  <div className="flex items-center gap-3 mb-5">
+    <div className={cn("h-9 w-1.5 rounded-full shadow-sm", theme.bar)} />
+    <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none">{label}</h2>
+    <span className={cn("px-2.5 py-0.5 text-xs font-bold rounded-full tabular-nums", theme.chipBg, theme.chipText)}>{count}</span>
   </div>
 );
 
