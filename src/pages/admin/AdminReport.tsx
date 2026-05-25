@@ -152,6 +152,7 @@ type ReportGoal = {
   id: string;
   description: string;
   target_amount?: number | null;
+  amount_applied?: number | null;
   deadline?: string | null;
   priority?: string | null;
 };
@@ -172,7 +173,7 @@ type ReportSnapshot = {
   total_debts?: number | null;
   savings_rate?: number | null;
 };
-type GoalProgress = ReportGoal & { tasksDone: number; tasksTotal: number; pct: number };
+type GoalProgress = ReportGoal & { tasksDone: number; tasksTotal: number; pct: number; appliedValue: number };
 
 type ParecerMeta = {
   id: string;
@@ -400,8 +401,16 @@ const AdminReport = () => {
     const goalTasks = parentItems.filter((a) => a.goal_id === g.id);
     const done = goalTasks.filter((a) => a.status === "concluido").length;
     const total = goalTasks.length;
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-    return { ...g, tasksDone: done, tasksTotal: total, pct };
+    const applied = Number(g.amount_applied || 0);
+    const target = Number(g.target_amount || 0);
+    // Preferir progresso financeiro (valor aplicado / meta) quando houver meta financeira.
+    // Caso contrário, usar conclusão das tarefas.
+    const pct = target > 0
+      ? Math.min(Math.round((applied / target) * 100), 100)
+      : total > 0
+        ? Math.round((done / total) * 100)
+        : 0;
+    return { ...g, tasksDone: done, tasksTotal: total, pct, appliedValue: applied };
   });
 
   const priorityLabels: Record<string, string> = { alta: "Alta", media: "Média", baixa: "Baixa" };
@@ -1101,7 +1110,11 @@ const AdminReport = () => {
                       {/* Progress bar */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px] text-muted-foreground">{g.tasksDone} de {g.tasksTotal} ações</span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {g.target_amount && g.target_amount > 0
+                              ? <>{fmt(g.appliedValue)} de {fmt(g.target_amount)}</>
+                              : <>{g.tasksDone} de {g.tasksTotal} ações</>}
+                          </span>
                           <span className={`text-xs font-bold ${g.pct === 100 ? "text-emerald-600" : "text-foreground"}`}>{g.pct}%</span>
                         </div>
                         <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
