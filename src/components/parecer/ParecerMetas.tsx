@@ -340,6 +340,24 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     }
   };
 
+  const handleDeleteMeta = async (sourceId: string) => {
+    const meta = metas.find((m) => m.source_id === sourceId);
+    if (!meta?.id) {
+      // Nada salvo — só limpa os campos locais
+      setFields((prev) => ({ ...prev, [sourceId]: { metaText: "", prazo: "", metaValor: "" } }));
+      return;
+    }
+    if (!confirm("Excluir esta ação do Plano de Ação? O acompanhamento histórico será preservado.")) return;
+    const { error } = await supabase.from("parecer_metas").delete().eq("id", meta.id);
+    if (error) {
+      toast.error("Erro ao excluir: " + error.message);
+      return;
+    }
+    setFields((prev) => ({ ...prev, [sourceId]: { metaText: "", prazo: "", metaValor: "" } }));
+    queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
+    toast.success("Ação excluída");
+  };
+
   if (totalItems === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
