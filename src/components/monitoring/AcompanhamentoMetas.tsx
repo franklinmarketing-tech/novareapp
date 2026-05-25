@@ -319,7 +319,7 @@ function MetaAcompRow({
             <CollapsibleContent>
               <div className="mt-2 ml-1 border-l-2 border-border/40 pl-3 space-y-2">
                 {history.map((entry) => (
-                  <div key={entry.id} className="text-xs text-muted-foreground space-y-0.5">
+                  <div key={entry.id} className="group text-xs text-muted-foreground space-y-0.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-foreground/70">{formatDateTime(entry.snapshotted_at)}</span>
                       {entry.is_closing_snapshot && (
@@ -332,6 +332,17 @@ function MetaAcompRow({
                       )}
                       {entry.valor_atual != null && (
                         <span className="tabular-nums">{formatBRL(Number(entry.valor_atual))}</span>
+                      )}
+                      {!entry.is_closing_snapshot && (
+                        <button
+                          onClick={() => {
+                            if (confirm("Excluir este registro de acompanhamento?")) onDeleteEntry(entry.id);
+                          }}
+                          className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-rose-500 hover:text-rose-700 p-0.5 rounded hover:bg-rose-500/10"
+                          title="Excluir registro"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
                       )}
                     </div>
                     {entry.estado_atual && (
