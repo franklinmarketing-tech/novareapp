@@ -978,6 +978,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     pdf.text("M É T O D O   N O V A R E", MARGIN, 50);
   }
 
+  pdf.setTextColor(255, 255, 255);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(34);
   pdf.text("Relatório de", MARGIN, 95);

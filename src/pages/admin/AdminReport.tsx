@@ -507,7 +507,7 @@ const AdminReport = () => {
           <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/[0.02] translate-y-1/2 -translate-x-1/4" />
           <div className="relative">
             <p className="text-[10px] uppercase tracking-[0.3em] text-primary-foreground/50 mb-4">Método Novare</p>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-2 text-primary-foreground">
               Relatório de<br />Consultoria Financeira
             </h1>
             <Separator className="bg-primary-foreground/10 my-5 max-w-[200px]" />
