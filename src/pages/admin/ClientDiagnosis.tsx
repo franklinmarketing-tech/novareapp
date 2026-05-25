@@ -594,16 +594,15 @@ const ClientDiagnosis = () => {
                   </div>
                 </div>
                 <Button
-                  variant="ghost"
                   size="sm"
                   onClick={() => runAnalyzeAI(false)}
                   disabled={aiAnalyzing}
-                  className="gap-1.5 h-7 text-[11px] text-accent hover:bg-accent/10 hover:text-accent shrink-0"
+                  className="gap-2 h-9 px-4 text-xs font-bold tracking-wide uppercase bg-gradient-to-r from-accent to-accent/80 text-accent-foreground shadow-lg shadow-accent/30 ring-1 ring-accent/40 hover:shadow-xl hover:shadow-accent/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shrink-0 rounded-full"
                 >
                   {aiAnalyzing ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
-                    <RefreshCw className="h-3 w-3" />
+                    <RefreshCw className="h-3.5 w-3.5" />
                   )}
                   Nova Análise
                 </Button>
