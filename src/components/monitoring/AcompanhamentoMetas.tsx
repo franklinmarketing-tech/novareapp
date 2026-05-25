@@ -270,7 +270,37 @@ function MetaAcompRow({
           </div>
         ) : (
           <div className="px-4 py-3 space-y-2.5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">Registrar estado atual</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">
+                {editMode ? "Editar último registro" : "Registrar estado atual"}
+              </p>
+              {latestEntry && !editMode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditMode(true);
+                    setEstado(latestEntry.estado_atual || "");
+                    setValor(latestEntry.valor_atual != null ? String(latestEntry.valor_atual) : "");
+                  }}
+                  className="text-[10px] font-semibold text-novare-blue hover:text-novare-terracotta uppercase tracking-wider"
+                >
+                  Editar
+                </button>
+              )}
+              {editMode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditMode(false);
+                    setEstado(latestEntry?.estado_atual || "");
+                    setValor(latestEntry?.valor_atual != null ? String(latestEntry.valor_atual) : "");
+                  }}
+                  className="text-[10px] font-semibold text-muted-foreground hover:text-foreground uppercase tracking-wider"
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
 
             <div className="flex items-center gap-2">
               <CurrencyInput
@@ -284,7 +314,7 @@ function MetaAcompRow({
                 variant={saved ? "secondary" : "default"}
                 onClick={handleSave}
                 disabled={(!estado.trim() && !valor.trim()) || saving}
-                title={(!estado.trim() && !valor.trim()) ? "Preencha o valor ou o estado atual para salvar" : "Salvar registro"}
+                title={(!estado.trim() && !valor.trim()) ? "Preencha o valor ou o estado atual para salvar" : (editMode ? "Salvar alterações" : "Salvar registro")}
                 className={cn("h-9 w-9 p-0 shrink-0", !saved && "bg-novare-terracotta hover:bg-novare-terracotta/90 text-white border-0")}
               >
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
