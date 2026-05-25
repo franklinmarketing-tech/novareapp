@@ -14,13 +14,15 @@ import {
   Printer, TrendingUp, TrendingDown, Wallet, Shield, AlertTriangle,
   CheckCircle2, Target, Banknote, PiggyBank, Scale, ArrowRight,
   Calendar, CreditCard, BarChart3, Gem, Clock, ArrowUpRight,
-  Download, Loader2, Gauge,
+  Download, Loader2, Gauge, Sparkles,
 } from "lucide-react";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import { toast } from "sonner";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { ScrollableTable } from "@/components/ui/scrollable-table";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 // ── Palette ──────────────────────────────────────────
 const CHART_COLORS = [
