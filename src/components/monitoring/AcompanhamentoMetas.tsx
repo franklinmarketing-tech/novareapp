@@ -643,10 +643,12 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
       meta,
       estadoAtual,
       valorAtualStr,
+      editEntryId,
     }: {
       meta: MetaEntry;
       estadoAtual: string;
       valorAtualStr: string;
+      editEntryId?: string;
     }) => {
       const valorAtual = valorAtualStr ? parseFloat(valorAtualStr) : null;
       const progressoPct =
@@ -654,25 +656,36 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
           ? Math.round((valorAtual / meta.meta_valor) * 100)
           : null;
 
-      const { error } = await supabase.from("acompanhamento_entradas").insert({
-        client_id: clientId,
-        meta_id: meta.is_synthetic ? null : meta.id,
-        source_table: meta.source_table,
-        source_id: meta.source_id,
-        source_label: meta.source_label,
-        valor_meta: meta.meta_valor ?? null,
-        prazo: meta.prazo ?? null,
-        valor_atual: valorAtual,
-        estado_atual: estadoAtual || null,
-        progresso_pct: progressoPct,
-        is_closing_snapshot: false,
-        snapshotted_at: new Date().toISOString(),
-      });
-      if (error) throw error;
+      if (editEntryId) {
+        const { error } = await supabase
+          .from("acompanhamento_entradas")
+          .update({
+            valor_atual: valorAtual,
+            estado_atual: estadoAtual || null,
+            progresso_pct: progressoPct,
+            snapshotted_at: new Date().toISOString(),
+          })
+          .eq("id", editEntryId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("acompanhamento_entradas").insert({
+          client_id: clientId,
+          meta_id: meta.is_synthetic ? null : meta.id,
+          source_table: meta.source_table,
+          source_id: meta.source_id,
+          source_label: meta.source_label,
+          valor_meta: meta.meta_valor ?? null,
+          prazo: meta.prazo ?? null,
+          valor_atual: valorAtual,
+          estado_atual: estadoAtual || null,
+          progresso_pct: progressoPct,
+          is_closing_snapshot: false,
+          snapshotted_at: new Date().toISOString(),
+        });
+        if (error) throw error;
+      }
     },
     onSuccess: async () => {
-      // Refetch agressivo: força atualização de TODAS as queries do cliente,
-      // mesmo as inativas (cliente off-line / outras abas / KPIs em background).
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId], refetchType: "all" }),
         queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId], refetchType: "all" }),
@@ -688,7 +701,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     onError: (err: any) => toast.error("Erro ao salvar: " + (err?.message || "tente novamente")),
   });
 
-  const handleSave = async (metaId: string, estadoAtual: string, valorAtualStr: string) => {
+  const handleSave = async (metaId: string, estadoAtual: string, valorAtualStr: string, editEntryId?: string) => {
     const meta = metas.find((m) => m.id === metaId);
     if (!meta) return;
     setSavingId(metaId);
@@ -700,7 +713,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
       }
     }
     saveEntrada.mutate(
-      { meta, estadoAtual, valorAtualStr },
+      { meta, estadoAtual, valorAtualStr, editEntryId },
       { onSettled: () => setSavingId(null) },
     );
   };
