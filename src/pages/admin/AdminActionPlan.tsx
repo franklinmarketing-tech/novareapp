@@ -222,25 +222,23 @@ const AdminActionPlan = () => {
         <div className="flex flex-wrap gap-2 items-center">
           <div className="relative">
             <select
-              value={filterMonth}
-              onChange={(e) => setFilterMonth(Number(e.target.value))}
-              className="h-9 appearance-none rounded-lg border border-border bg-card pl-3 pr-8 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-              aria-label="Mês"
+              value={selectedYM}
+              onChange={(e) => setSelectedYM(e.target.value)}
+              className="h-9 appearance-none rounded-lg border border-border bg-card pl-3 pr-8 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-novare-blue/30"
+              aria-label="Período"
             >
-              {MONTH_NAMES.map((n, i) => <option key={i} value={i + 1}>{n}</option>)}
-            </select>
-            <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          </div>
-          <div className="relative">
-            <select
-              value={filterYear}
-              onChange={(e) => setFilterYear(Number(e.target.value))}
-              className="h-9 appearance-none rounded-lg border border-border bg-card pl-3 pr-8 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-              aria-label="Ano"
-            >
-              {Array.from({ length: 4 }, (_, i) => now.getFullYear() - 2 + i).map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
+              {availableMonths.length === 0 ? (
+                <option value={selectedYM}>{monthLabel}</option>
+              ) : (
+                availableMonths.map((ym) => {
+                  const [y, m] = ym.split("-");
+                  return (
+                    <option key={ym} value={ym}>
+                      {MONTH_NAMES[Number(m) - 1]} {y}
+                    </option>
+                  );
+                })
+              )}
             </select>
             <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>
