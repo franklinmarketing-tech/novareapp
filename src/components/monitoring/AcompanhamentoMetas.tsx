@@ -882,6 +882,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                     saving={savingId === meta.id}
                     onConfirm={handleConfirmMetaDone}
                     confirming={confirmingMetaId === meta.id}
+                    onDeleteEntry={handleDeleteEntry}
                   />
                 );
               })}
