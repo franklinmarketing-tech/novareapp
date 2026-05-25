@@ -38,7 +38,7 @@ const SECTION_THEME: Record<SourceTable | "goals", {
   debts:     { bar: "bg-red-500",     chipBg: "bg-red-100",     chipText: "text-red-700",     rowHover: "hover:bg-red-50/40",     metaText: "text-red-600",     metaUnderline: "decoration-red-200" },
   assets:    { bar: "bg-sky-500",     chipBg: "bg-sky-100",     chipText: "text-sky-700",     rowHover: "hover:bg-sky-50/40",     metaText: "text-sky-600",     metaUnderline: "decoration-sky-200" },
   insurance: { bar: "bg-purple-500",  chipBg: "bg-purple-100",  chipText: "text-purple-700",  rowHover: "hover:bg-purple-50/40",  metaText: "text-purple-600", metaUnderline: "decoration-purple-200" },
-  goals:     { bar: "bg-indigo-500",  chipBg: "bg-indigo-100",  chipText: "text-indigo-700",  rowHover: "hover:bg-indigo-50/40",  metaText: "text-indigo-600",  metaUnderline: "decoration-indigo-200" },
+  goals:     { bar: "bg-novare-blue",  chipBg: "bg-novare-blue-light", chipText: "text-novare-blue", rowHover: "hover:bg-novare-blue-light/50", metaText: "text-novare-blue dark:text-novare-blue-bright",  metaUnderline: "decoration-novare-blue/30" },
 };
 
 const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance"];
@@ -53,14 +53,14 @@ const monthStartISO = (year: number, month: number) =>
 
 function progressBarColor(pct: number) {
   if (pct >= 100) return "bg-emerald-500";
-  if (pct >= 60)  return "bg-indigo-500";
+  if (pct >= 60)  return "bg-novare-blue";
   if (pct >= 30)  return "bg-amber-500";
   return "bg-rose-500";
 }
 
 function progressTextColor(pct: number) {
   if (pct >= 100) return "text-emerald-600";
-  if (pct >= 60)  return "text-indigo-600";
+  if (pct >= 60)  return "text-novare-blue dark:text-novare-blue-bright";
   if (pct >= 30)  return "text-amber-600";
   return "text-rose-600";
 }
@@ -80,16 +80,16 @@ interface GoalItem {
 const PRIORITY_LABEL: Record<string, { label: string; cls: string }> = {
   alta:  { label: "Alta",  cls: "bg-rose-100 text-rose-700" },
   media: { label: "Média", cls: "bg-amber-100 text-amber-700" },
-  baixa: { label: "Baixa", cls: "bg-indigo-100 text-indigo-700" },
+  baixa: { label: "Baixa", cls: "bg-novare-blue-light text-novare-blue" },
 };
 
 const SectionHeader = ({
   label, count, theme,
 }: { label: string; count: number | string; theme: typeof SECTION_THEME[SourceTable] }) => (
-  <div className="flex items-center gap-3 mb-4">
-    <div className={cn("h-8 w-1.5 rounded-full", theme.bar)} />
-    <h2 className="text-base font-bold text-foreground tracking-tight leading-tight">{label}</h2>
-    <span className={cn("px-2 py-0.5 text-xs font-bold rounded-full", theme.chipBg, theme.chipText)}>{count}</span>
+  <div className="flex items-center gap-3 mb-5">
+    <div className={cn("h-9 w-1.5 rounded-full shadow-sm", theme.bar)} />
+    <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none">{label}</h2>
+    <span className={cn("px-2.5 py-0.5 text-xs font-bold rounded-full tabular-nums", theme.chipBg, theme.chipText)}>{count}</span>
   </div>
 );
 
@@ -307,7 +307,7 @@ const AdminActionPlan = () => {
                             </td>
                             <td className="px-6 py-5">
                               {item.prazo ? (
-                                <span className="text-indigo-600 font-semibold tabular-nums">{formatDate(item.prazo)}</span>
+                                <span className="text-novare-blue dark:text-novare-blue-bright font-semibold tabular-nums">{formatDate(item.prazo)}</span>
                               ) : (
                                 <span className="text-muted-foreground/50 italic">—</span>
                               )}
@@ -347,10 +347,10 @@ const AdminActionPlan = () => {
 
       {/* Objetivos */}
       <section className="space-y-4">
-        <div className="flex items-center gap-3 mb-1">
-          <div className={cn("h-8 w-1.5 rounded-full", SECTION_THEME.goals.bar)} />
-          <h2 className="text-base font-bold text-foreground tracking-tight leading-tight">Objetivos</h2>
-          <span className={cn("px-2 py-0.5 text-xs font-bold rounded-full", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
+        <div className="flex items-center gap-3 mb-5">
+          <div className={cn("h-9 w-1.5 rounded-full shadow-sm", SECTION_THEME.goals.bar)} />
+          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none">Objetivos</h2>
+          <span className={cn("px-2.5 py-0.5 text-xs font-bold rounded-full tabular-nums", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
             {activeGoals.length}
           </span>
           {goalsEmAndamento > 0 && (
@@ -369,10 +369,10 @@ const AdminActionPlan = () => {
               const prio    = PRIORITY_LABEL[goal.priority || "media"] || PRIORITY_LABEL.media;
 
               return (
-                <div key={goal.id} className="px-6 py-5 space-y-3 hover:bg-indigo-50/30 transition-colors">
+                <div key={goal.id} className="px-6 py-5 space-y-3 hover:bg-novare-blue-light/50 transition-colors">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-2 flex-1">
-                      <div className="w-2 h-2 mt-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)] shrink-0" />
+                      <div className="w-2 h-2 mt-2 rounded-full bg-novare-blue shadow-[0_0_8px_hsl(var(--novare-blue)/0.5)] shrink-0" />
                       <p className="text-sm font-semibold text-foreground flex-1">{goal.description}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
