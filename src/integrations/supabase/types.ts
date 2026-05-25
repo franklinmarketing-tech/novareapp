@@ -753,6 +753,9 @@ export type Database = {
       }
       diagnosis: {
         Row: {
+          ai_analyzed_at: string | null
+          ai_insights: Json | null
+          ai_summary: string | null
           client_id: string
           created_at: string
           debt_ratio: number | null
@@ -769,6 +772,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_analyzed_at?: string | null
+          ai_insights?: Json | null
+          ai_summary?: string | null
           client_id: string
           created_at?: string
           debt_ratio?: number | null
@@ -785,6 +791,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_analyzed_at?: string | null
+          ai_insights?: Json | null
+          ai_summary?: string | null
           client_id?: string
           created_at?: string
           debt_ratio?: number | null
