@@ -220,6 +220,10 @@ const AdminReport = () => {
   const { clientId } = useClientId();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [goalsCommentOpen, setGoalsCommentOpen] = useState(false);
+  const [goalsCommentLoading, setGoalsCommentLoading] = useState(false);
+  const [goalsCommentDraft, setGoalsCommentDraft] = useState("");
+  const [goalsComment, setGoalsComment] = useState<string>("");
   const reportRef = useRef<HTMLDivElement>(null);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
