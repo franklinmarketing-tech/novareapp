@@ -102,8 +102,41 @@ const EmptyState = ({ message }: { message: string }) => (
 const AdminActionPlan = () => {
   const { clientId } = useClientId();
   const now = new Date();
-  const [filterMonth, setFilterMonth] = useState(now.getMonth() + 1);
-  const [filterYear, setFilterYear] = useState(now.getFullYear());
+
+  // Meses disponíveis = apenas meses com dados salvos (goals.month_ref ou parecer_metas/source linked).
+  const { data: availableMonths = [] } = useQuery({
+    queryKey: ["available_action_months", clientId],
+    queryFn: async () => {
+      const [{ data: g }, { data: i }, { data: e }] = await Promise.all([
+        supabase.from("goals").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("income").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("expenses").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+      ]);
+      const set = new Set<string>();
+      [...(g || []), ...(i || []), ...(e || [])].forEach((r: any) => {
+        if (r.month_ref) set.add(String(r.month_ref).slice(0, 7)); // YYYY-MM
+      });
+      return Array.from(set).sort().reverse(); // mais recente primeiro
+    },
+    enabled: !!clientId,
+  });
+
+  // Default: mês salvo mais recente; fallback para mês atual
+  const defaultYM =
+    availableMonths[0] ||
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const [selectedYM, setSelectedYM] = useState<string>(defaultYM);
+
+  // Sincroniza quando a lista carrega
+  if (availableMonths.length > 0 && !availableMonths.includes(selectedYM) &&
+      selectedYM === `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`) {
+    // primeiro carregamento — alinha ao mais recente salvo
+    setTimeout(() => setSelectedYM(availableMonths[0]), 0);
+  }
+
+  const [yStr, mStr] = selectedYM.split("-");
+  const filterYear = Number(yStr);
+  const filterMonth = Number(mStr);
   const monthRef = monthStartISO(filterYear, filterMonth);
   const monthLabel = `${MONTH_NAMES[filterMonth - 1]} ${filterYear}`;
   const monthFilter = `month_ref.is.null,month_ref.eq.${monthRef}`;
@@ -178,7 +211,7 @@ const AdminActionPlan = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-            Ver Ações — <span className="text-indigo-600">{client?.full_name ?? "Cliente"}</span>
+            Ver Ações — <span className="text-novare-blue dark:text-novare-blue-bright">{client?.full_name ?? "Cliente"}</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Período: <span className="font-medium text-foreground/80">{monthLabel}</span>
@@ -189,25 +222,23 @@ const AdminActionPlan = () => {
         <div className="flex flex-wrap gap-2 items-center">
           <div className="relative">
             <select
-              value={filterMonth}
-              onChange={(e) => setFilterMonth(Number(e.target.value))}
-              className="h-9 appearance-none rounded-lg border border-border bg-card pl-3 pr-8 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-              aria-label="Mês"
+              value={selectedYM}
+              onChange={(e) => setSelectedYM(e.target.value)}
+              className="h-9 appearance-none rounded-lg border border-border bg-card pl-3 pr-8 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-novare-blue/30"
+              aria-label="Período"
             >
-              {MONTH_NAMES.map((n, i) => <option key={i} value={i + 1}>{n}</option>)}
-            </select>
-            <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          </div>
-          <div className="relative">
-            <select
-              value={filterYear}
-              onChange={(e) => setFilterYear(Number(e.target.value))}
-              className="h-9 appearance-none rounded-lg border border-border bg-card pl-3 pr-8 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-              aria-label="Ano"
-            >
-              {Array.from({ length: 4 }, (_, i) => now.getFullYear() - 2 + i).map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
+              {availableMonths.length === 0 ? (
+                <option value={selectedYM}>{monthLabel}</option>
+              ) : (
+                availableMonths.map((ym) => {
+                  const [y, m] = ym.split("-");
+                  return (
+                    <option key={ym} value={ym}>
+                      {MONTH_NAMES[Number(m) - 1]} {y}
+                    </option>
+                  );
+                })
+              )}
             </select>
             <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>
