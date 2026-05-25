@@ -807,7 +807,11 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
             <div className="space-y-3">
               {items.map((meta) => {
                 const metaHistory = entradas
-                  .filter((e) => e.meta_id === meta.id && !e.is_closing_snapshot)
+                  .filter((e) => !e.is_closing_snapshot && (
+                    meta.is_synthetic
+                      ? (e.meta_id == null && (e as any).source_table === meta.source_table && e.source_id === meta.source_id)
+                      : e.meta_id === meta.id
+                  ))
                   .slice(0, 10);
                 return (
                   <MetaAcompRow
