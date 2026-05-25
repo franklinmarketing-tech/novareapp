@@ -58,9 +58,9 @@ export function AddSectionItemDialog({ kind, clientId, monthRef, monthLabel, act
       const amt = Number(amount.replace(",", ".")) || 0;
       let error: any = null;
       if (kind === "income") {
-        ({ error } = await supabase.from("income").insert({
+        ({ error } = await supabase.from("income").insert([{
           client_id: clientId, description, amount: amt, frequency, month_ref: monthRef,
-        }));
+        }]));
       } else if (kind === "expenses") {
         ({ error } = await supabase.from("expenses").insert({
           client_id: clientId, category: category || "outros", description: description || null,
