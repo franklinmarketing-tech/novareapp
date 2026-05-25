@@ -369,10 +369,10 @@ const AdminActionPlan = () => {
               const prio    = PRIORITY_LABEL[goal.priority || "media"] || PRIORITY_LABEL.media;
 
               return (
-                <div key={goal.id} className="px-6 py-5 space-y-3 hover:bg-indigo-50/30 transition-colors">
+                <div key={goal.id} className="px-6 py-5 space-y-3 hover:bg-novare-blue-light/50 transition-colors">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-2 flex-1">
-                      <div className="w-2 h-2 mt-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)] shrink-0" />
+                      <div className="w-2 h-2 mt-2 rounded-full bg-novare-blue shadow-[0_0_8px_hsl(var(--novare-blue)/0.5)] shrink-0" />
                       <p className="text-sm font-semibold text-foreground flex-1">{goal.description}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
