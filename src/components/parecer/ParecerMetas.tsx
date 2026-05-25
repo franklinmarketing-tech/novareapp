@@ -190,6 +190,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       current_value: Number(r.amount),
       unit: `/${r.frequency === "mensal" ? "mês" : r.frequency === "anual" ? "ano" : "eventual"}`,
       detail: `Estabilidade: ${r.stability}${r.is_primary ? " · Principal" : ""}`,
+      created_at: r.created_at,
     })),
     ...(expenses as any[]).map((r) => ({
       source_table: "expenses" as SourceTable,
@@ -198,6 +199,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       current_value: Number(r.amount),
       unit: "/mês",
       detail: r.is_fixed ? "Fixa" : `Variável${r.due_day ? ` · vence dia ${r.due_day}` : ""}`,
+      created_at: r.created_at,
     })),
     ...(debts as any[]).map((r) => ({
       source_table: "debts" as SourceTable,
@@ -209,12 +211,14 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         r.interest_rate ? `Juros: ${r.interest_rate}%/mês` : null,
         r.remaining_months ? `${r.remaining_months} meses restantes` : null,
       ].filter(Boolean).join(" · "),
+      created_at: r.created_at,
     })),
     ...(assets as any[]).map((r) => ({
       source_table: "assets" as SourceTable,
       source_id: r.id,
       source_label: `${r.type}${r.description ? ` — ${r.description}` : ""}`,
       current_value: Number(r.estimated_value),
+      created_at: r.created_at,
     })),
     ...(insurance as any[]).map((r) => ({
       source_table: "insurance" as SourceTable,
@@ -223,6 +227,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       current_value: Number(r.monthly_premium || 0),
       unit: "/mês",
       detail: r.coverage_amount ? `Cobertura: ${formatBRL(Number(r.coverage_amount))}` : undefined,
+      created_at: r.created_at,
     })),
     ...(goals as any[]).filter((r) => !r.completed_at).map((r) => ({
       source_table: "goals" as SourceTable,
@@ -235,8 +240,30 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         r.priority ? `Prioridade: ${r.priority}` : null,
         r.deadline ? `Prazo: ${new Date(r.deadline).toLocaleDateString("pt-BR")}` : null,
       ].filter(Boolean).join(" · "),
+      created_at: r.created_at,
     })),
   ];
+
+  // Meses disponíveis a partir dos created_at de todos os itens
+  const monthOptions = (() => {
+    const set = new Set<string>();
+    allItems.forEach((it) => {
+      if (it.created_at) {
+        const d = new Date(it.created_at);
+        set.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+      }
+    });
+    return Array.from(set).sort().reverse();
+  })();
+
+  const filteredItems = monthFilter === "all"
+    ? allItems
+    : allItems.filter((it) => {
+        if (!it.created_at) return false;
+        const d = new Date(it.created_at);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        return key === monthFilter;
+      });
 
   const bySection = SECTION_ORDER.reduce(
     (acc, s) => { acc[s] = allItems.filter((i) => i.source_table === s); return acc; },
