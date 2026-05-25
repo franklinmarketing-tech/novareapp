@@ -143,6 +143,13 @@ function MetaAcompRow({
   );
   const [saved, setSaved] = useState(false);
   const [histOpen, setHistOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+
+  // Sync inputs com o último registro quando ele muda externamente
+  // (ex.: depois de salvar/refetch)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // (intencional — só atualiza quando o id do último entry muda)
+  // 
 
   const valorNum = parseFloat(valor) || 0;
   const pct =
