@@ -3,11 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, Clock, Circle, Target, TrendingUp } from "lucide-react";
+import { CheckCircle2, Clock, Target, TrendingUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -27,9 +24,24 @@ const SECTION_LABELS: Record<SourceTable, string> = {
   insurance: "Seguros",
 };
 
-const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance"];
+/** Cromática por seção — bar + chip + hover + accent */
+const SECTION_THEME: Record<SourceTable | "goals", {
+  bar: string;
+  chipBg: string;
+  chipText: string;
+  rowHover: string;
+  metaText: string;
+  metaUnderline: string;
+}> = {
+  income:    { bar: "bg-emerald-500", chipBg: "bg-emerald-100", chipText: "text-emerald-700", rowHover: "hover:bg-emerald-50/40", metaText: "text-emerald-600", metaUnderline: "decoration-emerald-200" },
+  expenses:  { bar: "bg-rose-500",    chipBg: "bg-rose-100",    chipText: "text-rose-700",    rowHover: "hover:bg-rose-50/40",    metaText: "text-rose-600",    metaUnderline: "decoration-rose-200" },
+  debts:     { bar: "bg-red-500",     chipBg: "bg-red-100",     chipText: "text-red-700",     rowHover: "hover:bg-red-50/40",     metaText: "text-red-600",     metaUnderline: "decoration-red-200" },
+  assets:    { bar: "bg-sky-500",     chipBg: "bg-sky-100",     chipText: "text-sky-700",     rowHover: "hover:bg-sky-50/40",     metaText: "text-sky-600",     metaUnderline: "decoration-sky-200" },
+  insurance: { bar: "bg-purple-500",  chipBg: "bg-purple-100",  chipText: "text-purple-700",  rowHover: "hover:bg-purple-50/40",  metaText: "text-purple-600", metaUnderline: "decoration-purple-200" },
+  goals:     { bar: "bg-indigo-500",  chipBg: "bg-indigo-100",  chipText: "text-indigo-700",  rowHover: "hover:bg-indigo-50/40",  metaText: "text-indigo-600",  metaUnderline: "decoration-indigo-200" },
+};
 
-const GRID = "grid-cols-[minmax(0,1.8fr)_120px_110px_minmax(0,2fr)]";
+const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance"];
 
 const MONTH_NAMES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -41,14 +53,14 @@ const monthStartISO = (year: number, month: number) =>
 
 function progressBarColor(pct: number) {
   if (pct >= 100) return "bg-emerald-500";
-  if (pct >= 60)  return "bg-blue-500";
+  if (pct >= 60)  return "bg-indigo-500";
   if (pct >= 30)  return "bg-amber-500";
   return "bg-rose-500";
 }
 
 function progressTextColor(pct: number) {
   if (pct >= 100) return "text-emerald-600";
-  if (pct >= 60)  return "text-blue-600";
+  if (pct >= 60)  return "text-indigo-600";
   if (pct >= 30)  return "text-amber-600";
   return "text-rose-600";
 }
@@ -66,10 +78,26 @@ interface GoalItem {
 }
 
 const PRIORITY_LABEL: Record<string, { label: string; cls: string }> = {
-  alta:  { label: "Alta",  cls: "border-destructive/30 text-destructive bg-destructive/10" },
-  media: { label: "Média", cls: "border-warning/30 text-warning bg-warning/10" },
-  baixa: { label: "Baixa", cls: "border-primary/30 text-primary bg-primary/10" },
+  alta:  { label: "Alta",  cls: "bg-rose-100 text-rose-700" },
+  media: { label: "Média", cls: "bg-amber-100 text-amber-700" },
+  baixa: { label: "Baixa", cls: "bg-indigo-100 text-indigo-700" },
 };
+
+const SectionHeader = ({
+  label, count, theme,
+}: { label: string; count: number | string; theme: typeof SECTION_THEME[SourceTable] }) => (
+  <div className="flex items-center gap-3 mb-4">
+    <div className={cn("h-8 w-1.5 rounded-full", theme.bar)} />
+    <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight uppercase">{label}</h2>
+    <span className={cn("px-2 py-0.5 text-xs font-bold rounded-full", theme.chipBg, theme.chipText)}>{count}</span>
+  </div>
+);
+
+const EmptyState = ({ message }: { message: string }) => (
+  <div className="py-8 bg-muted/30 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground">
+    <p className="text-sm font-medium">{message}</p>
+  </div>
+);
 
 const AdminActionPlan = () => {
   const { clientId } = useClientId();
@@ -120,20 +148,6 @@ const AdminActionPlan = () => {
     enabled: !!clientId,
   });
 
-  // plano de ação para permitir adicionar ações
-  const { data: actionPlan } = useQuery({
-    queryKey: ["action_plan", clientId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("action_plans")
-        .select("id")
-        .eq("client_id", clientId)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!clientId,
-  });
-
   const isLoading = loadingMetas || loadingGoals;
 
   if (!clientId) {
@@ -158,48 +172,52 @@ const AdminActionPlan = () => {
   const totalGoals      = activeGoals.length;
   const goalsEmAndamento = activeGoals.filter((g) => g.amount_applied && g.amount_applied > 0).length;
 
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-border/60 flex-wrap gap-3">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border">
         <div>
-          <h2 className="text-base font-semibold">
-            Ver Ações — {client?.full_name ?? "Cliente"}
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Período: <span className="font-semibold">{monthLabel}</span> · {totalComMeta} de {totalMetas} metas definidas
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+            Ver Ações — <span className="text-indigo-600">{client?.full_name ?? "Cliente"}</span>
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Período: <span className="font-medium text-foreground/80">{monthLabel}</span>
+            {" "}• {totalComMeta} de {totalMetas} metas definidas
             {totalGoals > 0 && ` · ${totalGoals} objetivo${totalGoals !== 1 ? "s" : ""}`}
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap items-center">
-          <select
-            value={filterMonth}
-            onChange={(e) => setFilterMonth(Number(e.target.value))}
-            className="h-9 rounded-md border border-input bg-background px-2 text-xs"
-            aria-label="Mês"
-          >
-            {MONTH_NAMES.map((n, i) => <option key={i} value={i + 1}>{n}</option>)}
-          </select>
-          <select
-            value={filterYear}
-            onChange={(e) => setFilterYear(Number(e.target.value))}
-            className="h-9 rounded-md border border-input bg-background px-2 text-xs"
-            aria-label="Ano"
-          >
-            {Array.from({ length: 4 }, (_, i) => now.getFullYear() - 2 + i).map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-          <Badge variant="outline" className="text-xs gap-1">
-            <CheckCircle2 className="w-3 h-3 text-green-500" />
-            {totalComMeta} metas
-          </Badge>
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="relative">
+            <select
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(Number(e.target.value))}
+              className="h-9 appearance-none rounded-lg border border-border bg-card pl-3 pr-8 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+              aria-label="Mês"
+            >
+              {MONTH_NAMES.map((n, i) => <option key={i} value={i + 1}>{n}</option>)}
+            </select>
+            <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          </div>
+          <div className="relative">
+            <select
+              value={filterYear}
+              onChange={(e) => setFilterYear(Number(e.target.value))}
+              className="h-9 appearance-none rounded-lg border border-border bg-card pl-3 pr-8 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+              aria-label="Ano"
+            >
+              {Array.from({ length: 4 }, (_, i) => now.getFullYear() - 2 + i).map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          </div>
+          <div className="px-3 py-1.5 bg-card border border-border rounded-lg text-sm font-medium shadow-sm flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" /> {totalComMeta} metas
+          </div>
           {totalComPrazo > 0 && (
-            <Badge variant="outline" className="text-xs gap-1">
-              <Clock className="w-3 h-3 text-blue-500" />
-              {totalComPrazo} com prazo
-            </Badge>
+            <div className="px-3 py-1.5 bg-card border border-border rounded-lg text-sm font-medium shadow-sm flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500" /> {totalComPrazo} com prazo
+            </div>
           )}
         </div>
       </div>
@@ -209,98 +227,110 @@ const AdminActionPlan = () => {
       )}
 
       {!isLoading && totalMetas === 0 && totalGoals === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <Circle className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
-          <p className="text-sm">Nenhuma meta ou objetivo neste período.</p>
-        </div>
+        <EmptyState message="Nenhuma meta ou objetivo neste período." />
       )}
 
       {/* Seções de metas */}
       {SECTION_ORDER.map((section) => {
         const items = bySection[section];
+        const theme = SECTION_THEME[section];
+        const isEmpty = items.length === 0;
 
         return (
-          <div key={section}>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {SECTION_LABELS[section]}
-              </h3>
-              <Badge variant="secondary" className="text-xs">{items.length}</Badge>
-            </div>
+          <section key={section} className={cn("space-y-4", isEmpty && "opacity-75")}>
+            <SectionHeader label={SECTION_LABELS[section]} count={items.length} theme={theme} />
 
             {items.length > 0 ? (
-              <>
-                <div className={`grid ${GRID} gap-3 pb-1 mb-1`}>
-                  <p className="text-xs text-muted-foreground font-medium">Item</p>
-                  <p className="text-xs text-muted-foreground font-medium">Valor atual</p>
-                  <p className="text-xs text-muted-foreground font-medium">Prazo</p>
-                  <p className="text-xs text-muted-foreground font-medium">Meta</p>
+              <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-muted/40 border-b border-border">
+                      <tr>
+                        <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Item</th>
+                        <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Valor atual</th>
+                        <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prazo</th>
+                        <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Meta</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/60">
+                      {items.map((item: any) => {
+                        const label: string = item.source_label || "";
+                        const [head, ...rest] = label.split("—").map((s) => s.trim());
+                        const hasSubtitle = rest.length > 0;
+                        return (
+                          <tr key={item.id} className={cn("transition-colors", theme.rowHover)}>
+                            <td className="px-6 py-5">
+                              {hasSubtitle ? (
+                                <>
+                                  <span className={cn("text-[10px] block mb-0.5 font-bold uppercase tracking-tighter", theme.metaText, "opacity-80")}>
+                                    {head}
+                                  </span>
+                                  <span className="font-semibold text-foreground">{rest.join(" — ")}</span>
+                                </>
+                              ) : (
+                                <span className="font-semibold text-foreground">{label}</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-5 text-foreground/80 font-medium tabular-nums">
+                              {item.current_value > 0 ? formatBRL(Number(item.current_value)) : <span className="text-muted-foreground/50">—</span>}
+                            </td>
+                            <td className="px-6 py-5">
+                              {item.prazo ? (
+                                <span className="text-indigo-600 font-semibold tabular-nums">{formatDate(item.prazo)}</span>
+                              ) : (
+                                <span className="text-muted-foreground/50 italic">—</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-5">
+                              <div className="flex flex-col items-end">
+                                {item.meta_text ? (
+                                  <span className={cn("flex items-center gap-1.5 font-bold text-sm text-right", theme.metaText)}>
+                                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                                    {item.meta_text}
+                                  </span>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground/50 italic">Sem meta definida</span>
+                                )}
+                                {item.meta_valor && item.meta_valor > 0 && (
+                                  <span className="text-xs text-muted-foreground mt-1">
+                                    Alvo: <span className={cn("text-foreground/80 font-bold underline tabular-nums", theme.metaUnderline)}>
+                                      {formatBRL(Number(item.meta_valor))}
+                                    </span>
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-
-                <div className="rounded-lg border border-border/60 bg-card px-4">
-                  {items.map((item: any) => (
-                    <div
-                      key={item.id}
-                      className={`grid ${GRID} gap-3 items-start py-3 border-b border-border/40 last:border-0`}
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium">{item.source_label}</p>
-                      </div>
-                      <p className="text-sm text-muted-foreground tabular-nums pt-0.5">
-                        {item.current_value > 0 ? formatBRL(Number(item.current_value)) : "—"}
-                      </p>
-                      <p className="text-sm tabular-nums pt-0.5">
-                        {item.prazo ? (
-                          <span className="text-blue-600 font-medium">{formatDate(item.prazo)}</span>
-                        ) : (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </p>
-                      <div className="flex flex-col gap-0.5 pt-0.5">
-                        {item.meta_text ? (
-                          <div className="flex items-start gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                            <p className="text-sm">{item.meta_text}</p>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground/50 italic">Sem meta definida</p>
-                        )}
-                        {item.meta_valor && item.meta_valor > 0 && (
-                          <p className="text-xs text-muted-foreground tabular-nums flex items-center gap-1 mt-0.5">
-                            <Target className="w-3 h-3" />
-                            Alvo: <span className="font-semibold text-foreground/80">{formatBRL(Number(item.meta_valor))}</span>
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
+              </div>
             ) : (
-              <p className="text-xs text-muted-foreground/70 italic px-1">Nenhum item nesta seção.</p>
+              <EmptyState message={`Nenhum item em ${SECTION_LABELS[section]} neste período.`} />
             )}
-
-            <Separator className="mt-6" />
-          </div>
+          </section>
         );
       })}
 
       {/* Objetivos */}
-      <div>
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Objetivos
-          </h3>
-          <Badge variant="secondary" className="text-xs">{activeGoals.length}</Badge>
+      <section className="space-y-4">
+        <div className="flex items-center gap-3 mb-1">
+          <div className={cn("h-8 w-1.5 rounded-full", SECTION_THEME.goals.bar)} />
+          <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight uppercase">Objetivos</h2>
+          <span className={cn("px-2 py-0.5 text-xs font-bold rounded-full", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
+            {activeGoals.length}
+          </span>
           {goalsEmAndamento > 0 && (
-            <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-600/30">
+            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">
               {goalsEmAndamento} em andamento
-            </Badge>
+            </span>
           )}
         </div>
 
         {activeGoals.length > 0 ? (
-          <div className="rounded-lg border border-border/60 bg-card divide-y divide-border/40">
+          <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden divide-y divide-border/60">
             {activeGoals.map((goal) => {
               const applied = goal.amount_applied || 0;
               const target  = goal.target_amount || 0;
@@ -308,23 +338,26 @@ const AdminActionPlan = () => {
               const prio    = PRIORITY_LABEL[goal.priority || "media"] || PRIORITY_LABEL.media;
 
               return (
-                <div key={goal.id} className="px-4 py-3 space-y-2">
+                <div key={goal.id} className="px-6 py-5 space-y-3 hover:bg-indigo-50/30 transition-colors">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-medium flex-1">{goal.description}</p>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-start gap-2 flex-1">
+                      <div className="w-2 h-2 mt-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)] shrink-0" />
+                      <p className="text-sm font-semibold text-foreground flex-1">{goal.description}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
                       {goal.priority && (
-                        <Badge variant="outline" className={cn("h-5 px-1.5 text-[10px]", prio.cls)}>
+                        <span className={cn("h-5 px-2 inline-flex items-center text-[10px] font-bold rounded-full", prio.cls)}>
                           {prio.label}
-                        </Badge>
+                        </span>
                       )}
                       {pct != null && (
-                        <span className={cn("text-4xl sm:text-[2.6rem] font-black tabular-nums leading-none tracking-tight", progressTextColor(pct))}>
+                        <span className={cn("text-3xl sm:text-4xl font-black tabular-nums leading-none tracking-tight", progressTextColor(pct))}>
                           {pct}%
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground pl-4">
                     {target > 0 && (
                       <span className="flex items-center gap-1">
                         <Target className="w-3 h-3" />
@@ -345,7 +378,7 @@ const AdminActionPlan = () => {
                     )}
                   </div>
                   {pct != null && target > 0 && (
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-muted overflow-hidden ml-4">
                       <div
                         className={cn("h-full rounded-full transition-all", progressBarColor(pct))}
                         style={{ width: `${pct}%` }}
@@ -357,12 +390,9 @@ const AdminActionPlan = () => {
             })}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground/70 italic px-1">Nenhum objetivo neste período.</p>
+          <EmptyState message="Nenhum objetivo neste período." />
         )}
-
-        <Separator className="mt-6" />
-      </div>
-
+      </section>
 
       <JourneyFooterNav
         current="plano-acao"
