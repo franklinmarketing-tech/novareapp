@@ -126,6 +126,7 @@ function MetaAcompRow({
   saving,
   onConfirm,
   confirming,
+  onDeleteEntry,
 }: {
   meta: MetaEntry;
   latestEntry?: AcompEntry;
@@ -134,6 +135,7 @@ function MetaAcompRow({
   saving: boolean;
   onConfirm: (metaId: string) => void;
   confirming: boolean;
+  onDeleteEntry: (entryId: string) => void;
 }) {
   const [estado, setEstado] = useState(latestEntry?.estado_atual || "");
   const [valor, setValor] = useState(
