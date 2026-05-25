@@ -73,13 +73,15 @@ function TrendIcon({ current, prev }: { current?: number | null; prev?: number |
 }
 
 interface MetaEntry {
-  id: string;
+  id: string;                    // meta_id quando existe; senão "synthetic-<source_table>-<source_id>"
   source_table: string;
   source_id: string;
   source_label: string;
   meta_text?: string;
   meta_valor?: number;
   prazo?: string;
+  current_value?: number | null; // valor cadastrado no onboarding (renda, despesa, dívida etc.)
+  is_synthetic?: boolean;        // true quando não há meta cadastrada
 }
 
 interface AcompEntry {
