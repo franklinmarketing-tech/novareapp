@@ -1301,8 +1301,8 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
 
   // Gráficos do fluxo de caixa — barra de comparação + donut de despesas
   {
-    const halfW = (CONTENT_W - 4) / 2;
-    const chartH = 60;
+    const halfW = (CONTENT_W - 6) / 2;
+    const chartH = 78;
 
     // Barra de comparação: Receitas | Despesas | Saldo
     const flowBars = [
@@ -1311,23 +1311,24 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       { label: "Saldo",     value: Math.max(data.netCashFlow, 0), color: data.netCashFlow >= 0 ? "#2563eb" : "#d97706" },
     ];
 
-    ensureSpace(chartH + 6);
+    ensureSpace(chartH + 8);
 
     // Barra de comparação à esquerda
-    const barImg = canvasBarV(flowBars, 640, 360, fmt);
+    const barImg = canvasBarV(flowBars, 640, 460, fmt);
     pdf.addImage(barImg, "PNG", MARGIN, y, halfW, chartH);
 
     // Donut de despesas à direita
     if (data.expensesByCategory.length >= 2) {
       const donutImg = canvasDonut(
         data.expensesByCategory.map((e) => ({ label: e.category, value: e.amount })),
-        680, 360
+        820, 480
       );
-      pdf.addImage(donutImg, "PNG", MARGIN + halfW + 4, y, halfW, chartH);
+      pdf.addImage(donutImg, "PNG", MARGIN + halfW + 6, y, halfW, chartH);
     }
 
-    y += chartH + 4;
+    y += chartH + 6;
   }
+
 
   // ── 5. Mapa de Dívidas
   if (data.debts.length > 0) {
