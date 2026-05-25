@@ -131,7 +131,7 @@ function MetaAcompRow({
   meta: MetaEntry;
   latestEntry?: AcompEntry;
   history: AcompEntry[];
-  onSave: (metaId: string, estadoAtual: string, valorAtual: string) => void;
+  onSave: (metaId: string, estadoAtual: string, valorAtual: string, editEntryId?: string) => void;
   saving: boolean;
   onConfirm: (metaId: string) => void;
   confirming: boolean;
