@@ -277,15 +277,17 @@ const AdminReport = () => {
     if (!clientId) return;
     const load = async () => {
       setLoading(true);
+      // Filtro mensal: itens do mês selecionado OU itens legados (month_ref nulo)
+      const monthFilter = `month_ref.is.null,month_ref.eq.${monthStart}`;
       const [clientRes, diagRes, incRes, expRes, debRes, assRes, insRes, goalRes, planRes, snapRes, metaRes, acompRes] = await Promise.all([
         supabase.from("clients").select("*").eq("id", clientId).single(),
         supabase.from("diagnosis").select("*").eq("client_id", clientId).maybeSingle(),
-        supabase.from("income").select("*").eq("client_id", clientId),
-        supabase.from("expenses").select("*").eq("client_id", clientId),
+        supabase.from("income").select("*").eq("client_id", clientId).or(monthFilter),
+        supabase.from("expenses").select("*").eq("client_id", clientId).or(monthFilter),
         supabase.from("debts").select("*").eq("client_id", clientId),
         supabase.from("assets").select("*").eq("client_id", clientId),
         supabase.from("insurance").select("*").eq("client_id", clientId),
-        supabase.from("goals").select("*").eq("client_id", clientId),
+        supabase.from("goals").select("*").eq("client_id", clientId).or(monthFilter),
         supabase
           .from("action_plans")
           .select("id, objective, applied_variant, applied_at, goal_id, ai_generated_plans, source_parecer_id")
@@ -293,7 +295,13 @@ const AdminReport = () => {
           .maybeSingle(),
         supabase.from("monitoring_snapshots").select("*").eq("client_id", clientId).order("snapshot_date", { ascending: true }),
         supabase.from("parecer_metas").select("*").eq("client_id", clientId).order("created_at"),
-        supabase.from("acompanhamento_entradas").select("*").eq("client_id", clientId).order("snapshotted_at", { ascending: false }),
+        supabase
+          .from("acompanhamento_entradas")
+          .select("*")
+          .eq("client_id", clientId)
+          .gte("snapshotted_at", monthStart)
+          .lt("snapshotted_at", monthEnd)
+          .order("snapshotted_at", { ascending: false }),
       ]);
 
       if (clientRes.data) {
@@ -316,9 +324,13 @@ const AdminReport = () => {
       setAcompEntries((acompRes.data ?? []) as AcompEntry[]);
 
       if (planRes.data) {
-        const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id).order("created_at");
+        const { data: items } = await supabase
+          .from("action_items")
+          .select("*")
+          .eq("action_plan_id", planRes.data.id)
+          .or(monthFilter)
+          .order("created_at");
         setActionItems((items ?? []) as ReportActionItem[]);
-        // V9: guarda info do plano aplicado e as 3 variantes geradas pela IA
         const rawVariants = (planRes.data as any).ai_generated_plans;
         setActivePlan({
           objective: (planRes.data as any).objective ?? null,
@@ -327,6 +339,8 @@ const AdminReport = () => {
           goal_id: (planRes.data as any).goal_id ?? null,
           ai_generated_plans: Array.isArray(rawVariants) ? (rawVariants as AIPlanVariant[]) : null,
         });
+      } else {
+        setActionItems([]);
       }
       const { data: notes } = await supabase
         .from("consultant_notes")
@@ -339,7 +353,7 @@ const AdminReport = () => {
       setLoading(false);
     };
     load();
-  }, [clientId]);
+  }, [clientId, monthStart, monthEnd]);
 
   if (loading) return (
     <div className="space-y-4 p-4">
