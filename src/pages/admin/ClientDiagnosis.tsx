@@ -256,7 +256,7 @@ const ClientDiagnosis = () => {
         if (diagRes.data.ai_summary) {
           setAiSummary(diagRes.data.ai_summary as string);
           setAiInsights(
-            ((diagRes.data.ai_insights as Insight[]) || []).sort((a, b) => {
+            ((diagRes.data.ai_insights as unknown as Insight[]) || []).sort((a, b) => {
               const orderKind = { critico: 0, alerta: 1, oportunidade: 2, ponto_forte: 3 };
               const orderSev = { alta: 0, media: 1, baixa: 2 };
               return (

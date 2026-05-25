@@ -535,9 +535,20 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId] });
-      toast.success("Acompanhamento salvo");
+    onSuccess: async () => {
+      // Refetch agressivo: força atualização de TODAS as queries do cliente,
+      // mesmo as inativas (cliente off-line / outras abas / KPIs em background).
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["goals", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["daily_progress_snapshots", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["client", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["client_financials", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["monthly_closings", clientId], refetchType: "all" }),
+        queryClient.refetchQueries({ queryKey: ["acompanhamento_entradas", clientId], type: "all" }),
+      ]);
+      toast.success("Acompanhamento salvo", { description: "Dados atualizados em tempo real para o cliente." });
     },
     onError: (err: any) => toast.error("Erro ao salvar: " + (err?.message || "tente novamente")),
   });
