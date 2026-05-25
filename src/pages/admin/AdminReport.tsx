@@ -516,6 +516,7 @@ const AdminReport = () => {
               variants: activePlan.ai_generated_plans || null,
             }
           : null,
+        goalsAnalysisComment: goalsComment || undefined,
       });
       toast.success("PDF gerado com sucesso!");
     } catch (err) {
