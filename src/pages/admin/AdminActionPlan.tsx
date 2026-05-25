@@ -158,10 +158,6 @@ const AdminActionPlan = () => {
   const totalGoals      = activeGoals.length;
   const goalsEmAndamento = activeGoals.filter((g) => g.amount_applied && g.amount_applied > 0).length;
 
-  const sectionKindMap: Partial<Record<SourceTable, "income" | "expenses">> = {
-    income: "income",
-    expenses: "expenses",
-  };
 
   return (
     <div className="space-y-6">
