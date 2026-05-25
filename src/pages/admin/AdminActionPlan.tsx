@@ -307,7 +307,7 @@ const AdminActionPlan = () => {
                             </td>
                             <td className="px-6 py-5">
                               {item.prazo ? (
-                                <span className="text-indigo-600 font-semibold tabular-nums">{formatDate(item.prazo)}</span>
+                                <span className="text-novare-blue dark:text-novare-blue-bright font-semibold tabular-nums">{formatDate(item.prazo)}</span>
                               ) : (
                                 <span className="text-muted-foreground/50 italic">—</span>
                               )}
