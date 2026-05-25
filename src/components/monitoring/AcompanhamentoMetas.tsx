@@ -204,10 +204,17 @@ function MetaAcompRow({
               </div>
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground/50 italic">Sem meta definida</p>
+            <p className="text-xs text-muted-foreground/60 italic">Sem meta definida — registre apenas o estado atual.</p>
           )}
 
           <div className="flex flex-col gap-1.5">
+            {meta.current_value != null && meta.current_value > 0 && (
+              <div className="flex items-center gap-1.5 text-xs">
+                <Wallet className="w-3 h-3 text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">Cadastrado:</span>
+                <span className="font-semibold tabular-nums text-foreground/80">{formatBRL(meta.current_value)}</span>
+              </div>
+            )}
             {meta.meta_valor && (
               <div className="flex items-center gap-1.5 text-xs">
                 <Target className="w-3 h-3 text-novare-blue-bright shrink-0" />
