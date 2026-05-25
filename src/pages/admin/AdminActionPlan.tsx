@@ -297,15 +297,6 @@ const AdminActionPlan = () => {
               {goalsEmAndamento} em andamento
             </Badge>
           )}
-          <div className="ml-auto">
-            <AddSectionItemDialog
-              kind="goals"
-              clientId={clientId}
-              monthRef={monthRef}
-              monthLabel={monthLabel}
-              invalidateKeys={[["goals_plan", clientId, monthRef]]}
-            />
-          </div>
         </div>
 
         {activeGoals.length > 0 ? (
@@ -372,28 +363,6 @@ const AdminActionPlan = () => {
         <Separator className="mt-6" />
       </div>
 
-      {/* Ações do Plano */}
-      <div>
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Ações do Plano
-          </h3>
-          <div className="ml-auto">
-            <AddSectionItemDialog
-              kind="action_items"
-              clientId={clientId}
-              monthRef={monthRef}
-              monthLabel={monthLabel}
-              actionPlanId={actionPlan?.id}
-              invalidateKeys={[["action_items", clientId, monthRef]]}
-            />
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground/70 italic px-1">
-          Use o botão acima para registrar uma ação específica deste período.
-        </p>
-        <Separator className="mt-6" />
-      </div>
 
       <JourneyFooterNav
         current="plano-acao"
