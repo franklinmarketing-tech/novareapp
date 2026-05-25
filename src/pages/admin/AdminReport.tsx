@@ -216,14 +216,33 @@ type AIPlanVariant = {
 };
 
 // ── Main ─────────────────────────────────────────────
+// Helpers de mês
+const monthStartISO = (year: number, month: number) => {
+  const d = new Date(year, month - 1, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+};
+const nextMonthStartISO = (year: number, month: number) => {
+  const d = new Date(year, month, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+};
+const monthLabel = (year: number, month: number) =>
+  new Date(year, month - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+
+const MONTH_NAMES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
 const AdminReport = () => {
   const { clientId } = useClientId();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [goalsCommentOpen, setGoalsCommentOpen] = useState(false);
-  const [goalsCommentLoading, setGoalsCommentLoading] = useState(false);
-  const [goalsCommentDraft, setGoalsCommentDraft] = useState("");
-  const [goalsComment, setGoalsComment] = useState<string>("");
+  const now = new Date();
+  const [filterMonth, setFilterMonth] = useState<number>(now.getMonth() + 1);
+  const [filterYear, setFilterYear] = useState<number>(now.getFullYear());
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiDraft, setAiDraft] = useState("");
   const reportRef = useRef<HTMLDivElement>(null);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
@@ -248,6 +267,11 @@ const AdminReport = () => {
     goal_id: string | null;
     ai_generated_plans: AIPlanVariant[] | null;
   } | null>(null);
+
+  const periodLabel = monthLabel(filterYear, filterMonth);
+  const monthStart = monthStartISO(filterYear, filterMonth);
+  const monthEnd = nextMonthStartISO(filterYear, filterMonth);
+
 
   useEffect(() => {
     if (!clientId) return;
