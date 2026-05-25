@@ -12,7 +12,7 @@ import {
   Save, Loader2, Check, ChevronDown, ChevronRight,
   Clock, Target, TrendingUp, TrendingDown, Minus, History,
   Wallet, Receipt, CreditCard, Building2, Shield, Trash2,
-  CheckCircle2,
+  CheckCircle2, CalendarDays,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
