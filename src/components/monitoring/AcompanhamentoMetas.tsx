@@ -163,8 +163,10 @@ function MetaAcompRow({
 
   const handleSave = () => {
     if (!estado.trim() && !valor.trim()) return;
-    onSave(meta.id, estado.trim(), valor.trim());
+    // Em modo edição passa o id do entry para fazer UPDATE no lugar de criar novo
+    onSave(meta.id, estado.trim(), valor.trim(), editMode ? latestEntry?.id : undefined);
     setSaved(true);
+    setEditMode(false);
     setTimeout(() => setSaved(false), 2000);
   };
 
