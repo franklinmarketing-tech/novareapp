@@ -587,17 +587,37 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prazo</label>
                                 <DateInput value={f.prazo} onChange={(v) => updateField(item.source_id, "prazo", v)} />
                               </div>
-                              <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                                  {section === "income" ? "Aumento alvo" : section === "expenses" ? "Redução alvo" : "Valor alvo"}
-                                </label>
-                                <CurrencyInput
-                                  value={f.metaValor}
-                                  onChange={(v) => updateField(item.source_id, "metaValor", v)}
-                                  placeholder="R$ 0,00"
-                                  className="h-8 text-sm bg-background/80"
-                                />
-                              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between gap-2">
+                  <span>{section === "income" ? "Aumento alvo" : section === "expenses" ? "Redução alvo" : "Valor alvo"}</span>
+                  {(() => {
+                    if (section !== "income" && section !== "expenses") return null;
+                    const target = parseFloat(f.metaValor);
+                    if (!target || !item.current_value || item.current_value <= 0) return null;
+                    const pct = (target / item.current_value) * 100;
+                    if (!isFinite(pct) || pct <= 0) return null;
+                    const isIncome = section === "income";
+                    return (
+                      <span
+                        className={cn(
+                          "text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md normal-case tracking-normal",
+                          isIncome
+                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                            : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                        )}
+                      >
+                        {isIncome ? "+" : "−"}{pct.toFixed(1).replace(".", ",")}%
+                      </span>
+                    );
+                  })()}
+                </label>
+                <CurrencyInput
+                  value={f.metaValor}
+                  onChange={(v) => updateField(item.source_id, "metaValor", v)}
+                  placeholder="R$ 0,00"
+                  className="h-8 text-sm bg-background/80"
+                />
+              </div>
                             </div>
 
                             {/* AI suggestion */}
