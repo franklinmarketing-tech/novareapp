@@ -191,7 +191,7 @@ function MetaAcompRow({
         {pct != null && (
           <div className="flex items-center gap-2 shrink-0">
             <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
-            <span className={cn("text-4xl sm:text-[2.6rem] font-black tabular-nums leading-none tracking-tight", progressColor(pct))}>{pct}%</span>
+            <span className={cn("text-2xl sm:text-3xl font-black tabular-nums leading-none tracking-tight", progressColor(pct))}>{pct}%</span>
           </div>
         )}
       </div>
