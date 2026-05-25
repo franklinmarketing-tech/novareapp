@@ -349,7 +349,7 @@ const AdminActionPlan = () => {
       <section className="space-y-4">
         <div className="flex items-center gap-3 mb-1">
           <div className={cn("h-8 w-1.5 rounded-full", SECTION_THEME.goals.bar)} />
-          <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight uppercase">Objetivos</h2>
+          <h2 className="text-base font-bold text-foreground tracking-tight leading-tight">Objetivos</h2>
           <span className={cn("px-2 py-0.5 text-xs font-bold rounded-full", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
             {activeGoals.length}
           </span>
