@@ -612,8 +612,8 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     const meta = metas.find((m) => m.id === metaId);
     if (!meta) return;
     setSavingId(metaId);
-    // Reset completed_at if new progress drops below 100%
-    if (meta.meta_valor && valorAtualStr) {
+    // Reset completed_at if new progress drops below 100% (apenas para metas reais)
+    if (!meta.is_synthetic && meta.meta_valor && valorAtualStr) {
       const newPct = Math.round((parseFloat(valorAtualStr) / meta.meta_valor) * 100);
       if (newPct < 100) {
         await supabase.from("parecer_metas").update({ completed_at: null }).eq("id", metaId);
