@@ -1,122 +1,71 @@
-# Melhorias na Calculadora de Investimentos
+## 1. Plano de Ação — aumentar % visual
 
-Após analisar a tela atual, identifiquei **8 melhorias** organizadas por impacto. Cada uma é independente — você pode aprovar todas ou só algumas.
+`src/pages/admin/AdminActionPlan.tsx`
 
----
+- Aumentar a fonte do percentual exibido (linha ~462: `text-2xl` → `text-4xl sm:text-[2.6rem] font-black tabular-nums tracking-tight`), igualando o destaque já usado no Acompanhamento.
+- Manter mesma escala de cor (`progressColor`).
 
-## 1. Hierarquia tipográfica dos labels (alta prioridade)
+## 2. Acompanhamento — diminuir % e adicionar botão "Editar" pós-save
 
-**Problema:** Labels dos inputs ("Qual sua idade hoje?", "Quanto consegue investir por mês?") estão em `text-white/50` — muito apagados, parecem desabilitados. O olho não sabe onde focar.
+`src/components/monitoring/AcompanhamentoMetas.tsx`
 
-**Solução:**
+- Reduzir o número grande do %: `text-4xl sm:text-[2.6rem]` → `text-2xl sm:text-3xl` (linha 185), mantendo tracking/leading.
+- Após salvar (quando `latestEntry` existe), além do "+ Novo registro", exibir botão **Editar** que reabre o formulário pré-preenchido com `valor_atual` / `estado_atual` do último registro e ao salvar faz `update` do mesmo `id` (não cria novo). Não altera histórico anterior.
 
-- Labels principais: `text-white/85 font-semibold` (legível mas não compete com o valor)
-- Mantém mini-hint abaixo em `text-white/40` quando necessário
-- Aumenta peso da pergunta para `font-semibold` (atual é regular)
+## 3. Baixar PDF integrado à IA (OpenAI) + popup de validação
 
----
+`src/pages/admin/AdminReport.tsx` + nova edge function
 
-## 2. Cards de seleção de taxa (Prefixado / Pós-fixado / IPCA+)
+- Remover o botão separado "Análise de Metas (IA)" e seu dialog atual.
+- O botão **Baixar PDF** passa a:
+  1. Disparar a análise (loading "Gerando análise…").
+  2. Abrir o popup com o texto da IA num `Textarea` editável + botões **Regenerar**, **Cancelar** e **Validar e baixar PDF**.
+  3. Ao validar, gerar o PDF incluindo o comentário no final (fluxo existente em `generateReportPdf` permanece).
+- Nova edge function `analyze-goals-comment-openai/index.ts` (ou trocar a existente) usando o secret `**Open IA GPT**` (já presente) via `https://api.openai.com/v1/chat/completions` com `gpt-4o-mini`. Mantém validação JWT + has_role('admin') e mesma estrutura de prompt da função atual.
+- Front: substituir `supabase.functions.invoke("analyze-goals-comment", …)` por `analyze-goals-comment-openai`.
 
-**Problema:** O card selecionado (Prefixado) tem borda/glow terracota muito sutil. Já o IPCA+ usa "IPCA + 7%" em branco enquanto os outros mostram o valor em terracota — falta consistência.
+## 4. Filtros de mês/ano no Relatório e Plano de Ação
 
-**Solução:**
+Ambas as páginas (`AdminReport.tsx`, `AdminActionPlan.tsx`):
 
-- Padronizar todos os 3 valores no mesmo destaque terracota (`text-accent`)
-- Card selecionado: borda `border-accent` (sólida, não `/40`) + ring `ring-2 ring-accent/30` para destaque inequívoco
-- Card não-selecionado: `border-white/10` com hover `border-white/25` (estado intermediário claro)
-- Check mark do selecionado: aumentar de 14px para 16px
+- Adicionar dois selects no header: **Mês** (1–12) e **Ano** (últimos 3 anos + atual), default = mês/ano vigente.
+- O filtro aplica-se a:
+  - `acompanhamento_entradas` → filtrar `snapshotted_at` pelo intervalo do mês.
+  - `action_items` → filtrar pelo novo campo `month_ref` (ver §5) ou, na ausência, por `created_at`.
+  - `goals`, `income`, `expenses`, `debts`, `assets`, `insurance` → filtrar pelo novo `month_ref` quando preenchido; itens sem `month_ref` (legados) aparecem em todos os meses.
+- O PDF gerado respeita o filtro selecionado (passa o intervalo para `generateReportPdf` e para a edge function de IA).
 
----
+## 5. Permitir incluir novos itens do Plano de Ação por mês
 
-## 3. Botão "Simular Aposentadoria" — peso visual
+Migração de banco (adicionar coluna mensal opcional):
 
-**Problema:** O botão está bom, mas a seta dentro de um quadradinho compete visualmente com o ícone do gráfico.
+```sql
+ALTER TABLE public.goals       ADD COLUMN month_ref date;
+ALTER TABLE public.income      ADD COLUMN month_ref date;
+ALTER TABLE public.expenses    ADD COLUMN month_ref date;
+ALTER TABLE public.action_items ADD COLUMN month_ref date;
+```
 
-**Solução:**
+- `month_ref` = primeiro dia do mês ao qual o item pertence; nulo = item legado/recorrente (visível em todos os meses).
+- No `AdminActionPlan.tsx`, em cada seção (Objetivos, Receitas, Despesas, Ações) adicionar botão **+ Adicionar nesta seção** que abre dialog simples e insere o registro já com `month_ref = mês selecionado no filtro`.
+- Sem alterar RLS (políticas existentes cobrem os campos novos).
 
-- Remover o "container" da seta — apenas `<ArrowRight>` simples ao lado direito
-- Aumentar gap interno para respirar
-- Animar a seta com `translate-x-1` no hover (microinteração sutil)
+## 6. Limpeza
 
----
+- Remover estados `goalsCommentOpen`, `goalsComment`, `goalsCommentDraft` do botão antigo no `AdminReport.tsx` e reorganizá-los no fluxo do Baixar PDF.
+- A edge function `analyze-goals-comment`
 
-## 4. Painel de resultados — diferenciação dos KPIs
+  |                      |        |                      |            |                    |                    |                    |     |
+  | -------------------- | ------ | -------------------- | ---------- | ------------------ | ------------------ | ------------------ | --- |
+  | NOVA CHAVE DA NOVARE | Active | key_fRwzEkD98DEFjNiI | sk-...xPoA | 19 de mai. de 2026 | 25 de mai. de 2026 | marketingcastriani | All |
 
-**Problema:** Os 3 mini-KPIs no canto inferior direito (Investido / Ganho líq. / Imposto) usam 3 cores diferentes (terracota, verde, amarelo), mas o "Imposto" em `text-warning` (amarelo) vibra demais — parece um aviso de erro, não uma informação neutra.
 
-**Solução:**
+- Filtro de mês = intervalo `[YYYY-MM-01, YYYY-MM-01 + 1 mês)`.
+- Default sempre mês vigente em `pt-BR` (`new Date()`).
+- Edge function OpenAI: header `Authorization: Bearer ${Deno.env.get("Open IA GPT")}`, modelo `gpt-4o-mini`, mesmo system prompt da versão Gemini.
+- Não mexer em `generateReportPdf.ts` exceto para receber `goalsAnalysisComment` (já recebe) e opcionalmente `periodLabel` para mostrar "Mês de referência: ...".
 
-- "Imposto" muda de `text-warning` (amarelo vibrante) para `text-white/80` (neutro) com apenas o ícone em terracota suave
-- Mantém apenas **Ganho líq.** em verde (a única métrica que realmente é "positiva")
-- Investido continua terracota (cor da marca = ação do usuário)
+## Fora de escopo
 
----
-
-## 5. Card "Patrimônio Bruto" — desperdício de espaço
-
-**Problema:** O card grande mostra "R$ 0" gigante no centro, com muito espaço vazio quando o usuário não simulou ainda. Período / Líquido após IR ficam empurrados para baixo sem hierarquia clara.
-
-**Solução:**
-
-- Adicionar badge sutil "aguardando simulação" no estado vazio (em vez de só "R$ 0")
-- Reduzir tamanho do número de `text-[2.5rem]` para `text-[2rem]` — sobra espaço para os subvalores
-- Período e Líquido após IR ganham ícones pequenos (Calendar / Receipt) à esquerda dos labels
-
----
-
-## 6. Estado focus dos inputs
-
-**Problema:** Foco atual usa `focus:ring-1 ring-accent/20` — quase invisível. Usuário não percebe qual campo está ativo ao navegar com Tab.
-
-**Solução:**
-
-- `focus:ring-2 focus:ring-accent/50` (mais grosso e visível)
-- Adicionar `focus:border-accent` (borda sólida no foco)
-- Mantém transição suave já existente
-
----
-
-## 7. Estados hover/disabled padronizados
-
-**Problema:** Botão "Simular" tem disabled bem definido, mas botões secundários (toggle % mês/ano, cards de taxa) não têm feedback de hover claro.
-
-**Solução:**
-
-- Toggle % mês/ano: hover do botão inativo → `bg-white/[0.04]` (background sutil)
-- Cards de taxa não-selecionados: `hover:bg-white/[0.03]` + `hover:scale-[1.01]`
-- Botão "Ver rendimento mensal em PDF": adicionar `disabled:opacity-50 disabled:cursor-not-allowed` quando não houver resultado
-
----
-
-## 8. Card "Próximo Passo" / CTA final — refinamento
-
-**Problema:** O bloco "Pronto para sair do papel?" tem o mesmo peso visual dos cards de KPI acima. Como é o CTA principal, deveria se destacar mais.
-
-**Solução:**
-
-- Adicionar gradient de fundo sutil terracota: `linear-gradient(135deg, hsl(var(--accent)/0.08), transparent)`
-- Borda superior em terracota: `border-t-2 border-accent/30`
-- Ícone do telefone ao lado dos badges "Gratuito · Sem compromisso · Resposta em até 1h" para reforçar urgência
-- Botão "Falar com especialista": adicionar pulso sutil no shadow (já existe no botão PDF)
-
----
-
-## Resumo técnico
-
-**Arquivo único afetado:** `src/pages/YieldGuide.tsx`
-
-**Tokens usados (sem cores arbitrárias):**
-
-- `text-accent` / `bg-accent` / `border-accent` (terracota da marca)
-- `text-white/85`, `/70`, `/60`, `/40` (escala neutra sobre fundo escuro)
-- `text-success` (apenas no "Ganho líq.")
-- Removido: `text-warning` no "Imposto" (vibrava demais)
-
-**Sem mudança estrutural:** apenas ajustes de classes Tailwind nos elementos existentes. Nenhuma lógica de cálculo, nenhum componente novo, nenhuma migração.
-
-**Estimativa:** ~30-40 linhas alteradas em 8 trechos do arquivo.
-
----
-
-Quer que eu aplique **todas as 8 melhorias** ou prefere selecionar apenas algumas? Se for par
+- Edição de registros antigos do histórico de Acompanhamento (somente o último).
+- Versionamento profundo de metas (item legado sem `month_ref` continua aparecendo em todos os meses).
