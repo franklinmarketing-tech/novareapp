@@ -384,6 +384,7 @@ const AdminReport = () => {
         clientName,
         clientEmail,
         profession: clientData?.profession,
+        cpf: clientData?.cpf ?? undefined,
         risk,
         riskLabel: riskInfo.label,
         riskDescription: riskInfo.description,
