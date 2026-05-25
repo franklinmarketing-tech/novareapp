@@ -687,6 +687,16 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     }
   };
 
+  const handleDeleteEntry = async (entryId: string) => {
+    const { error } = await supabase.from("acompanhamento_entradas").delete().eq("id", entryId);
+    if (error) {
+      toast.error("Erro ao excluir: " + error.message);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId], refetchType: "all" });
+    toast.success("Registro excluído");
+  };
+
   const handleSaveGoalInvestment = async (goalId: string, amount: number) => {
     setSavingGoalId(goalId);
     const { error } = await supabase.from("goals").update({ amount_applied: amount }).eq("id", goalId);
