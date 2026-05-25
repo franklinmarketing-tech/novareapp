@@ -38,7 +38,7 @@ const SECTION_THEME: Record<SourceTable | "goals", {
   debts:     { bar: "bg-red-500",     chipBg: "bg-red-100",     chipText: "text-red-700",     rowHover: "hover:bg-red-50/40",     metaText: "text-red-600",     metaUnderline: "decoration-red-200" },
   assets:    { bar: "bg-sky-500",     chipBg: "bg-sky-100",     chipText: "text-sky-700",     rowHover: "hover:bg-sky-50/40",     metaText: "text-sky-600",     metaUnderline: "decoration-sky-200" },
   insurance: { bar: "bg-purple-500",  chipBg: "bg-purple-100",  chipText: "text-purple-700",  rowHover: "hover:bg-purple-50/40",  metaText: "text-purple-600", metaUnderline: "decoration-purple-200" },
-  goals:     { bar: "bg-indigo-500",  chipBg: "bg-indigo-100",  chipText: "text-indigo-700",  rowHover: "hover:bg-indigo-50/40",  metaText: "text-indigo-600",  metaUnderline: "decoration-indigo-200" },
+  goals:     { bar: "bg-novare-blue",  chipBg: "bg-novare-blue-light", chipText: "text-novare-blue", rowHover: "hover:bg-novare-blue-light/50", metaText: "text-novare-blue dark:text-novare-blue-bright",  metaUnderline: "decoration-novare-blue/30" },
 };
 
 const SECTION_ORDER: SourceTable[] = ["income", "expenses", "debts", "assets", "insurance"];
