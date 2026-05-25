@@ -127,7 +127,10 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   const [loadingAI, setLoadingAI] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fields, setFields] = useState<Record<string, FieldState>>({});
-  const [monthFilter, setMonthFilter] = useState<string>("all"); // "all" | "YYYY-MM"
+  const [monthFilter, setMonthFilter] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  }); // "all" | "YYYY-MM"
   const [expanded, setExpanded] = useState<Record<SourceTable, boolean>>(
     Object.fromEntries(SECTION_ORDER.map((s) => [s, false])) as Record<SourceTable, boolean>,
   );
