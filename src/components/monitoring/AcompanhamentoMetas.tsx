@@ -542,7 +542,35 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const [savingId, setSavingId]                 = useState<string | null>(null);
   const [savingGoalId, setSavingGoalId]         = useState<string | null>(null);
   const [confirmingGoalId, setConfirmingGoalId] = useState<string | null>(null);
-  const [confirmingMetaId, setConfirmingMetaId] = useState<string | null>(null);
+  const [revalidating, setRevalidating] = useState(false);
+
+  const handleRevalidate = async () => {
+    setRevalidating(true);
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["onboarding_full", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId], refetchType: "all" }),
+        queryClient.invalidateQueries({ queryKey: ["active_goals", clientId], refetchType: "all" }),
+      ]);
+      const { data } = await supabase
+        .from("parecer_metas")
+        .select("source_table, meta_text")
+        .eq("client_id", clientId)
+        .is("completed_at", null);
+      const rows = (data || []) as Array<{ source_table: string; meta_text: string | null }>;
+      const withMeta = rows.filter((r) => r.source_table !== "goals" && r.meta_text && r.meta_text.trim().length > 0).length;
+      const total = rows.filter((r) => r.source_table !== "goals").length;
+      toast.success("Metas revalidadas", {
+        description: `${withMeta} de ${total} itens com parecer_metas cadastrado.`,
+      });
+    } catch (err: any) {
+      toast.error("Erro ao revalidar: " + (err?.message || "tente novamente"));
+    } finally {
+      setRevalidating(false);
+    }
+  };
+
 
   const { data: metasRaw = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
