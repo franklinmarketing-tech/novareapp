@@ -28,6 +28,7 @@ interface FinancialItem {
   current_value: number;
   unit?: string;
   detail?: string;
+  created_at?: string;
 }
 
 interface ParecerMeta {
