@@ -1325,9 +1325,12 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
 
     // Donut de despesas à direita
     if (data.expensesByCategory.length >= 2) {
+      // Canvas com a mesma proporção do espaço no PDF (halfW x chartH) para o donut ficar redondo
+      const donutPxW = 900;
+      const donutPxH = Math.round(donutPxW * (chartH / halfW));
       const donutImg = canvasDonut(
         data.expensesByCategory.map((e) => ({ label: e.category, value: e.amount })),
-        820, 480
+        donutPxW, donutPxH
       );
       pdf.addImage(donutImg, "PNG", MARGIN + halfW + 6, y, halfW, chartH);
     }
