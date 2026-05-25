@@ -126,6 +126,7 @@ function MetaAcompRow({
   saving,
   onConfirm,
   confirming,
+  onDeleteEntry,
 }: {
   meta: MetaEntry;
   latestEntry?: AcompEntry;
@@ -134,6 +135,7 @@ function MetaAcompRow({
   saving: boolean;
   onConfirm: (metaId: string) => void;
   confirming: boolean;
+  onDeleteEntry: (entryId: string) => void;
 }) {
   const [estado, setEstado] = useState(latestEntry?.estado_atual || "");
   const [valor, setValor] = useState(
@@ -189,58 +191,70 @@ function MetaAcompRow({
         </div>
       )}
 
-      {/* ── Corpo: Plano | Atualizar ── */}
-      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] divide-x divide-border/40">
+      {/* ── Corpo: Plano | Atualizar  (ou só Atualizar quando não há meta) ── */}
+      <div className={cn(
+        "grid divide-x divide-border/40",
+        meta.is_synthetic ? "grid-cols-1" : "grid-cols-[minmax(0,2fr)_minmax(0,3fr)]",
+      )}>
 
-        {/* LEFT — Plano de Ação */}
-        <div className="px-4 py-3 space-y-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-novare-terracotta">Plano de Ação</p>
+        {/* LEFT — Plano de Ação (só quando há meta cadastrada) */}
+        {!meta.is_synthetic && (
+          <div className="px-4 py-3 space-y-2.5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-novare-terracotta">Plano de Ação</p>
 
-          {meta.meta_text ? (
-            <div className="rounded-lg bg-novare-terracotta-light dark:bg-novare-terracotta/10 border border-novare-terracotta/20 px-2.5 py-2">
-              <div className="flex items-start gap-1.5">
-                <Target className="w-3 h-3 mt-0.5 shrink-0 text-novare-terracotta" />
-                <p className="text-xs text-foreground/80 leading-snug">{meta.meta_text}</p>
+            {meta.meta_text ? (
+              <div className="rounded-lg bg-novare-terracotta-light dark:bg-novare-terracotta/10 border border-novare-terracotta/20 px-2.5 py-2">
+                <div className="flex items-start gap-1.5">
+                  <Target className="w-3 h-3 mt-0.5 shrink-0 text-novare-terracotta" />
+                  <p className="text-xs text-foreground/80 leading-snug">{meta.meta_text}</p>
+                </div>
               </div>
+            ) : (
+              <p className="text-xs text-muted-foreground/60 italic">Sem descrição.</p>
+            )}
+
+            <div className="flex flex-col gap-1.5">
+              {meta.current_value != null && meta.current_value > 0 && (
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Wallet className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">Cadastrado:</span>
+                  <span className="font-semibold tabular-nums text-foreground/80">{formatBRL(meta.current_value)}</span>
+                </div>
+              )}
+              {meta.meta_valor && (
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Target className="w-3 h-3 text-novare-blue-bright shrink-0" />
+                  <span className="text-muted-foreground">Alvo:</span>
+                  <span className="font-semibold tabular-nums text-novare-blue dark:text-novare-blue-bright">{formatBRL(meta.meta_valor)}</span>
+                </div>
+              )}
+              {meta.prazo && (
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">Prazo:</span>
+                  <span className="font-medium text-foreground/70">{formatDate(meta.prazo)}</span>
+                </div>
+              )}
+              {latestEntry && (
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 mt-0.5">
+                  <Clock className="w-2.5 h-2.5 shrink-0" />
+                  últ: {formatDateTime(latestEntry.snapshotted_at)}
+                </div>
+              )}
             </div>
-          ) : (
-            <p className="text-xs text-muted-foreground/60 italic">Sem meta definida — registre apenas o estado atual.</p>
-          )}
-
-          <div className="flex flex-col gap-1.5">
-            {meta.current_value != null && meta.current_value > 0 && (
-              <div className="flex items-center gap-1.5 text-xs">
-                <Wallet className="w-3 h-3 text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">Cadastrado:</span>
-                <span className="font-semibold tabular-nums text-foreground/80">{formatBRL(meta.current_value)}</span>
-              </div>
-            )}
-            {meta.meta_valor && (
-              <div className="flex items-center gap-1.5 text-xs">
-                <Target className="w-3 h-3 text-novare-blue-bright shrink-0" />
-                <span className="text-muted-foreground">Alvo:</span>
-                <span className="font-semibold tabular-nums text-novare-blue dark:text-novare-blue-bright">{formatBRL(meta.meta_valor)}</span>
-              </div>
-            )}
-            {meta.prazo && (
-              <div className="flex items-center gap-1.5 text-xs">
-                <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">Prazo:</span>
-                <span className="font-medium text-foreground/70">{formatDate(meta.prazo)}</span>
-              </div>
-            )}
-            {latestEntry && (
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 mt-0.5">
-                <Clock className="w-2.5 h-2.5 shrink-0" />
-                últ: {formatDateTime(latestEntry.snapshotted_at)}
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
         {/* RIGHT — Atualizar */}
         <div className="px-4 py-3 space-y-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">Registrar estado atual</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-novare-blue dark:text-novare-blue-bright">Registrar estado atual</p>
+            {meta.is_synthetic && meta.current_value != null && meta.current_value > 0 && (
+              <span className="text-[10px] text-muted-foreground tabular-nums">
+                Cadastrado: <span className="font-semibold text-foreground/80">{formatBRL(meta.current_value)}</span>
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <CurrencyInput
@@ -305,7 +319,7 @@ function MetaAcompRow({
             <CollapsibleContent>
               <div className="mt-2 ml-1 border-l-2 border-border/40 pl-3 space-y-2">
                 {history.map((entry) => (
-                  <div key={entry.id} className="text-xs text-muted-foreground space-y-0.5">
+                  <div key={entry.id} className="group text-xs text-muted-foreground space-y-0.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-foreground/70">{formatDateTime(entry.snapshotted_at)}</span>
                       {entry.is_closing_snapshot && (
@@ -318,6 +332,17 @@ function MetaAcompRow({
                       )}
                       {entry.valor_atual != null && (
                         <span className="tabular-nums">{formatBRL(Number(entry.valor_atual))}</span>
+                      )}
+                      {!entry.is_closing_snapshot && (
+                        <button
+                          onClick={() => {
+                            if (confirm("Excluir este registro de acompanhamento?")) onDeleteEntry(entry.id);
+                          }}
+                          className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-rose-500 hover:text-rose-700 p-0.5 rounded hover:bg-rose-500/10"
+                          title="Excluir registro"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
                       )}
                     </div>
                     {entry.estado_atual && (
@@ -662,6 +687,16 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     }
   };
 
+  const handleDeleteEntry = async (entryId: string) => {
+    const { error } = await supabase.from("acompanhamento_entradas").delete().eq("id", entryId);
+    if (error) {
+      toast.error("Erro ao excluir: " + error.message);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId], refetchType: "all" });
+    toast.success("Registro excluído");
+  };
+
   const handleSaveGoalInvestment = async (goalId: string, amount: number) => {
     setSavingGoalId(goalId);
     const { error } = await supabase.from("goals").update({ amount_applied: amount }).eq("id", goalId);
@@ -847,6 +882,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                     saving={savingId === meta.id}
                     onConfirm={handleConfirmMetaDone}
                     confirming={confirmingMetaId === meta.id}
+                    onDeleteEntry={handleDeleteEntry}
                   />
                 );
               })}

@@ -28,6 +28,7 @@ interface FinancialItem {
   current_value: number;
   unit?: string;
   detail?: string;
+  created_at?: string;
 }
 
 interface ParecerMeta {
@@ -114,6 +115,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   const [loadingAI, setLoadingAI] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fields, setFields] = useState<Record<string, FieldState>>({});
+  const [monthFilter, setMonthFilter] = useState<string>("all"); // "all" | "YYYY-MM"
   const [expanded, setExpanded] = useState<Record<SourceTable, boolean>>(
     Object.fromEntries(SECTION_ORDER.map((s) => [s, false])) as Record<SourceTable, boolean>,
   );
@@ -188,6 +190,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       current_value: Number(r.amount),
       unit: `/${r.frequency === "mensal" ? "mês" : r.frequency === "anual" ? "ano" : "eventual"}`,
       detail: `Estabilidade: ${r.stability}${r.is_primary ? " · Principal" : ""}`,
+      created_at: r.created_at,
     })),
     ...(expenses as any[]).map((r) => ({
       source_table: "expenses" as SourceTable,
@@ -196,6 +199,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       current_value: Number(r.amount),
       unit: "/mês",
       detail: r.is_fixed ? "Fixa" : `Variável${r.due_day ? ` · vence dia ${r.due_day}` : ""}`,
+      created_at: r.created_at,
     })),
     ...(debts as any[]).map((r) => ({
       source_table: "debts" as SourceTable,
@@ -207,12 +211,14 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         r.interest_rate ? `Juros: ${r.interest_rate}%/mês` : null,
         r.remaining_months ? `${r.remaining_months} meses restantes` : null,
       ].filter(Boolean).join(" · "),
+      created_at: r.created_at,
     })),
     ...(assets as any[]).map((r) => ({
       source_table: "assets" as SourceTable,
       source_id: r.id,
       source_label: `${r.type}${r.description ? ` — ${r.description}` : ""}`,
       current_value: Number(r.estimated_value),
+      created_at: r.created_at,
     })),
     ...(insurance as any[]).map((r) => ({
       source_table: "insurance" as SourceTable,
@@ -221,6 +227,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       current_value: Number(r.monthly_premium || 0),
       unit: "/mês",
       detail: r.coverage_amount ? `Cobertura: ${formatBRL(Number(r.coverage_amount))}` : undefined,
+      created_at: r.created_at,
     })),
     ...(goals as any[]).filter((r) => !r.completed_at).map((r) => ({
       source_table: "goals" as SourceTable,
@@ -233,11 +240,33 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         r.priority ? `Prioridade: ${r.priority}` : null,
         r.deadline ? `Prazo: ${new Date(r.deadline).toLocaleDateString("pt-BR")}` : null,
       ].filter(Boolean).join(" · "),
+      created_at: r.created_at,
     })),
   ];
 
+  // Meses disponíveis a partir dos created_at de todos os itens
+  const monthOptions = (() => {
+    const set = new Set<string>();
+    allItems.forEach((it) => {
+      if (it.created_at) {
+        const d = new Date(it.created_at);
+        set.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+      }
+    });
+    return Array.from(set).sort().reverse();
+  })();
+
+  const filteredItems = monthFilter === "all"
+    ? allItems
+    : allItems.filter((it) => {
+        if (!it.created_at) return false;
+        const d = new Date(it.created_at);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        return key === monthFilter;
+      });
+
   const bySection = SECTION_ORDER.reduce(
-    (acc, s) => { acc[s] = allItems.filter((i) => i.source_table === s); return acc; },
+    (acc, s) => { acc[s] = filteredItems.filter((i) => i.source_table === s); return acc; },
     {} as Record<SourceTable, FinancialItem[]>,
   );
 
@@ -311,6 +340,24 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     }
   };
 
+  const handleDeleteMeta = async (sourceId: string) => {
+    const meta = metas.find((m) => m.source_id === sourceId);
+    if (!meta?.id) {
+      // Nada salvo — só limpa os campos locais
+      setFields((prev) => ({ ...prev, [sourceId]: { metaText: "", prazo: "", metaValor: "" } }));
+      return;
+    }
+    if (!confirm("Excluir esta ação do Plano de Ação? O acompanhamento histórico será preservado.")) return;
+    const { error } = await supabase.from("parecer_metas").delete().eq("id", meta.id);
+    if (error) {
+      toast.error("Erro ao excluir: " + error.message);
+      return;
+    }
+    setFields((prev) => ({ ...prev, [sourceId]: { metaText: "", prazo: "", metaValor: "" } }));
+    queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
+    toast.success("Ação excluída");
+  };
+
   if (totalItems === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
@@ -369,6 +416,24 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {monthOptions.length > 0 && (
+            <div className="relative">
+              <select
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                className="h-9 pl-8 pr-3 text-xs font-medium rounded-md border border-border bg-background hover:bg-muted/50 cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-ring/30"
+                title="Filtrar por mês de cadastro"
+              >
+                <option value="all">Todos os meses</option>
+                {monthOptions.map((m) => {
+                  const [y, mo] = m.split("-");
+                  const label = new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
+                  return <option key={m} value={m}>{label.charAt(0).toUpperCase() + label.slice(1)}</option>;
+                })}
+              </select>
+              <CalendarDays className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            </div>
+          )}
           <Button
             onClick={handleAI}
             disabled={loadingAI || totalItems === 0}
@@ -569,8 +634,20 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                           >
                             {/* Meta text */}
                             <div className="space-y-1.5">
-                              <label className="text-[10px] font-black uppercase tracking-widest text-novare-terracotta flex items-center gap-1.5">
-                                Meta {hasMeta && <span className="text-emerald-500 text-xs">✓</span>}
+                              <label className="text-[10px] font-black uppercase tracking-widest text-novare-terracotta flex items-center justify-between gap-1.5">
+                                <span className="flex items-center gap-1.5">
+                                  Meta {hasMeta && <span className="text-emerald-500 text-xs">✓</span>}
+                                </span>
+                                {hasMeta && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteMeta(item.source_id)}
+                                    className="text-rose-500 hover:text-rose-700 p-0.5 rounded hover:bg-rose-500/10 normal-case tracking-normal"
+                                    title="Excluir ação"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
                               </label>
                               <Input
                                 value={f.metaText}
