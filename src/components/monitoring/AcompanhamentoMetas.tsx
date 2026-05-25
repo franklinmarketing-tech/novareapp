@@ -751,7 +751,11 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
         if (!items || !items.length) return null;
         const cfg  = SECTION_CONFIG[section];
         const Icon = cfg.icon;
-        const comAcomp = items.filter((m) => entradas.some((e) => e.meta_id === m.id)).length;
+        const matchEntry = (e: AcompEntry, m: MetaEntry) =>
+          m.is_synthetic
+            ? (e.meta_id == null && (e as any).source_table === m.source_table && e.source_id === m.source_id)
+            : e.meta_id === m.id;
+        const comAcomp = items.filter((m) => entradas.some((e) => matchEntry(e, m))).length;
 
         const sectionAccent: Record<string, string> = {
             income:    "hsl(142 65% 42%)",
