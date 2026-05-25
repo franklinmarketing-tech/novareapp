@@ -1110,7 +1110,11 @@ const AdminReport = () => {
                       {/* Progress bar */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px] text-muted-foreground">{g.tasksDone} de {g.tasksTotal} ações</span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {g.target_amount && g.target_amount > 0
+                              ? <>{fmt(g.appliedValue)} de {fmt(g.target_amount)}</>
+                              : <>{g.tasksDone} de {g.tasksTotal} ações</>}
+                          </span>
                           <span className={`text-xs font-bold ${g.pct === 100 ? "text-emerald-600" : "text-foreground"}`}>{g.pct}%</span>
                         </div>
                         <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
