@@ -754,7 +754,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
         const Icon = cfg.icon;
         const matchEntry = (e: AcompEntry, m: MetaEntry) =>
           m.is_synthetic
-            ? (e.meta_id == null && (e as any).source_table === m.source_table && e.source_id === m.source_id)
+            ? (e.meta_id == null && e.source_table === m.source_table && e.source_id === m.source_id)
             : e.meta_id === m.id;
         const comAcomp = items.filter((m) => entradas.some((e) => matchEntry(e, m))).length;
 
@@ -810,7 +810,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                 const metaHistory = entradas
                   .filter((e) => !e.is_closing_snapshot && (
                     meta.is_synthetic
-                      ? (e.meta_id == null && (e as any).source_table === meta.source_table && e.source_id === meta.source_id)
+                      ? (e.meta_id == null && e.source_table === meta.source_table && e.source_id === meta.source_id)
                       : e.meta_id === meta.id
                   ))
                   .slice(0, 10);
