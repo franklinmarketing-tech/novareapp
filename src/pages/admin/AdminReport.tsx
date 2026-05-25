@@ -107,6 +107,7 @@ type ReportClient = {
   id: string;
   user_id: string;
   profession?: string | null;
+  cpf?: string | null;
   [k: string]: unknown;
 };
 type ReportDiagnosis = { risk_classification?: string | null; [k: string]: unknown };
