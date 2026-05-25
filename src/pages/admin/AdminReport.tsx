@@ -407,49 +407,8 @@ const AdminReport = () => {
 
   const handlePrint = () => window.print();
 
-  const handleOpenGoalsComment = async () => {
-    setGoalsCommentOpen(true);
-    if (goalsComment || goalsCommentLoading) return;
-    setGoalsCommentLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
-        body: { clientId },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setGoalsCommentDraft(data?.comment || "");
-    } catch (err: any) {
-      toast.error("Erro ao gerar análise", { description: err?.message || "Tente novamente" });
-    } finally {
-      setGoalsCommentLoading(false);
-    }
-  };
-
-  const handleRegenerateGoalsComment = async () => {
-    setGoalsCommentLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
-        body: { clientId },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setGoalsCommentDraft(data?.comment || "");
-      toast.success("Análise regenerada");
-    } catch (err: any) {
-      toast.error("Erro ao regenerar", { description: err?.message || "Tente novamente" });
-    } finally {
-      setGoalsCommentLoading(false);
-    }
-  };
-
-  const handleValidateGoalsComment = () => {
-    setGoalsComment(goalsCommentDraft.trim());
-    setGoalsCommentOpen(false);
-    toast.success("Comentário validado", { description: "Será incluído ao final do PDF." });
-  };
-
-
-  const handleDownloadPDF = async () => {
+  // Gera o PDF de fato (usa o texto já validado pela IA)
+  const buildAndDownloadPdf = async (aiComment: string) => {
     setGenerating(true);
     try {
       const { generateReportPdf } = await import("@/lib/generateReportPdf");
@@ -531,7 +490,6 @@ const AdminReport = () => {
               };
             });
         })(),
-        // V9: plano aplicado + variantes geradas pela IA
         activePlan: activePlan
           ? {
               objective: activePlan.objective,
@@ -540,7 +498,7 @@ const AdminReport = () => {
               variants: activePlan.ai_generated_plans || null,
             }
           : null,
-        goalsAnalysisComment: goalsComment || undefined,
+        goalsAnalysisComment: aiComment || undefined,
       });
       toast.success("PDF gerado com sucesso!");
     } catch (err) {
@@ -550,6 +508,56 @@ const AdminReport = () => {
       setGenerating(false);
     }
   };
+
+  // Etapa 1: ao clicar em "Baixar PDF" → chama IA OpenAI e abre o popup
+  const handleDownloadPDF = async () => {
+    setAiDialogOpen(true);
+    setAiLoading(true);
+    setAiDraft("");
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
+        body: { clientId, periodLabel, monthStart, monthEnd },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAiDraft(data?.comment || "");
+    } catch (err: any) {
+      toast.error("Erro ao gerar análise", { description: err?.message || "Tente novamente" });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleRegenerateAi = async () => {
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
+        body: { clientId, periodLabel, monthStart, monthEnd },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAiDraft(data?.comment || "");
+      toast.success("Análise regenerada");
+    } catch (err: any) {
+      toast.error("Erro ao regenerar", { description: err?.message || "Tente novamente" });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Etapa 2: validar comentário e baixar PDF
+  const handleValidateAndDownload = async () => {
+    const comment = aiDraft.trim();
+    setAiDialogOpen(false);
+    await buildAndDownloadPdf(comment);
+  };
+
+  // Baixar sem análise IA
+  const handleSkipAi = async () => {
+    setAiDialogOpen(false);
+    await buildAndDownloadPdf("");
+  };
+
 
   const sectionNumber = (() => { let n = 0; return () => ++n; })();
 
