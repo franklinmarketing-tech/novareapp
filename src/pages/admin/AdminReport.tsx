@@ -152,6 +152,7 @@ type ReportGoal = {
   id: string;
   description: string;
   target_amount?: number | null;
+  amount_applied?: number | null;
   deadline?: string | null;
   priority?: string | null;
 };
