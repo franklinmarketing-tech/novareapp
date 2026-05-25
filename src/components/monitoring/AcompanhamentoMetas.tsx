@@ -162,10 +162,16 @@ function MetaAcompRow({
   };
 
   return (
-    <div className={cn("rounded-xl border border-border/50 border-l-[3px] overflow-hidden bg-card", sectionBorderColor(meta.source_table))}>
+    <div className={cn(
+      "rounded-xl border-2 border-border/70 border-l-[6px] overflow-hidden bg-card",
+      "shadow-[0_4px_14px_-4px_hsl(var(--foreground)/0.12),0_2px_4px_-2px_hsl(var(--foreground)/0.08)]",
+      "hover:shadow-[0_10px_28px_-8px_hsl(var(--foreground)/0.18),0_4px_8px_-4px_hsl(var(--foreground)/0.10)]",
+      "hover:-translate-y-0.5 transition-all duration-200",
+      sectionBorderColor(meta.source_table),
+    )}>
 
       {/* ── Header: nome + direção + progresso ── */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-novare-blue-light/30 dark:bg-novare-blue/10">
+      <div className="flex items-center gap-3 px-4 py-3 bg-novare-blue-light/30 dark:bg-novare-blue/10 border-b border-border/40">
         <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
           <p className="text-sm font-bold text-novare-blue dark:text-novare-blue-bright leading-tight">{meta.source_label}</p>
           <span className={cn("inline-flex items-center gap-1 text-[0.6rem] font-semibold rounded-full px-2 py-0.5 shrink-0", dir.cls)}>
@@ -176,7 +182,7 @@ function MetaAcompRow({
         {pct != null && (
           <div className="flex items-center gap-2 shrink-0">
             <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
-            <span className={cn("text-2xl font-black tabular-nums leading-none", progressColor(pct))}>{pct}%</span>
+            <span className={cn("text-4xl sm:text-[2.6rem] font-black tabular-nums leading-none tracking-tight", progressColor(pct))}>{pct}%</span>
           </div>
         )}
       </div>
