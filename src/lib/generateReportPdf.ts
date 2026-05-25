@@ -1951,6 +1951,26 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     }
   }
 
+  // ── Análise de Metas e Objetivos (gerada pela IA, validada pelo consultor)
+  if (data.goalsAnalysisComment && data.goalsAnalysisComment.trim()) {
+    ensureSpace(40);
+    y += 4;
+    pdf.setDrawColor(...C.accent);
+    pdf.setLineWidth(0.5);
+    pdf.line(MARGIN, y, MARGIN + 30, y);
+    y += 6;
+    pdf.setTextColor(...C.text);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.text("Análise de Metas e Objetivos", MARGIN, y);
+    y += 6;
+    const paragraphs = data.goalsAnalysisComment.trim().split(/\n\s*\n/);
+    for (const p of paragraphs) {
+      paragraph(p.replace(/\s+/g, " ").trim(), 9.5, C.text);
+      y += 2;
+    }
+  }
+
   // ── Fechamento
   ensureSpace(30);
   y += 4;
