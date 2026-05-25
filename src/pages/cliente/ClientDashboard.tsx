@@ -407,8 +407,8 @@ const ClientDashboard = () => {
                         style={{
                           background: "rgba(0,0,0,0.5)",
                           backdropFilter: "blur(3px)",
-                          border: `1px solid ${config.accent}40`,
-                          boxShadow: `0 0 20px ${config.accent}15 inset`,
+                          border: `1px solid hsl(var(${config.cssVar}) / 0.25)`,
+                          boxShadow: `0 0 20px hsl(var(${config.cssVar}) / 0.08) inset`,
                         }}
                       >
                         <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
