@@ -383,6 +383,48 @@ const AdminReport = () => {
 
   const handlePrint = () => window.print();
 
+  const handleOpenGoalsComment = async () => {
+    setGoalsCommentOpen(true);
+    if (goalsComment || goalsCommentLoading) return;
+    setGoalsCommentLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
+        body: { clientId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setGoalsCommentDraft(data?.comment || "");
+    } catch (err: any) {
+      toast.error("Erro ao gerar análise", { description: err?.message || "Tente novamente" });
+    } finally {
+      setGoalsCommentLoading(false);
+    }
+  };
+
+  const handleRegenerateGoalsComment = async () => {
+    setGoalsCommentLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-goals-comment", {
+        body: { clientId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setGoalsCommentDraft(data?.comment || "");
+      toast.success("Análise regenerada");
+    } catch (err: any) {
+      toast.error("Erro ao regenerar", { description: err?.message || "Tente novamente" });
+    } finally {
+      setGoalsCommentLoading(false);
+    }
+  };
+
+  const handleValidateGoalsComment = () => {
+    setGoalsComment(goalsCommentDraft.trim());
+    setGoalsCommentOpen(false);
+    toast.success("Comentário validado", { description: "Será incluído ao final do PDF." });
+  };
+
+
   const handleDownloadPDF = async () => {
     setGenerating(true);
     try {
