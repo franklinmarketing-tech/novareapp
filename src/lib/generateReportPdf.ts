@@ -1025,11 +1025,25 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     pdf.text(data.profession, MARGIN, dy + 42);
   }
 
+  if (data.cpf) {
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
+    pdf.setGState(pdf.GState({ opacity: 0.5 }));
+    pdf.text("CPF", MARGIN, dy + 54);
+    pdf.setGState(pdf.GState({ opacity: 1 }));
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.text(data.cpf, MARGIN, dy + 60);
+  }
+
   // Rodapé da capa
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8);
   pdf.setGState(pdf.GState({ opacity: 0.4 }));
-  pdf.text("Documento confidencial · Para uso exclusivo do cliente", MARGIN, PAGE_H - 18);
+  pdf.text("Documento confidencial · Para uso exclusivo do cliente", MARGIN, PAGE_H - 22);
+  if (pdfPassword.length === 4) {
+    pdf.text(`Protegido por senha · 4 primeiros dígitos do CPF`, MARGIN, PAGE_H - 17);
+  }
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
   // ═════════════ Páginas internas ═════════════
