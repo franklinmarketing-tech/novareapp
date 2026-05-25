@@ -634,8 +634,20 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                           >
                             {/* Meta text */}
                             <div className="space-y-1.5">
-                              <label className="text-[10px] font-black uppercase tracking-widest text-novare-terracotta flex items-center gap-1.5">
-                                Meta {hasMeta && <span className="text-emerald-500 text-xs">✓</span>}
+                              <label className="text-[10px] font-black uppercase tracking-widest text-novare-terracotta flex items-center justify-between gap-1.5">
+                                <span className="flex items-center gap-1.5">
+                                  Meta {hasMeta && <span className="text-emerald-500 text-xs">✓</span>}
+                                </span>
+                                {hasMeta && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteMeta(item.source_id)}
+                                    className="text-rose-500 hover:text-rose-700 p-0.5 rounded hover:bg-rose-500/10 normal-case tracking-normal"
+                                    title="Excluir ação"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
                               </label>
                               <Input
                                 value={f.metaText}
