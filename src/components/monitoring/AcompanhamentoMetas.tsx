@@ -721,25 +721,41 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
     );
   }
 
+  const currentMonth = new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const currentMonthLabel = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
+
   return (
     <div className="space-y-6">
+      {/* Cabeçalho do mês corrente */}
+      <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-novare-blue/20 bg-gradient-to-r from-novare-blue/10 via-novare-blue-light/30 to-transparent px-4 py-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-10 w-10 rounded-xl bg-novare-blue text-white flex items-center justify-center shrink-0 shadow-sm">
+            <CalendarDays className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-novare-blue/70 dark:text-novare-blue-bright/80">Mês corrente</p>
+            <p className="text-base font-bold text-novare-blue dark:text-novare-blue-bright leading-tight truncate">{currentMonthLabel}</p>
+          </div>
+        </div>
+        {lastSyncDate && (
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success border border-success/20 text-[11px] font-semibold">
+            <Clock className="h-3 w-3" />
+            Sincronizado em {lastSyncDate}
+          </span>
+        )}
+      </div>
+
       {/* Resumo */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
           {totalMetas > 0 && (
-            <span>{totalComAcomp} de {totalMetas} metas com acompanhamento</span>
+            <span>{totalComAcomp} de {totalMetas} itens com acompanhamento</span>
           )}
           {activeGoals.length > 0 && (
             <span>{goalsWithInvestment} de {activeGoals.length} objetivos com investimento</span>
           )}
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-          {lastSyncDate && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/20 text-[10px] font-medium">
-              <Clock className="h-2.5 w-2.5" />
-              Sincronizado em {lastSyncDate}
-            </span>
-          )}
           <span className="font-medium text-foreground/60">Plano de Ação</span>
           <span>→</span>
           <span className="font-medium text-foreground/60">Estado atual</span>
