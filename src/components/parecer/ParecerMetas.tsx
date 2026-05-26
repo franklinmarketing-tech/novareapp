@@ -452,18 +452,24 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
           <Button
             onClick={handleAI}
             disabled={loadingAI || totalItems === 0}
-            variant={totalMetas === 0 ? "default" : "outline"}
             className={cn(
-              "gap-2",
-              totalMetas === 0 && "bg-gradient-to-r from-novare-blue to-novare-blue-bright text-white hover:opacity-95 shadow-md",
+              "relative gap-2 overflow-hidden text-white font-semibold tracking-wide",
+              "bg-gradient-to-r from-novare-blue via-novare-blue-bright to-novare-terracotta bg-[length:200%_100%]",
+              "shadow-[0_8px_24px_-6px_hsl(var(--novare-blue)/0.55),inset_0_1px_0_hsl(0_0%_100%/0.25)]",
+              "ring-1 ring-inset ring-white/20",
+              "transition-all duration-300 hover:shadow-[0_12px_32px_-6px_hsl(var(--novare-blue)/0.7)] hover:-translate-y-0.5 hover:scale-[1.03] hover:bg-[position:100%_0]",
+              "active:translate-y-0 active:scale-100",
+              "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700",
             )}
           >
             {loadingAI ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin relative z-10" />
             ) : (
-              <Sparkles className={cn("w-4 h-4", totalMetas === 0 ? "text-white" : "text-novare-blue")} />
+              <Sparkles className="w-4 h-4 text-white relative z-10 drop-shadow-[0_0_6px_hsl(0_0%_100%/0.8)]" />
             )}
-            {loadingAI ? "Analisando..." : totalMetas === 0 ? "Começar com IA" : "Sugerir metas"}
+            <span className="relative z-10">
+              {loadingAI ? "Analisando..." : totalMetas === 0 ? "Começar com IA" : "Sugerir metas"}
+            </span>
           </Button>
           <Button onClick={handleSaveAll} disabled={saving} className="gap-2 min-w-[130px]">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
