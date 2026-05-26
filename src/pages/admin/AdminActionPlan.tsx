@@ -86,10 +86,10 @@ const PRIORITY_LABEL: Record<string, { label: string; cls: string }> = {
 const SectionHeader = ({
   label, count, theme,
 }: { label: string; count: number | string; theme: typeof SECTION_THEME[SourceTable] }) => (
-  <div className="flex items-center gap-2.5 mb-4">
-    <div className={cn("h-6 w-1 rounded-full", theme.bar)} />
-    <h2 className="text-xs font-bold text-foreground tracking-wider uppercase leading-none">{label}</h2>
-    <span className={cn("px-2 py-0.5 text-[10px] font-bold rounded-full tabular-nums", theme.chipBg, theme.chipText)}>{count}</span>
+  <div className="relative flex items-center gap-3 mb-4 px-4 py-2.5 rounded-xl bg-gradient-to-r from-card via-card to-card/60 border border-border/70 shadow-[0_4px_12px_-4px_hsl(var(--foreground)/0.12),inset_0_1px_0_hsl(var(--background)/0.6)] backdrop-blur-sm">
+    <div className={cn("h-7 w-1.5 rounded-full shadow-[0_0_10px_currentColor] ring-1 ring-background/50", theme.bar)} />
+    <h2 className="text-xs font-bold text-foreground tracking-[0.15em] uppercase leading-none drop-shadow-sm">{label}</h2>
+    <span className={cn("px-2 py-0.5 text-[10px] font-bold rounded-full tabular-nums shadow-sm ring-1 ring-inset ring-background/40", theme.chipBg, theme.chipText)}>{count}</span>
   </div>
 );
 
@@ -347,14 +347,14 @@ const AdminActionPlan = () => {
 
       {/* Objetivos */}
       <section className="space-y-4">
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className={cn("h-6 w-1 rounded-full", SECTION_THEME.goals.bar)} />
-          <h2 className="text-xs font-bold text-foreground tracking-wider uppercase leading-none">Objetivos</h2>
-          <span className={cn("px-2 py-0.5 text-[10px] font-bold rounded-full tabular-nums", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
+        <div className="relative flex items-center gap-3 mb-4 px-4 py-2.5 rounded-xl bg-gradient-to-r from-card via-card to-card/60 border border-border/70 shadow-[0_4px_12px_-4px_hsl(var(--foreground)/0.12),inset_0_1px_0_hsl(var(--background)/0.6)] backdrop-blur-sm">
+          <div className={cn("h-7 w-1.5 rounded-full shadow-[0_0_10px_currentColor] ring-1 ring-background/50", SECTION_THEME.goals.bar)} />
+          <h2 className="text-xs font-bold text-foreground tracking-[0.15em] uppercase leading-none drop-shadow-sm">Objetivos</h2>
+          <span className={cn("px-2 py-0.5 text-[10px] font-bold rounded-full tabular-nums shadow-sm ring-1 ring-inset ring-background/40", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
             {activeGoals.length}
           </span>
           {goalsEmAndamento > 0 && (
-            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 shadow-sm ring-1 ring-inset ring-background/40">
               {goalsEmAndamento} em andamento
             </span>
           )}
