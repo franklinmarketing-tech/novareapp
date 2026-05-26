@@ -347,14 +347,14 @@ const AdminActionPlan = () => {
 
       {/* Objetivos */}
       <section className="space-y-4">
-        <div className="flex items-center gap-3 mb-5">
-          <div className={cn("h-9 w-1.5 rounded-full shadow-sm", SECTION_THEME.goals.bar)} />
-          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none">Objetivos</h2>
-          <span className={cn("px-2.5 py-0.5 text-xs font-bold rounded-full tabular-nums", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className={cn("h-6 w-1 rounded-full", SECTION_THEME.goals.bar)} />
+          <h2 className="text-xs font-bold text-foreground tracking-wider uppercase leading-none">Objetivos</h2>
+          <span className={cn("px-2 py-0.5 text-[10px] font-bold rounded-full tabular-nums", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
             {activeGoals.length}
           </span>
           {goalsEmAndamento > 0 && (
-            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">
               {goalsEmAndamento} em andamento
             </span>
           )}
