@@ -208,12 +208,12 @@ const AdminActionPlan = () => {
   return (
     <div className="space-y-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+          <h1 className="text-base sm:text-lg font-bold text-foreground">
             Ver Ações — <span className="text-novare-blue dark:text-novare-blue-bright">{client?.full_name ?? "Cliente"}</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Período: <span className="font-medium text-foreground/80">{monthLabel}</span>
             {" "}• {totalComMeta} de {totalMetas} metas definidas
             {totalGoals > 0 && ` · ${totalGoals} objetivo${totalGoals !== 1 ? "s" : ""}`}
