@@ -86,10 +86,10 @@ const PRIORITY_LABEL: Record<string, { label: string; cls: string }> = {
 const SectionHeader = ({
   label, count, theme,
 }: { label: string; count: number | string; theme: typeof SECTION_THEME[SourceTable] }) => (
-  <div className="flex items-center gap-3 mb-5">
-    <div className={cn("h-9 w-1.5 rounded-full shadow-sm", theme.bar)} />
-    <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none">{label}</h2>
-    <span className={cn("px-2.5 py-0.5 text-xs font-bold rounded-full tabular-nums", theme.chipBg, theme.chipText)}>{count}</span>
+  <div className="flex items-center gap-2.5 mb-4">
+    <div className={cn("h-6 w-1 rounded-full", theme.bar)} />
+    <h2 className="text-xs font-bold text-foreground tracking-wider uppercase leading-none">{label}</h2>
+    <span className={cn("px-2 py-0.5 text-[10px] font-bold rounded-full tabular-nums", theme.chipBg, theme.chipText)}>{count}</span>
   </div>
 );
 
@@ -208,12 +208,12 @@ const AdminActionPlan = () => {
   return (
     <div className="space-y-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+          <h1 className="text-base sm:text-lg font-bold text-foreground">
             Ver Ações — <span className="text-novare-blue dark:text-novare-blue-bright">{client?.full_name ?? "Cliente"}</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Período: <span className="font-medium text-foreground/80">{monthLabel}</span>
             {" "}• {totalComMeta} de {totalMetas} metas definidas
             {totalGoals > 0 && ` · ${totalGoals} objetivo${totalGoals !== 1 ? "s" : ""}`}
@@ -277,10 +277,10 @@ const AdminActionPlan = () => {
                   <table className="w-full text-left">
                     <thead className="bg-muted/40 border-b border-border">
                       <tr>
-                        <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Item</th>
-                        <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Valor atual</th>
-                        <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prazo</th>
-                        <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Meta</th>
+                        <th className="px-4 py-2.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Item</th>
+                        <th className="px-4 py-2.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Valor atual</th>
+                        <th className="px-4 py-2.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Prazo</th>
+                        <th className="px-4 py-2.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Meta</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60">
@@ -290,40 +290,40 @@ const AdminActionPlan = () => {
                         const hasSubtitle = rest.length > 0;
                         return (
                           <tr key={item.id} className={cn("transition-colors", theme.rowHover)}>
-                            <td className="px-6 py-5">
+                            <td className="px-4 py-3">
                               {hasSubtitle ? (
                                 <>
-                                  <span className={cn("text-[10px] block mb-0.5 font-bold uppercase tracking-tighter", theme.metaText, "opacity-80")}>
+                                  <span className={cn("text-[9px] block mb-0.5 font-bold uppercase tracking-tighter", theme.metaText, "opacity-80")}>
                                     {head}
                                   </span>
-                                  <span className="font-semibold text-foreground">{rest.join(" — ")}</span>
+                                  <span className="text-sm font-semibold text-foreground">{rest.join(" — ")}</span>
                                 </>
                               ) : (
-                                <span className="font-semibold text-foreground">{label}</span>
+                                <span className="text-sm font-semibold text-foreground">{label}</span>
                               )}
                             </td>
-                            <td className="px-6 py-5 text-foreground/80 font-medium tabular-nums">
+                            <td className="px-4 py-3 text-xs text-foreground/80 font-medium tabular-nums">
                               {item.current_value > 0 ? formatBRL(Number(item.current_value)) : <span className="text-muted-foreground/50">—</span>}
                             </td>
-                            <td className="px-6 py-5">
+                            <td className="px-4 py-3">
                               {item.prazo ? (
-                                <span className="text-novare-blue dark:text-novare-blue-bright font-semibold tabular-nums">{formatDate(item.prazo)}</span>
+                                <span className="text-xs text-novare-blue dark:text-novare-blue-bright font-semibold tabular-nums">{formatDate(item.prazo)}</span>
                               ) : (
-                                <span className="text-muted-foreground/50 italic">—</span>
+                                <span className="text-xs text-muted-foreground/50 italic">—</span>
                               )}
                             </td>
-                            <td className="px-6 py-5">
+                            <td className="px-4 py-3">
                               <div className="flex flex-col items-end">
                                 {item.meta_text ? (
-                                  <span className={cn("flex items-center gap-1.5 font-bold text-sm text-right", theme.metaText)}>
-                                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                                  <span className={cn("flex items-center gap-1.5 font-bold text-xs text-right", theme.metaText)}>
+                                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                                     {item.meta_text}
                                   </span>
                                 ) : (
-                                  <span className="text-sm text-muted-foreground/50 italic">Sem meta definida</span>
+                                  <span className="text-xs text-muted-foreground/50 italic">Sem meta definida</span>
                                 )}
                                 {item.meta_valor && item.meta_valor > 0 && (
-                                  <span className="text-xs text-muted-foreground mt-1">
+                                  <span className="text-[11px] text-muted-foreground mt-1">
                                     Alvo: <span className={cn("text-foreground/80 font-bold underline tabular-nums", theme.metaUnderline)}>
                                       {formatBRL(Number(item.meta_valor))}
                                     </span>
@@ -347,14 +347,14 @@ const AdminActionPlan = () => {
 
       {/* Objetivos */}
       <section className="space-y-4">
-        <div className="flex items-center gap-3 mb-5">
-          <div className={cn("h-9 w-1.5 rounded-full shadow-sm", SECTION_THEME.goals.bar)} />
-          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none">Objetivos</h2>
-          <span className={cn("px-2.5 py-0.5 text-xs font-bold rounded-full tabular-nums", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className={cn("h-6 w-1 rounded-full", SECTION_THEME.goals.bar)} />
+          <h2 className="text-xs font-bold text-foreground tracking-wider uppercase leading-none">Objetivos</h2>
+          <span className={cn("px-2 py-0.5 text-[10px] font-bold rounded-full tabular-nums", SECTION_THEME.goals.chipBg, SECTION_THEME.goals.chipText)}>
             {activeGoals.length}
           </span>
           {goalsEmAndamento > 0 && (
-            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">
               {goalsEmAndamento} em andamento
             </span>
           )}
