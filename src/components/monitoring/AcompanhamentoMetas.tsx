@@ -12,10 +12,13 @@ import {
   Save, Loader2, Check, ChevronDown, ChevronRight,
   Clock, Target, TrendingUp, TrendingDown, Minus, History,
   Wallet, Receipt, CreditCard, Building2, Shield, Trash2,
-  CheckCircle2, CalendarDays, RefreshCw,
+  CheckCircle2, CalendarDays, RefreshCw, Plus, Pencil,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ItemEditDialog, type ItemKind } from "./ItemEditDialog";
+import { GoalEditDialog } from "./GoalEditDialog";
+import { MetaEditDialog } from "./MetaEditDialog";
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -127,6 +130,11 @@ function MetaAcompRow({
   onConfirm,
   confirming,
   onDeleteEntry,
+  onEditItem,
+  onDeleteItem,
+  onEditMeta,
+  onCreateMeta,
+  onDeleteMeta,
 }: {
   meta: MetaEntry;
   latestEntry?: AcompEntry;
@@ -136,6 +144,11 @@ function MetaAcompRow({
   onConfirm: (metaId: string) => void;
   confirming: boolean;
   onDeleteEntry: (entryId: string) => void;
+  onEditItem: (meta: MetaEntry) => void;
+  onDeleteItem: (meta: MetaEntry) => void;
+  onEditMeta: (meta: MetaEntry) => void;
+  onCreateMeta: (meta: MetaEntry) => void;
+  onDeleteMeta: (meta: MetaEntry) => void;
 }) {
   const [estado, setEstado] = useState(latestEntry?.estado_atual || "");
   const [valor, setValor] = useState(
@@ -179,7 +192,7 @@ function MetaAcompRow({
       sectionBorderColor(meta.source_table),
     )}>
 
-      {/* ── Header: nome + direção + progresso ── */}
+      {/* ── Header: nome + direção + progresso + ações ── */}
       <div className="flex items-center gap-3 px-4 py-3 bg-novare-blue-light/30 dark:bg-novare-blue/10 border-b border-border/40">
         <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
           <p className="text-sm font-bold text-novare-blue dark:text-novare-blue-bright leading-tight">{meta.source_label}</p>
@@ -187,6 +200,24 @@ function MetaAcompRow({
             <DirIcon className="w-2.5 h-2.5" />
             {dir.label}
           </span>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={() => onEditItem(meta)}
+            title="Editar item"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-novare-blue hover:bg-novare-blue/10 transition-colors"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onDeleteItem(meta)}
+            title="Excluir item"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
         {pct != null && (
           <div className="flex items-center gap-2 shrink-0">
@@ -215,7 +246,27 @@ function MetaAcompRow({
         {/* LEFT — Plano de Ação (só quando há meta cadastrada) */}
         {!meta.is_synthetic && (
           <div className="px-4 py-3 space-y-2.5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-novare-terracotta">Plano de Ação</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-novare-terracotta">Plano de Ação</p>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => onEditMeta(meta)}
+                  title="Editar meta"
+                  className="p-1 rounded text-muted-foreground hover:text-novare-terracotta hover:bg-novare-terracotta/10 transition-colors"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDeleteMeta(meta)}
+                  title="Excluir meta"
+                  className="p-1 rounded text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
 
             {meta.meta_text ? (
               <div className="rounded-lg bg-novare-terracotta-light dark:bg-novare-terracotta/10 border border-novare-terracotta/20 px-2.5 py-2">
@@ -263,10 +314,22 @@ function MetaAcompRow({
         {/* RIGHT — Atualizar (apenas para itens com meta definida) */}
         {meta.is_synthetic ? (
           <div className="px-4 py-3 flex items-center justify-between gap-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Valor cadastrado</p>
-            <span className="text-lg font-bold tabular-nums text-foreground">
-              {meta.current_value != null && meta.current_value > 0 ? formatBRL(meta.current_value) : "—"}
-            </span>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Valor cadastrado</p>
+              <span className="text-lg font-bold tabular-nums text-foreground">
+                {meta.current_value != null && meta.current_value > 0 ? formatBRL(meta.current_value) : "—"}
+              </span>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => onCreateMeta(meta)}
+              className="h-8 gap-1.5 text-xs border-novare-terracotta/40 text-novare-terracotta hover:bg-novare-terracotta hover:text-white"
+            >
+              <Target className="w-3.5 h-3.5" />
+              Definir meta
+            </Button>
           </div>
         ) : (
           <div className="px-4 py-3 space-y-2.5">
@@ -413,12 +476,16 @@ function GoalDirectRow({
   saving,
   onConfirm,
   confirming,
+  onEdit,
+  onDelete,
 }: {
   goal: GoalItem;
   onSave: (goalId: string, amount: number) => void;
   saving: boolean;
   onConfirm: (goalId: string, amount: number) => void;
   confirming: boolean;
+  onEdit: (goal: GoalItem) => void;
+  onDelete: (goal: GoalItem) => void;
 }) {
   const [valor, setValor] = useState(
     goal.amount_applied != null && goal.amount_applied > 0 ? String(goal.amount_applied) : "",
@@ -445,7 +512,27 @@ function GoalDirectRow({
 
         {/* ── ESQUERDA: info do objetivo ── */}
         <div className="space-y-1.5">
-          <p className="text-sm font-semibold leading-tight">{goal.description}</p>
+          <div className="flex items-start gap-2">
+            <p className="text-sm font-semibold leading-tight flex-1">{goal.description}</p>
+            <div className="flex items-center gap-0.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => onEdit(goal)}
+                title="Editar objetivo"
+                className="p-1 rounded text-muted-foreground hover:text-novare-blue hover:bg-novare-blue/10 transition-colors"
+              >
+                <Pencil className="w-3 h-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(goal)}
+                title="Excluir objetivo"
+                className="p-1 rounded text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             {target > 0 && (
               <span className="flex items-center gap-1">
@@ -544,6 +631,81 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
   const [confirmingGoalId, setConfirmingGoalId] = useState<string | null>(null);
   const [confirmingMetaId, setConfirmingMetaId] = useState<string | null>(null);
   const [revalidating, setRevalidating] = useState(false);
+
+  // ── Dialogs (incluir/editar) ──
+  const [itemDialog, setItemDialog] = useState<{ open: boolean; kind: ItemKind; item?: any }>({ open: false, kind: "income" });
+  const [goalDialog, setGoalDialog] = useState<{ open: boolean; goal?: GoalItem | null }>({ open: false, goal: null });
+  const [metaDialog, setMetaDialog] = useState<{ open: boolean; meta?: any; source?: any }>({ open: false });
+
+  // Tabela do Supabase por seção (igual a SourceTable, mas tipado p/ uso em delete)
+  const tableForSection = (s: string) => s as "income" | "expenses" | "debts" | "assets" | "insurance";
+
+  const openAddItem = (kind: ItemKind) => setItemDialog({ open: true, kind, item: null });
+  const openEditItem = async (meta: MetaEntry) => {
+    // Busca o item completo da tabela de origem (para preencher o form em edição)
+    const table = tableForSection(meta.source_table);
+    const { data } = await supabase.from(table).select("*").eq("id", meta.source_id).maybeSingle();
+    if (!data) {
+      toast.error("Item não encontrado");
+      return;
+    }
+    setItemDialog({ open: true, kind: table as ItemKind, item: data });
+  };
+  const handleDeleteItem = async (meta: MetaEntry) => {
+    if (!confirm(`Excluir "${meta.source_label}"? Essa ação remove o item permanentemente.`)) return;
+    const table = tableForSection(meta.source_table);
+    const { error } = await supabase.from(table).delete().eq("id", meta.source_id);
+    if (error) {
+      toast.error("Erro ao excluir: " + error.message);
+      return;
+    }
+    // Remove também a meta vinculada (se houver), por consistência
+    if (!meta.is_synthetic) {
+      await supabase.from("parecer_metas").delete().eq("id", meta.id);
+    }
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["onboarding_full", clientId] }),
+      queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] }),
+      queryClient.invalidateQueries({ queryKey: ["acompanhamento_entradas", clientId] }),
+    ]);
+    toast.success("Item excluído");
+  };
+
+  const openCreateMeta = (meta: MetaEntry) => setMetaDialog({
+    open: true,
+    meta: null,
+    source: {
+      source_table: meta.source_table,
+      source_id: meta.source_id,
+      source_label: meta.source_label,
+      current_value: meta.current_value,
+    },
+  });
+  const openEditMeta = (meta: MetaEntry) => setMetaDialog({ open: true, meta, source: null });
+  const handleDeleteMeta = async (meta: MetaEntry) => {
+    if (meta.is_synthetic) return;
+    if (!confirm("Excluir a meta deste item? O item continua, apenas a meta será removida.")) return;
+    const { error } = await supabase.from("parecer_metas").delete().eq("id", meta.id);
+    if (error) {
+      toast.error("Erro ao excluir meta: " + error.message);
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
+    toast.success("Meta excluída");
+  };
+
+  const openAddGoal = () => setGoalDialog({ open: true, goal: null });
+  const openEditGoal = (g: GoalItem) => setGoalDialog({ open: true, goal: g });
+  const handleDeleteGoal = async (g: GoalItem) => {
+    if (!confirm(`Excluir o objetivo "${g.description}"?`)) return;
+    const { error } = await supabase.from("goals").delete().eq("id", g.id);
+    if (error) {
+      toast.error("Erro ao excluir: " + error.message);
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["goals", clientId] });
+    toast.success("Objetivo excluído");
+  };
 
   const handleRevalidate = async () => {
     setRevalidating(true);
@@ -966,6 +1128,17 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
 
               {/* Linha separadora */}
               <div className="flex-1 h-px bg-border/50" />
+
+              {/* Botão + (adicionar item desta seção) */}
+              <button
+                type="button"
+                onClick={() => openAddItem(section as ItemKind)}
+                title={`Adicionar ${cfg.label.toLowerCase()}`}
+                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-novare-blue/30 text-novare-blue hover:bg-novare-blue hover:text-white transition-colors"
+              >
+                <Plus className="w-3 h-3" />
+                Adicionar
+              </button>
             </div>
 
             <div className="space-y-3">
@@ -988,6 +1161,11 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                     onConfirm={handleConfirmMetaDone}
                     confirming={confirmingMetaId === meta.id}
                     onDeleteEntry={handleDeleteEntry}
+                    onEditItem={openEditItem}
+                    onDeleteItem={handleDeleteItem}
+                    onEditMeta={openEditMeta}
+                    onCreateMeta={openCreateMeta}
+                    onDeleteMeta={handleDeleteMeta}
                   />
                 );
               })}
@@ -1023,6 +1201,15 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
               </span>
             )}
             <div className="flex-1 h-px bg-border/50" />
+            <button
+              type="button"
+              onClick={openAddGoal}
+              title="Adicionar objetivo"
+              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+              Novo objetivo
+            </button>
           </div>
 
           <div className="space-y-3">
@@ -1034,6 +1221,8 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                 saving={savingGoalId === goal.id}
                 onConfirm={handleConfirmGoalDone}
                 confirming={confirmingGoalId === goal.id}
+                onEdit={openEditGoal}
+                onDelete={handleDeleteGoal}
               />
             ))}
           </div>
@@ -1041,6 +1230,28 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
           <Separator className="mt-6" />
         </div>
       )}
+
+      {/* ── Dialogs de incluir/editar ── */}
+      <ItemEditDialog
+        kind={itemDialog.kind}
+        clientId={clientId}
+        open={itemDialog.open}
+        onOpenChange={(o) => setItemDialog((s) => ({ ...s, open: o }))}
+        item={itemDialog.item}
+      />
+      <GoalEditDialog
+        clientId={clientId}
+        open={goalDialog.open}
+        onOpenChange={(o) => setGoalDialog((s) => ({ ...s, open: o }))}
+        goal={goalDialog.goal}
+      />
+      <MetaEditDialog
+        clientId={clientId}
+        open={metaDialog.open}
+        onOpenChange={(o) => setMetaDialog((s) => ({ ...s, open: o }))}
+        meta={metaDialog.meta}
+        source={metaDialog.source}
+      />
     </div>
   );
 }
