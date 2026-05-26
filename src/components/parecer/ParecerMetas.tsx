@@ -271,6 +271,14 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     return Array.from(set).sort().reverse();
   })();
 
+  // Se o mês corrente não tem dados, seleciona automaticamente o último mês com informações
+  useEffect(() => {
+    if (monthFilter !== "all" && monthOptions.length > 0 && !monthOptions.includes(monthFilter)) {
+      setMonthFilter(monthOptions[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthOptions.join("|")]);
+
   const filteredItems = monthFilter === "all"
     ? allItems
     : allItems.filter((it) => {
