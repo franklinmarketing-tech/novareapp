@@ -72,8 +72,9 @@ export const ClientLayout = ({ children }: Props) => {
   const sidebarContent = (
     <div className="flex flex-col h-full overflow-y-auto sidebar-scroll">
       {/* Logo */}
-      <div className="px-6 pt-6 pb-4 shrink-0">
+      <div className="px-6 pt-6 pb-4 shrink- 0 flex items-center gap-2">
         <img src={logoBranca} alt="Novare" className="h-8 w-auto" />
+        <span className="text-[10px] text-sidebar-foreground/40 font-mono font-medium">v2.5</span>
       </div>
 
       {/* Profile — TOP (with dropdown) */}
@@ -199,7 +200,10 @@ export const ClientLayout = ({ children }: Props) => {
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
-        <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-2" />
+        <div className="flex items-center ml-2">
+          <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
+          <span className="text-[10px] text-sidebar-foreground/40 font-mono font-medium ml-1.5">v2.5</span>
+        </div>
         <div className="ml-auto">
           <ThemeToggle className="!text-sidebar-foreground hover:!text-sidebar-foreground hover:!bg-sidebar-accent/40" />
         </div>

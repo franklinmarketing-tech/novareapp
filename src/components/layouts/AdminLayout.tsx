@@ -217,7 +217,12 @@ export const AdminLayout = ({ children }: Props) => {
     <div className="flex flex-col h-full overflow-y-auto sidebar-scroll">
       {/* Logo + Toggle button */}
       <div className={cn("pt-5 pb-3 shrink-0 flex items-center gap-2", collapsed ? "px-3 justify-center" : "px-5 justify-between")}>
-        {!collapsed && <img src={logoBranca} alt="Novare" className="h-7 w-auto" />}
+        {!collapsed && (
+          <>
+            <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
+            <span className="text-[10px] text-sidebar-foreground/40 font-mono font-medium">v2.5</span>
+          </>
+        )}
         {!forceExpanded && (
           <button
             onClick={() => setSidebarCollapsed((v) => !v)}
@@ -435,7 +440,10 @@ export const AdminLayout = ({ children }: Props) => {
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
-        <img src={logoBranca} alt="Novare" className="h-7 w-auto ml-2" />
+        <div className="flex items-center ml-2">
+          <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
+          <span className="text-[10px] text-sidebar-foreground/40 font-mono font-medium ml-1.5">v2.5</span>
+        </div>
         <div className="ml-auto flex items-center gap-1">
           <NotificationsBell className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
           <ThemeToggle className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
