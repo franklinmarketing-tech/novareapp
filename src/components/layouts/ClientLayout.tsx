@@ -72,7 +72,7 @@ export const ClientLayout = ({ children }: Props) => {
   const sidebarContent = (
     <div className="flex flex-col h-full overflow-y-auto sidebar-scroll">
       {/* Logo */}
-      <div className="px-6 pt-6 pb-4 shrink- 0 flex items-center gap-2">
+      <div className="px-6 pt-6 pb-4 shrink-0 flex items-center gap-2">
         <img src={logoBranca} alt="Novare" className="h-8 w-auto" />
         <span className="text-[10px] text-sidebar-foreground/40 font-mono font-medium">v2.5</span>
       </div>
