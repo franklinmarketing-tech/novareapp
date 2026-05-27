@@ -40,7 +40,7 @@ const tabs = [
   { path: "parecer",        label: "Plano de Ação",     icon: Target,        step: 3 },
   { path: "plano-acao",     label: "Ver Ações",         icon: Eye,           step: 4, accent: true },
   { path: "acompanhamento", label: "Lançamento do mês", icon: LineChart,     step: 5 },
-  { path: "evolucao",       label: "Acompanhamento",    icon: Activity,      step: 6 },
+  { path: "evolucao",       label: "Acompanhamento",    icon: Activity,      step: 6, accent: true },
   { path: "relatorio",      label: "Relatório",         icon: FileText,      step: 7 },
 ];
 
