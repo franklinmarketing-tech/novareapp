@@ -264,86 +264,144 @@ const AdminAcompanhamentoEvolucao = () => {
   const activeMetas = metas.filter((m) => !m.completed_at && m.source_table !== "goals");
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center gap-3 pb-2 border-b border-border/60">
-        <div className="h-9 w-9 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-          <Activity className="h-4.5 w-4.5 text-accent" />
-        </div>
-        <div>
-          <h2 className="text-base font-semibold">
-            Acompanhamento — {client?.full_name ?? "Cliente"}
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Visão da evolução do cliente em metas e objetivos. Use o Lançamento do mês para alimentar este painel.
-          </p>
+    <div className="space-y-10">
+      {/* Header — hero */}
+      <div className="rounded-2xl border border-accent/25 bg-gradient-to-br from-accent/[0.06] via-card to-card overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-accent via-novare-blue to-accent/60" />
+        <div className="flex items-center gap-4 p-5 sm:p-6">
+          <div className="h-14 w-14 rounded-2xl bg-accent/15 ring-1 ring-accent/30 flex items-center justify-center shrink-0 shadow-sm">
+            <Activity className="h-7 w-7 text-accent" strokeWidth={2.2} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-accent/80">Etapa 6 · Acompanhamento</p>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-tight truncate">
+              {client?.full_name ?? "Cliente"}
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Visão da evolução em metas e objetivos. Alimente este painel pelo <span className="font-semibold text-foreground/80">Lançamento do mês</span>.
+            </p>
+          </div>
         </div>
       </div>
 
       {/* ── Resumo geral ── */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-4 space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Metas ativas</p>
-            <p className="text-2xl font-black tabular-nums">{summary.metasAtivas}</p>
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <Card className="relative overflow-hidden group hover:shadow-md transition-shadow">
+          <div className="absolute inset-x-0 top-0 h-0.5 bg-novare-blue/40" />
+          <CardContent className="p-5 sm:p-6 space-y-2">
+            <div className="flex items-center gap-2">
+              <Target className="w-3.5 h-3.5 text-novare-blue" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Metas ativas</p>
+            </div>
+            <p className="text-4xl sm:text-5xl font-black tabular-nums tracking-tight leading-none text-foreground">
+              {summary.metasAtivas}
+            </p>
             {summary.metasConcluidas > 0 && (
-              <p className="text-[11px] text-emerald-600">+{summary.metasConcluidas} concluída{summary.metasConcluidas !== 1 ? "s" : ""}</p>
+              <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                +{summary.metasConcluidas} concluída{summary.metasConcluidas !== 1 ? "s" : ""}
+              </p>
             )}
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Objetivos ativos</p>
-            <p className="text-2xl font-black tabular-nums">{summary.goalsAtivos}</p>
+
+        <Card className="relative overflow-hidden group hover:shadow-md transition-shadow">
+          <div className="absolute inset-x-0 top-0 h-0.5 bg-emerald-500/40" />
+          <CardContent className="p-5 sm:p-6 space-y-2">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-3.5 h-3.5 text-emerald-600" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Objetivos ativos</p>
+            </div>
+            <p className="text-4xl sm:text-5xl font-black tabular-nums tracking-tight leading-none text-foreground">
+              {summary.goalsAtivos}
+            </p>
             {summary.goalsConcluidos > 0 && (
-              <p className="text-[11px] text-emerald-600">+{summary.goalsConcluidos} concluído{summary.goalsConcluidos !== 1 ? "s" : ""}</p>
+              <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                +{summary.goalsConcluidos} concluído{summary.goalsConcluidos !== 1 ? "s" : ""}
+              </p>
             )}
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Progresso médio (metas)</p>
-            <p className={cn("text-2xl font-black tabular-nums", summary.avgProgress != null ? progressColor(summary.avgProgress) : "text-muted-foreground")}>
+
+        <Card className="relative overflow-hidden group hover:shadow-md transition-shadow">
+          <div className={cn(
+            "absolute inset-x-0 top-0 h-0.5",
+            summary.avgProgress == null ? "bg-muted" :
+            summary.avgProgress >= 100 ? "bg-emerald-500/60" :
+            summary.avgProgress >= 60  ? "bg-blue-500/60" :
+            summary.avgProgress >= 30  ? "bg-amber-500/60" : "bg-rose-500/60",
+          )} />
+          <CardContent className="p-5 sm:p-6 space-y-2">
+            <div className="flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-muted-foreground" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Progresso · metas</p>
+            </div>
+            <p className={cn(
+              "text-4xl sm:text-5xl font-black tabular-nums tracking-tight leading-none",
+              summary.avgProgress != null ? progressColor(summary.avgProgress) : "text-muted-foreground",
+            )}>
               {summary.avgProgress != null ? `${summary.avgProgress}%` : "—"}
             </p>
+            <p className="text-[11px] text-muted-foreground">média entre todas as metas</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Progresso médio (objetivos)</p>
-            <p className={cn("text-2xl font-black tabular-nums", summary.avgGoalProgress != null ? progressColor(summary.avgGoalProgress) : "text-muted-foreground")}>
+
+        <Card className="relative overflow-hidden group hover:shadow-md transition-shadow">
+          <div className={cn(
+            "absolute inset-x-0 top-0 h-0.5",
+            summary.avgGoalProgress == null ? "bg-muted" :
+            summary.avgGoalProgress >= 100 ? "bg-emerald-500/60" :
+            summary.avgGoalProgress >= 60  ? "bg-blue-500/60" :
+            summary.avgGoalProgress >= 30  ? "bg-amber-500/60" : "bg-rose-500/60",
+          )} />
+          <CardContent className="p-5 sm:p-6 space-y-2">
+            <div className="flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-muted-foreground" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Progresso · objetivos</p>
+            </div>
+            <p className={cn(
+              "text-4xl sm:text-5xl font-black tabular-nums tracking-tight leading-none",
+              summary.avgGoalProgress != null ? progressColor(summary.avgGoalProgress) : "text-muted-foreground",
+            )}>
               {summary.avgGoalProgress != null ? `${summary.avgGoalProgress}%` : "—"}
             </p>
+            <p className="text-[11px] text-muted-foreground">média entre todos os objetivos</p>
           </CardContent>
         </Card>
       </div>
 
       {/* ── Linha do tempo agregada ── */}
       {monthlyEvolution.length > 1 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-accent" />
-            <h3 className="text-sm font-bold">Evolução do progresso médio ao longo do tempo</h3>
-            <Badge variant="outline" className="text-[10px]">{summary.totalSnapshots} lançamento{summary.totalSnapshots !== 1 ? "s" : ""}</Badge>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-1 rounded-full bg-accent shrink-0" />
+            <Activity className="w-5 h-5 text-accent" />
+            <h3 className="text-base sm:text-lg font-bold tracking-tight">Evolução do progresso médio</h3>
+            <Badge variant="outline" className="text-xs font-bold ml-1">
+              {summary.totalSnapshots} lançamento{summary.totalSnapshots !== 1 ? "s" : ""}
+            </Badge>
+            <div className="flex-1 h-px bg-border/50 ml-2" />
           </div>
           <Card>
-            <CardContent className="p-4">
-              <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={monthlyEvolution}>
+            <CardContent className="p-5 sm:p-6">
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={monthlyEvolution} margin={{ top: 8, right: 10, left: -10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="gradProgress" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
+                      <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.45} />
                       <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
-                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.35)" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} tickMargin={6} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
                   <ReTooltip
-                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 13, fontWeight: 500, boxShadow: "0 4px 14px hsl(var(--foreground) / 0.1)" }}
+                    labelStyle={{ fontWeight: 700, marginBottom: 4 }}
                     formatter={(v: number) => [`${v}%`, "Progresso médio"]}
                   />
-                  <Area type="monotone" dataKey="progressoMedio" stroke="hsl(var(--accent))" strokeWidth={2.5} fill="url(#gradProgress)" />
+                  <Area type="monotone" dataKey="progressoMedio" stroke="hsl(var(--accent))" strokeWidth={3} fill="url(#gradProgress)" dot={{ r: 3, fill: "hsl(var(--accent))" }} activeDot={{ r: 5 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -353,13 +411,17 @@ const AdminAcompanhamentoEvolucao = () => {
 
       {/* ── Metas com sparkline ── */}
       {activeMetas.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-novare-blue" />
-            <h3 className="text-sm font-bold">Evolução por meta</h3>
-            <Badge variant="outline" className="text-[10px]">{activeMetas.length} ativa{activeMetas.length !== 1 ? "s" : ""}</Badge>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-1 rounded-full bg-novare-blue shrink-0" />
+            <Target className="w-5 h-5 text-novare-blue" />
+            <h3 className="text-base sm:text-lg font-bold tracking-tight">Evolução por meta</h3>
+            <Badge variant="outline" className="text-xs font-bold ml-1">
+              {activeMetas.length} ativa{activeMetas.length !== 1 ? "s" : ""}
+            </Badge>
+            <div className="flex-1 h-px bg-border/50 ml-2" />
           </div>
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             {activeMetas.map((meta) => {
               const sourceColor = SECTION_COLOR[meta.source_table as SourceTable] ?? "hsl(var(--primary))";
               const Icon = SECTION_ICON[meta.source_table as SourceTable] ?? Target;
@@ -374,40 +436,51 @@ const AdminAcompanhamentoEvolucao = () => {
               const pct = last?.progresso_pct ?? null;
 
               return (
-                <Card key={meta.id} className="overflow-hidden">
-                  <div className="h-1" style={{ background: sourceColor }} />
-                  <CardContent className="p-4 space-y-3">
+                <Card key={meta.id} className="overflow-hidden hover:shadow-md transition-all duration-200">
+                  <div className="h-1.5" style={{ background: sourceColor }} />
+                  <CardContent className="p-5 sm:p-6 space-y-4">
+                    {/* Header do card */}
                     <div className="flex items-start gap-3">
                       <div
-                        className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background: `${sourceColor}18`, border: `1px solid ${sourceColor}30` }}
+                        className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+                        style={{ background: `${sourceColor}20`, border: `1px solid ${sourceColor}35` }}
                       >
-                        <Icon className="w-4 h-4" style={{ color: sourceColor }} />
+                        <Icon className="w-5 h-5" style={{ color: sourceColor }} strokeWidth={2.2} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: sourceColor }}>
                           {SECTION_LABEL[meta.source_table as SourceTable] ?? meta.source_table}
                         </p>
-                        <p className="text-sm font-semibold leading-tight truncate">{meta.source_label}</p>
+                        <p className="text-base sm:text-lg font-bold leading-tight truncate text-foreground mt-0.5">
+                          {meta.source_label}
+                        </p>
                         {meta.meta_text && (
-                          <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">{meta.meta_text}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-snug">{meta.meta_text}</p>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <TrendIcon current={last?.progresso_pct} prev={prev?.progresso_pct} />
-                        <span className={cn("text-xl font-black tabular-nums leading-none", pct != null ? progressColor(pct) : "text-muted-foreground")}>
+                      <div className="flex flex-col items-end gap-0.5 shrink-0">
+                        <span className={cn("text-3xl sm:text-4xl font-black tabular-nums leading-none tracking-tight", pct != null ? progressColor(pct) : "text-muted-foreground")}>
                           {pct != null ? `${pct}%` : "—"}
                         </span>
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <TrendIcon current={last?.progresso_pct} prev={prev?.progresso_pct} />
+                          <span className="font-semibold">
+                            {prev?.progresso_pct != null && last?.progresso_pct != null
+                              ? `${last.progresso_pct - prev.progresso_pct >= 0 ? "+" : ""}${last.progresso_pct - prev.progresso_pct}pp`
+                              : "novo"}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
+                    {/* Sparkline */}
                     {sparkData.length > 1 ? (
-                      <div className="h-[60px]">
+                      <div className="h-[80px] -mx-1">
                         <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={sparkData}>
-                            <Line type="monotone" dataKey="pct" stroke={sourceColor} strokeWidth={2} dot={{ r: 2, fill: sourceColor }} />
+                          <LineChart data={sparkData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                            <Line type="monotone" dataKey="pct" stroke={sourceColor} strokeWidth={2.5} dot={{ r: 2.5, fill: sourceColor }} activeDot={{ r: 4 }} />
                             <ReTooltip
-                              contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 11, padding: "4px 8px" }}
+                              contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12, padding: "6px 10px", boxShadow: "0 4px 12px hsl(var(--foreground) / 0.08)" }}
                               labelFormatter={(t) => new Date(t).toLocaleDateString("pt-BR")}
                               formatter={(v: number) => [`${v}%`, "Progresso"]}
                             />
@@ -415,28 +488,35 @@ const AdminAcompanhamentoEvolucao = () => {
                         </ResponsiveContainer>
                       </div>
                     ) : (
-                      <p className="text-[11px] italic text-muted-foreground/70 py-3 text-center">
-                        Apenas 1 lançamento até o momento — sem evolução suficiente para o gráfico.
-                      </p>
+                      <div className="rounded-lg bg-muted/30 px-3 py-4 text-center">
+                        <p className="text-xs italic text-muted-foreground/80">
+                          Apenas 1 lançamento — evolução aparece a partir do 2º.
+                        </p>
+                      </div>
                     )}
 
-                    <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                      {meta.meta_valor && (
-                        <span className="flex items-center gap-1">
-                          <Target className="w-3 h-3" />
-                          Alvo: <span className="font-semibold tabular-nums text-foreground/80">{fmtBRL(meta.meta_valor)}</span>
-                        </span>
-                      )}
+                    {/* Rodapé com valores */}
+                    <div className="flex items-center justify-between gap-3 text-xs pt-2 border-t border-border/40">
+                      {meta.meta_valor ? (
+                        <div className="flex flex-col">
+                          <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">Alvo</span>
+                          <span className="text-sm font-bold tabular-nums text-foreground" style={{ color: sourceColor }}>{fmtBRL(meta.meta_valor)}</span>
+                        </div>
+                      ) : <span />}
                       {last?.valor_atual != null && (
-                        <span className="flex items-center gap-1">
-                          Atual: <span className="font-semibold tabular-nums text-foreground/80">{fmtBRL(last.valor_atual)}</span>
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">Atual</span>
+                          <span className="text-sm font-bold tabular-nums text-foreground">{fmtBRL(last.valor_atual)}</span>
+                        </div>
                       )}
                       {meta.prazo && (
-                        <span className="flex items-center gap-1 ml-auto">
-                          <Clock className="w-3 h-3" />
-                          {formatDate(meta.prazo)}
-                        </span>
+                        <div className="flex flex-col items-end ml-auto">
+                          <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-2.5 h-2.5" />
+                            Prazo
+                          </span>
+                          <span className="text-sm font-bold tabular-nums text-foreground/85">{formatDate(meta.prazo)}</span>
+                        </div>
                       )}
                     </div>
                   </CardContent>
@@ -451,36 +531,45 @@ const AdminAcompanhamentoEvolucao = () => {
 
       {/* ── Objetivos com barra de progresso ── */}
       {goals.filter((g) => !g.completed_at).length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-sm font-bold">Evolução dos objetivos</h3>
-            <Badge variant="outline" className="text-[10px]">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-1 rounded-full bg-emerald-500 shrink-0" />
+            <Trophy className="w-5 h-5 text-emerald-600" />
+            <h3 className="text-base sm:text-lg font-bold tracking-tight">Evolução dos objetivos</h3>
+            <Badge variant="outline" className="text-xs font-bold ml-1">
               {goals.filter((g) => !g.completed_at).length} ativo{goals.filter((g) => !g.completed_at).length !== 1 ? "s" : ""}
             </Badge>
+            <div className="flex-1 h-px bg-border/50 ml-2" />
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             {goals.filter((g) => !g.completed_at).map((goal) => {
               const applied = goal.amount_applied || 0;
               const target  = goal.target_amount || 0;
               const pct     = target > 0 ? Math.min(Math.round((applied / target) * 100), 100) : null;
               return (
-                <Card key={goal.id}>
-                  <CardContent className="p-4 space-y-3">
+                <Card key={goal.id} className="overflow-hidden hover:shadow-md transition-all duration-200">
+                  <div className={cn(
+                    "h-1.5",
+                    pct == null ? "bg-muted" :
+                    pct >= 100 ? "bg-emerald-500" :
+                    pct >= 60  ? "bg-blue-500" :
+                    pct >= 30  ? "bg-amber-500" : "bg-rose-500",
+                  )} />
+                  <CardContent className="p-5 sm:p-6 space-y-4">
                     <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-semibold leading-tight flex-1">{goal.description}</p>
-                      <span className={cn("text-xl font-black tabular-nums leading-none", pct != null ? progressColor(pct) : "text-muted-foreground")}>
+                      <p className="text-base sm:text-lg font-bold leading-tight flex-1 text-foreground">{goal.description}</p>
+                      <span className={cn("text-3xl sm:text-4xl font-black tabular-nums leading-none tracking-tight", pct != null ? progressColor(pct) : "text-muted-foreground")}>
                         {pct != null ? `${pct}%` : "—"}
                       </span>
                     </div>
                     {target > 0 && (
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-[11px] text-muted-foreground">
-                          <span>{fmtBRL(applied)}</span>
-                          <span>de {fmtBRL(target)}</span>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-sm font-bold tabular-nums text-foreground">{fmtBRL(applied)}</span>
+                          <span className="text-xs text-muted-foreground tabular-nums">de <span className="font-semibold text-foreground/80">{fmtBRL(target)}</span></span>
                         </div>
-                        <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div className="h-2.5 rounded-full bg-muted overflow-hidden">
                           <div
                             className={cn("h-full rounded-full transition-all duration-500", pct != null ? progressBarColor(pct) : "bg-muted-foreground/30")}
                             style={{ width: pct != null ? `${pct}%` : "0%" }}
@@ -488,7 +577,7 @@ const AdminAcompanhamentoEvolucao = () => {
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground pt-2 border-t border-border/40">
                       {goal.deadline && (
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
@@ -496,7 +585,7 @@ const AdminAcompanhamentoEvolucao = () => {
                         </span>
                       )}
                       {goal.priority && (
-                        <Badge variant="outline" className="h-4 px-1.5 text-[10px] capitalize">{goal.priority}</Badge>
+                        <Badge variant="outline" className="text-xs capitalize font-bold">{goal.priority}</Badge>
                       )}
                     </div>
                   </CardContent>
@@ -509,20 +598,27 @@ const AdminAcompanhamentoEvolucao = () => {
 
       {/* ── Conquistas (concluídos) ── */}
       {(summary.metasConcluidas > 0 || summary.goalsConcluidos > 0) && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-sm font-bold">Conquistas</h3>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-1 rounded-full bg-emerald-500 shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <h3 className="text-base sm:text-lg font-bold tracking-tight">Conquistas</h3>
+            <div className="flex-1 h-px bg-border/50 ml-2" />
           </div>
-          <Card className="border-emerald-300/50 bg-emerald-50/40 dark:bg-emerald-950/20">
-            <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-black tabular-nums text-emerald-700 dark:text-emerald-400">{summary.metasConcluidas}</p>
-                <p className="text-[11px] text-muted-foreground">meta{summary.metasConcluidas !== 1 ? "s" : ""} arquivada{summary.metasConcluidas !== 1 ? "s" : ""}</p>
+          <Card className="border-emerald-300/50 bg-gradient-to-br from-emerald-50 via-emerald-50/40 to-card dark:from-emerald-950/40 dark:via-emerald-900/20 dark:to-card overflow-hidden">
+            <div className="h-1 bg-emerald-500" />
+            <CardContent className="p-6 grid grid-cols-2 gap-6 text-center">
+              <div className="space-y-1.5">
+                <p className="text-5xl sm:text-6xl font-black tabular-nums text-emerald-700 dark:text-emerald-400 leading-none tracking-tight">{summary.metasConcluidas}</p>
+                <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-700/70 dark:text-emerald-400/70">
+                  meta{summary.metasConcluidas !== 1 ? "s" : ""} arquivada{summary.metasConcluidas !== 1 ? "s" : ""}
+                </p>
               </div>
-              <div>
-                <p className="text-2xl font-black tabular-nums text-emerald-700 dark:text-emerald-400">{summary.goalsConcluidos}</p>
-                <p className="text-[11px] text-muted-foreground">objetivo{summary.goalsConcluidos !== 1 ? "s" : ""} concluído{summary.goalsConcluidos !== 1 ? "s" : ""}</p>
+              <div className="space-y-1.5">
+                <p className="text-5xl sm:text-6xl font-black tabular-nums text-emerald-700 dark:text-emerald-400 leading-none tracking-tight">{summary.goalsConcluidos}</p>
+                <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-700/70 dark:text-emerald-400/70">
+                  objetivo{summary.goalsConcluidos !== 1 ? "s" : ""} concluído{summary.goalsConcluidos !== 1 ? "s" : ""}
+                </p>
               </div>
             </CardContent>
           </Card>
