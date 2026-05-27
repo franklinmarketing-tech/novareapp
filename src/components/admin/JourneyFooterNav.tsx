@@ -1,6 +1,7 @@
-// V9: Rodape navegacional que aparece no final de cada etapa da jornada
-// para guiar o consultor para a proxima etapa. Aparece em Onboarding,
-// Diagnostico, Parecer, Plano de Acao, Acompanhamento e Relatorio.
+// Rodape navegacional que aparece no final de cada etapa da jornada
+// para guiar o consultor para a proxima etapa. Aparece nas 7 etapas:
+// Onboarding, Diagnostico, Parecer, Plano de Acao, Lancamento do mes,
+// Acompanhamento (evolucao) e Relatorio.
 
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,18 +15,20 @@ type JourneyStep =
   | "parecer"
   | "plano-acao"
   | "acompanhamento"
+  | "evolucao"
   | "relatorio";
 
 const STEP_INFO: Record<
   JourneyStep,
   { num: number; label: string; description: string }
 > = {
-  onboarding:     { num: 1, label: "Onboarding",     description: "Coleta de dados brutos do cliente" },
-  diagnostico:    { num: 2, label: "Diagnóstico",    description: "Análise financeira + IA inicial" },
-  parecer:        { num: 3, label: "Metas",           description: "Defina metas para cada item financeiro" },
-  "plano-acao":   { num: 4, label: "Plano de Ação",  description: "Ações priorizadas para atingir as metas" },
-  acompanhamento: { num: 5, label: "Lançamento do mês", description: "Lançamentos mensais + comparativo + evolução IA" },
-  relatorio:      { num: 6, label: "Relatório",      description: "PDF consolidado para o cliente" },
+  onboarding:     { num: 1, label: "Onboarding",         description: "Coleta de dados brutos do cliente" },
+  diagnostico:    { num: 2, label: "Diagnóstico",        description: "Análise financeira + IA inicial" },
+  parecer:        { num: 3, label: "Metas",              description: "Defina metas para cada item financeiro" },
+  "plano-acao":   { num: 4, label: "Plano de Ação",      description: "Ações priorizadas para atingir as metas" },
+  acompanhamento: { num: 5, label: "Lançamento do mês",  description: "Lançamentos mensais para alimentar a evolução" },
+  evolucao:       { num: 6, label: "Acompanhamento",     description: "Visualize a evolução das metas e objetivos do cliente" },
+  relatorio:      { num: 7, label: "Relatório",          description: "PDF consolidado para o cliente" },
 };
 
 const ORDER: JourneyStep[] = [
@@ -34,6 +37,7 @@ const ORDER: JourneyStep[] = [
   "parecer",
   "plano-acao",
   "acompanhamento",
+  "evolucao",
   "relatorio",
 ];
 
@@ -100,7 +104,7 @@ export const JourneyFooterNav = ({
               {isLast ? <CheckCircle2 className="h-3 w-3" strokeWidth={3} /> : STEP_INFO[current].num}
             </span>
             <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/85">
-              Etapa {STEP_INFO[current].num} de 6
+              Etapa {STEP_INFO[current].num} de {ORDER.length}
             </span>
           </div>
           <p className="text-sm font-semibold text-foreground">

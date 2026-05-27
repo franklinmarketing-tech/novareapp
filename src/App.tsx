@@ -28,6 +28,7 @@ import ClientDiagnosis from "@/pages/admin/ClientDiagnosis";
 import AdminActionPlan from "@/pages/admin/AdminActionPlan";
 
 import AdminMonitoring from "@/pages/admin/AdminMonitoring";
+import AdminAcompanhamentoEvolucao from "@/pages/admin/AdminAcompanhamentoEvolucao";
 import AdminReport from "@/pages/admin/AdminReport";
 import AdminFinanceiro from "@/pages/admin/AdminFinanceiro";
 import AdminSettings from "@/pages/admin/AdminSettings";
@@ -121,6 +122,7 @@ const App = () => (
                   {/* V9: Objetivos integrado como Dialog dentro do Diagnostico (sem rota propria) */}
                   {/* V9: card Investimentos EXCLUIDO permanentemente do fluxo */}
                   <Route path="acompanhamento" element={<AdminMonitoring />} />
+                  <Route path="evolucao" element={<AdminAcompanhamentoEvolucao />} />
                   <Route path="relatorio" element={<AdminReport />} />
                 </Route>
 

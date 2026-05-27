@@ -78,6 +78,7 @@ const staticSegments: Record<string, string> = {
   investimentos: "Investimentos",
   implementacao: "Implementação",
   acompanhamento: "Lançamento do mês",
+  evolucao: "Acompanhamento",
   relatorio: "Relatório",
   workspace: "Workspace",
   ajuda: "Ajuda & Manual",

@@ -65,7 +65,7 @@ const AdminMonitoring = () => {
 
       <JourneyFooterNav
         current="acompanhamento"
-        message="Lançamento do mês atualizado. Gere o Relatório consolidado para entregar ao cliente."
+        message="Lançamento do mês atualizado. Avance para Acompanhamento e veja a evolução do cliente."
       />
     </div>
   );

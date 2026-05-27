@@ -8,6 +8,7 @@ import {
   ClipboardList,
   BarChart3,
   LineChart,
+  Activity,
   FileText,
   PenLine,
   UserCheck,
@@ -32,20 +33,21 @@ const getInitials = (name?: string | null) => {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
-// V9: jornada da consultoria em 6 etapas
+// Jornada da consultoria em 7 etapas
 const tabs = [
-  { path: "onboarding",     label: "Onboarding",     icon: ClipboardList, step: 1 },
-  { path: "diagnostico",    label: "Diagnóstico",    icon: BarChart3,     step: 2 },
-  { path: "parecer",        label: "Plano de Ação",  icon: Target,        step: 3 },
-  { path: "plano-acao",     label: "Ver Ações",      icon: PenLine,       step: 4 },
+  { path: "onboarding",     label: "Onboarding",        icon: ClipboardList, step: 1 },
+  { path: "diagnostico",    label: "Diagnóstico",       icon: BarChart3,     step: 2 },
+  { path: "parecer",        label: "Plano de Ação",     icon: Target,        step: 3 },
+  { path: "plano-acao",     label: "Ver Ações",         icon: PenLine,       step: 4 },
   { path: "acompanhamento", label: "Lançamento do mês", icon: LineChart,     step: 5 },
-  { path: "relatorio",      label: "Relatório",      icon: FileText,      step: 6 },
+  { path: "evolucao",       label: "Acompanhamento",    icon: Activity,      step: 6 },
+  { path: "relatorio",      label: "Relatório",         icon: FileText,      step: 7 },
 ];
 
 const CONSULTANTS = ["Leonardo", "Jefferson"];
 
 const disabledByStatus: Record<string, string[]> = {
-  onboarding_pendente: ["diagnostico", "parecer", "plano-acao", "acompanhamento", "relatorio"],
+  onboarding_pendente: ["diagnostico", "parecer", "plano-acao", "acompanhamento", "evolucao", "relatorio"],
 };
 
 // Etapas marcadas como concluidas com base no status do cliente
