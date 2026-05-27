@@ -131,7 +131,7 @@ O painel do cliente agora mostra automaticamente o **Plano de Ação** assim que
 | Onde | Antes | Agora |
 |------|-------|-------|
 | Painel do cliente · "Plano de Ação" | Mostrava "Seu plano aparecerá quando criado" mesmo após o consultor cadastrar | Cliente vê as metas do consultor **na hora**, agrupadas por categoria |
-| Sincronização | Cliente precisava recarregar a página | **Automática em tempo real** — o painel atualiza sozinho |
+| Sincronização | Cliente precisava recarregar a página | **Automática** — o painel atualiza sozinho a cada 20 segundos |
 | Visualização | Vazio quando não havia `action_items` | Bloco visual com metas por categoria (Rendas, Despesas, Dívidas, Patrimônio, Seguros) |
 
 **Como funciona:**
@@ -147,8 +147,9 @@ O painel do cliente agora mostra automaticamente o **Plano de Ação** assim que
 - Aplicável também para Objetivos, Investimentos e ações em geral — qualquer mudança do consultor propaga em tempo real.
 
 **Detalhes técnicos:**
-- Realtime via canais do Supabase (`postgres_changes`) escutando `parecer_metas`, `goals`, `action_items` e `investment_recommendations`.
-- Subscription criada uma vez por sessão e finalizada automaticamente ao sair da página.
-- Permissões RLS garantem que cada cliente só recebe atualizações dos seus próprios dados.
+- Polling automático a cada 20 segundos enquanto a aba está aberta.
+- Refetch instantâneo quando o cliente volta para a aba (vindo do WhatsApp, e-mail, etc.).
+- Pausado automaticamente em background — sem consumo de recursos desnecessário.
+- Permissões RLS garantem que cada cliente só vê os próprios dados.
 
 ---

@@ -139,7 +139,7 @@ const ActionPlan = () => {
     if (!user) return;
     let mounted = true;
     let clientId: string | null = null;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
 
     const loadAll = async (cid: string) => {
       const [planRes, goalsRes, recsRes, metasRes] = await Promise.all([
@@ -165,6 +165,11 @@ const ActionPlan = () => {
       setRecommendations((recsRes.data as any[]) || []);
     };
 
+    // Refetch ao voltar para a aba (cliente volta do WhatsApp/email e ja ve atualizado)
+    const onVisibilityChange = () => {
+      if (!document.hidden && mounted && clientId) loadAll(clientId);
+    };
+
     const init = async () => {
       const { data: client } = await supabase
         .from("clients").select("id").eq("user_id", user.id).single();
@@ -173,26 +178,21 @@ const ActionPlan = () => {
       await loadAll(client.id);
       setLoading(false);
 
-      // Realtime: cliente recebe atualizações automáticas quando o consultor
-      // criar/editar/excluir metas, objetivos ou itens do plano de ação.
-      channel = supabase
-        .channel(`cliente-plano-${client.id}`)
-        .on("postgres_changes", { event: "*", schema: "public", table: "parecer_metas", filter: `client_id=eq.${client.id}` },
-          () => { if (mounted && clientId) loadAll(clientId); })
-        .on("postgres_changes", { event: "*", schema: "public", table: "goals", filter: `client_id=eq.${client.id}` },
-          () => { if (mounted && clientId) loadAll(clientId); })
-        .on("postgres_changes", { event: "*", schema: "public", table: "action_items" },
-          () => { if (mounted && clientId) loadAll(clientId); })
-        .on("postgres_changes", { event: "*", schema: "public", table: "investment_recommendations", filter: `client_id=eq.${client.id}` },
-          () => { if (mounted && clientId) loadAll(clientId); })
-        .subscribe();
+      // Polling a cada 20s — cliente ve novidades do consultor sem precisar F5.
+      // Pausado automaticamente quando a aba esta em background.
+      pollInterval = setInterval(() => {
+        if (!document.hidden && mounted && clientId) loadAll(clientId);
+      }, 20000);
+
+      document.addEventListener("visibilitychange", onVisibilityChange);
     };
 
     init();
 
     return () => {
       mounted = false;
-      if (channel) supabase.removeChannel(channel);
+      if (pollInterval) clearInterval(pollInterval);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [user]);
 
@@ -266,7 +266,7 @@ const ActionPlan = () => {
               <ClipboardList className="h-8 w-8 text-muted-foreground/40" />
             </div>
             <p className="text-muted-foreground text-sm font-medium">Seu plano de ação aparecerá aqui quando criado pelo seu consultor.</p>
-            <p className="text-xs text-muted-foreground/70 mt-2">Esta página atualiza automaticamente — assim que o consultor cadastrar uma meta, ela aparece aqui.</p>
+            <p className="text-xs text-muted-foreground/70 mt-2">Esta página atualiza sozinha — assim que o consultor cadastrar uma meta, ela aparece aqui em até 20 segundos.</p>
           </CardContent>
         </Card>
       </PageTransition>
