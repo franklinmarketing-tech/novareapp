@@ -1322,7 +1322,7 @@ const AdminReport = () => {
             <section className="print:break-before-page">
               <SectionHeader
                 number={sectionNumber()}
-                title="Acompanhamento"
+                title="Lançamento do mês"
                 subtitle={`${grouped.length} item${grouped.length !== 1 ? "ns" : ""} acompanhado${grouped.length !== 1 ? "s" : ""} • ${totalRegistros} registro${totalRegistros !== 1 ? "s" : ""}`}
               />
               <div className="space-y-3">

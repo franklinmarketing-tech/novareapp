@@ -38,7 +38,7 @@ const tabs = [
   { path: "diagnostico",    label: "Diagnóstico",    icon: BarChart3,     step: 2 },
   { path: "parecer",        label: "Plano de Ação",  icon: Target,        step: 3 },
   { path: "plano-acao",     label: "Ver Ações",      icon: PenLine,       step: 4 },
-  { path: "acompanhamento", label: "Acompanhamento", icon: LineChart,     step: 5 },
+  { path: "acompanhamento", label: "Lançamento do mês", icon: LineChart,     step: 5 },
   { path: "relatorio",      label: "Relatório",      icon: FileText,      step: 6 },
 ];
 

@@ -45,7 +45,7 @@ const AdminMonitoring = () => {
         </div>
         <div>
           <h2 className="text-base font-semibold">
-            Acompanhamento — {client?.full_name ?? "Cliente"}
+            Lançamento do mês — {client?.full_name ?? "Cliente"}
           </h2>
           <p className="text-xs text-muted-foreground">
             Veja a evolução mensal do cliente e registre o estado atual de cada meta e objetivo.
@@ -61,7 +61,7 @@ const AdminMonitoring = () => {
 
       <JourneyFooterNav
         current="acompanhamento"
-        message="Acompanhamento atualizado. Gere o Relatório consolidado para entregar ao cliente."
+        message="Lançamento do mês atualizado. Gere o Relatório consolidado para entregar ao cliente."
       />
     </div>
   );

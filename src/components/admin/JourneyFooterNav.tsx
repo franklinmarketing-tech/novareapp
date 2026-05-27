@@ -24,7 +24,7 @@ const STEP_INFO: Record<
   diagnostico:    { num: 2, label: "Diagnóstico",    description: "Análise financeira + IA inicial" },
   parecer:        { num: 3, label: "Metas",           description: "Defina metas para cada item financeiro" },
   "plano-acao":   { num: 4, label: "Plano de Ação",  description: "Ações priorizadas para atingir as metas" },
-  acompanhamento: { num: 5, label: "Acompanhamento", description: "KPIs + comparativo + evolução IA" },
+  acompanhamento: { num: 5, label: "Lançamento do mês", description: "Lançamentos mensais + comparativo + evolução IA" },
   relatorio:      { num: 6, label: "Relatório",      description: "PDF consolidado para o cliente" },
 };
 

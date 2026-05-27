@@ -887,7 +887,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
         queryClient.invalidateQueries({ queryKey: ["monthly_closings", clientId], refetchType: "all" }),
         queryClient.refetchQueries({ queryKey: ["acompanhamento_entradas", clientId], type: "all" }),
       ]);
-      toast.success("Acompanhamento salvo", { description: "Dados atualizados em tempo real para o cliente." });
+      toast.success("Lançamento salvo", { description: "Dados atualizados em tempo real para o cliente." });
     },
     onError: (err: any) => toast.error("Erro ao salvar: " + (err?.message || "tente novamente")),
   });

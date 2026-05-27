@@ -253,13 +253,13 @@ const sections: Section[] = [
   },
   {
     id: "acompanhamento",
-    title: "Acompanhamento",
+    title: "Lançamento do mês",
     icon: LineChart,
-    description: "Snapshots mensais e evolução.",
+    description: "Lançamentos mensais e evolução.",
     items: [
       {
-        q: "Como registrar acompanhamento?",
-        a: "Na aba Acompanhamento, crie um snapshot mensal com renda, despesas, ativos, dívidas, taxa de poupança e meses de reserva.",
+        q: "Como registrar o lançamento do mês?",
+        a: "Na aba Lançamento do mês, crie um snapshot mensal com renda, despesas, ativos, dívidas, taxa de poupança e meses de reserva.",
       },
       {
         q: "Como vejo a evolução?",
