@@ -823,7 +823,7 @@ const AdminAcompanhamentoEvolucao = () => {
             </Badge>
             <div className="flex-1 h-px bg-border/50 ml-2" />
           </div>
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="space-y-2.5">
             {activeMetas.map((meta) => {
               const sourceColor = SECTION_COLOR[meta.source_table as SourceTable] ?? "hsl(var(--primary))";
               const Icon = SECTION_ICON[meta.source_table as SourceTable] ?? Target;
@@ -848,112 +848,148 @@ const AdminAcompanhamentoEvolucao = () => {
                   case "on_track":
                     return { label: forecast.projectedDate ? `No prazo · projeção ${forecast.projectedDate.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })}` : "No prazo", cls: "bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-700", icon: Activity };
                   case "delayed":
-                    return { label: `Atrasada · +${Math.round(forecast.diffMonths || 0)} ${Math.round(forecast.diffMonths || 0) === 1 ? "mês" : "meses"} do prazo`, cls: "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-700", icon: AlertCircle };
+                    return { label: `Atrasada · +${Math.round(forecast.diffMonths || 0)} ${Math.round(forecast.diffMonths || 0) === 1 ? "mês" : "meses"}`, cls: "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-700", icon: AlertCircle };
                   case "stalled":
-                    return { label: forecast.daysSinceLastUpdate != null && forecast.daysSinceLastUpdate > 30 ? `Parada · ${forecast.daysSinceLastUpdate}d sem update` : "Parada · sem ritmo de progresso", cls: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700", icon: Pause };
+                    return { label: forecast.daysSinceLastUpdate != null && forecast.daysSinceLastUpdate > 30 ? `Parada · ${forecast.daysSinceLastUpdate}d` : "Parada", cls: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700", icon: Pause };
                   default:
-                    return { label: "Sem dados suficientes", cls: "bg-muted text-muted-foreground border-border", icon: Minus };
+                    return null;
                 }
               })();
               const FIcon = forecastBadge?.icon;
+              const deltaPp = prev?.progresso_pct != null && last?.progresso_pct != null
+                ? last.progresso_pct - prev.progresso_pct
+                : null;
 
               return (
-                <Card key={meta.id} className="overflow-hidden hover:shadow-md transition-all duration-200">
-                  <div className="h-1.5" style={{ background: sourceColor }} />
-                  <CardContent className="p-5 sm:p-6 space-y-4">
-                    {/* Header do card */}
-                    <div className="flex items-start gap-3">
-                      <div
-                        className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
-                        style={{ background: `${sourceColor}20`, border: `1px solid ${sourceColor}35` }}
-                      >
-                        <Icon className="w-5 h-5" style={{ color: sourceColor }} strokeWidth={2.2} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: sourceColor }}>
+                <div
+                  key={meta.id}
+                  className="group relative overflow-hidden rounded-xl border border-border/70 bg-card hover:shadow-md hover:-translate-y-px transition-all duration-200"
+                  style={{ borderLeft: `4px solid ${sourceColor}` }}
+                >
+                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-3.5">
+                    {/* ── Ícone ── */}
+                    <div
+                      className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: `${sourceColor}18`, border: `1px solid ${sourceColor}30` }}
+                    >
+                      <Icon className="w-5 h-5" style={{ color: sourceColor }} strokeWidth={2.2} />
+                    </div>
+
+                    {/* ── Identificação ── */}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: sourceColor }}>
                           {SECTION_LABEL[meta.source_table as SourceTable] ?? meta.source_table}
-                        </p>
-                        <p className="text-base sm:text-lg font-bold leading-tight truncate text-foreground mt-0.5">
-                          {meta.source_label}
-                        </p>
-                        {meta.meta_text && (
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-snug">{meta.meta_text}</p>
+                        </span>
+                        {forecastBadge && FIcon && (
+                          <span className={cn(
+                            "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border",
+                            forecastBadge.cls,
+                          )}>
+                            <FIcon className="w-2.5 h-2.5" />
+                            {forecastBadge.label}
+                          </span>
                         )}
                       </div>
-                      <div className="flex flex-col items-end gap-0.5 shrink-0">
-                        <span className={cn("text-3xl sm:text-4xl font-black tabular-nums leading-none tracking-tight", pct != null ? progressColor(pct) : "text-muted-foreground")}>
-                          {pct != null ? `${pct}%` : "—"}
-                        </span>
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <TrendIcon current={last?.progresso_pct} prev={prev?.progresso_pct} />
-                          <span className="font-semibold">
-                            {prev?.progresso_pct != null && last?.progresso_pct != null
-                              ? `${last.progresso_pct - prev.progresso_pct >= 0 ? "+" : ""}${last.progresso_pct - prev.progresso_pct}pp`
-                              : "novo"}
-                          </span>
-                        </div>
-                      </div>
+                      <p className="text-base font-bold leading-tight text-foreground truncate mt-0.5">
+                        {meta.source_label}
+                      </p>
+                      {meta.meta_text && (
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">{meta.meta_text}</p>
+                      )}
                     </div>
 
-                    {/* Badge de projeção */}
-                    {forecastBadge && FIcon && (
-                      <div className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold border w-fit",
-                        forecastBadge.cls,
-                      )}>
-                        <FIcon className="w-3 h-3" />
-                        {forecastBadge.label}
+                    {/* ── Percentage + delta ── */}
+                    <div className="flex flex-col items-end gap-0 shrink-0">
+                      <span className={cn("text-3xl font-black tabular-nums leading-none tracking-tight", pct != null ? progressColor(pct) : "text-muted-foreground")}>
+                        {pct != null ? `${pct}%` : "—"}
+                      </span>
+                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
+                        <TrendIcon current={last?.progresso_pct} prev={prev?.progresso_pct} />
+                        <span className="font-semibold tabular-nums">
+                          {deltaPp != null ? `${deltaPp >= 0 ? "+" : ""}${deltaPp}pp` : "novo"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Linhas de informação (uma por dado) ── */}
+                  <div className="border-t border-border/40 divide-y divide-border/30">
+                    {/* Alvo */}
+                    {meta.meta_valor && (
+                      <div className="flex items-center justify-between gap-3 px-4 py-2 text-xs">
+                        <span className="flex items-center gap-1.5 text-muted-foreground font-medium">
+                          <Target className="w-3 h-3" />
+                          Alvo
+                        </span>
+                        <span className="font-bold tabular-nums" style={{ color: sourceColor }}>{fmtBRL(meta.meta_valor)}</span>
                       </div>
                     )}
-
-                    {/* Sparkline */}
+                    {/* Atual */}
+                    {last?.valor_atual != null && (
+                      <div className="flex items-center justify-between gap-3 px-4 py-2 text-xs">
+                        <span className="flex items-center gap-1.5 text-muted-foreground font-medium">
+                          <Activity className="w-3 h-3" />
+                          Atual
+                        </span>
+                        <span className="font-bold tabular-nums text-foreground">{fmtBRL(last.valor_atual)}</span>
+                      </div>
+                    )}
+                    {/* Prazo */}
+                    {meta.prazo && (
+                      <div className="flex items-center justify-between gap-3 px-4 py-2 text-xs">
+                        <span className="flex items-center gap-1.5 text-muted-foreground font-medium">
+                          <Clock className="w-3 h-3" />
+                          Prazo
+                        </span>
+                        <span className="font-bold tabular-nums text-foreground/85">{formatDate(meta.prazo)}</span>
+                      </div>
+                    )}
+                    {/* Projeção (quando disponível) */}
+                    {forecast?.projectedDate && forecast.status !== "achieved" && forecast.status !== "stalled" && (
+                      <div className="flex items-center justify-between gap-3 px-4 py-2 text-xs">
+                        <span className="flex items-center gap-1.5 text-muted-foreground font-medium">
+                          <CalendarClock className="w-3 h-3" />
+                          Projeção (ritmo atual)
+                        </span>
+                        <span className="font-bold tabular-nums text-foreground/85">
+                          {forecast.projectedDate.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })}
+                        </span>
+                      </div>
+                    )}
+                    {/* Sparkline ou status de poucos dados */}
                     {sparkData.length > 1 ? (
-                      <div className="h-[80px] -mx-1">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={sparkData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-                            <Line type="monotone" dataKey="pct" stroke={sourceColor} strokeWidth={2.5} dot={{ r: 2.5, fill: sourceColor }} activeDot={{ r: 4 }} />
-                            <ReTooltip
-                              contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12, padding: "6px 10px", boxShadow: "0 4px 12px hsl(var(--foreground) / 0.08)" }}
-                              labelFormatter={(t) => new Date(t).toLocaleDateString("pt-BR")}
-                              formatter={(v: number) => [`${v}%`, "Progresso"]}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
+                      <div className="px-4 py-3">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+                            <Activity className="w-3 h-3" />
+                            Evolução
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/70">
+                            últimos {sparkData.length} lançamentos
+                          </span>
+                        </div>
+                        <div className="h-[50px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={sparkData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                              <Line type="monotone" dataKey="pct" stroke={sourceColor} strokeWidth={2} dot={{ r: 2, fill: sourceColor }} activeDot={{ r: 4 }} />
+                              <ReTooltip
+                                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12, padding: "6px 10px", boxShadow: "0 4px 12px hsl(var(--foreground) / 0.08)" }}
+                                labelFormatter={(t) => new Date(t).toLocaleDateString("pt-BR")}
+                                formatter={(v: number) => [`${v}%`, "Progresso"]}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     ) : (
-                      <div className="rounded-lg bg-muted/30 px-3 py-4 text-center">
-                        <p className="text-xs italic text-muted-foreground/80">
-                          Apenas 1 lançamento — evolução aparece a partir do 2º.
-                        </p>
+                      <div className="flex items-center gap-2 px-4 py-2 text-[11px] text-muted-foreground/70 italic">
+                        <Minus className="w-3 h-3" />
+                        Sem evolução ainda — registre mais lançamentos para ver o gráfico.
                       </div>
                     )}
-
-                    {/* Rodapé com valores */}
-                    <div className="flex items-center justify-between gap-3 text-xs pt-2 border-t border-border/40">
-                      {meta.meta_valor ? (
-                        <div className="flex flex-col">
-                          <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">Alvo</span>
-                          <span className="text-sm font-bold tabular-nums text-foreground" style={{ color: sourceColor }}>{fmtBRL(meta.meta_valor)}</span>
-                        </div>
-                      ) : <span />}
-                      {last?.valor_atual != null && (
-                        <div className="flex flex-col">
-                          <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">Atual</span>
-                          <span className="text-sm font-bold tabular-nums text-foreground">{fmtBRL(last.valor_atual)}</span>
-                        </div>
-                      )}
-                      {meta.prazo && (
-                        <div className="flex flex-col items-end ml-auto">
-                          <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground flex items-center gap-1">
-                            <Clock className="w-2.5 h-2.5" />
-                            Prazo
-                          </span>
-                          <span className="text-sm font-bold tabular-nums text-foreground/85">{formatDate(meta.prazo)}</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               );
             })}
           </div>
