@@ -52,6 +52,17 @@ interface GoalInfo {
   priority: string | null;
 }
 
+interface MetaInfo {
+  id: string;
+  source_table: string;
+  source_id: string;
+  source_label: string;
+  meta_text: string | null;
+  meta_valor: number | null;
+  prazo: string | null;
+  completed_at: string | null;
+}
+
 interface InvestmentRec {
   id: string;
   product_name: string;
@@ -118,36 +129,71 @@ const ActionPlan = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<ActionItem[]>([]);
   const [goals, setGoals] = useState<GoalInfo[]>([]);
+  const [metas, setMetas] = useState<MetaInfo[]>([]);
   const [recommendations, setRecommendations] = useState<InvestmentRec[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"tarefas" | "investimentos">("tarefas");
   const [openGoalId, setOpenGoalId] = useState<string | null>(null);
 
   useEffect(() => {
-    const load = async () => {
-      if (!user) return;
-      const { data: client } = await supabase
-        .from("clients").select("id").eq("user_id", user.id).single();
-      if (!client) { setLoading(false); return; }
+    if (!user) return;
+    let mounted = true;
+    let clientId: string | null = null;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-      const [planRes, goalsRes, recsRes] = await Promise.all([
-        supabase.from("action_plans").select("id").eq("client_id", client.id).maybeSingle(),
-        supabase.from("goals").select("id, description, target_amount, priority").eq("client_id", client.id),
-        supabase.from("investment_recommendations").select("*").eq("client_id", client.id).order("priority", { ascending: true }),
+    const loadAll = async (cid: string) => {
+      const [planRes, goalsRes, recsRes, metasRes] = await Promise.all([
+        supabase.from("action_plans").select("id").eq("client_id", cid).maybeSingle(),
+        supabase.from("goals").select("id, description, target_amount, priority").eq("client_id", cid).is("completed_at", null),
+        supabase.from("investment_recommendations").select("*").eq("client_id", cid).order("priority", { ascending: true }),
+        supabase.from("parecer_metas").select("*").eq("client_id", cid).is("completed_at", null).neq("source_table", "goals").order("source_table"),
       ]);
+
+      if (!mounted) return;
 
       if (planRes.data) {
         const { data: actionItems } = await supabase
           .from("action_items").select("*").eq("action_plan_id", planRes.data.id)
           .order("created_at", { ascending: true });
-        setItems((actionItems as ActionItem[]) || []);
+        if (mounted) setItems((actionItems as ActionItem[]) || []);
+      } else {
+        setItems([]);
       }
 
       setGoals((goalsRes.data as GoalInfo[]) || []);
+      setMetas((metasRes.data as MetaInfo[]) || []);
       setRecommendations((recsRes.data as any[]) || []);
-      setLoading(false);
     };
-    load();
+
+    const init = async () => {
+      const { data: client } = await supabase
+        .from("clients").select("id").eq("user_id", user.id).single();
+      if (!client || !mounted) { setLoading(false); return; }
+      clientId = client.id;
+      await loadAll(client.id);
+      setLoading(false);
+
+      // Realtime: cliente recebe atualizações automáticas quando o consultor
+      // criar/editar/excluir metas, objetivos ou itens do plano de ação.
+      channel = supabase
+        .channel(`cliente-plano-${client.id}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: "parecer_metas", filter: `client_id=eq.${client.id}` },
+          () => { if (mounted && clientId) loadAll(clientId); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "goals", filter: `client_id=eq.${client.id}` },
+          () => { if (mounted && clientId) loadAll(clientId); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "action_items" },
+          () => { if (mounted && clientId) loadAll(clientId); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "investment_recommendations", filter: `client_id=eq.${client.id}` },
+          () => { if (mounted && clientId) loadAll(clientId); })
+        .subscribe();
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [user]);
 
   if (loading) {
@@ -183,19 +229,44 @@ const ActionPlan = () => {
 
   const hasActions = allParentTasks.length > 0;
   const hasInvestments = recommendations.length > 0;
+  const hasMetas = metas.length > 0;
+  const hasGoals = goals.length > 0;
+  const hasAnyPlan = hasActions || hasInvestments || hasMetas || hasGoals;
+
+  // Agrupa metas por categoria
+  const META_SECTION_LABELS: Record<string, string> = {
+    income: "Rendas", expenses: "Despesas", debts: "Dívidas",
+    assets: "Patrimônio", insurance: "Seguros",
+  };
+  const META_SECTION_COLOR: Record<string, string> = {
+    income: "#10b981", expenses: "#f43f5e", debts: "#ef4444",
+    assets: "#0ea5e9", insurance: "#a855f7",
+  };
+  const META_SECTION_ORDER = ["income", "expenses", "debts", "assets", "insurance"];
+  const metasBySection = META_SECTION_ORDER.reduce((acc, s) => {
+    const list = metas.filter((m) => m.source_table === s);
+    if (list.length > 0) acc[s] = list;
+    return acc;
+  }, {} as Record<string, MetaInfo[]>);
+
+  const formatDateBR = (d?: string | null) => {
+    if (!d) return null;
+    return new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
+  };
 
   const toggleGoal = (goalId: string) => setOpenGoalId(prev => prev === goalId ? null : goalId);
 
-  if (!hasActions && !hasInvestments) {
+  if (!hasAnyPlan) {
     return (
       <PageTransition>
-        <PageBanner title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor" icon3D="clipboard" />
+        <PageBanner title="Plano de Ação" description="Metas e recomendações definidas pelo seu consultor" icon3D="clipboard" />
         <Card>
           <CardContent className="py-20 text-center">
             <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
               <ClipboardList className="h-8 w-8 text-muted-foreground/40" />
             </div>
             <p className="text-muted-foreground text-sm font-medium">Seu plano de ação aparecerá aqui quando criado pelo seu consultor.</p>
+            <p className="text-xs text-muted-foreground/70 mt-2">Esta página atualiza automaticamente — assim que o consultor cadastrar uma meta, ela aparece aqui.</p>
           </CardContent>
         </Card>
       </PageTransition>
@@ -206,6 +277,64 @@ const ActionPlan = () => {
     <PageTransition>
       <SEO title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor Novare." index={false} />
         <PageBanner title="Plano de Ação" description="Tarefas e recomendações de investimento definidas pelo seu consultor" icon3D="clipboard" />
+
+      {/* ── METAS DO CONSULTOR (parecer_metas) — sincronizado em tempo real ── */}
+      {hasMetas && (
+        <div className="space-y-4 mb-6">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-1 rounded-full bg-novare-blue shrink-0" />
+            <Target className="w-5 h-5 text-novare-blue" />
+            <h3 className="text-base sm:text-lg font-bold tracking-tight">Metas definidas pelo seu consultor</h3>
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-novare-blue-light text-novare-blue">
+              {metas.length}
+            </span>
+            <div className="flex-1 h-px bg-border/50 ml-2" />
+          </div>
+
+          {Object.entries(metasBySection).map(([section, list]) => {
+            const accent = META_SECTION_COLOR[section];
+            return (
+              <div key={section}>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-2" style={{ color: accent }}>
+                  {META_SECTION_LABELS[section]}
+                </p>
+                <div className="space-y-2">
+                  {list.map((meta) => (
+                    <div
+                      key={meta.id}
+                      className="rounded-xl border border-border/60 bg-card p-4 hover:shadow-md transition-shadow"
+                      style={{ borderLeft: `4px solid ${accent}` }}
+                    >
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-foreground leading-tight">{meta.source_label}</p>
+                          {meta.meta_text && (
+                            <p className="text-xs text-muted-foreground mt-1 leading-snug">{meta.meta_text}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs shrink-0">
+                          {meta.meta_valor && meta.meta_valor > 0 && (
+                            <div className="flex flex-col items-end">
+                              <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Alvo</span>
+                              <span className="font-bold tabular-nums" style={{ color: accent }}>{fmt(Number(meta.meta_valor))}</span>
+                            </div>
+                          )}
+                          {meta.prazo && (
+                            <div className="flex flex-col items-end">
+                              <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Prazo</span>
+                              <span className="font-bold tabular-nums text-foreground/80">{formatDateBR(meta.prazo)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ── 3D PROGRESS HERO ────────────────────── */}
       {allChildren.length > 0 && (

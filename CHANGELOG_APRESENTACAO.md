@@ -118,3 +118,37 @@ O cliente agora tem uma aba dedicada **"Lançamento do mês"** no painel dele, c
 - Mesmo se um cliente tentar burlar pela API, as políticas de RLS no banco rejeitam o write quando a flag está em `false`.
 
 ---
+
+## 27 de maio de 2026
+
+### 4. Plano de Ação do cliente em tempo real
+
+**Resumo executivo:**
+O painel do cliente agora mostra automaticamente o **Plano de Ação** assim que o consultor cadastra metas — **sem precisar de F5 nem recarregar a página**. A sincronização é instantânea via Supabase Realtime, criando uma sensação de consultoria viva e contínua.
+
+**O que mudou para o usuário:**
+
+| Onde | Antes | Agora |
+|------|-------|-------|
+| Painel do cliente · "Plano de Ação" | Mostrava "Seu plano aparecerá quando criado" mesmo após o consultor cadastrar | Cliente vê as metas do consultor **na hora**, agrupadas por categoria |
+| Sincronização | Cliente precisava recarregar a página | **Automática em tempo real** — o painel atualiza sozinho |
+| Visualização | Vazio quando não havia `action_items` | Bloco visual com metas por categoria (Rendas, Despesas, Dívidas, Patrimônio, Seguros) |
+
+**Como funciona:**
+- Cada meta cadastrada pelo consultor aparece no painel do cliente em até 1 segundo.
+- As metas aparecem agrupadas por categoria com cor distinta (verde para Rendas, vermelho para Despesas, etc.).
+- Cada card mostra o nome do item, descrição da meta, valor alvo e prazo.
+- O cliente também vê em tempo real edições e exclusões — se o consultor ajustar algo, o cliente vê na hora.
+
+**Benefícios:**
+- Cliente percebe **atividade imediata** do consultor — reforça percepção de valor.
+- Acaba a fricção de "criei a meta, mas o cliente precisa atualizar a página".
+- Cliente ganha **transparência total** sobre o que está sendo construído para ele.
+- Aplicável também para Objetivos, Investimentos e ações em geral — qualquer mudança do consultor propaga em tempo real.
+
+**Detalhes técnicos:**
+- Realtime via canais do Supabase (`postgres_changes`) escutando `parecer_metas`, `goals`, `action_items` e `investment_recommendations`.
+- Subscription criada uma vez por sessão e finalizada automaticamente ao sair da página.
+- Permissões RLS garantem que cada cliente só recebe atualizações dos seus próprios dados.
+
+---
