@@ -24,7 +24,7 @@ export function ClientPermissionToggle({ clientId }: Props) {
         .from("clients")
         .select("client_can_log_acompanhamento")
         .eq("id", clientId)
-        .maybeSingle();
+        .maybeSingle() as any;
       return data as { client_can_log_acompanhamento: boolean } | null;
     },
     enabled: !!clientId,
@@ -36,7 +36,7 @@ export function ClientPermissionToggle({ clientId }: Props) {
     mutationFn: async (next: boolean) => {
       const { error } = await supabase
         .from("clients")
-        .update({ client_can_log_acompanhamento: next })
+        .update({ client_can_log_acompanhamento: next } as any)
         .eq("id", clientId);
       if (error) throw error;
       return next;
