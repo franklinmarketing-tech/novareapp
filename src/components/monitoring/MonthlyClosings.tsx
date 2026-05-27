@@ -426,13 +426,13 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
 
         {/* ─── Lista de fechamentos ─── */}
         {closings.length === 0 ? (
-          <div className="py-10 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-              <CalendarCheck2 className="h-6 w-6 text-primary/50" />
+          <div className="flex items-center gap-3 py-3 px-3 rounded-lg bg-muted/30">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <CalendarCheck2 className="h-4 w-4 text-primary/60" />
             </div>
-            <p className="text-sm font-semibold mb-1">Nenhum mês fechado ainda</p>
-            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-              {isAdmin ? "Feche o mês para congelar os números e o estado das metas naquele momento." : "Quando seu consultor fechar um mês, ele aparecerá aqui."}
+            <p className="text-xs text-muted-foreground leading-snug">
+              <span className="font-semibold text-foreground">Nenhum mês fechado ainda.</span>{" "}
+              {isAdmin ? "Use o botão 'Fechar mês' para congelar os números e o estado das metas naquele momento." : "Quando seu consultor fechar um mês, ele aparecerá aqui."}
             </p>
           </div>
         ) : (
