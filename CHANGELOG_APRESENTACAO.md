@@ -97,7 +97,7 @@ O cliente agora tem uma aba dedicada **"Lançamento do mês"** no painel dele, c
 - O botão de permissão fica em destaque no topo da tela de "Lançamento do mês" do consultor.
 - Quando liberado: aparece em verde com ícone de cadeado aberto e mensagem "Cliente liberado para lançar".
 - Quando bloqueado: aparece em âmbar com cadeado fechado e mensagem "Cliente em modo visualização".
-- A mudança é instantânea — o cliente recebe a permissão sem precisar deslogar.
+- **Sincronização automática:** o cliente percebe a mudança em até 15 segundos, sem precisar recarregar a página, e recebe um aviso toast informando o novo modo.
 - A flag é por cliente (global) — não reseta automaticamente entre meses.
 
 **Limitações intencionais para o cliente (mesmo liberado):**

@@ -1,32 +1,83 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AcompanhamentoMetas } from "@/components/monitoring/AcompanhamentoMetas";
 import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
 import { CalendarDays, Eye, Lock } from "lucide-react";
+import { toast } from "sonner";
 
 const ClientLancamentoMes = () => {
   const { user } = useAuth();
   const [clientId, setClientId] = useState<string | null>(null);
   const [canEdit, setCanEdit] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+  const prevCanEditRef = useRef<boolean | null>(null);
+
+  // Avisa o cliente quando o modo muda (de bloqueado para liberado ou vice-versa)
+  useEffect(() => {
+    if (loading) return;
+    if (prevCanEditRef.current === null) {
+      prevCanEditRef.current = canEdit;
+      return;
+    }
+    if (prevCanEditRef.current !== canEdit) {
+      if (canEdit) {
+        toast.success("Seu consultor liberou a edição!", {
+          description: "Agora você pode atualizar valor e estado de cada meta.",
+          duration: 5000,
+        });
+      } else {
+        toast("Modo visualização ativado", {
+          description: "Seu consultor bloqueou a edição. Você continua vendo o histórico.",
+          duration: 5000,
+        });
+      }
+      prevCanEditRef.current = canEdit;
+    }
+  }, [canEdit, loading]);
 
   useEffect(() => {
-    const load = async () => {
-      if (!user) { setLoading(false); return; }
+    if (!user) { setLoading(false); return; }
+    let mounted = true;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+    const checkPermission = async () => {
       const { data } = await supabase
         .from("clients")
         .select("id, client_can_log_acompanhamento")
         .eq("user_id", user.id)
         .maybeSingle() as any;
-      if (data) {
-        setClientId(data.id);
-        setCanEdit(!!data.client_can_log_acompanhamento);
-      }
-      setLoading(false);
+      if (!mounted || !data) return;
+      setClientId(data.id);
+      setCanEdit(!!data.client_can_log_acompanhamento);
     };
-    load();
+
+    // Refetch ao voltar para a aba (cliente percebe liberação imediatamente)
+    const onVisibilityChange = () => {
+      if (!document.hidden && mounted) checkPermission();
+    };
+
+    const init = async () => {
+      await checkPermission();
+      setLoading(false);
+
+      // Polling a cada 15s — assim que o consultor liberar/bloquear, o
+      // cliente passa para o modo correto sem precisar recarregar.
+      pollInterval = setInterval(() => {
+        if (!document.hidden && mounted) checkPermission();
+      }, 15000);
+
+      document.addEventListener("visibilitychange", onVisibilityChange);
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+      if (pollInterval) clearInterval(pollInterval);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, [user]);
 
   if (loading) {
