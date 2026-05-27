@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório de Atividade — 4 Dias</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --novare-blue: #1B3A5C;
+    --novare-blue-bright: #2C5F8D;
+    --novare-blue-light: #E8F0F8;
+    --novare-terracotta: #C66E47;
+    --novare-terracotta-light: #FFF1EA;
+    --fg: #1a2332;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg-soft: #f8fafc;
+    --success: #059669;
+    --warning: #d97706;
+  }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--fg);
+    background: white;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { padding: 0; }
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 24mm 22mm;
+    margin: 0 auto;
+    background: white;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ── CAPA ── */
+  .cover {
+    background: linear-gradient(135deg, var(--novare-blue) 0%, var(--novare-blue-bright) 100%);
+    color: white;
+    min-height: 297mm;
+    padding: 30mm 22mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    page-break-after: always;
+  }
+  .cover-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .cover-logo {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .cover-date {
+    font-size: 12px;
+    text-align: right;
+    opacity: 0.75;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .cover-main { margin: auto 0; }
+  .cover-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 16px;
+    border-left: 3px solid var(--novare-terracotta);
+    padding-left: 14px;
+  }
+  .cover-title {
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 18px;
+  }
+  .cover-subtitle {
+    font-size: 22px;
+    font-weight: 300;
+    opacity: 0.85;
+    max-width: 80%;
+    line-height: 1.4;
+  }
+  .cover-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-top: 56px;
+  }
+  .cover-stat {
+    border-top: 2px solid rgba(255,255,255,0.25);
+    padding-top: 14px;
+  }
+  .cover-stat-value {
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .cover-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    opacity: 0.7;
+    margin-top: 8px;
+  }
+  .cover-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 1px solid rgba(255,255,255,0.25);
+    padding-top: 14px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  /* ── HEADER de página interna ── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--novare-blue);
+    padding-bottom: 12px;
+    margin-bottom: 28px;
+  }
+  .page-header-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--novare-blue);
+    letter-spacing: -0.02em;
+  }
+  .page-header-meta {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+  }
+
+  /* ── Seções ── */
+  .section { margin-bottom: 32px; }
+  .section-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--novare-terracotta);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::before {
+    content: "";
+    width: 28px;
+    height: 2px;
+    background: var(--novare-terracotta);
+  }
+
+  /* ── Cards KPI ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .kpi-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    background: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--novare-blue);
+  }
+  .kpi-card.accent::before { background: var(--novare-terracotta); }
+  .kpi-card.success::before { background: var(--success); }
+  .kpi-card.warning::before { background: var(--warning); }
+  .kpi-label {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--fg);
+    letter-spacing: -0.02em;
+  }
+  .kpi-caption {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ── Feature card ── */
+  .feature {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    background: white;
+    border-left: 4px solid var(--novare-blue);
+  }
+  .feature.accent { border-left-color: var(--novare-terracotta); }
+  .feature.success { border-left-color: var(--success); }
+  .feature-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .feature-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--fg);
+    line-height: 1.3;
+  }
+  .feature-tag {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--novare-blue-light);
+    color: var(--novare-blue);
+    white-space: nowrap;
+  }
+  .feature-tag.refine {
+    background: var(--novare-terracotta-light);
+    color: var(--novare-terracotta);
+  }
+  .feature-tag.fix {
+    background: #FEF3C7;
+    color: #92400E;
+  }
+  .feature-tag.ai {
+    background: #EDE9FE;
+    color: #6D28D9;
+  }
+  .feature-desc {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .feature-meta {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 6px;
+    font-family: "Consolas", "Monaco", monospace;
+  }
+
+  /* ── Tabela cronológica ── */
+  table.timeline {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .timeline th {
+    text-align: left;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    padding: 8px 10px;
+    border-bottom: 2px solid var(--novare-blue);
+  }
+  .timeline td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .timeline tr:nth-child(even) td { background: var(--bg-soft); }
+  .timeline .col-time {
+    font-family: "Consolas", monospace;
+    color: var(--novare-blue);
+    font-weight: 700;
+    white-space: nowrap;
+    width: 80px;
+  }
+  .timeline .col-hash {
+    font-family: "Consolas", monospace;
+    color: var(--muted);
+    font-size: 10px;
+    white-space: nowrap;
+    width: 65px;
+  }
+  .day-header {
+    background: var(--novare-blue);
+    color: white;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 11px;
+    padding: 10px 14px !important;
+  }
+
+  /* ── Conclusão ── */
+  .quote {
+    background: var(--novare-blue-light);
+    border-left: 4px solid var(--novare-blue);
+    padding: 18px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--novare-blue);
+    margin: 16px 0;
+  }
+  .impact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .impact-card {
+    text-align: center;
+    padding: 18px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-soft);
+  }
+  .impact-value {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--novare-blue);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .impact-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-top: 8px;
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { background: white; }
+    .page, .cover { page-break-after: always; margin: 0; }
+    .page:last-child { page-break-after: auto; }
+    .no-print { display: none !important; }
+  }
+  .help {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: var(--novare-blue);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    z-index: 9999;
+  }
+</style>
+</head>
+<body>
+
+<!-- Helper de impressão (some no PDF) -->
+<div class="help no-print">
+  📄 Pressione <strong>Ctrl + P</strong> e escolha <strong>"Salvar como PDF"</strong>
+</div>
+
+<!-- ─────────── CAPA ─────────── -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-logo">NOVARE · Consultoria Financeira</div>
+    <div class="cover-date">26 de maio · 2026</div>
+  </div>
+
+  <div class="cover-main">
+    <div class="cover-label">Relatório de Atividade</div>
+    <h1 class="cover-title">4 dias<br>de evolução<br>da plataforma.</h1>
+    <p class="cover-subtitle">
+      Snapshot do desenvolvimento intensivo realizado entre os dias 23 e 26 de maio,
+      com novas funcionalidades, refinamentos visuais e otimizações estruturais.
+    </p>
+
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <div class="cover-stat-value">158</div>
+        <div class="cover-stat-label">Commits</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-value">6.7k</div>
+        <div class="cover-stat-label">Linhas mexidas</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-value">165</div>
+        <div class="cover-stat-label">Arquivos</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-value">44</div>
+        <div class="cover-stat-label">Marcos entregues</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-footer">
+    <span>Plataforma Novare · v2.7</span>
+    <span>Página 1</span>
+  </div>
+</div>
+
+<!-- ─────────── PÁGINA 2: VISÃO GERAL ─────────── -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-title">Visão Geral</div>
+    <div class="page-header-meta">Resumo Executivo</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Volume de trabalho</div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Commits totais</div>
+        <div class="kpi-value">158</div>
+        <div class="kpi-caption">Versionados no Git, distribuídos em 2 dias intensivos</div>
+      </div>
+      <div class="kpi-card accent">
+        <div class="kpi-label">Marcos descritivos</div>
+        <div class="kpi-value">44</div>
+        <div class="kpi-caption">Entregas com rastreabilidade nominal completa</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-label">Linhas adicionadas</div>
+        <div class="kpi-value">5.517</div>
+        <div class="kpi-caption">Código novo escrito do zero ou refatorado</div>
+      </div>
+      <div class="kpi-card warning">
+        <div class="kpi-label">Linhas removidas</div>
+        <div class="kpi-value">1.227</div>
+        <div class="kpi-caption">Limpeza, simplificação e remoção de código legado</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Distribuição por categoria</div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Novas funcionalidades</div>
+        <div class="kpi-value">10</div>
+        <div class="kpi-caption">Features que adicionam capacidade nova ao produto</div>
+      </div>
+      <div class="kpi-card accent">
+        <div class="kpi-label">Refinamentos visuais</div>
+        <div class="kpi-value">18</div>
+        <div class="kpi-caption">Polimentos de UI, tipografia, cores e densidade</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-label">Inteligência (IA)</div>
+        <div class="kpi-value">4</div>
+        <div class="kpi-caption">Análise de metas, migração GPT-4o-mini, prompt</div>
+      </div>
+      <div class="kpi-card warning">
+        <div class="kpi-label">Correções & ajustes</div>
+        <div class="kpi-value">12</div>
+        <div class="kpi-caption">Bugs corrigidos e comportamentos refinados</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Áreas tocadas</div>
+    <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">
+      O trabalho atravessou todas as etapas da jornada da consultoria — do onboarding até o relatório final.
+    </p>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+      <div style="font-size: 12px; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px;">📋 <strong>Onboarding</strong> · filtro mensal + D-zero</div>
+      <div style="font-size: 12px; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px;">🩺 <strong>Diagnóstico</strong> · análise de metas via IA</div>
+      <div style="font-size: 12px; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px;">🎯 <strong>Plano de Ação</strong> · bloco de notas por categoria</div>
+      <div style="font-size: 12px; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px;">📊 <strong>Ver Ações</strong> · UI refinada</div>
+      <div style="font-size: 12px; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px;">📅 <strong>Lançamento do mês</strong> · CRUD + permissão cliente</div>
+      <div style="font-size: 12px; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px;">📈 <strong>Acompanhamento</strong> · nova etapa com forecast</div>
+      <div style="font-size: 12px; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px;">📄 <strong>Relatório PDF</strong> · CPF, senha, identidade visual</div>
+      <div style="font-size: 12px; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px;">📱 <strong>Painel do Cliente</strong> · edição liberada por consultor</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── PÁGINA 3: DESTAQUES (TOP) ─────────── -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-title">Principais Entregas</div>
+    <div class="page-header-meta">26 de maio · noite</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Funcionalidades estruturais</div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div class="feature-title">Cada mês vira um onboarding próprio (D-zero + filtro)</div>
+        <span class="feature-tag">Funcionalidade</span>
+      </div>
+      <p class="feature-desc">
+        Ao fechar o mês, todos os itens financeiros (rendas, despesas, dívidas, patrimônio, seguros, objetivos) são automaticamente clonados para o próximo mês. Novo seletor de mês no onboarding com indicador D-0 (baseline) e badge "FECHADO" travando edição de meses arquivados.
+      </p>
+      <div class="feature-meta">d72e0c9 · 422 linhas · 6 arquivos</div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div class="feature-title">Nova etapa Acompanhamento (passo 6) com gráficos de evolução</div>
+        <span class="feature-tag">Funcionalidade</span>
+      </div>
+      <p class="feature-desc">
+        Painel completo entre Lançamento do mês e Relatório. Mostra a evolução do cliente em metas e objetivos com cards de resumo, gráfico de área da progressão mensal, sparklines por meta, lista de objetivos com barra de progresso e bloco de conquistas. Jornada do consultor passa de 6 para 7 etapas.
+      </p>
+      <div class="feature-meta">a2b85b6 · 564 linhas · 6 arquivos</div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div class="feature-title">Cashflow + Forecast + Alertas inteligentes</div>
+        <span class="feature-tag">Funcionalidade</span>
+      </div>
+      <p class="feature-desc">
+        Três camadas consultivas no Acompanhamento: (1) cashflow mensal com saldo, delta vs mês anterior, taxa de poupança e gráfico de barras de 6 meses; (2) projeção por meta calculando quando atinge o alvo no ritmo atual (adiantada/no prazo/atrasada/parada); (3) alertas automáticos para cashflow negativo, poupança baixa, reserva insuficiente, metas paradas e objetivos próximos do prazo.
+      </p>
+      <div class="feature-meta">672430f · 435 linhas · 1 arquivo</div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div class="feature-title">Permissão do cliente lançar valores no painel dele</div>
+        <span class="feature-tag">Funcionalidade</span>
+      </div>
+      <p class="feature-desc">
+        Botão de destaque no Lançamento do mês permite ao consultor liberar/bloquear o cliente para editar valor atual e estado de cada meta no próprio painel. Cliente ganha nova aba "Lançamento do mês" com modo edição (liberado) ou visualização (bloqueado). RLS no banco garante segurança em dupla camada.
+      </p>
+      <div class="feature-meta">72f424f · 478 linhas · 10 arquivos</div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div class="feature-title">Bloco de notas por categoria no Plano de Ação</div>
+        <span class="feature-tag">Funcionalidade</span>
+      </div>
+      <p class="feature-desc">
+        Anotações livres do consultor por categoria (Rendas, Despesas, Dívidas, Patrimônio, Seguros, Objetivos) com auto-save. Cliente vê as observações em modo leitura no painel dele, promovendo transparência consultiva. Nova tabela acao_notas com RLS configurado.
+      </p>
+      <div class="feature-meta">cf8efb8 · 381 linhas · 6 arquivos</div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div class="feature-title">Editar / Incluir / Excluir no Acompanhamento</div>
+        <span class="feature-tag">Funcionalidade</span>
+      </div>
+      <p class="feature-desc">
+        Três dialogs reutilizáveis (ItemEditDialog, GoalEditDialog, MetaEditDialog) permitem ao consultor adicionar, editar e remover itens financeiros, metas e objetivos diretamente na tela de acompanhamento, sem precisar voltar ao onboarding.
+      </p>
+      <div class="feature-meta">7e59dc6 · 798 linhas · 4 arquivos</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── PÁGINA 4: REFINAMENTOS ─────────── -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-title">Refinamentos visuais & Inteligência</div>
+    <div class="page-header-meta">25 e 26 de maio</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Refinamentos visuais</div>
+
+    <div class="feature accent">
+      <div class="feature-header">
+        <div class="feature-title">Redesign do Acompanhamento — tipografia e densidade</div>
+        <span class="feature-tag refine">UI/UX</span>
+      </div>
+      <p class="feature-desc">
+        Tipografia aprimorada com hero header, valores em destaque (text-4xl/5xl), cards de meta em lista vertical refinada com cada dado em sua própria linha (Alvo, Atual, Prazo, Projeção), sparkline contextual e header de seção com barra lateral colorida.
+      </p>
+      <div class="feature-meta">eded918 + 36b17d0 · 332 linhas refinadas</div>
+    </div>
+
+    <div class="feature accent">
+      <div class="feature-header">
+        <div class="feature-title">Identidade visual Chromatic + Novare Blue padronizado</div>
+        <span class="feature-tag refine">Identidade</span>
+      </div>
+      <p class="feature-desc">
+        Padronização das cores em todo o sistema: Novare Blue como cor primária consistente, tipografia padronizada nos títulos, profundidade adicionada com gradientes. Versão v2.5 estampada no topo.
+      </p>
+      <div class="feature-meta">f0dafe9 + 42d3f0d + 0701163</div>
+    </div>
+
+    <div class="feature accent">
+      <div class="feature-header">
+        <div class="feature-title">Refinamento do PDF de Relatório</div>
+        <span class="feature-tag refine">Relatório</span>
+      </div>
+      <p class="feature-desc">
+        CPF e senha no PDF gerado, capa branca, gráfico de pizza melhorado, proporção corrigida, identidade Chromatic aplicada e relatório financeiro atualizado.
+      </p>
+      <div class="feature-meta">6035dae + 0d4e9ca + 21322ee + 9145ec8 + 9e3c7b5</div>
+    </div>
+
+    <div class="feature accent">
+      <div class="feature-header">
+        <div class="feature-title">Compactação de empty states e seções densas</div>
+        <span class="feature-tag refine">UI</span>
+      </div>
+      <p class="feature-desc">
+        Empty state de "Fechamentos Mensais" passou de 250px para 60px (linha horizontal compacta). Fontes reduzidas em "Ver Ações" para melhor densidade informacional. Botões de Plano de Ação reorganizados.
+      </p>
+      <div class="feature-meta">e5ff0e4 + 5cb9d62 + 08482e6</div>
+    </div>
+
+    <div class="feature accent">
+      <div class="feature-header">
+        <div class="feature-title">Renomeação para "Lançamento do mês"</div>
+        <span class="feature-tag refine">Linguagem</span>
+      </div>
+      <p class="feature-desc">
+        Aba antes chamada "Acompanhamento" renomeada para "Lançamento do mês" em 8 locais distintos (sidebar, breadcrumb, footer, header, FAQ, PDF, toast) com consistência total. Mantém o status interno do pipeline para evitar quebras.
+      </p>
+      <div class="feature-meta">9ca9075 · 7 arquivos</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Inteligência (IA)</div>
+
+    <div class="feature success">
+      <div class="feature-header">
+        <div class="feature-title">Análise de metas via IA + migração para GPT-4o-mini</div>
+        <span class="feature-tag ai">IA</span>
+      </div>
+      <p class="feature-desc">
+        Sistema agora analisa metas automaticamente via Inteligência Artificial, com prompt do analista totalmente reescrito para entregar insights mais relevantes e contextuais. Migração para GPT-4o-mini garante performance e custo otimizados.
+      </p>
+      <div class="feature-meta">653eb7e + 8d96091 + 493f8cb · análise contextual</div>
+    </div>
+
+    <div class="feature success">
+      <div class="feature-header">
+        <div class="feature-title">Sugestões inteligentes de metas</div>
+        <span class="feature-tag ai">IA</span>
+      </div>
+      <p class="feature-desc">
+        Botão "Sugerir Metas" atualizado para utilizar a nova engine de IA, com prompt aprimorado focado em estratégias financeiras realistas para o perfil do cliente.
+      </p>
+      <div class="feature-meta">11477b2 · 2 arquivos</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Correções e ajustes</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11.5px;">
+      <div style="padding: 8px 12px; background: var(--bg-soft); border-left: 3px solid var(--warning); border-radius: 4px;">✓ Filtro de mês vazio corrigido</div>
+      <div style="padding: 8px 12px; background: var(--bg-soft); border-left: 3px solid var(--warning); border-radius: 4px;">✓ Proporção do gráfico ajustada</div>
+      <div style="padding: 8px 12px; background: var(--bg-soft); border-left: 3px solid var(--warning); border-radius: 4px;">✓ Filtro mês e cores corrigidos</div>
+      <div style="padding: 8px 12px; background: var(--bg-soft); border-left: 3px solid var(--warning); border-radius: 4px;">✓ Refetch forçado ao atualizar</div>
+      <div style="padding: 8px 12px; background: var(--bg-soft); border-left: 3px solid var(--warning); border-radius: 4px;">✓ Filtro inicial mês vigente</div>
+      <div style="padding: 8px 12px; background: var(--bg-soft); border-left: 3px solid var(--warning); border-radius: 4px;">✓ % de variação adicionado</div>
+      <div style="padding: 8px 12px; background: var(--bg-soft); border-left: 3px solid var(--warning); border-radius: 4px;">✓ Botão revalidar metas</div>
+      <div style="padding: 8px 12px; background: var(--bg-soft); border-left: 3px solid var(--warning); border-radius: 4px;">✓ Tooltip ao botão</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── PÁGINA 5: CRONOLOGIA ─────────── -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-title">Cronologia dos Marcos</div>
+    <div class="page-header-meta">44 entregas rastreáveis</div>
+  </div>
+
+  <table class="timeline">
+    <thead>
+      <tr>
+        <th>Hora</th>
+        <th>Hash</th>
+        <th>Entrega</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="day-header" colspan="3">25 de maio · 2026</td></tr>
+      <tr><td class="col-time">19:09</td><td class="col-hash">6865590</td><td>Renomeou seções para Aumento/Redução</td></tr>
+      <tr><td class="col-time">19:24</td><td class="col-hash">aebd0fe</td><td>Forçou refetch ao atualizar</td></tr>
+      <tr><td class="col-time">19:37</td><td class="col-hash">3a49171</td><td>Adicionou % de variação</td></tr>
+      <tr><td class="col-time">19:42</td><td class="col-hash">0c85a05</td><td>Adicionou mês corrente e onboarding</td></tr>
+      <tr><td class="col-time">19:50</td><td class="col-hash">95c6d3e</td><td>Adicionou filtro, excluir e UI</td></tr>
+      <tr><td class="col-time">19:52</td><td class="col-hash">09f82fa</td><td>Adicionou seção Acompanhamento</td></tr>
+      <tr><td class="col-time">19:55</td><td class="col-hash">6035dae</td><td>Adicionou CPF e senha ao PDF</td></tr>
+      <tr><td class="col-time">20:02</td><td class="col-hash">52ce8c6</td><td>Ouvindo somente o valor de meta</td></tr>
+      <tr><td class="col-time">20:04</td><td class="col-hash">0d4e9ca</td><td>Mudou cor da capa para branco</td></tr>
+      <tr><td class="col-time">20:10</td><td class="col-hash">653eb7e</td><td>Adicionou análise de metas via IA</td></tr>
+      <tr><td class="col-time">20:12</td><td class="col-hash">21322ee</td><td>Melhorou o gráfico de pizza</td></tr>
+      <tr><td class="col-time">20:40</td><td class="col-hash">83e164f</td><td>Aumentou texto e reforçou bordas</td></tr>
+      <tr><td class="col-time">21:06</td><td class="col-hash">b5ab8b1</td><td>Reorganizou pedidos do sistema</td></tr>
+      <tr><td class="col-time">21:20</td><td class="col-hash">8d96091</td><td>Migrou IA para GPT-4o-mini</td></tr>
+      <tr><td class="col-time">21:40</td><td class="col-hash">448fabd</td><td>Bonus case click adicionado</td></tr>
+      <tr><td class="col-time">21:46</td><td class="col-hash">89d5cdc</td><td>Adicionou filtros mês/ano</td></tr>
+      <tr><td class="col-time">21:52</td><td class="col-hash">08482e6</td><td>Removeu botões de Plano de Ação</td></tr>
+      <tr><td class="col-time">22:35</td><td class="col-hash">493f8cb</td><td>Reescreveu prompt do analista</td></tr>
+      <tr><td class="col-time">22:46</td><td class="col-hash">ee7c517</td><td>Filtro inicial do mês vigente</td></tr>
+      <tr><td class="col-time">22:50</td><td class="col-hash">f0dafe9</td><td>Adicionou identidade Chromatic</td></tr>
+      <tr><td class="col-time">22:52</td><td class="col-hash">9e3c7b5</td><td>Atualizou o relatório financeiro</td></tr>
+      <tr><td class="col-time">22:58</td><td class="col-hash">3fb420c</td><td>Corrigiu filtro mês e cores</td></tr>
+      <tr><td class="col-time">23:14</td><td class="col-hash">9145ec8</td><td>Corrigiu proporção do gráfico</td></tr>
+      <tr><td class="col-time">23:26</td><td class="col-hash">0230675</td><td>Padronizou tipografia dos títulos</td></tr>
+      <tr><td class="col-time">23:30</td><td class="col-hash">78a8ecb</td><td>Adicionou botão revalidar metas</td></tr>
+      <tr><td class="col-time">23:31</td><td class="col-hash">2522e3d</td><td>Destacou botão nova análise</td></tr>
+      <tr><td class="col-time">23:33</td><td class="col-hash">59659e9</td><td>Adicionou tooltip ao botão</td></tr>
+      <tr><td class="col-time">23:36</td><td class="col-hash">42d3f0d</td><td>Padronizou Novare Blue nas fontes</td></tr>
+
+      <tr><td class="day-header" colspan="3">26 de maio · 2026</td></tr>
+      <tr><td class="col-time">00:08</td><td class="col-hash">5cb9d62</td><td>Reduziu fontes em Ver Ações</td></tr>
+      <tr><td class="col-time">00:11</td><td class="col-hash">0701163</td><td>Adicionou profundidade com gradientes</td></tr>
+      <tr><td class="col-time">00:18</td><td class="col-hash">fbfb7f3</td><td>Adicionou versão v2.5 no topo</td></tr>
+      <tr><td class="col-time">00:19</td><td class="col-hash">1984848</td><td>Aumentou o tamanho e o branco</td></tr>
+      <tr><td class="col-time">00:38</td><td class="col-hash">11477b2</td><td>Atualizou botão Sugerir Metas</td></tr>
+      <tr><td class="col-time">00:41</td><td class="col-hash">87dc385</td><td>Corrigiu filtro de mês vazio</td></tr>
+      <tr><td class="col-time">20:11</td><td class="col-hash">7e59dc6</td><td><strong>FEAT</strong> Editar/Incluir/Excluir no Acompanhamento</td></tr>
+      <tr><td class="col-time">21:28</td><td class="col-hash">9ca9075</td><td><strong>STYLE</strong> Renomeia aba para "Lançamento do mês"</td></tr>
+      <tr><td class="col-time">21:43</td><td class="col-hash">cf8efb8</td><td><strong>FEAT</strong> Bloco de notas por categoria no Plano de Ação</td></tr>
+      <tr><td class="col-time">21:59</td><td class="col-hash">72f424f</td><td><strong>FEAT</strong> Permissão do cliente lançar valores</td></tr>
+      <tr><td class="col-time">22:18</td><td class="col-hash">a2b85b6</td><td><strong>FEAT</strong> Nova etapa Acompanhamento (passo 6)</td></tr>
+      <tr><td class="col-time">22:27</td><td class="col-hash">eded918</td><td><strong>STYLE</strong> Tipografia e destaque visual aprimorados</td></tr>
+      <tr><td class="col-time">22:40</td><td class="col-hash">672430f</td><td><strong>FEAT</strong> Cashflow + Forecast + Alertas inteligentes</td></tr>
+      <tr><td class="col-time">22:43</td><td class="col-hash">e5ff0e4</td><td><strong>STYLE</strong> Compacta empty state de Fechamentos</td></tr>
+      <tr><td class="col-time">22:49</td><td class="col-hash">36b17d0</td><td><strong>STYLE</strong> Redesign da Evolução por meta</td></tr>
+      <tr><td class="col-time">23:08</td><td class="col-hash">d72e0c9</td><td><strong>FEAT</strong> Cada mês vira onboarding próprio + D-0</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─────────── PÁGINA 6: CONCLUSÃO ─────────── -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-title">Impacto consolidado</div>
+    <div class="page-header-meta">Encerramento</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Em números</div>
+    <div class="impact-grid">
+      <div class="impact-card">
+        <div class="impact-value">7</div>
+        <div class="impact-label">Etapas da jornada (era 6)</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-value">3</div>
+        <div class="impact-label">Migrações de banco aplicadas</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-value">10+</div>
+        <div class="impact-label">Componentes novos criados</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-value">2</div>
+        <div class="impact-label">Tabelas novas no banco</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-value">100%</div>
+        <div class="impact-label">Build sem erros</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-value">0</div>
+        <div class="impact-label">Tipos quebrados</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">O que mudou no produto</div>
+    <div class="quote">
+      A plataforma passou de uma ferramenta de <strong>diagnóstico financeiro estático</strong> para um
+      <strong>sistema vivo de consultoria contínua</strong>, com lançamentos mensais, projeções de meta,
+      alertas inteligentes, anotações por categoria e participação ativa do cliente.
+    </div>
+
+    <div style="margin-top: 18px; font-size: 12px; color: var(--fg); line-height: 1.7;">
+      <p style="margin-bottom: 10px;">
+        <strong>· Consultor</strong> agora controla todo o fluxo: do onboarding mensal ao acompanhamento
+        com gráficos de evolução, alertas automáticos e bloco de notas contextual.
+      </p>
+      <p style="margin-bottom: 10px;">
+        <strong>· Cliente</strong> ganha autonomia (quando liberado) para registrar seus próprios lançamentos
+        e ver as observações do consultor diretamente no painel dele.
+      </p>
+      <p style="margin-bottom: 10px;">
+        <strong>· Histórico mensal</strong> agora é estruturado por mês, com o D-zero (baseline)
+        identificado automaticamente e clones automáticos ao fechar cada período.
+      </p>
+      <p>
+        <strong>· Inteligência</strong> incorporada: sugestões de metas, análise contextual e prompts
+        otimizados rodando em GPT-4o-mini.
+      </p>
+    </div>
+  </div>
+
+  <div style="margin-top: 50px; text-align: center; padding-top: 24px; border-top: 2px solid var(--novare-blue); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase;">
+    Novare · Plataforma de Consultoria Financeira · v2.7<br>
+    <span style="font-size: 9px; opacity: 0.7; letter-spacing: 0.18em;">Relatório gerado em 26 de maio de 2026</span>
+  </div>
+</div>
+
+</body>
+</html>
