@@ -42,6 +42,18 @@ export async function cloneToNextMonth(
   const nextRef = nextMonthRef(closedMonthRef);
   const result: CloneResult = { income: 0, expenses: 0, debts: 0, assets: 0, insurance: 0, goals: 0 };
 
+  // ── Etapa 0: ATRIBUI month_ref aos registros legados (NULL) do cliente.
+  // Sem isso, eles vazariam para TODOS os meses no filtro e causariam duplicação
+  // quando o clone copiasse para o próximo mês.
+  await Promise.all([
+    supabase.from("income").update({ month_ref: closedMonthRef }).eq("client_id", clientId).is("month_ref", null),
+    supabase.from("expenses").update({ month_ref: closedMonthRef }).eq("client_id", clientId).is("month_ref", null),
+    supabase.from("debts").update({ month_ref: closedMonthRef }).eq("client_id", clientId).is("month_ref", null),
+    supabase.from("assets").update({ month_ref: closedMonthRef }).eq("client_id", clientId).is("month_ref", null),
+    supabase.from("insurance").update({ month_ref: closedMonthRef }).eq("client_id", clientId).is("month_ref", null),
+    supabase.from("goals").update({ month_ref: closedMonthRef }).eq("client_id", clientId).is("month_ref", null),
+  ]);
+
   // ── INCOME ──
   const { data: incomeExisting } = await supabase
     .from("income").select("id").eq("client_id", clientId).eq("month_ref", nextRef).limit(1);
@@ -50,7 +62,7 @@ export async function cloneToNextMonth(
       .from("income")
       .select("description, amount, frequency, is_primary, stability")
       .eq("client_id", clientId)
-      .or(`month_ref.eq.${closedMonthRef},month_ref.is.null`);
+      .eq("month_ref", closedMonthRef);
     if (src && src.length > 0) {
       const rows = src.map((r) => ({ ...r, client_id: clientId, month_ref: nextRef }));
       const { error } = await supabase.from("income").insert(rows);
@@ -66,7 +78,7 @@ export async function cloneToNextMonth(
       .from("expenses")
       .select("category, description, amount, is_fixed, due_day")
       .eq("client_id", clientId)
-      .or(`month_ref.eq.${closedMonthRef},month_ref.is.null`);
+      .eq("month_ref", closedMonthRef);
     if (src && src.length > 0) {
       const rows = src.map((r) => ({ ...r, client_id: clientId, month_ref: nextRef }));
       const { error } = await supabase.from("expenses").insert(rows);
@@ -82,7 +94,7 @@ export async function cloneToNextMonth(
       .from("debts")
       .select("type, creditor, total_amount, monthly_payment, interest_rate, remaining_months")
       .eq("client_id", clientId)
-      .or(`month_ref.eq.${closedMonthRef},month_ref.is.null`);
+      .eq("month_ref", closedMonthRef);
     if (src && src.length > 0) {
       const rows = src.map((r) => ({ ...r, client_id: clientId, month_ref: nextRef }));
       const { error } = await supabase.from("debts").insert(rows);
@@ -98,7 +110,7 @@ export async function cloneToNextMonth(
       .from("assets")
       .select("type, description, estimated_value")
       .eq("client_id", clientId)
-      .or(`month_ref.eq.${closedMonthRef},month_ref.is.null`);
+      .eq("month_ref", closedMonthRef);
     if (src && src.length > 0) {
       const rows = src.map((r) => ({ ...r, client_id: clientId, month_ref: nextRef }));
       const { error } = await supabase.from("assets").insert(rows);
@@ -114,7 +126,7 @@ export async function cloneToNextMonth(
       .from("insurance")
       .select("type, provider, monthly_premium, coverage_amount")
       .eq("client_id", clientId)
-      .or(`month_ref.eq.${closedMonthRef},month_ref.is.null`);
+      .eq("month_ref", closedMonthRef);
     if (src && src.length > 0) {
       const rows = src.map((r) => ({ ...r, client_id: clientId, month_ref: nextRef }));
       const { error } = await supabase.from("insurance").insert(rows);
@@ -131,7 +143,7 @@ export async function cloneToNextMonth(
       .select("description, target_amount, deadline, priority, amount_applied")
       .eq("client_id", clientId)
       .is("completed_at", null)
-      .or(`month_ref.eq.${closedMonthRef},month_ref.is.null`);
+      .eq("month_ref", closedMonthRef);
     if (src && src.length > 0) {
       const rows = src.map((r) => ({ ...r, client_id: clientId, month_ref: nextRef }));
       const { error } = await supabase.from("goals").insert(rows);

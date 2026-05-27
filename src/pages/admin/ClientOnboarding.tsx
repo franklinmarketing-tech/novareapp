@@ -272,10 +272,11 @@ const ClientOnboarding = () => {
     if (!clientId) return;
     const load = async () => {
       setLoading(true);
-      // Quando selectedMonth está definido, filtra por month_ref daquele mês OU
-      // mostra também registros legados (month_ref IS NULL). Caso contrário, carrega tudo.
+      // Filtra estritamente por month_ref do mês selecionado.
+      // Registros legados (NULL) são atribuídos ao primeiro mês ao fechar — não devem
+      // vazar entre meses, senão duplicariam após o clone.
       const monthFilter = (q: any) => selectedMonth
-        ? q.or(`month_ref.eq.${selectedMonth},month_ref.is.null`)
+        ? q.eq("month_ref", selectedMonth)
         : q;
       const [clientRes, profileRes, incomeRes, expenseRes, debtRes, assetRes, insuranceRes, goalRes] = await Promise.all([
         supabase.from("clients").select("*").eq("id", clientId).single(),
