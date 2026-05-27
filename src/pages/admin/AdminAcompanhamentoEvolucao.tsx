@@ -9,12 +9,13 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip as ReTooltip,
-  ResponsiveContainer, Area, AreaChart, BarChart, Bar, CartesianGrid,
+  ResponsiveContainer, Area, AreaChart, BarChart, Bar, CartesianGrid, Cell,
 } from "recharts";
 import {
   Activity, TrendingUp, TrendingDown, Minus, CheckCircle2, Target,
   Wallet, Receipt, CreditCard, Building2, Shield, Trophy, Clock,
-  Sparkles, type LucideIcon,
+  Sparkles, AlertTriangle, AlertCircle, Pause, ArrowDownRight,
+  CalendarClock, Zap, type LucideIcon,
 } from "lucide-react";
 
 const fmtBRL = (v: number | null | undefined) =>
@@ -154,6 +155,30 @@ const AdminAcompanhamentoEvolucao = () => {
     enabled: !!clientId,
   });
 
+  // Fechamentos mensais — base para cashflow e saúde financeira
+  const { data: closings = [] } = useQuery({
+    queryKey: ["monthly_closings_evolucao", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("monthly_closings")
+        .select("month_ref, total_income, total_expenses, total_assets, total_debts, monthly_debt_payments, net_worth, savings_rate, emergency_reserve_months")
+        .eq("client_id", clientId)
+        .order("month_ref", { ascending: true });
+      return (data || []) as Array<{
+        month_ref: string;
+        total_income: number | null;
+        total_expenses: number | null;
+        total_assets: number | null;
+        total_debts: number | null;
+        monthly_debt_payments: number | null;
+        net_worth: number | null;
+        savings_rate: number | null;
+        emergency_reserve_months: number | null;
+      }>;
+    },
+    enabled: !!clientId,
+  });
+
   // ── Resumo geral ──
   const summary = useMemo(() => {
     const metasAtivas = metas.filter((m) => !m.completed_at && m.source_table !== "goals");
@@ -209,6 +234,232 @@ const AdminAcompanhamentoEvolucao = () => {
         progressoMedio: Math.round(d.pcts.reduce((a, b) => a + b, 0) / d.pcts.length),
       }));
   }, [entries]);
+
+  // ── Cashflow (renda − despesas) e tendência ──
+  const cashflow = useMemo(() => {
+    if (!closings.length) return null;
+    const series = closings.map((c) => {
+      const income = Number(c.total_income ?? 0);
+      const expense = Number(c.total_expenses ?? 0);
+      return {
+        month: c.month_ref.slice(0, 7),
+        monthLabel: monthLabel(c.month_ref.slice(0, 7)),
+        income,
+        expense,
+        net: income - expense,
+        savingsRate: c.savings_rate,
+        netWorth: c.net_worth,
+      };
+    });
+    const last = series[series.length - 1];
+    const prev = series.length > 1 ? series[series.length - 2] : null;
+    const delta = prev ? last.net - prev.net : null;
+    const deltaPct = prev && prev.net !== 0 ? (delta! / Math.abs(prev.net)) * 100 : null;
+    const avg6 = series.slice(-6).reduce((s, p) => s + p.net, 0) / Math.min(series.length, 6);
+    return { series: series.slice(-6), last, prev, delta, deltaPct, avg6 };
+  }, [closings]);
+
+  // ── Forecast: projeta quando cada meta deve ser atingida no ritmo atual ──
+  type ForecastStatus = "achieved" | "ahead" | "on_track" | "delayed" | "stalled" | "no_data";
+  interface MetaForecast {
+    status: ForecastStatus;
+    monthsToTarget: number | null;   // meses até atingir no ritmo atual
+    projectedDate: Date | null;
+    deadlineDate: Date | null;
+    diffMonths: number | null;        // negativo = adiantado; positivo = atrasado
+    velocity: number | null;          // delta médio mensal de valor_atual
+    daysSinceLastUpdate: number | null;
+  }
+  const forecastByMeta = useMemo(() => {
+    const map = new Map<string, MetaForecast>();
+    const today = new Date();
+    metas.forEach((meta) => {
+      const history = (entries
+        .filter((e) => !e.is_closing_snapshot && e.meta_id === meta.id && e.valor_atual != null))
+        .slice()
+        .sort((a, b) => new Date(a.snapshotted_at).getTime() - new Date(b.snapshotted_at).getTime());
+
+      const last = history[history.length - 1];
+      const daysSince = last
+        ? Math.floor((today.getTime() - new Date(last.snapshotted_at).getTime()) / 86400000)
+        : null;
+
+      // Já atingiu?
+      const lastPct = last?.progresso_pct;
+      if (lastPct != null && lastPct >= 100) {
+        map.set(meta.id, { status: "achieved", monthsToTarget: 0, projectedDate: null, deadlineDate: meta.prazo ? new Date(meta.prazo + "T00:00:00") : null, diffMonths: null, velocity: null, daysSinceLastUpdate: daysSince });
+        return;
+      }
+
+      // Sem histórico suficiente
+      if (history.length < 2 || !meta.meta_valor) {
+        map.set(meta.id, { status: "no_data", monthsToTarget: null, projectedDate: null, deadlineDate: meta.prazo ? new Date(meta.prazo + "T00:00:00") : null, diffMonths: null, velocity: null, daysSinceLastUpdate: daysSince });
+        return;
+      }
+
+      // Velocidade média (delta de valor_atual / delta em meses)
+      const first = history[0];
+      const monthsSpan = Math.max(0.5,
+        (new Date(last.snapshotted_at).getTime() - new Date(first.snapshotted_at).getTime()) / (1000 * 60 * 60 * 24 * 30.4),
+      );
+      const velocity = ((last.valor_atual ?? 0) - (first.valor_atual ?? 0)) / monthsSpan; // R$/mês
+
+      // Direção do progresso depende do tipo de meta:
+      // - debts: meta_valor < valor_atual inicial (reduzir) → velocity esperada < 0
+      // - expenses: similar (reduzir) → velocity < 0
+      // - income/assets/goals: aumentar → velocity > 0
+      // Como temos progresso_pct, vamos usá-lo: queremos ver progresso_pct chegar a 100.
+      // Se progresso_pct está estagnado (mesmo valor há tempo), está stalled.
+      const pctVelocity = (() => {
+        if (last.progresso_pct == null || first.progresso_pct == null) return null;
+        return (last.progresso_pct - first.progresso_pct) / monthsSpan; // pp/mês
+      })();
+
+      const currentPct = last.progresso_pct ?? 0;
+      const remaining = 100 - currentPct;
+
+      // Parada (velocity zero ou negativa quando deveria crescer) → stalled
+      if (pctVelocity == null || pctVelocity <= 0 || daysSince == null || daysSince > 60) {
+        map.set(meta.id, {
+          status: "stalled",
+          monthsToTarget: null,
+          projectedDate: null,
+          deadlineDate: meta.prazo ? new Date(meta.prazo + "T00:00:00") : null,
+          diffMonths: null,
+          velocity,
+          daysSinceLastUpdate: daysSince,
+        });
+        return;
+      }
+
+      const monthsToTarget = remaining / pctVelocity;
+      const projectedDate = new Date(today.getTime() + monthsToTarget * 30.4 * 86400000);
+
+      let status: ForecastStatus = "on_track";
+      let diffMonths: number | null = null;
+
+      if (meta.prazo) {
+        const deadlineDate = new Date(meta.prazo + "T00:00:00");
+        const monthsToDeadline = (deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30.4);
+        diffMonths = monthsToTarget - monthsToDeadline; // positivo = atrasada
+        if (diffMonths <= -1) status = "ahead";
+        else if (diffMonths >= 1) status = "delayed";
+        else status = "on_track";
+      } else {
+        status = "on_track";
+      }
+
+      map.set(meta.id, {
+        status,
+        monthsToTarget,
+        projectedDate,
+        deadlineDate: meta.prazo ? new Date(meta.prazo + "T00:00:00") : null,
+        diffMonths,
+        velocity,
+        daysSinceLastUpdate: daysSince,
+      });
+    });
+    return map;
+  }, [metas, entries]);
+
+  // ── Alertas inteligentes ──
+  interface Alert {
+    id: string;
+    severity: "danger" | "warning" | "info";
+    icon: LucideIcon;
+    title: string;
+    description: string;
+  }
+  const alerts = useMemo<Alert[]>(() => {
+    const out: Alert[] = [];
+    const today = new Date();
+
+    // 1) Cashflow negativo
+    if (cashflow?.last && cashflow.last.net < 0) {
+      out.push({
+        id: "cashflow_negative",
+        severity: "danger",
+        icon: ArrowDownRight,
+        title: "Cashflow negativo no último fechamento",
+        description: `Despesas superaram a renda em ${fmtBRL(Math.abs(cashflow.last.net))} (${cashflow.last.monthLabel}).`,
+      });
+    }
+
+    // 2) Taxa de poupança baixa (< 10%)
+    if (cashflow?.last?.savingsRate != null && cashflow.last.savingsRate < 10 && cashflow.last.savingsRate >= 0) {
+      out.push({
+        id: "low_savings",
+        severity: "warning",
+        icon: AlertTriangle,
+        title: "Taxa de poupança abaixo de 10%",
+        description: `Atual: ${cashflow.last.savingsRate.toFixed(1)}%. Recomendado: ≥ 20%.`,
+      });
+    }
+
+    // 3) Reserva abaixo do mínimo (< 3 meses)
+    if (cashflow?.last?.emergency_reserve_months != null && cashflow.last.emergency_reserve_months < 3) {
+      out.push({
+        id: "low_reserve",
+        severity: "warning",
+        icon: AlertTriangle,
+        title: "Reserva de emergência abaixo do mínimo",
+        description: `Atual: ${cashflow.last.emergency_reserve_months.toFixed(1)} meses. Mínimo: 3 meses.`,
+      });
+    }
+
+    // 4) Metas paradas há mais de 30 dias
+    const stalledMetas: string[] = [];
+    metas.forEach((meta) => {
+      if (meta.completed_at || meta.source_table === "goals") return;
+      const f = forecastByMeta.get(meta.id);
+      if (f && (f.status === "stalled" || (f.daysSinceLastUpdate != null && f.daysSinceLastUpdate > 30))) {
+        stalledMetas.push(meta.source_label);
+      }
+    });
+    if (stalledMetas.length > 0) {
+      out.push({
+        id: "stalled_metas",
+        severity: "warning",
+        icon: Pause,
+        title: `${stalledMetas.length} meta${stalledMetas.length !== 1 ? "s" : ""} parada${stalledMetas.length !== 1 ? "s" : ""}`,
+        description: `Sem progresso há mais de 30 dias: ${stalledMetas.slice(0, 3).join(", ")}${stalledMetas.length > 3 ? "…" : ""}`,
+      });
+    }
+
+    // 5) Metas atrasadas (forecast > prazo)
+    const delayedMetas = metas.filter((m) => {
+      const f = forecastByMeta.get(m.id);
+      return f && f.status === "delayed";
+    });
+    if (delayedMetas.length > 0) {
+      out.push({
+        id: "delayed_metas",
+        severity: "danger",
+        icon: AlertCircle,
+        title: `${delayedMetas.length} meta${delayedMetas.length !== 1 ? "s" : ""} no ritmo atual não bate${delayedMetas.length === 1 ? "" : "m"} o prazo`,
+        description: delayedMetas.slice(0, 3).map((m) => m.source_label).join(", ") + (delayedMetas.length > 3 ? "…" : ""),
+      });
+    }
+
+    // 6) Objetivos com prazo < 30 dias
+    const expiring = goals.filter((g) => {
+      if (g.completed_at || !g.deadline) return false;
+      const d = new Date(g.deadline + "T00:00:00");
+      const days = (d.getTime() - today.getTime()) / 86400000;
+      return days >= 0 && days <= 30;
+    });
+    if (expiring.length > 0) {
+      out.push({
+        id: "expiring_goals",
+        severity: "warning",
+        icon: CalendarClock,
+        title: `${expiring.length} objetivo${expiring.length !== 1 ? "s" : ""} com prazo nos próximos 30 dias`,
+        description: expiring.slice(0, 3).map((g) => g.description).join(", ") + (expiring.length > 3 ? "…" : ""),
+      });
+    }
+
+    return out;
+  }, [cashflow, metas, goals, forecastByMeta]);
 
   // ── Histórico por meta (sparkline) ──
   const historyByMeta = useMemo(() => {
@@ -283,6 +534,40 @@ const AdminAcompanhamentoEvolucao = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Alertas inteligentes ── */}
+      {alerts.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-1 rounded-full bg-amber-500 shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-amber-600" />
+            <h3 className="text-base sm:text-lg font-bold tracking-tight">Sinais de atenção</h3>
+            <Badge variant="outline" className="text-xs font-bold ml-1">{alerts.length}</Badge>
+            <div className="flex-1 h-px bg-border/50 ml-2" />
+          </div>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {alerts.map((a) => {
+              const AIcon = a.icon;
+              const tone = a.severity === "danger"
+                ? { border: "border-rose-300/60", bg: "bg-rose-50/70 dark:bg-rose-950/30", icon: "bg-rose-500 text-white", title: "text-rose-800 dark:text-rose-200" }
+                : a.severity === "warning"
+                ? { border: "border-amber-300/60", bg: "bg-amber-50/70 dark:bg-amber-950/30", icon: "bg-amber-500 text-white", title: "text-amber-800 dark:text-amber-200" }
+                : { border: "border-sky-300/60", bg: "bg-sky-50/70 dark:bg-sky-950/30", icon: "bg-sky-500 text-white", title: "text-sky-800 dark:text-sky-200" };
+              return (
+                <div key={a.id} className={cn("rounded-xl border-2 p-4 flex items-start gap-3", tone.border, tone.bg)}>
+                  <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0 shadow-sm", tone.icon)}>
+                    <AIcon className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={cn("text-sm font-bold leading-tight", tone.title)}>{a.title}</p>
+                    <p className="text-xs text-foreground/75 mt-1 leading-snug">{a.description}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ── Resumo geral ── */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -371,6 +656,123 @@ const AdminAcompanhamentoEvolucao = () => {
         </Card>
       </div>
 
+      {/* ── Cashflow: renda − despesas com tendência ── */}
+      {cashflow && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-1 rounded-full bg-emerald-500 shrink-0" />
+            <Zap className="w-5 h-5 text-emerald-600" />
+            <h3 className="text-base sm:text-lg font-bold tracking-tight">Cashflow mensal</h3>
+            <Badge variant="outline" className="text-xs font-bold ml-1">
+              {cashflow.series.length} fechamento{cashflow.series.length !== 1 ? "s" : ""}
+            </Badge>
+            <div className="flex-1 h-px bg-border/50 ml-2" />
+          </div>
+
+          <Card className="overflow-hidden">
+            <div className={cn(
+              "h-1.5",
+              cashflow.last.net >= 0 ? "bg-emerald-500" : "bg-rose-500",
+            )} />
+            <CardContent className="p-5 sm:p-6">
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.8fr)]">
+                {/* Resumo numérico */}
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                      Saldo do mês ({cashflow.last.monthLabel})
+                    </p>
+                    <p className={cn(
+                      "text-4xl sm:text-5xl font-black tabular-nums tracking-tight leading-none mt-1",
+                      cashflow.last.net >= 0 ? "text-emerald-600" : "text-rose-600",
+                    )}>
+                      {cashflow.last.net >= 0 ? "+" : "−"}{fmtBRL(Math.abs(cashflow.last.net))}
+                    </p>
+                    {cashflow.delta != null && cashflow.prev && (
+                      <div className="flex items-center gap-1.5 mt-1.5 text-xs">
+                        {cashflow.delta > 0 ? (
+                          <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                        ) : cashflow.delta < 0 ? (
+                          <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
+                        ) : (
+                          <Minus className="w-3.5 h-3.5 text-muted-foreground" />
+                        )}
+                        <span className={cn(
+                          "font-bold tabular-nums",
+                          cashflow.delta > 0 ? "text-emerald-600" : cashflow.delta < 0 ? "text-rose-600" : "text-muted-foreground",
+                        )}>
+                          {cashflow.delta > 0 ? "+" : ""}{fmtBRL(cashflow.delta)}
+                        </span>
+                        <span className="text-muted-foreground">vs {cashflow.prev.monthLabel}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border/50">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <Wallet className="w-3 h-3 text-emerald-600" />
+                        Renda
+                      </p>
+                      <p className="text-base font-bold tabular-nums mt-0.5">{fmtBRL(cashflow.last.income)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <Receipt className="w-3 h-3 text-rose-600" />
+                        Despesas
+                      </p>
+                      <p className="text-base font-bold tabular-nums mt-0.5">{fmtBRL(cashflow.last.expense)}</p>
+                    </div>
+                    {cashflow.last.savingsRate != null && (
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tx. poupança</p>
+                        <p className={cn(
+                          "text-base font-bold tabular-nums mt-0.5",
+                          cashflow.last.savingsRate >= 20 ? "text-emerald-600" :
+                          cashflow.last.savingsRate >= 10 ? "text-amber-600" : "text-rose-600",
+                        )}>
+                          {cashflow.last.savingsRate.toFixed(1)}%
+                        </p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Média 6m</p>
+                      <p className={cn(
+                        "text-base font-bold tabular-nums mt-0.5",
+                        cashflow.avg6 >= 0 ? "text-foreground" : "text-rose-600",
+                      )}>
+                        {cashflow.avg6 >= 0 ? "+" : "−"}{fmtBRL(Math.abs(cashflow.avg6))}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mini gráfico de barras */}
+                <div className="h-[200px] -mx-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cashflow.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" vertical={false} />
+                      <XAxis dataKey="monthLabel" stroke="hsl(var(--muted-foreground))" fontSize={11} tickMargin={6} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => v >= 1000 ? `${Math.round(v/1000)}k` : String(v)} />
+                      <ReTooltip
+                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12, fontWeight: 500 }}
+                        labelStyle={{ fontWeight: 700, marginBottom: 4 }}
+                        formatter={(v: number) => [fmtBRL(v), "Saldo"]}
+                      />
+                      <Bar dataKey="net" radius={[6, 6, 0, 0]}>
+                        {cashflow.series.map((p, i) => (
+                          <Cell key={i} fill={p.net >= 0 ? "hsl(142 71% 45%)" : "hsl(0 84% 60%)"} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* ── Linha do tempo agregada ── */}
       {monthlyEvolution.length > 1 && (
         <div className="space-y-4">
@@ -435,6 +837,26 @@ const AdminAcompanhamentoEvolucao = () => {
               }));
               const pct = last?.progresso_pct ?? null;
 
+              const forecast = forecastByMeta.get(meta.id);
+              const forecastBadge = (() => {
+                if (!forecast) return null;
+                switch (forecast.status) {
+                  case "achieved":
+                    return { label: "Meta atingida", cls: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700", icon: CheckCircle2 };
+                  case "ahead":
+                    return { label: `Adiantada · ${Math.abs(Math.round(forecast.diffMonths || 0))} ${Math.abs(Math.round(forecast.diffMonths || 0)) === 1 ? "mês" : "meses"} antes`, cls: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700", icon: TrendingUp };
+                  case "on_track":
+                    return { label: forecast.projectedDate ? `No prazo · projeção ${forecast.projectedDate.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })}` : "No prazo", cls: "bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-700", icon: Activity };
+                  case "delayed":
+                    return { label: `Atrasada · +${Math.round(forecast.diffMonths || 0)} ${Math.round(forecast.diffMonths || 0) === 1 ? "mês" : "meses"} do prazo`, cls: "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-700", icon: AlertCircle };
+                  case "stalled":
+                    return { label: forecast.daysSinceLastUpdate != null && forecast.daysSinceLastUpdate > 30 ? `Parada · ${forecast.daysSinceLastUpdate}d sem update` : "Parada · sem ritmo de progresso", cls: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700", icon: Pause };
+                  default:
+                    return { label: "Sem dados suficientes", cls: "bg-muted text-muted-foreground border-border", icon: Minus };
+                }
+              })();
+              const FIcon = forecastBadge?.icon;
+
               return (
                 <Card key={meta.id} className="overflow-hidden hover:shadow-md transition-all duration-200">
                   <div className="h-1.5" style={{ background: sourceColor }} />
@@ -472,6 +894,17 @@ const AdminAcompanhamentoEvolucao = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* Badge de projeção */}
+                    {forecastBadge && FIcon && (
+                      <div className={cn(
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold border w-fit",
+                        forecastBadge.cls,
+                      )}>
+                        <FIcon className="w-3 h-3" />
+                        {forecastBadge.label}
+                      </div>
+                    )}
 
                     {/* Sparkline */}
                     {sparkData.length > 1 ? (
