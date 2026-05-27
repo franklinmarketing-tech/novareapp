@@ -33,6 +33,17 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAutoSaveDraft } from "@/hooks/useAutoSaveDraft";
+import { CategoryNoteEditor, type NoteCategory } from "@/components/admin/CategoryNoteEditor";
+
+// Mapa: key da seção em MyData → categoria de anotação (apenas para seções com bloco de notas)
+const SECTION_KEY_TO_NOTE: Record<number, { category: NoteCategory; accent: string }> = {
+  1: { category: "income",    accent: "hsl(142 71% 45%)" },
+  2: { category: "expenses",  accent: "hsl(347 77% 50%)" },
+  3: { category: "debts",     accent: "hsl(0 84% 60%)" },
+  4: { category: "assets",    accent: "hsl(199 89% 48%)" },
+  5: { category: "insurance", accent: "hsl(271 81% 56%)" },
+  6: { category: "goals",     accent: "hsl(var(--novare-blue))" },
+};
 
 /* ── Helpers ── */
 const fmt = (v: string | number) => {
@@ -674,8 +685,16 @@ const MyData = () => {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
-                    <div className="px-4 lg:px-5 pb-5 pt-1 border-t border-border/20">
+                    <div className="px-4 lg:px-5 pb-5 pt-1 border-t border-border/20 space-y-4">
                       {readonlyRenderers[s.key]()}
+                      {clientId && SECTION_KEY_TO_NOTE[s.key] && (
+                        <CategoryNoteEditor
+                          clientId={clientId}
+                          category={SECTION_KEY_TO_NOTE[s.key].category}
+                          accent={SECTION_KEY_TO_NOTE[s.key].accent}
+                          readOnly
+                        />
+                      )}
                     </div>
                   </motion.div>
                 )}

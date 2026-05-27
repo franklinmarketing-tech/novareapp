@@ -5,6 +5,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import { CheckCircle2, Clock, Target, TrendingUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CategoryNoteEditor, type NoteCategory } from "@/components/admin/CategoryNoteEditor";
+
+const NOTE_ACCENT: Record<NoteCategory, string> = {
+  income:    "hsl(142 71% 45%)",
+  expenses:  "hsl(347 77% 50%)",
+  debts:     "hsl(0 84% 60%)",
+  assets:    "hsl(199 89% 48%)",
+  insurance: "hsl(271 81% 56%)",
+  goals:     "hsl(var(--novare-blue))",
+};
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -341,6 +351,12 @@ const AdminActionPlan = () => {
             ) : (
               <EmptyState message={`Nenhum item em ${SECTION_LABELS[section]} neste período.`} />
             )}
+
+            <CategoryNoteEditor
+              clientId={clientId}
+              category={section as NoteCategory}
+              accent={NOTE_ACCENT[section as NoteCategory]}
+            />
           </section>
         );
       })}
@@ -423,6 +439,12 @@ const AdminActionPlan = () => {
         ) : (
           <EmptyState message="Nenhum objetivo neste período." />
         )}
+
+        <CategoryNoteEditor
+          clientId={clientId}
+          category="goals"
+          accent={NOTE_ACCENT.goals}
+        />
       </section>
 
       <JourneyFooterNav
