@@ -29,8 +29,23 @@ import {
   Pencil, Save, X,
   User, Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain,
   TrendingUp, TrendingDown, Landmark, type LucideIcon,
-  PiggyBank,
+  PiggyBank, CalendarDays, Lock, Flag, ChevronLeft, ChevronRight,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+
+const MONTH_NAMES_FULL = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+const monthRefLabel = (ref: string) => {
+  const [y, m] = ref.split("-").map(Number);
+  return `${MONTH_NAMES_FULL[m - 1]} ${y}`;
+};
+const currentMonthRef = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+};
 
 const formatCurrency = (v: string | number) => {
   const n = typeof v === "string" ? parseFloat(v) : v;
@@ -197,6 +212,52 @@ const ClientOnboarding = () => {
     spending_triggers: "", family_money_history: "",
   });
 
+  // ── Filtro de mês ──
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null); // YYYY-MM-01
+  const [availableMonths, setAvailableMonths] = useState<string[]>([]);
+  const [closedMonths, setClosedMonths] = useState<Set<string>>(new Set());
+  const baselineMonth = availableMonths.length > 0 ? availableMonths[0] : null;
+  const isLocked = selectedMonth ? closedMonths.has(selectedMonth) : false;
+
+  // Carrega a lista de meses disponíveis (todas as tabelas com month_ref) + meses fechados
+  useEffect(() => {
+    if (!clientId) return;
+    const loadMonths = async () => {
+      const [inc, exp, debt, asst, ins, gls, closings] = await Promise.all([
+        supabase.from("income").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("expenses").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("debts").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("assets").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("insurance").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("goals").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
+        supabase.from("monthly_closings").select("month_ref").eq("client_id", clientId),
+      ]);
+      const set = new Set<string>();
+      [...(inc.data || []), ...(exp.data || []), ...(debt.data || []), ...(asst.data || []), ...(ins.data || []), ...(gls.data || [])]
+        .forEach((r: any) => { if (r.month_ref) set.add(String(r.month_ref).slice(0, 10)); });
+      // Sempre incluir o mês atual no seletor (mesmo sem dados)
+      set.add(currentMonthRef());
+      // Inclui meses fechados (mesmo se não houver registros editáveis)
+      const closedSet = new Set<string>();
+      (closings.data || []).forEach((c: any) => {
+        if (c.month_ref) {
+          const ref = String(c.month_ref).slice(0, 10);
+          set.add(ref);
+          closedSet.add(ref);
+        }
+      });
+      const sorted = Array.from(set).sort();
+      setAvailableMonths(sorted);
+      setClosedMonths(closedSet);
+      // Default: mais recente não fechado, fallback mais recente
+      if (!selectedMonth) {
+        const firstUnclosed = [...sorted].reverse().find((m) => !closedSet.has(m));
+        setSelectedMonth(firstUnclosed || sorted[sorted.length - 1] || currentMonthRef());
+      }
+    };
+    loadMonths();
+  }, [clientId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const openEditDialog = (section: number) => setEditingDialog(section);
   const closeEditDialog = () => {
     if (editingDialog !== null && modifiedSections.has(editingDialog) && !window.confirm("Existem alterações não salvas. Deseja sair sem salvar?")) return;
@@ -211,15 +272,20 @@ const ClientOnboarding = () => {
     if (!clientId) return;
     const load = async () => {
       setLoading(true);
+      // Quando selectedMonth está definido, filtra por month_ref daquele mês OU
+      // mostra também registros legados (month_ref IS NULL). Caso contrário, carrega tudo.
+      const monthFilter = (q: any) => selectedMonth
+        ? q.or(`month_ref.eq.${selectedMonth},month_ref.is.null`)
+        : q;
       const [clientRes, profileRes, incomeRes, expenseRes, debtRes, assetRes, insuranceRes, goalRes] = await Promise.all([
         supabase.from("clients").select("*").eq("id", clientId).single(),
         supabase.from("profiles").select("*").eq("user_id", (await supabase.from("clients").select("user_id").eq("id", clientId).single()).data?.user_id ?? "").single(),
-        supabase.from("income").select("*").eq("client_id", clientId),
-        supabase.from("expenses").select("*").eq("client_id", clientId),
-        supabase.from("debts").select("*").eq("client_id", clientId),
-        supabase.from("assets").select("*").eq("client_id", clientId),
-        supabase.from("insurance").select("*").eq("client_id", clientId),
-        supabase.from("goals").select("*").eq("client_id", clientId),
+        monthFilter(supabase.from("income").select("*").eq("client_id", clientId)),
+        monthFilter(supabase.from("expenses").select("*").eq("client_id", clientId)),
+        monthFilter(supabase.from("debts").select("*").eq("client_id", clientId)),
+        monthFilter(supabase.from("assets").select("*").eq("client_id", clientId)),
+        monthFilter(supabase.from("insurance").select("*").eq("client_id", clientId)),
+        monthFilter(supabase.from("goals").select("*").eq("client_id", clientId)),
       ]);
 
       if (clientRes.data) {
@@ -242,10 +308,16 @@ const ClientOnboarding = () => {
       if (assetRes.data?.length) setPatrimonio(assetRes.data.map((a) => ({ id: a.id, type: a.type, description: a.description ?? "", estimated_value: a.estimated_value.toString() })));
       if (insuranceRes.data?.length) setSeguros(insuranceRes.data.map((ins) => ({ id: ins.id, type: ins.type, provider: ins.provider ?? "", monthly_premium: ins.monthly_premium?.toString() ?? "", coverage_amount: ins.coverage_amount?.toString() ?? "" })));
       if (goalRes.data?.length) setObjetivos(goalRes.data.map((g) => ({ id: g.id, description: g.description, target_amount: g.target_amount?.toString() ?? "", deadline: g.deadline ?? "", priority: g.priority ?? "media" })));
+      else setObjetivos([]);
+      if (!incomeRes.data?.length)    setRendas([]);
+      if (!expenseRes.data?.length)   setDespesas([]);
+      if (!debtRes.data?.length)      setDividas([]);
+      if (!assetRes.data?.length)     setPatrimonio([]);
+      if (!insuranceRes.data?.length) setSeguros([]);
       setLoading(false);
     };
     load();
-  }, [clientId]);
+  }, [clientId, selectedMonth]);
 
   const saveSection = async (section: number) => {
     if (!clientId) return;
@@ -262,7 +334,14 @@ const ClientOnboarding = () => {
       };
 
       const { data, error } = await supabase.functions.invoke("save-onboarding-section", {
-        body: { clientId, section, payload: payloadBySection[section] },
+        body: {
+          clientId,
+          section,
+          payload: payloadBySection[section],
+          // Quando há mês selecionado, o save afeta apenas registros daquele mês.
+          // Seções 0 (identificação) e 7 (comportamental) ignoram monthRef (são globais).
+          monthRef: section >= 1 && section <= 6 ? selectedMonth : null,
+        },
       });
 
       if (error) throw error;
@@ -555,6 +634,98 @@ const ClientOnboarding = () => {
       </Dialog>
 
 
+      {/* ── Filtro de mês ── */}
+      {availableMonths.length > 0 && (
+        <div className={`rounded-2xl border-2 ${isLocked ? "border-amber-300/60 bg-amber-50/40 dark:bg-amber-950/20" : "border-novare-blue/30 bg-novare-blue-light/30 dark:bg-novare-blue/10"} p-4`}>
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className={`h-11 w-11 rounded-xl ${isLocked ? "bg-amber-500" : "bg-novare-blue"} text-white flex items-center justify-center shrink-0 shadow-sm`}>
+              {isLocked ? <Lock className="h-5 w-5" /> : <CalendarDays className="h-5 w-5" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`text-[10px] font-bold uppercase tracking-[0.18em] ${isLocked ? "text-amber-700 dark:text-amber-400" : "text-novare-blue/80 dark:text-novare-blue-bright/80"}`}>
+                Mês ativo do onboarding
+              </p>
+              <div className="flex items-center gap-2 flex-wrap mt-1">
+                <Select value={selectedMonth ?? ""} onValueChange={(v) => setSelectedMonth(v)}>
+                  <SelectTrigger className="w-[220px] h-10 font-bold text-base">
+                    <SelectValue placeholder="Selecione um mês" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableMonths.map((m) => {
+                      const isClosed = closedMonths.has(m);
+                      const isBaseline = m === baselineMonth;
+                      return (
+                        <SelectItem key={m} value={m}>
+                          <span className="flex items-center gap-2">
+                            <span className="font-semibold">{monthRefLabel(m)}</span>
+                            {isBaseline && <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-bold bg-novare-terracotta/10 text-novare-terracotta border-novare-terracotta/30">D-0</Badge>}
+                            {isClosed && <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-bold bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300">FECHADO</Badge>}
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+
+                {selectedMonth === baselineMonth && baselineMonth && (
+                  <Badge variant="outline" className="bg-novare-terracotta/10 text-novare-terracotta border-novare-terracotta/40 font-bold">
+                    <Flag className="w-3 h-3 mr-1" />
+                    D-zero · Mês de baseline
+                  </Badge>
+                )}
+                {isLocked && (
+                  <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300 font-bold">
+                    <Lock className="w-3 h-3 mr-1" />
+                    Mês fechado · somente leitura
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Navegação rápida */}
+            <div className="flex items-center gap-1 shrink-0">
+              {(() => {
+                const idx = selectedMonth ? availableMonths.indexOf(selectedMonth) : -1;
+                const hasPrev = idx > 0;
+                const hasNext = idx >= 0 && idx < availableMonths.length - 1;
+                return (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={!hasPrev}
+                      onClick={() => hasPrev && setSelectedMonth(availableMonths[idx - 1])}
+                      className="h-9 w-9 p-0"
+                      title="Mês anterior"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={!hasNext}
+                      onClick={() => hasNext && setSelectedMonth(availableMonths[idx + 1])}
+                      className="h-9 w-9 p-0"
+                      title="Próximo mês"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          {isLocked && (
+            <p className="text-xs text-amber-800/80 dark:text-amber-300/80 mt-3 pl-15 leading-snug">
+              Este mês já foi fechado. Reabra em <strong>Lançamento do mês</strong> antes de editar.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Main content */}
       <div>
         <Card className="border-border/40 shadow-soft rounded-2xl overflow-hidden">
@@ -593,7 +764,14 @@ const ClientOnboarding = () => {
                           </div>
                         </div>
                         <div onClick={(e) => e.stopPropagation()}>
-                          <EditButton onClick={() => openEditDialog(s.key)} />
+                          {isLocked ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/50 dark:text-amber-300">
+                              <Lock className="h-3 w-3" />
+                              Fechado
+                            </span>
+                          ) : (
+                            <EditButton onClick={() => openEditDialog(s.key)} />
+                          )}
                         </div>
                       </div>
                     </AccordionTrigger>

@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { generateMonthlyClosingPdf } from "@/lib/generateMonthlyClosingPdf";
 import { criarSnapshotFechamento } from "./AcompanhamentoMetas";
+import { cloneToNextMonth } from "@/lib/monthlyClone";
 import { cn } from "@/lib/utils";
 
 interface MonthlyClosing {
@@ -257,7 +258,16 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
         await criarSnapshotFechamento(clientId, closingId, metas as any, entradas as any);
       }
 
-      toast.success("Mês fechado! Snapshot completo registrado.");
+      // Clona itens do mês fechado para o próximo mês (novo "onboarding mensal")
+      const cloneResult = await cloneToNextMonth(clientId, monthRef);
+      const totalCloned = Object.values(cloneResult).reduce((a, b) => a + b, 0);
+
+      toast.success("Mês fechado!", {
+        description: totalCloned > 0
+          ? `${totalCloned} item${totalCloned !== 1 ? "ns" : ""} copiado${totalCloned !== 1 ? "s" : ""} para o próximo mês — pronto para o consultor revisar.`
+          : "Snapshot registrado. (Próximo mês já tinha registros — nada copiado.)",
+        duration: 6000,
+      });
       setCloseOpen(false);
       setNotes("");
       await load();
