@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import logoBranca from "@/assets/logo-branca.png";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -27,11 +27,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { FoundersShowcase } from "@/components/FoundersShowcase";
 import { MobileBottomNav } from "@/components/layouts/MobileBottomNav";
 
-const navItems = [
-  { to: "/cliente", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/cliente/meus-dados", icon: User, label: "Meus Dados", badgeKey: "meus-dados" },
-  { to: "/cliente/plano-acao", icon: ClipboardList, label: "Plano de Ação" },
-  { to: "/cliente/lancamento-mes", icon: CalendarDays, label: "Lançamento do mês" },
+const buildNavItems = (basePath: string) => [
+  { to: basePath || "/cliente", icon: LayoutDashboard, label: "Dashboard", end: true },
+  { to: `${basePath}/meus-dados`, icon: User, label: "Meus Dados", badgeKey: "meus-dados" },
+  { to: `${basePath}/plano-acao`, icon: ClipboardList, label: "Plano de Ação" },
+  { to: `${basePath}/lancamento-mes`, icon: CalendarDays, label: "Lançamento do mês" },
 ];
 
 interface Props {
@@ -41,6 +41,14 @@ interface Props {
 export const ClientLayout = ({ children }: Props) => {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { clientSlug } = useParams<{ clientSlug?: string }>();
+  // Detecta modo preview do admin: /admin/preview/:clientSlug/* → basePath dinâmico
+  const isPreview = location.pathname.startsWith("/admin/preview/");
+  const basePath = isPreview && clientSlug ? `/admin/preview/${clientSlug}` : "/cliente";
+  const navItems = buildNavItems(basePath);
+  const configPath = isPreview ? `${basePath}/configuracoes` : "/cliente/configuracoes";
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dataPending, setDataPending] = useState(false);
   const [profile, setProfile] = useState<{ full_name: string; email: string } | null>(null);
@@ -105,7 +113,7 @@ export const ClientLayout = ({ children }: Props) => {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { setMobileOpen(false); navigate("/cliente/configuracoes"); }}>
+            <DropdownMenuItem onClick={() => { setMobileOpen(false); navigate(configPath); }}>
               <Settings className="h-4 w-4 mr-2" />
               Configurações
             </DropdownMenuItem>
@@ -154,7 +162,7 @@ export const ClientLayout = ({ children }: Props) => {
         {/* Settings + Theme toggle */}
         <div className="px-3 pt-3 space-y-0.5">
           <NavLink
-            to="/cliente/configuracoes"
+            to={configPath}
             onClick={() => setMobileOpen(false)}
             className={({ isActive }) =>
               cn(

@@ -27,6 +27,7 @@ import {
   Copy,
   CheckCircle2,
   AlertTriangle,
+  Eye,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -450,6 +451,19 @@ const ClientList = () => {
                 <Button
                   size="icon"
                   variant="ghost"
+                  className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                  title="Ver painel do cliente (preview)"
+                  aria-label={`Ver painel de ${profile?.full_name || "cliente"}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(`/admin/preview/${client.slug}`, "_blank");
+                  }}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
                   className="h-8 w-8"
                   title="Editar cliente"
                   aria-label={`Editar ${profile?.full_name || "cliente"}`}
@@ -568,6 +582,20 @@ const ClientList = () => {
             </div>
 
             <div className="mt-auto flex items-center justify-between gap-1 pt-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs h-8 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                aria-label={`Ver painel de ${profile?.full_name || "cliente"}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(`/admin/preview/${client.slug}`, "_blank");
+                }}
+                title="Ver painel do cliente (preview)"
+              >
+                <Eye className="h-3.5 w-3.5 mr-1" />
+                Ver Dash
+              </Button>
               <Button
                 size="sm"
                 variant="ghost"

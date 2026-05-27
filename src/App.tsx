@@ -29,6 +29,7 @@ import AdminActionPlan from "@/pages/admin/AdminActionPlan";
 
 import AdminMonitoring from "@/pages/admin/AdminMonitoring";
 import AdminAcompanhamentoEvolucao from "@/pages/admin/AdminAcompanhamentoEvolucao";
+import AdminClientPreview from "@/pages/admin/AdminClientPreview";
 import AdminReport from "@/pages/admin/AdminReport";
 import AdminFinanceiro from "@/pages/admin/AdminFinanceiro";
 import AdminSettings from "@/pages/admin/AdminSettings";
@@ -124,6 +125,15 @@ const App = () => (
                   <Route path="acompanhamento" element={<AdminMonitoring />} />
                   <Route path="evolucao" element={<AdminAcompanhamentoEvolucao />} />
                   <Route path="relatorio" element={<AdminReport />} />
+                </Route>
+
+                {/* Admin: ver como cliente (preview do painel do cliente) */}
+                <Route path="/admin/preview/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminClientPreview /></ProtectedRoute>}>
+                  <Route index element={<ClientDashboard />} />
+                  <Route path="meus-dados" element={<MyData />} />
+                  <Route path="plano-acao" element={<ActionPlan />} />
+                  <Route path="lancamento-mes" element={<ClientLancamentoMes />} />
+                  <Route path="configuracoes" element={<ClientSettings />} />
                 </Route>
 
                 {/* Client routes */}

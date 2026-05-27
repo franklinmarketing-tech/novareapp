@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useParams } from "react-router-dom";
 import { LayoutDashboard, User, ClipboardList, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -8,18 +8,24 @@ interface Props {
 }
 
 // Lançamento do mês adicionado — visibilidade da edição é controlada por client_can_log_acompanhamento
-const items = [
-  { to: "/cliente", icon: LayoutDashboard, label: "Início", end: true },
-  { to: "/cliente/meus-dados", icon: User, label: "Meus dados", key: "meus-dados" },
-  { to: "/cliente/plano-acao", icon: ClipboardList, label: "Plano" },
-  { to: "/cliente/lancamento-mes", icon: CalendarDays, label: "Lançamento" },
+const buildItems = (basePath: string) => [
+  { to: basePath || "/cliente", icon: LayoutDashboard, label: "Início", end: true },
+  { to: `${basePath}/meus-dados`, icon: User, label: "Meus dados", key: "meus-dados" },
+  { to: `${basePath}/plano-acao`, icon: ClipboardList, label: "Plano" },
+  { to: `${basePath}/lancamento-mes`, icon: CalendarDays, label: "Lançamento" },
 ];
 
 /**
  * Fixed bottom navigation for mobile (cliente role).
  * Hidden on lg+ where the sidebar is always visible.
  */
-export const MobileBottomNav = ({ dataPending = false }: Props) => (
+export const MobileBottomNav = ({ dataPending = false }: Props) => {
+  const location = useLocation();
+  const { clientSlug } = useParams<{ clientSlug?: string }>();
+  const isPreview = location.pathname.startsWith("/admin/preview/");
+  const basePath = isPreview && clientSlug ? `/admin/preview/${clientSlug}` : "/cliente";
+  const items = buildItems(basePath);
+  return (
   <nav
     aria-label="Navegação principal"
     className={cn(
@@ -63,4 +69,5 @@ export const MobileBottomNav = ({ dataPending = false }: Props) => (
       ))}
     </ul>
   </nav>
-);
+  );
+};
