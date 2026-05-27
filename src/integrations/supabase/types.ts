@@ -395,6 +395,7 @@ export type Database = {
           description: string | null
           estimated_value: number
           id: string
+          month_ref: string | null
           type: string
           updated_at: string
         }
@@ -404,6 +405,7 @@ export type Database = {
           description?: string | null
           estimated_value?: number
           id?: string
+          month_ref?: string | null
           type: string
           updated_at?: string
         }
@@ -413,6 +415,7 @@ export type Database = {
           description?: string | null
           estimated_value?: number
           id?: string
+          month_ref?: string | null
           type?: string
           updated_at?: string
         }
@@ -749,6 +752,7 @@ export type Database = {
           creditor: string | null
           id: string
           interest_rate: number | null
+          month_ref: string | null
           monthly_payment: number | null
           remaining_months: number | null
           total_amount: number
@@ -761,6 +765,7 @@ export type Database = {
           creditor?: string | null
           id?: string
           interest_rate?: number | null
+          month_ref?: string | null
           monthly_payment?: number | null
           remaining_months?: number | null
           total_amount?: number
@@ -773,6 +778,7 @@ export type Database = {
           creditor?: string | null
           id?: string
           interest_rate?: number | null
+          month_ref?: string | null
           monthly_payment?: number | null
           remaining_months?: number | null
           total_amount?: number
@@ -1228,6 +1234,7 @@ export type Database = {
           coverage_amount: number | null
           created_at: string
           id: string
+          month_ref: string | null
           monthly_premium: number | null
           provider: string | null
           type: string
@@ -1238,6 +1245,7 @@ export type Database = {
           coverage_amount?: number | null
           created_at?: string
           id?: string
+          month_ref?: string | null
           monthly_premium?: number | null
           provider?: string | null
           type: string
@@ -1248,6 +1256,7 @@ export type Database = {
           coverage_amount?: number | null
           created_at?: string
           id?: string
+          month_ref?: string | null
           monthly_premium?: number | null
           provider?: string | null
           type?: string
