@@ -19,7 +19,7 @@ const ClientLancamentoMes = () => {
         .from("clients")
         .select("id, client_can_log_acompanhamento")
         .eq("user_id", user.id)
-        .maybeSingle();
+        .maybeSingle() as any;
       if (data) {
         setClientId(data.id);
         setCanEdit(!!data.client_can_log_acompanhamento);

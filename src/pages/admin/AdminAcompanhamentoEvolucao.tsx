@@ -249,6 +249,7 @@ const AdminAcompanhamentoEvolucao = () => {
         net: income - expense,
         savingsRate: c.savings_rate,
         netWorth: c.net_worth,
+        emergency_reserve_months: c.emergency_reserve_months,
       };
     });
     const last = series[series.length - 1];
