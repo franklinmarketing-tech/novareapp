@@ -325,6 +325,7 @@ const AdminClientLayout = () => {
                 {({ isActive }) => {
                   const state = stateOf(tab.path, isActive && !isLocked);
                   const Icon = tab.icon;
+                  const isAccent = (tab as any).accent && (state === "active" || state === "available");
                   return (
                     <>
                       {/* Nó circular */}
@@ -335,12 +336,15 @@ const AdminClientLayout = () => {
                           state === "available" && "group-hover:scale-105 group-hover:-translate-y-0.5 cursor-pointer",
                           state === "completed" && "group-hover:scale-105 cursor-pointer",
                           state === "locked" && "cursor-not-allowed",
+                          isAccent && "ring-2 ring-novare-terracotta/40 ring-offset-2 ring-offset-card",
                         )}
                         style={
                           state === "active"
                             ? {
-                                background: "hsl(var(--primary))",
-                                boxShadow: "0 0 0 1px hsl(var(--primary))",
+                                background: isAccent ? "hsl(var(--novare-terracotta))" : "hsl(var(--primary))",
+                                boxShadow: isAccent
+                                  ? "0 0 0 1px hsl(var(--novare-terracotta)), 0 4px 14px -2px hsl(var(--novare-terracotta) / 0.45)"
+                                  : "0 0 0 1px hsl(var(--primary))",
                               }
                             : state === "completed"
                             ? {
@@ -351,6 +355,11 @@ const AdminClientLayout = () => {
                             ? {
                                 background: "hsl(var(--muted))",
                                 boxShadow: "0 0 0 1px hsl(var(--border))",
+                              }
+                            : isAccent
+                            ? {
+                                background: "hsl(var(--novare-terracotta) / 0.12)",
+                                boxShadow: "0 0 0 1px hsl(var(--novare-terracotta) / 0.55)",
                               }
                             : {
                                 background: "hsl(var(--card))",
@@ -367,7 +376,8 @@ const AdminClientLayout = () => {
                             className={cn(
                               "h-[17px] w-[17px] transition-colors",
                               state === "active" && "text-primary-foreground",
-                              state === "available" && "text-foreground/70 group-hover:text-primary",
+                              state === "available" && !isAccent && "text-foreground/70 group-hover:text-primary",
+                              state === "available" && isAccent && "text-novare-terracotta",
                             )}
                             strokeWidth={2.2}
                           />
