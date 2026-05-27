@@ -135,6 +135,7 @@ function MetaAcompRow({
   onEditMeta,
   onCreateMeta,
   onDeleteMeta,
+  canManage = true,
 }: {
   meta: MetaEntry;
   latestEntry?: AcompEntry;
@@ -149,6 +150,8 @@ function MetaAcompRow({
   onEditMeta: (meta: MetaEntry) => void;
   onCreateMeta: (meta: MetaEntry) => void;
   onDeleteMeta: (meta: MetaEntry) => void;
+  /** false = modo cliente (esconde botões de incluir/editar/excluir item e meta) */
+  canManage?: boolean;
 }) {
   const [estado, setEstado] = useState(latestEntry?.estado_atual || "");
   const [valor, setValor] = useState(
@@ -201,24 +204,26 @@ function MetaAcompRow({
             {dir.label}
           </span>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            onClick={() => onEditItem(meta)}
-            title="Editar item"
-            className="p-1.5 rounded-md text-muted-foreground hover:text-novare-blue hover:bg-novare-blue/10 transition-colors"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDeleteItem(meta)}
-            title="Excluir item"
-            className="p-1.5 rounded-md text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        {canManage && (
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => onEditItem(meta)}
+              title="Editar item"
+              className="p-1.5 rounded-md text-muted-foreground hover:text-novare-blue hover:bg-novare-blue/10 transition-colors"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onDeleteItem(meta)}
+              title="Excluir item"
+              className="p-1.5 rounded-md text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
         {pct != null && (
           <div className="flex items-center gap-2 shrink-0">
             <TrendIcon current={pct} prev={prevEntry?.progresso_pct} />
@@ -248,24 +253,26 @@ function MetaAcompRow({
           <div className="px-4 py-3 space-y-2.5">
             <div className="flex items-center justify-between gap-2">
               <p className="text-[10px] font-bold uppercase tracking-wider text-novare-terracotta">Plano de Ação</p>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => onEditMeta(meta)}
-                  title="Editar meta"
-                  className="p-1 rounded text-muted-foreground hover:text-novare-terracotta hover:bg-novare-terracotta/10 transition-colors"
-                >
-                  <Pencil className="w-3 h-3" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDeleteMeta(meta)}
-                  title="Excluir meta"
-                  className="p-1 rounded text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
+              {canManage && (
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onEditMeta(meta)}
+                    title="Editar meta"
+                    className="p-1 rounded text-muted-foreground hover:text-novare-terracotta hover:bg-novare-terracotta/10 transition-colors"
+                  >
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDeleteMeta(meta)}
+                    title="Excluir meta"
+                    className="p-1 rounded text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {meta.meta_text ? (
@@ -320,16 +327,18 @@ function MetaAcompRow({
                 {meta.current_value != null && meta.current_value > 0 ? formatBRL(meta.current_value) : "—"}
               </span>
             </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => onCreateMeta(meta)}
-              className="h-8 gap-1.5 text-xs border-novare-terracotta/40 text-novare-terracotta hover:bg-novare-terracotta hover:text-white"
-            >
-              <Target className="w-3.5 h-3.5" />
-              Definir meta
-            </Button>
+            {canManage && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => onCreateMeta(meta)}
+                className="h-8 gap-1.5 text-xs border-novare-terracotta/40 text-novare-terracotta hover:bg-novare-terracotta hover:text-white"
+              >
+                <Target className="w-3.5 h-3.5" />
+                Definir meta
+              </Button>
+            )}
           </div>
         ) : (
           <div className="px-4 py-3 space-y-2.5">
@@ -478,6 +487,7 @@ function GoalDirectRow({
   confirming,
   onEdit,
   onDelete,
+  canManage = true,
 }: {
   goal: GoalItem;
   onSave: (goalId: string, amount: number) => void;
@@ -486,6 +496,8 @@ function GoalDirectRow({
   confirming: boolean;
   onEdit: (goal: GoalItem) => void;
   onDelete: (goal: GoalItem) => void;
+  /** false = modo cliente (esconde editar/excluir) */
+  canManage?: boolean;
 }) {
   const [valor, setValor] = useState(
     goal.amount_applied != null && goal.amount_applied > 0 ? String(goal.amount_applied) : "",
@@ -514,24 +526,26 @@ function GoalDirectRow({
         <div className="space-y-1.5">
           <div className="flex items-start gap-2">
             <p className="text-sm font-semibold leading-tight flex-1">{goal.description}</p>
-            <div className="flex items-center gap-0.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => onEdit(goal)}
-                title="Editar objetivo"
-                className="p-1 rounded text-muted-foreground hover:text-novare-blue hover:bg-novare-blue/10 transition-colors"
-              >
-                <Pencil className="w-3 h-3" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onDelete(goal)}
-                title="Excluir objetivo"
-                className="p-1 rounded text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </div>
+            {canManage && (
+              <div className="flex items-center gap-0.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onEdit(goal)}
+                  title="Editar objetivo"
+                  className="p-1 rounded text-muted-foreground hover:text-novare-blue hover:bg-novare-blue/10 transition-colors"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(goal)}
+                  title="Excluir objetivo"
+                  className="p-1 rounded text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             {target > 0 && (
@@ -624,7 +638,14 @@ function GoalDirectRow({
   );
 }
 
-export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
+/**
+ * mode:
+ *  - "admin" (default): consultor com pleno poder — incluir/editar/excluir itens, metas e objetivos.
+ *  - "client": cliente final — só edita valor_atual + estado_atual nas metas existentes.
+ *    Esconde botões de adicionar/editar/excluir item/meta/objetivo e o cabeçalho de revalidar.
+ */
+export function AcompanhamentoMetas({ clientId, mode = "admin" }: { clientId: string; mode?: "admin" | "client" }) {
+  const isClient = mode === "client";
   const queryClient = useQueryClient();
   const [savingId, setSavingId]                 = useState<string | null>(null);
   const [savingGoalId, setSavingGoalId]         = useState<string | null>(null);
@@ -1037,20 +1058,24 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
               Sincronizado em {lastSyncDate}
             </span>
           )}
-          <button
-            type="button"
-            onClick={handleRevalidate}
-            disabled={revalidating}
-            title="Recarrega os dados do Plano de Ação e mostra quantos itens já têm meta cadastrada (parecer_metas)."
-            aria-label="Revalidar metas: recarrega e confirma quais itens têm parecer_metas cadastrados"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-novare-blue text-white text-[11px] font-semibold shadow-sm hover:bg-novare-blue/90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-          >
-            <RefreshCw className={cn("h-3.5 w-3.5", revalidating && "animate-spin")} />
-            {revalidating ? "Revalidando..." : "Revalidar metas"}
-          </button>
-          <span className="text-[11px] text-muted-foreground italic basis-full sm:basis-auto">
-            Recarrega o Plano de Ação e confirma quantos itens já têm meta cadastrada.
-          </span>
+          {!isClient && (
+            <>
+              <button
+                type="button"
+                onClick={handleRevalidate}
+                disabled={revalidating}
+                title="Recarrega os dados do Plano de Ação e mostra quantos itens já têm meta cadastrada (parecer_metas)."
+                aria-label="Revalidar metas: recarrega e confirma quais itens têm parecer_metas cadastrados"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-novare-blue text-white text-[11px] font-semibold shadow-sm hover:bg-novare-blue/90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              >
+                <RefreshCw className={cn("h-3.5 w-3.5", revalidating && "animate-spin")} />
+                {revalidating ? "Revalidando..." : "Revalidar metas"}
+              </button>
+              <span className="text-[11px] text-muted-foreground italic basis-full sm:basis-auto">
+                Recarrega o Plano de Ação e confirma quantos itens já têm meta cadastrada.
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -1129,16 +1154,18 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
               {/* Linha separadora */}
               <div className="flex-1 h-px bg-border/50" />
 
-              {/* Botão + (adicionar item desta seção) */}
-              <button
-                type="button"
-                onClick={() => openAddItem(section as ItemKind)}
-                title={`Adicionar ${cfg.label.toLowerCase()}`}
-                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-novare-blue/30 text-novare-blue hover:bg-novare-blue hover:text-white transition-colors"
-              >
-                <Plus className="w-3 h-3" />
-                Adicionar
-              </button>
+              {/* Botão + (adicionar item desta seção) — admin only */}
+              {!isClient && (
+                <button
+                  type="button"
+                  onClick={() => openAddItem(section as ItemKind)}
+                  title={`Adicionar ${cfg.label.toLowerCase()}`}
+                  className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-novare-blue/30 text-novare-blue hover:bg-novare-blue hover:text-white transition-colors"
+                >
+                  <Plus className="w-3 h-3" />
+                  Adicionar
+                </button>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -1166,6 +1193,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                     onEditMeta={openEditMeta}
                     onCreateMeta={openCreateMeta}
                     onDeleteMeta={handleDeleteMeta}
+                    canManage={!isClient}
                   />
                 );
               })}
@@ -1201,15 +1229,17 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
               </span>
             )}
             <div className="flex-1 h-px bg-border/50" />
-            <button
-              type="button"
-              onClick={openAddGoal}
-              title="Adicionar objetivo"
-              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors"
-            >
-              <Plus className="w-3 h-3" />
-              Novo objetivo
-            </button>
+            {!isClient && (
+              <button
+                type="button"
+                onClick={openAddGoal}
+                title="Adicionar objetivo"
+                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors"
+              >
+                <Plus className="w-3 h-3" />
+                Novo objetivo
+              </button>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -1223,6 +1253,7 @@ export function AcompanhamentoMetas({ clientId }: { clientId: string }) {
                 confirming={confirmingGoalId === goal.id}
                 onEdit={openEditGoal}
                 onDelete={handleDeleteGoal}
+                canManage={!isClient}
               />
             ))}
           </div>

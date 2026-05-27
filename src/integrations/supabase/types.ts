@@ -542,6 +542,7 @@ export type Database = {
           assigned_consultant: string | null
           behavioral_profile: Json | null
           city: string | null
+          client_can_log_acompanhamento: boolean
           client_code: number
           company: string | null
           cpf: string | null
@@ -564,6 +565,7 @@ export type Database = {
           assigned_consultant?: string | null
           behavioral_profile?: Json | null
           city?: string | null
+          client_can_log_acompanhamento?: boolean
           client_code?: number
           company?: string | null
           cpf?: string | null
@@ -588,6 +590,7 @@ export type Database = {
           assigned_consultant?: string | null
           behavioral_profile?: Json | null
           city?: string | null
+          client_can_log_acompanhamento?: boolean
           client_code?: number
           company?: string | null
           cpf?: string | null

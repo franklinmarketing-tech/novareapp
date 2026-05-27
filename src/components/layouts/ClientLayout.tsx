@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   User,
   ClipboardList,
+  CalendarDays,
   LogOut,
   Menu,
   X,
@@ -30,6 +31,7 @@ const navItems = [
   { to: "/cliente", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/cliente/meus-dados", icon: User, label: "Meus Dados", badgeKey: "meus-dados" },
   { to: "/cliente/plano-acao", icon: ClipboardList, label: "Plano de Ação" },
+  { to: "/cliente/lancamento-mes", icon: CalendarDays, label: "Lançamento do mês" },
 ];
 
 interface Props {

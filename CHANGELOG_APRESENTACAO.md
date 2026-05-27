@@ -78,3 +78,43 @@ O consultor agora pode salvar **anotações livres por categoria** dentro da se�
 - Nenhuma nota é exposta a outros clientes.
 
 ---
+
+### 3. Cliente lança valores no próprio painel (com controle do consultor)
+
+**Resumo executivo:**
+O cliente agora tem uma aba dedicada **"Lançamento do mês"** no painel dele, com dois modos possíveis controlados pelo consultor: **edição liberada** (cliente atualiza os valores) ou **somente visualização** (cliente só acompanha o progresso). O consultor liga/desliga essa permissão com um botão de destaque na própria tela de lançamento, sem precisar sair do contexto.
+
+**O que mudou para o usuário:**
+
+| Onde | Antes | Agora |
+|------|-------|-------|
+| Painel do cliente | Aba "Lançamento do mês" não existia | Nova aba na sidebar e na barra mobile |
+| Painel do cliente (sem liberação) | — | Cliente vê metas, progresso e histórico em modo leitura, com aviso visual |
+| Painel do cliente (liberado) | — | Cliente edita **valor atual** e **estado** de cada meta diretamente |
+| Tela do consultor | Sem controle de permissão | Botão grande com efeito glow: **"Liberar lançamento"** ou **"Bloquear edição"** |
+
+**Como funciona:**
+- O botão de permissão fica em destaque no topo da tela de "Lançamento do mês" do consultor.
+- Quando liberado: aparece em verde com ícone de cadeado aberto e mensagem "Cliente liberado para lançar".
+- Quando bloqueado: aparece em âmbar com cadeado fechado e mensagem "Cliente em modo visualização".
+- A mudança é instantânea — o cliente recebe a permissão sem precisar deslogar.
+- A flag é por cliente (global) — não reseta automaticamente entre meses.
+
+**Limitações intencionais para o cliente (mesmo liberado):**
+- Cliente **não pode** adicionar nem excluir itens, metas ou objetivos.
+- Cliente **não pode** alterar valores das metas ou objetivos cadastrados pelo consultor.
+- Cliente **só pode** atualizar o **valor atual** e a **descrição do estado** de cada meta.
+- Botões de "+ Adicionar", "+ Novo objetivo", lápis e lixeira ficam **invisíveis** para o cliente.
+
+**Benefícios:**
+- Cliente ganha autonomia para registrar o progresso entre encontros com o consultor.
+- Cliente sente que está participando ativamente da consultoria.
+- Consultor mantém o controle total — concede acesso só quando o cliente está pronto.
+- Reduz dependência de mensagens/e-mails entre cliente e consultor para atualização de valores.
+
+**Segurança e permissões:**
+- A permissão é controlada por uma flag (`client_can_log_acompanhamento`) na tabela `clients`.
+- Apenas o admin (consultor) consegue alterar essa flag.
+- Mesmo se um cliente tentar burlar pela API, as políticas de RLS no banco rejeitam o write quando a flag está em `false`.
+
+---

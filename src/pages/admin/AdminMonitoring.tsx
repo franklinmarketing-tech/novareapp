@@ -3,6 +3,7 @@ import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AcompanhamentoMetas } from "@/components/monitoring/AcompanhamentoMetas";
 import { MonthlyClosings } from "@/components/monitoring/MonthlyClosings";
+import { ClientPermissionToggle } from "@/components/monitoring/ClientPermissionToggle";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import { Activity } from "lucide-react";
 
@@ -52,6 +53,9 @@ const AdminMonitoring = () => {
           </p>
         </div>
       </div>
+
+      {/* Toggle de permissão do cliente (com efeito destacado) */}
+      <ClientPermissionToggle clientId={clientId} />
 
       {/* Histórico de fechamentos mensais e evolução */}
       <MonthlyClosings clientId={clientId} />
