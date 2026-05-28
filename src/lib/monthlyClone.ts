@@ -232,51 +232,22 @@ export async function cloneToNextMonth(
     }
   }
 
-  // ── Etapa 2: clona PARECER_METAS para os novos source_ids ──
-  // Mantém o histórico consultivo: meta_text, meta_valor e prazo definidos em Maio
-  // continuam visíveis em Junho (vinculados ao novo item). Consultor pode editar.
-  const { data: existingMetas } = await supabase
-    .from("parecer_metas")
-    .select("source_table, source_id")
-    .eq("client_id", clientId);
-  const existingMetaKeys = new Set(
-    (existingMetas || []).map((m: any) => `${m.source_table}:${m.source_id}`),
-  );
-
+  // ── Etapa 2: ATUALIZA parecer_metas para apontar ao novo source_id ──
+  // Em vez de criar uma nova parecer_meta para cada clone (o que causava
+  // duplicação visual: 10 metas em vez de 5), atualizamos o source_id da
+  // meta existente para apontar ao item do novo mês. Mantém uma única meta
+  // por item conceitual do cliente — historico consultivo continuo.
   for (const [table, mapping] of Object.entries(idMapping)) {
     if (mapping.size === 0) continue;
-    const oldIds = Array.from(mapping.keys());
-    const { data: metasFromOld } = await supabase
-      .from("parecer_metas")
-      .select("source_id, source_label, meta_text, meta_valor, prazo, current_value, ai_suggestion")
-      .eq("client_id", clientId)
-      .eq("source_table", table)
-      .in("source_id", oldIds);
 
-    if (!metasFromOld || metasFromOld.length === 0) continue;
-
-    const rowsToInsert = metasFromOld
-      .map((m: any) => {
-        const newId = mapping.get(m.source_id);
-        if (!newId) return null;
-        const key = `${table}:${newId}`;
-        if (existingMetaKeys.has(key)) return null; // já existe meta para o item novo
-        return {
-          client_id: clientId,
-          source_table: table,
-          source_id: newId,
-          source_label: m.source_label,
-          meta_text: m.meta_text,
-          meta_valor: m.meta_valor,
-          prazo: m.prazo,
-          current_value: m.current_value,
-          ai_suggestion: m.ai_suggestion,
-        };
-      })
-      .filter(Boolean);
-
-    if (rowsToInsert.length > 0) {
-      await supabase.from("parecer_metas").insert(rowsToInsert as any);
+    for (const [oldId, newId] of mapping.entries()) {
+      // Re-aponta a meta existente para o item do próximo mês
+      await supabase
+        .from("parecer_metas")
+        .update({ source_id: newId })
+        .eq("client_id", clientId)
+        .eq("source_table", table)
+        .eq("source_id", oldId);
     }
   }
 
