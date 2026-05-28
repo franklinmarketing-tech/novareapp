@@ -545,6 +545,7 @@ export type Database = {
           assigned_consultant: string | null
           behavioral_profile: Json | null
           city: string | null
+          client_can_log_acompanhamento: boolean
           client_code: number
           company: string | null
           cpf: string | null
@@ -567,6 +568,7 @@ export type Database = {
           assigned_consultant?: string | null
           behavioral_profile?: Json | null
           city?: string | null
+          client_can_log_acompanhamento?: boolean
           client_code?: number
           company?: string | null
           cpf?: string | null
@@ -591,6 +593,7 @@ export type Database = {
           assigned_consultant?: string | null
           behavioral_profile?: Json | null
           city?: string | null
+          client_can_log_acompanhamento?: boolean
           client_code?: number
           company?: string | null
           cpf?: string | null
@@ -1823,6 +1826,10 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          privacy_accepted_at: string | null
+          privacy_version: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           updated_at: string
           user_id: string
         }
@@ -1832,6 +1839,10 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          privacy_accepted_at?: string | null
+          privacy_version?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1841,6 +1852,10 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          privacy_accepted_at?: string | null
+          privacy_version?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
           user_id?: string
         }
