@@ -71,7 +71,7 @@ const staticSegments: Record<string, string> = {
   clientes: "Clientes",
   "novo-cliente": "Novo Cliente",
   financeiro: "Financeiro",
-  configuracoes: "ConfiguraÃ§Ãµes",
+  configuracoes: "Configurações",
   cliente: "Cliente",
   onboarding: "Onboarding",
   diagnostico: "DiagnÃ³stico",
@@ -277,7 +277,7 @@ export const AdminLayout = ({ children }: Props) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => { setMobileOpen(false); navigate("/admin/configuracoes"); }}>
               <Settings className="h-4 w-4 mr-2" />
-              ConfiguraÃ§Ãµes
+              Configurações
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
@@ -366,7 +366,7 @@ export const AdminLayout = ({ children }: Props) => {
               setSettingsOpen(true);
               setMobileOpen(false);
             }}
-            title={collapsed ? "ConfiguraÃ§Ãµes" : undefined}
+            title={collapsed ? "Configurações" : undefined}
             className={({ isActive }) =>
               cn(
                 "relative flex items-center rounded-xl text-[0.8125rem] font-medium transition-colors duration-200",
@@ -380,7 +380,7 @@ export const AdminLayout = ({ children }: Props) => {
             <Settings className="h-[18px] w-[18px] shrink-0" />
             {!collapsed && (
               <>
-                <span className="flex-1 text-left truncate">ConfiguraÃ§Ãµes</span>
+                <span className="flex-1 text-left truncate">Configurações</span>
                 {!settingsCompletion.loading && settingsCompletion.pendingCount > 0 && (
                   <span
                     className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold"
