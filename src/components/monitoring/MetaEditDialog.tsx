@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { pushNotification } from "@/hooks/useNotifications";
 
 interface ExistingMeta {
   id: string; // meta_id real (não pode ser synthetic)
@@ -98,6 +99,30 @@ export function MetaEditDialog({ clientId, open, onOpenChange, meta, source }: P
       if (error) throw error;
       toast.success(editMode ? "Meta atualizada" : "Meta criada");
       qc.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
+
+      // Notifica o cliente apenas em INSERT (nova meta) para evitar spam de updates
+      if (!editMode) {
+        try {
+          const { data: clientRow } = await supabase
+            .from("clients")
+            .select("user_id")
+            .eq("id", clientId)
+            .maybeSingle();
+          const { data: { user: authUser } } = await supabase.auth.getUser();
+          if (clientRow?.user_id && authUser?.id !== clientRow.user_id) {
+            await pushNotification({
+              user_id: clientRow.user_id,
+              type: "meta_criada",
+              title: "Nova meta definida",
+              body: "Seu consultor criou uma nova meta para acompanhar. Veja no plano de ação.",
+              link: "/cliente/plano-acao",
+            });
+          }
+        } catch {
+          /* notificação é best-effort */
+        }
+      }
+
       onOpenChange(false);
     } catch (e: any) {
       toast.error("Erro ao salvar", { description: e?.message });

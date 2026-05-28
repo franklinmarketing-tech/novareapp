@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Lock, Unlock, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { pushNotification } from "@/hooks/useNotifications";
 
 interface Props {
   clientId: string;
@@ -42,7 +43,7 @@ export function ClientPermissionToggle({ clientId }: Props) {
       return next;
     },
     onMutate: (next) => setOptimistic(next),
-    onSuccess: (next) => {
+    onSuccess: async (next) => {
       toast.success(
         next ? "Cliente liberado para lançar" : "Cliente em modo visualização",
         {
@@ -52,6 +53,31 @@ export function ClientPermissionToggle({ clientId }: Props) {
         },
       );
       qc.invalidateQueries({ queryKey: ["client_permission", clientId] });
+
+      // Notifica o cliente sobre a mudança de permissão
+      try {
+        const { data: clientRow } = await supabase
+          .from("clients")
+          .select("user_id")
+          .eq("id", clientId)
+          .maybeSingle();
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (clientRow?.user_id && authUser?.id !== clientRow.user_id) {
+          await pushNotification({
+            user_id: clientRow.user_id,
+            type: next ? "lancamento_liberado" : "lancamento_bloqueado",
+            title: next
+              ? "Você pode atualizar suas metas!"
+              : "Lançamentos em modo visualização",
+            body: next
+              ? "Seu consultor liberou a edição dos lançamentos do mês."
+              : "Seu consultor bloqueou novos lançamentos. Você continua vendo o histórico.",
+            link: "/cliente/lancamento-mes",
+          });
+        }
+      } catch {
+        /* notificação é best-effort — nunca quebra o fluxo */
+      }
     },
     onError: (err: any) => {
       setOptimistic(null);

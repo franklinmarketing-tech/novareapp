@@ -26,6 +26,7 @@ import { generateMonthlyClosingPdf } from "@/lib/generateMonthlyClosingPdf";
 import { criarSnapshotFechamento } from "./AcompanhamentoMetas";
 import { cloneToNextMonth } from "@/lib/monthlyClone";
 import { cn } from "@/lib/utils";
+import { pushNotification } from "@/hooks/useNotifications";
 
 interface MonthlyClosing {
   id: string;
@@ -268,6 +269,27 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
           : "Snapshot registrado. (Próximo mês já tinha registros — nada copiado.)",
         duration: 6000,
       });
+
+      // Notifica o cliente que o mês foi fechado
+      try {
+        const { data: clientRow } = await supabase
+          .from("clients")
+          .select("user_id")
+          .eq("id", clientId)
+          .maybeSingle();
+        if (clientRow?.user_id && clientRow.user_id !== user.id) {
+          await pushNotification({
+            user_id: clientRow.user_id,
+            type: "mes_fechado",
+            title: "Mês fechado pelo seu consultor",
+            body: "O fechamento do mês foi concluído. Veja sua evolução no dashboard.",
+            link: "/cliente",
+          });
+        }
+      } catch {
+        /* notificação é best-effort */
+      }
+
       setCloseOpen(false);
       setNotes("");
       await load();

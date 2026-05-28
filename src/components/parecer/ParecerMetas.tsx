@@ -17,6 +17,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AddSectionItemDialog, type SectionKind } from "@/components/admin/AddSectionItemDialog";
+import { pushNotification } from "@/hooks/useNotifications";
 
 const SECTION_KIND_MAP: Partial<Record<SourceTable, SectionKind>> = {
   income: "income",
@@ -388,6 +389,27 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["parecer_metas", clientId] });
       toast.success(`${toSave.length} meta${toSave.length !== 1 ? "s" : ""} salva${toSave.length !== 1 ? "s" : ""}`);
+
+      // Notifica o cliente: parecer foi atualizado pelo consultor
+      try {
+        const { data: clientRow } = await supabase
+          .from("clients")
+          .select("user_id")
+          .eq("id", clientId)
+          .maybeSingle();
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (clientRow?.user_id && authUser?.id !== clientRow.user_id) {
+          await pushNotification({
+            user_id: clientRow.user_id,
+            type: "parecer_atualizado",
+            title: "Seu parecer foi atualizado",
+            body: "Seu consultor revisou seu parecer financeiro. Confira as novas recomendações.",
+            link: "/cliente/dashboard",
+          });
+        }
+      } catch {
+        /* notificação é best-effort */
+      }
     } catch (err: any) {
       toast.error("Erro ao salvar: " + (err?.message || "tente novamente"));
     } finally {
