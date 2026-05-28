@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSelectedMonth } from "@/contexts/ClientContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -127,10 +128,19 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   const [loadingAI, setLoadingAI] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fields, setFields] = useState<Record<string, FieldState>>({});
-  const [monthFilter, setMonthFilter] = useState<string>(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  }); // "all" | "YYYY-MM"
+  // Sincroniza com o filtro de mês compartilhado entre abas (Onboarding/Diagnóstico/etc).
+  // Internamente usa "YYYY-MM" (sem -01), então convertemos do contexto que usa "YYYY-MM-01".
+  const { selectedMonth, setSelectedMonth } = useSelectedMonth();
+  const monthFilter = selectedMonth
+    ? selectedMonth.slice(0, 7) // "2026-06-01" → "2026-06"
+    : (() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      })();
+  const setMonthFilter = (v: string) => {
+    if (v === "all") return; // ParecerMetas não usa "all" no contexto
+    setSelectedMonth(`${v}-01`); // "2026-06" → "2026-06-01"
+  };
   const [expanded, setExpanded] = useState<Record<SourceTable, boolean>>(
     Object.fromEntries(SECTION_ORDER.map((s) => [s, false])) as Record<SourceTable, boolean>,
   );
