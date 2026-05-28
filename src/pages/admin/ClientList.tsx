@@ -447,11 +447,10 @@ const ClientList = () => {
                 {client.assigned_consultant || "Sem consultor"}
               </span>
               <Badge variant={st.variant as any}>{st.label}</Badge>
-              <div className="flex items-center gap-1 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity duration-200 rounded-xl bg-muted/40 xl:bg-transparent p-0.5 xl:p-0">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+              <div className="flex items-center gap-1.5 rounded-xl bg-muted/30 p-1.5 border border-border/40">
+                <button
+                  type="button"
+                  className="group/btn flex flex-col items-center justify-center gap-0.5 h-14 w-16 rounded-lg text-emerald-600 hover:bg-emerald-500/15 hover:text-emerald-700 transition-all"
                   title="Ver painel do cliente (preview)"
                   aria-label={`Ver painel de ${profile?.full_name || "cliente"}`}
                   onClick={(e) => {
@@ -459,12 +458,12 @@ const ClientList = () => {
                     window.open(`/admin/preview/${client.slug}`, "_blank");
                   }}
                 >
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8"
+                  <Eye className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                  <span className="text-[10px] font-bold tracking-tight">Ver Dash</span>
+                </button>
+                <button
+                  type="button"
+                  className="group/btn flex flex-col items-center justify-center gap-0.5 h-14 w-16 rounded-lg text-foreground/70 hover:bg-foreground/10 hover:text-foreground transition-all"
                   title="Editar cliente"
                   aria-label={`Editar ${profile?.full_name || "cliente"}`}
                   onClick={(e) => {
@@ -472,12 +471,12 @@ const ClientList = () => {
                     navigate(`/admin/cliente/${client.slug}/onboarding`);
                   }}
                 >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-500/10"
+                  <Pencil className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                  <span className="text-[10px] font-bold tracking-tight">Editar</span>
+                </button>
+                <button
+                  type="button"
+                  className="group/btn flex flex-col items-center justify-center gap-0.5 h-14 w-16 rounded-lg text-blue-600 hover:bg-blue-500/15 hover:text-blue-700 transition-all disabled:opacity-50"
                   title="Redefinir senha do cliente"
                   aria-label={`Redefinir senha de ${profile?.full_name || "cliente"}`}
                   disabled={isResetting}
@@ -486,12 +485,12 @@ const ClientList = () => {
                     setResetTarget(client);
                   }}
                 >
-                  {isResetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  {isResetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />}
+                  <span className="text-[10px] font-bold tracking-tight">Senha</span>
+                </button>
+                <button
+                  type="button"
+                  className="group/btn flex flex-col items-center justify-center gap-0.5 h-14 w-16 rounded-lg text-destructive hover:bg-destructive/15 transition-all disabled:opacity-50"
                   title="Excluir cliente"
                   aria-label={`Excluir ${profile?.full_name || "cliente"}`}
                   disabled={isDeleting}
@@ -500,8 +499,9 @@ const ClientList = () => {
                     setDeleteTarget(client);
                   }}
                 >
-                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                </Button>
+                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />}
+                  <span className="text-[10px] font-bold tracking-tight">Excluir</span>
+                </button>
               </div>
               <ChevronRight className="hidden xl:block h-5 w-5 text-muted-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
             </div>
