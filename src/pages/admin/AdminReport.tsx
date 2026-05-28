@@ -1818,6 +1818,536 @@ const AdminReport = () => {
           );
         })()}
 
+        {/* ══════ ANÁLISE VISUAL DAS METAS ══════ */}
+        {(parecerMetas.length > 0 || acompEntries.length > 0) && (() => {
+          const CATEGORY_LABELS: Record<string, string> = {
+            income: "Renda",
+            expenses: "Despesa",
+            debts: "Dívida",
+            assets: "Patrimônio",
+            insurance: "Seguro",
+          };
+          const CATEGORY_COLORS: Record<string, string> = {
+            income: "hsl(152, 55%, 41%)",
+            expenses: "hsl(16, 65%, 50%)",
+            debts: "hsl(0, 72%, 55%)",
+            assets: "hsl(215, 50%, 45%)",
+            insurance: "hsl(260, 50%, 55%)",
+          };
+
+          // Último lançamento por meta (chave source_table:source_id ou meta_id)
+          const latestByMeta = new Map<string, AcompEntry>();
+          const allByMeta = new Map<string, AcompEntry[]>();
+          acompEntries.forEach((e) => {
+            const key = e.meta_id ?? `${e.source_table ?? ""}:${e.source_id ?? ""}:${e.source_label ?? ""}`;
+            const existing = latestByMeta.get(key);
+            if (!existing || e.snapshotted_at > existing.snapshotted_at) {
+              latestByMeta.set(key, e);
+            }
+            const arr = allByMeta.get(key) ?? [];
+            arr.push(e);
+            allByMeta.set(key, arr);
+          });
+
+          // ── 1. Status das Metas (Pizza Donut) ──
+          const today = new Date();
+          let concluidas = 0;
+          let emAndamento = 0;
+          let semLanc = 0;
+          let atrasadas = 0;
+          parecerMetas.forEach((m) => {
+            const key = `${m.source_table}:${m.source_id}:${m.source_label}`;
+            const latest = latestByMeta.get(key) ?? latestByMeta.get(m.id);
+            const pct = latest?.progresso_pct ?? null;
+            const venceu = m.prazo ? new Date(m.prazo) < today : false;
+            if (pct == null) {
+              semLanc++;
+            } else if (pct >= 100) {
+              concluidas++;
+            } else if (venceu) {
+              atrasadas++;
+            } else {
+              emAndamento++;
+            }
+          });
+          const totalMetas = parecerMetas.length;
+          const statusData = [
+            { name: "Concluídas", value: concluidas, color: "hsl(152, 60%, 42%)" },
+            { name: "Em andamento", value: emAndamento, color: "hsl(215, 60%, 50%)" },
+            { name: "Sem lançamentos", value: semLanc, color: "hsl(0, 0%, 60%)" },
+            { name: "Atrasadas", value: atrasadas, color: "hsl(0, 72%, 55%)" },
+          ].filter((s) => s.value > 0);
+
+          // ── 2. Progresso por Meta (Barras horizontais) ──
+          const progressoMetas = parecerMetas
+            .map((m) => {
+              const key = `${m.source_table}:${m.source_id}:${m.source_label}`;
+              const latest = latestByMeta.get(key) ?? latestByMeta.get(m.id);
+              if (!latest || latest.progresso_pct == null) return null;
+              const pct = Number(latest.progresso_pct);
+              let cor = "hsl(0, 72%, 55%)";
+              if (pct >= 100) cor = "hsl(152, 60%, 42%)";
+              else if (pct >= 60) cor = "hsl(215, 60%, 50%)";
+              else if (pct >= 30) cor = "hsl(38, 92%, 50%)";
+              const nomeCurto = m.source_label.length > 28 ? m.source_label.slice(0, 26) + "…" : m.source_label;
+              return {
+                nome: nomeCurto,
+                nomeCompleto: m.source_label,
+                pct: Math.min(150, pct),
+                pctReal: pct,
+                valor_atual: Number(latest.valor_atual ?? 0),
+                valor_meta: Number(m.meta_valor ?? latest.valor_meta ?? 0),
+                cor,
+                categoria: CATEGORY_LABELS[m.source_table] ?? m.source_table,
+              };
+            })
+            .filter((x): x is NonNullable<typeof x> => x != null)
+            .sort((a, b) => b.pctReal - a.pctReal);
+          const progressoTop = progressoMetas.length > 12
+            ? [...progressoMetas.slice(0, 11), {
+              nome: `Outras (${progressoMetas.length - 11})`,
+              nomeCompleto: `Outras ${progressoMetas.length - 11} metas`,
+              pct: progressoMetas.slice(11).reduce((s, x) => s + x.pct, 0) / (progressoMetas.length - 11),
+              pctReal: progressoMetas.slice(11).reduce((s, x) => s + x.pctReal, 0) / (progressoMetas.length - 11),
+              valor_atual: 0,
+              valor_meta: 0,
+              cor: "hsl(0, 0%, 55%)",
+              categoria: "—",
+            }]
+            : progressoMetas;
+
+          // ── 3. Metas por Categoria (Pizza) ──
+          const catCount = new Map<string, number>();
+          parecerMetas.forEach((m) => {
+            const label = CATEGORY_LABELS[m.source_table] ?? m.source_table;
+            catCount.set(label, (catCount.get(label) ?? 0) + 1);
+          });
+          const categoriaData = Array.from(catCount.entries()).map(([name, value]) => {
+            const tableKey = Object.entries(CATEGORY_LABELS).find(([, lbl]) => lbl === name)?.[0];
+            return {
+              name,
+              value,
+              color: tableKey ? CATEGORY_COLORS[tableKey] : "hsl(0, 0%, 55%)",
+            };
+          });
+
+          // ── 4. Alvo vs Atual (Barras agrupadas, top 8) ──
+          const alvoVsAtual = parecerMetas
+            .map((m) => {
+              const key = `${m.source_table}:${m.source_id}:${m.source_label}`;
+              const latest = latestByMeta.get(key) ?? latestByMeta.get(m.id);
+              const alvo = Number(m.meta_valor ?? latest?.valor_meta ?? 0);
+              const atual = Number(latest?.valor_atual ?? 0);
+              if (alvo <= 0) return null;
+              const nomeCurto = m.source_label.length > 18 ? m.source_label.slice(0, 16) + "…" : m.source_label;
+              return {
+                nome: nomeCurto,
+                nomeCompleto: m.source_label,
+                Alvo: alvo,
+                Atual: atual,
+                atingiu: atual >= alvo,
+              };
+            })
+            .filter((x): x is NonNullable<typeof x> => x != null)
+            .sort((a, b) => b.Alvo - a.Alvo)
+            .slice(0, 8);
+
+          // ── 5. Evolução mensal (Linhas múltiplas, top 6 metas com mais lançamentos) ──
+          const metasComHistoria = Array.from(allByMeta.entries())
+            .map(([key, entries]) => ({ key, entries: [...entries].sort((a, b) => a.snapshotted_at.localeCompare(b.snapshotted_at)) }))
+            .filter((g) => g.entries.length >= 2)
+            .sort((a, b) => b.entries.length - a.entries.length)
+            .slice(0, 6);
+
+          const allDatesSet = new Set<string>();
+          metasComHistoria.forEach((g) => {
+            g.entries.forEach((e) => {
+              const d = new Date(e.snapshotted_at);
+              const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+              allDatesSet.add(key);
+            });
+          });
+          const allDatesSorted = Array.from(allDatesSet).sort();
+
+          const metaNameByKey = new Map<string, string>();
+          metasComHistoria.forEach((g) => {
+            const first = g.entries[0];
+            const label = first.source_label ?? "Meta";
+            const short = label.length > 22 ? label.slice(0, 20) + "…" : label;
+            metaNameByKey.set(g.key, short);
+          });
+
+          const evolucaoData = allDatesSorted.map((ymKey) => {
+            const [yyyy, mm] = ymKey.split("-");
+            const row: Record<string, string | number | null> = {
+              periodo: `${mm}/${yyyy.slice(2)}`,
+            };
+            metasComHistoria.forEach((g) => {
+              const matchEntries = g.entries.filter((e) => {
+                const d = new Date(e.snapshotted_at);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}` === ymKey;
+              });
+              const nome = metaNameByKey.get(g.key)!;
+              if (matchEntries.length > 0) {
+                const last = matchEntries[matchEntries.length - 1];
+                row[nome] = last.progresso_pct != null ? Number(last.progresso_pct) : null;
+              } else {
+                row[nome] = null;
+              }
+            });
+            return row;
+          });
+
+          // ── 6. Lançamentos por mês (Barras empilhadas) ──
+          const monthCatMap = new Map<string, Record<string, number>>();
+          acompEntries.forEach((e) => {
+            const d = new Date(e.snapshotted_at);
+            const ymKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+            const cat = CATEGORY_LABELS[e.source_table ?? ""] ?? "Outros";
+            const row = monthCatMap.get(ymKey) ?? {};
+            row[cat] = (row[cat] ?? 0) + 1;
+            monthCatMap.set(ymKey, row);
+          });
+          const lancamentosPorMes = Array.from(monthCatMap.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([ymKey, row]) => {
+              const [yyyy, mm] = ymKey.split("-");
+              return { periodo: `${mm}/${yyyy.slice(2)}`, ...row };
+            });
+          const catsPresentes = Array.from(new Set(
+            lancamentosPorMes.flatMap((r) => Object.keys(r).filter((k) => k !== "periodo"))
+          ));
+
+          const lineColors = [
+            "hsl(215, 60%, 50%)",
+            "hsl(16, 65%, 50%)",
+            "hsl(152, 60%, 42%)",
+            "hsl(38, 92%, 50%)",
+            "hsl(260, 50%, 55%)",
+            "hsl(190, 60%, 45%)",
+          ];
+
+          // Não renderiza nada se não há nenhum gráfico útil
+          const hasAnyChart = statusData.length > 0 || progressoTop.length > 0 || categoriaData.length > 0 || alvoVsAtual.length > 0 || evolucaoData.length > 0 || lancamentosPorMes.length > 0;
+          if (!hasAnyChart) return null;
+
+          return (
+            <section className="print:break-before-page">
+              <SectionHeader
+                number={sectionNumber()}
+                title="Análise Visual das Metas"
+                subtitle="Distribuição, progresso e evolução das metas em gráficos"
+              />
+              <div className="space-y-3">
+                {/* Linha 1: Status + Categoria */}
+                {(statusData.length > 0 || categoriaData.length > 0) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {statusData.length > 0 && (
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm">Status das Metas</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="relative">
+                            <ResponsiveContainer width="100%" height={220}>
+                              <PieChart>
+                                <Pie
+                                  data={statusData}
+                                  dataKey="value"
+                                  nameKey="name"
+                                  innerRadius={55}
+                                  outerRadius={80}
+                                  paddingAngle={2}
+                                >
+                                  {statusData.map((s, i) => (
+                                    <Cell key={i} fill={s.color} />
+                                  ))}
+                                </Pie>
+                                <RTooltip
+                                  contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                                  formatter={(v: number, n: string) => [`${v} meta${v !== 1 ? "s" : ""} (${totalMetas > 0 ? ((v / totalMetas) * 100).toFixed(1) : 0}%)`, n]}
+                                />
+                              </PieChart>
+                            </ResponsiveContainer>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                              <span className="text-2xl font-black text-foreground tabular-nums">{totalMetas}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Metas</span>
+                            </div>
+                          </div>
+                          <div className="mt-2 space-y-1">
+                            {statusData.map((s) => (
+                              <div key={s.name} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: s.color }} />
+                                  <span className="text-foreground">{s.name}</span>
+                                </div>
+                                <span className="tabular-nums text-muted-foreground font-semibold">
+                                  {s.value} ({totalMetas > 0 ? ((s.value / totalMetas) * 100).toFixed(0) : 0}%)
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                    {categoriaData.length > 0 && (
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm">Metas por Categoria</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={220}>
+                            <PieChart>
+                              <Pie
+                                data={categoriaData}
+                                dataKey="value"
+                                nameKey="name"
+                                outerRadius={85}
+                                label={(entry: { name: string; value: number }) => `${entry.name}: ${entry.value}`}
+                                labelLine={false}
+                              >
+                                {categoriaData.map((c, i) => (
+                                  <Cell key={i} fill={c.color} />
+                                ))}
+                              </Pie>
+                              <RTooltip
+                                contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                                formatter={(v: number, n: string) => [`${v} meta${v !== 1 ? "s" : ""} (${totalMetas > 0 ? ((v / totalMetas) * 100).toFixed(1) : 0}%)`, n]}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1">
+                            {categoriaData.map((c) => (
+                              <div key={c.name} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="inline-block w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: c.color }} />
+                                  <span className="text-foreground truncate">{c.name}</span>
+                                </div>
+                                <span className="tabular-nums text-muted-foreground font-semibold shrink-0">{c.value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
+
+                {/* Linha 2: Barras horizontais Progresso por Meta */}
+                {progressoTop.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Progresso por Meta</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={Math.max(220, progressoTop.length * 28 + 40)}>
+                        <BarChart
+                          data={progressoTop}
+                          layout="vertical"
+                          margin={{ top: 8, right: 48, left: 8, bottom: 4 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" horizontal={false} />
+                          <XAxis
+                            type="number"
+                            domain={[0, 150]}
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            axisLine={false}
+                            tickLine={false}
+                            tickFormatter={(v: number) => `${v}%`}
+                          />
+                          <YAxis
+                            dataKey="nome"
+                            type="category"
+                            width={140}
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <RTooltip
+                            contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                            formatter={(_: unknown, __: unknown, item: { payload?: { pctReal?: number; valor_atual?: number; valor_meta?: number; nomeCompleto?: string } }) => {
+                              const p = item?.payload;
+                              if (!p) return ["", ""];
+                              return [
+                                `${(p.pctReal ?? 0).toFixed(1)}% • Atual: ${fmt(p.valor_atual ?? 0)} • Alvo: ${fmt(p.valor_meta ?? 0)}`,
+                                p.nomeCompleto ?? "",
+                              ];
+                            }}
+                            labelFormatter={() => ""}
+                          />
+                          <Bar dataKey="pct" radius={[0, 6, 6, 0]} barSize={18}>
+                            {progressoTop.map((d, i) => (
+                              <Cell key={i} fill={d.cor} />
+                            ))}
+                            <LabelList
+                              dataKey="pctReal"
+                              position="right"
+                              formatter={(v: number) => `${v.toFixed(0)}%`}
+                              style={{ fontSize: 10, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                            />
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Linha 3: Barras agrupadas Alvo vs Atual */}
+                {alvoVsAtual.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Valor Alvo vs Valor Atual (Top 8)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={240}>
+                        <BarChart
+                          data={alvoVsAtual}
+                          margin={{ top: 20, right: 12, left: 8, bottom: 50 }}
+                          barGap={4}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                          <XAxis
+                            dataKey="nome"
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            axisLine={false}
+                            tickLine={false}
+                            angle={-25}
+                            textAnchor="end"
+                            interval={0}
+                            height={50}
+                          />
+                          <YAxis
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            axisLine={false}
+                            tickLine={false}
+                            tickFormatter={(v: number) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`}
+                          />
+                          <RTooltip
+                            contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                            formatter={(v: number, n: string) => [fmt(v), n]}
+                            labelFormatter={(_, payload: ReadonlyArray<{ payload?: { nomeCompleto?: string } }>) => payload?.[0]?.payload?.nomeCompleto ?? ""}
+                          />
+                          <Legend
+                            wrapperStyle={{ fontSize: 11 }}
+                            iconType="square"
+                          />
+                          <Bar dataKey="Alvo" fill="hsl(0, 0%, 70%)" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="Atual" radius={[6, 6, 0, 0]}>
+                            {alvoVsAtual.map((d, i) => (
+                              <Cell key={i} fill={d.atingiu ? "hsl(152, 60%, 42%)" : "hsl(215, 60%, 50%)"} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Linha 4: Evolução mensal (Linhas múltiplas) */}
+                {evolucaoData.length >= 2 && metasComHistoria.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Evolução Mensal das Metas Ativas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={260}>
+                        <LineChart
+                          data={evolucaoData}
+                          margin={{ top: 20, right: 12, left: 8, bottom: 4 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                          <XAxis
+                            dataKey="periodo"
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <YAxis
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            axisLine={false}
+                            tickLine={false}
+                            tickFormatter={(v: number) => `${v}%`}
+                            domain={[0, (dataMax: number) => Math.max(100, Math.ceil(dataMax / 10) * 10)]}
+                          />
+                          <RTooltip
+                            contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                            formatter={(v: number, n: string) => [v != null ? `${v.toFixed(1)}%` : "—", n]}
+                          />
+                          <Legend wrapperStyle={{ fontSize: 10, paddingTop: 8 }} iconType="line" />
+                          {metasComHistoria.map((g, i) => {
+                            const nome = metaNameByKey.get(g.key)!;
+                            return (
+                              <Line
+                                key={g.key}
+                                type="monotone"
+                                dataKey={nome}
+                                stroke={lineColors[i % lineColors.length]}
+                                strokeWidth={2}
+                                dot={{ r: 3, fill: lineColors[i % lineColors.length] }}
+                                activeDot={{ r: 5 }}
+                                connectNulls
+                              />
+                            );
+                          })}
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Linha 5: Barras empilhadas — Lançamentos por mês */}
+                {lancamentosPorMes.length >= 2 && catsPresentes.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Lançamentos por Mês (por Categoria)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={240}>
+                        <BarChart
+                          data={lancamentosPorMes}
+                          margin={{ top: 20, right: 12, left: 8, bottom: 4 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                          <XAxis
+                            dataKey="periodo"
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <YAxis
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            axisLine={false}
+                            tickLine={false}
+                            allowDecimals={false}
+                          />
+                          <RTooltip
+                            contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                            formatter={(v: number, n: string) => [`${v} lançamento${v !== 1 ? "s" : ""}`, n]}
+                          />
+                          <Legend wrapperStyle={{ fontSize: 10, paddingTop: 8 }} iconType="square" />
+                          {catsPresentes.map((cat, i) => {
+                            const tableKey = Object.entries(CATEGORY_LABELS).find(([, lbl]) => lbl === cat)?.[0];
+                            const cor = tableKey ? CATEGORY_COLORS[tableKey] : lineColors[i % lineColors.length];
+                            return (
+                              <Bar
+                                key={cat}
+                                dataKey={cat}
+                                stackId="lanc"
+                                fill={cor}
+                                radius={i === catsPresentes.length - 1 ? [6, 6, 0, 0] : [0, 0, 0, 0]}
+                              />
+                            );
+                          })}
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </section>
+          );
+        })()}
+
         {/* ══════ 10. EVOLUÇÃO ══════ */}
 
         {chartData.length >= 2 && (
