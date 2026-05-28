@@ -10,11 +10,16 @@ import {
   AlertTriangle, ArrowRight, ChevronRight,
   PiggyBank, Sparkles, CheckCircle, Zap, Trophy,
   Star, Flame, Award, Medal, Crown,
+  Calendar, History, BarChart3, Landmark, Receipt, CreditCard,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip as RTooltip, ResponsiveContainer, Legend,
+} from "recharts";
 
 // 3D Goal Icons
 import goalDividasIcon from "@/assets/icons/goal-dividas.png";
@@ -80,6 +85,30 @@ interface GoalWithProgress {
   tasksTotal: number;
 }
 
+interface IncomeItem { id: string; description: string; amount: number }
+interface ExpenseItem { id: string; category: string; amount: number }
+interface DebtItem { id: string; type: string; total_amount: number; monthly_payment: number | null }
+interface AssetItem { id: string; type: string; estimated_value: number }
+interface InsuranceItem { id: string; type: string; provider: string | null; monthly_premium: number | null; coverage_amount: number | null }
+interface GoalItem { id: string; description: string; target_amount: number | null }
+interface MonthlyClosing {
+  month_ref: string;
+  total_income: number | null;
+  total_expenses: number | null;
+  total_debts: number | null;
+  total_assets: number | null;
+  net_worth: number | null;
+  savings_rate: number | null;
+  plan_completion_pct: number | null;
+  emergency_reserve_months: number | null;
+}
+
+const fmtCurrencyFull = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+const fmtMonthLabel = (monthRef: string) => {
+  const d = new Date(monthRef + (monthRef.length === 7 ? "-01" : "") + "T00:00:00");
+  return d.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }).replace(".", "");
+};
+
 const ClientDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -91,6 +120,15 @@ const ClientDashboard = () => {
   const [profile, setProfile] = useState<{ full_name: string } | null>(null);
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
   const [fetchError, setFetchError] = useState(false);
+  // Detalhes do onboarding (resumo consolidado)
+  const [incomeItems, setIncomeItems] = useState<IncomeItem[]>([]);
+  const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([]);
+  const [debtItems, setDebtItems] = useState<DebtItem[]>([]);
+  const [assetItems, setAssetItems] = useState<AssetItem[]>([]);
+  const [insuranceItems, setInsuranceItems] = useState<InsuranceItem[]>([]);
+  const [goalItems, setGoalItems] = useState<GoalItem[]>([]);
+  // Histórico mensal
+  const [monthlyClosings, setMonthlyClosings] = useState<MonthlyClosing[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,22 +143,58 @@ const ClientDashboard = () => {
       setClientStatus(client.status);
       if (profileData) setProfile(profileData);
 
-      const [{ data: diag }, incomeRes, expensesRes, assetsRes, debtsRes, { data: plans }, { data: goalsData }] = await Promise.all([
+      const [
+        { data: diag }, incomeRes, expensesRes, assetsRes, debtsRes,
+        { data: plans }, { data: goalsData }, insuranceRes, closingsRes,
+      ] = await Promise.all([
         supabase.from("diagnosis").select("*").eq("client_id", client.id).maybeSingle(),
-        supabase.from("income").select("amount").eq("client_id", client.id),
-        supabase.from("expenses").select("amount").eq("client_id", client.id),
-        supabase.from("assets").select("estimated_value").eq("client_id", client.id),
-        supabase.from("debts").select("total_amount").eq("client_id", client.id),
+        supabase.from("income").select("id, description, amount").eq("client_id", client.id),
+        supabase.from("expenses").select("id, category, amount").eq("client_id", client.id),
+        supabase.from("assets").select("id, type, estimated_value").eq("client_id", client.id),
+        supabase.from("debts").select("id, type, total_amount, monthly_payment").eq("client_id", client.id),
         supabase.from("action_plans").select("id").eq("client_id", client.id),
         supabase.from("goals").select("*").eq("client_id", client.id),
+        supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount").eq("client_id", client.id),
+        supabase
+          .from("monthly_closings")
+          .select("month_ref, total_income, total_expenses, total_debts, total_assets, net_worth, savings_rate, plan_completion_pct, emergency_reserve_months")
+          .eq("client_id", client.id)
+          .order("month_ref", { ascending: true }),
       ]);
 
       if (diag) setDiagnosis(diag);
+
+      const incList: IncomeItem[] = (incomeRes.data || []).map((r: any) => ({ id: r.id, description: r.description, amount: Number(r.amount) }));
+      const expList: ExpenseItem[] = (expensesRes.data || []).map((r: any) => ({ id: r.id, category: r.category, amount: Number(r.amount) }));
+      const debtList: DebtItem[] = (debtsRes.data || []).map((r: any) => ({ id: r.id, type: r.type, total_amount: Number(r.total_amount), monthly_payment: r.monthly_payment != null ? Number(r.monthly_payment) : null }));
+      const assetList: AssetItem[] = (assetsRes.data || []).map((r: any) => ({ id: r.id, type: r.type, estimated_value: Number(r.estimated_value) }));
+      const insList: InsuranceItem[] = (insuranceRes.data || []).map((r: any) => ({ id: r.id, type: r.type, provider: r.provider, monthly_premium: r.monthly_premium != null ? Number(r.monthly_premium) : null, coverage_amount: r.coverage_amount != null ? Number(r.coverage_amount) : null }));
+      const goalList: GoalItem[] = (goalsData || []).map((g: any) => ({ id: g.id, description: g.description, target_amount: g.target_amount != null ? Number(g.target_amount) : null }));
+      const closings: MonthlyClosing[] = (closingsRes.data || []).map((c: any) => ({
+        month_ref: c.month_ref,
+        total_income: c.total_income != null ? Number(c.total_income) : null,
+        total_expenses: c.total_expenses != null ? Number(c.total_expenses) : null,
+        total_debts: c.total_debts != null ? Number(c.total_debts) : null,
+        total_assets: c.total_assets != null ? Number(c.total_assets) : null,
+        net_worth: c.net_worth != null ? Number(c.net_worth) : null,
+        savings_rate: c.savings_rate != null ? Number(c.savings_rate) : null,
+        plan_completion_pct: c.plan_completion_pct != null ? Number(c.plan_completion_pct) : null,
+        emergency_reserve_months: c.emergency_reserve_months != null ? Number(c.emergency_reserve_months) : null,
+      }));
+
+      setIncomeItems(incList);
+      setExpenseItems(expList);
+      setDebtItems(debtList);
+      setAssetItems(assetList);
+      setInsuranceItems(insList);
+      setGoalItems(goalList);
+      setMonthlyClosings(closings);
+
       setFinancials({
-        totalIncome: (incomeRes.data || []).reduce((s, r) => s + Number(r.amount), 0),
-        totalExpenses: (expensesRes.data || []).reduce((s, r) => s + Number(r.amount), 0),
-        totalAssets: (assetsRes.data || []).reduce((s, r) => s + Number(r.estimated_value), 0),
-        totalDebts: (debtsRes.data || []).reduce((s, r) => s + Number(r.total_amount), 0),
+        totalIncome: incList.reduce((s, r) => s + r.amount, 0),
+        totalExpenses: expList.reduce((s, r) => s + r.amount, 0),
+        totalAssets: assetList.reduce((s, r) => s + r.estimated_value, 0),
+        totalDebts: debtList.reduce((s, r) => s + r.total_amount, 0),
       });
 
       let allItems: { status: string; parent_id: string | null; goal_id: string | null }[] = [];
@@ -186,6 +260,47 @@ const ClientDashboard = () => {
   };
 
   const insight = generateInsight();
+
+  /* ── Resumo do onboarding ── */
+  const topIncome = [...incomeItems].sort((a, b) => b.amount - a.amount).slice(0, 3);
+  const expensesByCategory = expenseItems.reduce<Record<string, number>>((acc, e) => {
+    acc[e.category] = (acc[e.category] || 0) + e.amount;
+    return acc;
+  }, {});
+  const topExpenses = Object.entries(expensesByCategory)
+    .map(([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 3);
+  const totalMonthlyDebtPayments = debtItems.reduce((s, d) => s + (d.monthly_payment || 0), 0);
+  const totalInsuranceCoverage = insuranceItems.reduce((s, i) => s + (i.coverage_amount || 0), 0);
+  const totalInsurancePremium = insuranceItems.reduce((s, i) => s + (i.monthly_premium || 0), 0);
+  const totalGoalsTarget = goalItems.reduce((s, g) => s + (g.target_amount || 0), 0);
+  const hasOnboardingData =
+    incomeItems.length > 0 || expenseItems.length > 0 || debtItems.length > 0 ||
+    assetItems.length > 0 || insuranceItems.length > 0 || goalItems.length > 0;
+
+  /* ── Histórico mensal ── */
+  const closingsChartData = monthlyClosings.map((c) => ({
+    month: fmtMonthLabel(c.month_ref),
+    patrimonio: c.net_worth ?? 0,
+    ativos: c.total_assets ?? 0,
+    dividas: c.total_debts ?? 0,
+  }));
+  const lastClosings = [...monthlyClosings].slice(-6).reverse();
+  const firstClosing = monthlyClosings[0];
+  const lastClosing = monthlyClosings[monthlyClosings.length - 1];
+  const totalEvolution =
+    firstClosing && lastClosing && firstClosing !== lastClosing
+      ? (lastClosing.net_worth ?? 0) - (firstClosing.net_worth ?? 0)
+      : 0;
+  const avgSavingsRate = monthlyClosings.length > 0
+    ? Math.round(
+        monthlyClosings.reduce((s, c) => s + (c.savings_rate ?? 0), 0) / monthlyClosings.length
+      )
+    : 0;
+  const periodLabel = monthlyClosings.length > 0
+    ? `${fmtMonthLabel(monthlyClosings[0].month_ref)} → ${fmtMonthLabel(monthlyClosings[monthlyClosings.length - 1].month_ref)}`
+    : "—";
 
   if (fetchError) return (
     <PageTransition>
@@ -618,33 +733,355 @@ const ClientDashboard = () => {
         );
       })()}
 
+      {/* ── Seus dados consolidados ── */}
+      {hasOnboardingData && (
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <ClipboardList className="h-6 w-6 text-accent" />
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Seus dados consolidados</h2>
+              <p className="text-[11px] text-muted-foreground">Visão completa do seu onboarding atualizada</p>
+            </div>
+          </div>
 
-      {/* ── Quick Actions ── (V9: Acompanhamento removido — uso exclusivo do consultor) */}
-      <motion.div
-        initial="hidden" whileInView="visible" viewport={{ once: true }}
-        className="grid grid-cols-2 gap-3"
-      >
-        {[
-          { label: "Meus Dados", icon: ClipboardList, to: "/cliente/meus-dados", color: "bg-primary/10 text-primary" },
-          { label: "Plano de Ação", icon: Target, to: "/cliente/plano-acao", color: "bg-accent/10 text-accent" },
-        ].map((action, i) => (
-          <motion.div key={action.label} variants={fadeUp} custom={i}>
-            <Card3D
-              clickable
-              interactive
-              className="group"
-              onClick={() => navigate(action.to)}
-            >
-              <div className="p-4 text-center">
-                <div className={`w-9 h-9 rounded-xl ${action.color} flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform`}>
-                  <action.icon className="h-6 w-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Renda */}
+            <motion.div variants={fadeUp} custom={0}>
+              <Card3D interactive glowColor="rgba(52,211,153,0.08)" className="h-full">
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-success/10 flex items-center justify-center">
+                      <PiggyBank className="h-5 w-5 text-success" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-foreground">Renda</span>
+                      <p className="text-[11px] text-muted-foreground">{incomeItems.length} {incomeItems.length === 1 ? "fonte" : "fontes"}</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-success tracking-tight tabular-nums">{fmtCurrencyFull(totalIncome)}</p>
+                  {topIncome.length > 0 && (
+                    <ul className="mt-3 space-y-1">
+                      {topIncome.map((i) => (
+                        <li key={i.id} className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground truncate pr-2">{i.description}</span>
+                          <span className="font-semibold text-foreground tabular-nums">{fmtShort(i.amount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <p className="text-xs font-semibold text-foreground">{action.label}</p>
+              </Card3D>
+            </motion.div>
+
+            {/* Despesas */}
+            <motion.div variants={fadeUp} custom={1}>
+              <Card3D interactive glowColor="rgba(239,68,68,0.08)" className="h-full">
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-destructive/10 flex items-center justify-center">
+                      <Receipt className="h-5 w-5 text-destructive" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-foreground">Despesas</span>
+                      <p className="text-[11px] text-muted-foreground">{Object.keys(expensesByCategory).length} {Object.keys(expensesByCategory).length === 1 ? "categoria" : "categorias"}</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-destructive tracking-tight tabular-nums">{fmtCurrencyFull(totalExpenses)}</p>
+                  {topExpenses.length > 0 && (
+                    <ul className="mt-3 space-y-1">
+                      {topExpenses.map((e) => (
+                        <li key={e.category} className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground truncate pr-2 capitalize">{e.category}</span>
+                          <span className="font-semibold text-foreground tabular-nums">{fmtShort(e.amount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </Card3D>
+            </motion.div>
+
+            {/* Dívidas */}
+            <motion.div variants={fadeUp} custom={2}>
+              <Card3D interactive glowColor="rgba(245,158,11,0.08)" className="h-full">
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-warning/10 flex items-center justify-center">
+                      <CreditCard className="h-5 w-5 text-warning" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-foreground">Dívidas</span>
+                      <p className="text-[11px] text-muted-foreground">{debtItems.length} {debtItems.length === 1 ? "dívida" : "dívidas"}</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-warning tracking-tight tabular-nums">{fmtCurrencyFull(totalDebts)}</p>
+                  <div className="mt-3 flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground">Parcela mensal</span>
+                    <span className="font-semibold text-foreground tabular-nums">{fmtCurrencyFull(totalMonthlyDebtPayments)}</span>
+                  </div>
+                </div>
+              </Card3D>
+            </motion.div>
+
+            {/* Patrimônio */}
+            <motion.div variants={fadeUp} custom={3}>
+              <Card3D interactive glowColor="rgba(96,165,250,0.08)" className="h-full">
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Landmark className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-foreground">Patrimônio</span>
+                      <p className="text-[11px] text-muted-foreground">{assetItems.length} {assetItems.length === 1 ? "ativo" : "ativos"}</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-primary tracking-tight tabular-nums">{fmtCurrencyFull(totalAssets)}</p>
+                  <div className="mt-3 flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground">Patrimônio líquido</span>
+                    <span className={`font-semibold tabular-nums ${netWorth >= 0 ? "text-success" : "text-destructive"}`}>
+                      {fmtCurrencyFull(netWorth)}
+                    </span>
+                  </div>
+                </div>
+              </Card3D>
+            </motion.div>
+
+            {/* Seguros */}
+            <motion.div variants={fadeUp} custom={4}>
+              <Card3D interactive glowColor="rgba(168,85,247,0.08)" className="h-full">
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <Shield className="h-5 w-5 text-accent" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-foreground">Seguros</span>
+                      <p className="text-[11px] text-muted-foreground">{insuranceItems.length} {insuranceItems.length === 1 ? "apólice" : "apólices"}</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-accent tracking-tight tabular-nums">{fmtCurrencyFull(totalInsuranceCoverage)}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">cobertura total</p>
+                  <div className="mt-3 flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground">Prêmio mensal</span>
+                    <span className="font-semibold text-foreground tabular-nums">{fmtCurrencyFull(totalInsurancePremium)}</span>
+                  </div>
+                </div>
+              </Card3D>
+            </motion.div>
+
+            {/* Objetivos */}
+            <motion.div variants={fadeUp} custom={5}>
+              <Card3D interactive glowColor="rgba(96,165,250,0.08)" className="h-full">
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Target className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-foreground">Objetivos</span>
+                      <p className="text-[11px] text-muted-foreground">{goalItems.length} {goalItems.length === 1 ? "objetivo" : "objetivos"}</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-foreground tracking-tight tabular-nums">{fmtCurrencyFull(totalGoalsTarget)}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">meta total acumulada</p>
+                </div>
+              </Card3D>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── Histórico mensal de evolução ── */}
+      {monthlyClosings.length >= 1 && (
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <History className="h-6 w-6 text-accent" />
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Sua evolução mês a mês</h2>
+              <p className="text-[11px] text-muted-foreground">Acompanhe a transformação do seu patrimônio</p>
+            </div>
+          </div>
+
+          {/* Gráfico */}
+          <motion.div variants={fadeUp} custom={0}>
+            <Card3D>
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground">Patrimônio, ativos e dívidas</span>
+                </div>
+                <div style={{ width: "100%", height: 240 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={closingsChartData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="gradPatrimonio" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gradAtivos" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.35} />
+                          <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gradDividas" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => fmtShort(Number(v))} />
+                      <RTooltip
+                        contentStyle={{
+                          background: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "12px",
+                          fontSize: "12px",
+                        }}
+                        labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
+                        formatter={(value: number, name: string) => {
+                          const labels: Record<string, string> = {
+                            patrimonio: "Patrimônio líquido",
+                            ativos: "Ativos",
+                            dividas: "Dívidas",
+                          };
+                          return [fmtCurrencyFull(Number(value)), labels[name] || name];
+                        }}
+                      />
+                      <Legend
+                        wrapperStyle={{ fontSize: "11px" }}
+                        formatter={(value) => {
+                          const labels: Record<string, string> = {
+                            patrimonio: "Patrimônio líquido",
+                            ativos: "Ativos",
+                            dividas: "Dívidas",
+                          };
+                          return labels[value] || value;
+                        }}
+                      />
+                      <Area type="monotone" dataKey="ativos" stroke="hsl(var(--success))" fill="url(#gradAtivos)" strokeWidth={2} />
+                      <Area type="monotone" dataKey="dividas" stroke="hsl(var(--destructive))" fill="url(#gradDividas)" strokeWidth={2} />
+                      <Area type="monotone" dataKey="patrimonio" stroke="hsl(var(--primary))" fill="url(#gradPatrimonio)" strokeWidth={2.5} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </Card3D>
           </motion.div>
-        ))}
-      </motion.div>
+
+          {/* Tabela compacta */}
+          {lastClosings.length > 0 && (
+            <motion.div variants={fadeUp} custom={1}>
+              <Card3D>
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Calendar className="h-5 w-5 text-accent" />
+                    <span className="text-xs font-semibold text-foreground">Últimos fechamentos</span>
+                  </div>
+                  <div className="overflow-x-auto -mx-2">
+                    <table className="w-full text-[11px] min-w-[480px]">
+                      <thead>
+                        <tr className="text-muted-foreground border-b border-border/40">
+                          <th className="text-left font-medium py-2 px-2">Mês</th>
+                          <th className="text-right font-medium py-2 px-2">Renda</th>
+                          <th className="text-right font-medium py-2 px-2">Despesas</th>
+                          <th className="text-right font-medium py-2 px-2">Patrim. Líquido</th>
+                          <th className="text-right font-medium py-2 px-2">Tx. Poupança</th>
+                          <th className="text-right font-medium py-2 px-2">Plano %</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lastClosings.map((c, idx) => {
+                          // calcula delta vs o fechamento anterior (cronológico)
+                          const orderedIndex = monthlyClosings.findIndex((x) => x.month_ref === c.month_ref);
+                          const prev = orderedIndex > 0 ? monthlyClosings[orderedIndex - 1] : null;
+                          const deltaNet = prev ? (c.net_worth ?? 0) - (prev.net_worth ?? 0) : 0;
+                          return (
+                            <tr key={c.month_ref} className={`${idx > 0 ? "border-t border-border/20" : ""}`}>
+                              <td className="py-2 px-2 font-medium text-foreground capitalize">{fmtMonthLabel(c.month_ref)}</td>
+                              <td className="py-2 px-2 text-right tabular-nums text-emerald-500">{fmtShort(c.total_income ?? 0)}</td>
+                              <td className="py-2 px-2 text-right tabular-nums text-rose-500">{fmtShort(c.total_expenses ?? 0)}</td>
+                              <td className="py-2 px-2 text-right tabular-nums font-semibold text-foreground">
+                                {fmtShort(c.net_worth ?? 0)}
+                                {prev && deltaNet !== 0 && (
+                                  <span className={`block text-[9px] font-normal ${deltaNet >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                    {deltaNet >= 0 ? "+" : ""}{fmtShort(deltaNet)}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-2 px-2 text-right tabular-nums text-muted-foreground">
+                                {c.savings_rate != null ? `${Math.round(c.savings_rate)}%` : "—"}
+                              </td>
+                              <td className="py-2 px-2 text-right tabular-nums text-muted-foreground">
+                                {c.plan_completion_pct != null ? `${Math.round(c.plan_completion_pct)}%` : "—"}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </Card3D>
+            </motion.div>
+          )}
+
+          {/* Mini stat cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <motion.div variants={fadeUp} custom={2}>
+              <Card3D className="h-full">
+                <div className="p-4">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <TrendingUp className={`h-4 w-4 ${totalEvolution >= 0 ? "text-success" : "text-destructive"}`} />
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Evolução total</span>
+                  </div>
+                  <p className={`text-lg font-black tabular-nums tracking-tight ${totalEvolution >= 0 ? "text-success" : "text-destructive"}`}>
+                    {totalEvolution >= 0 ? "+" : ""}{fmtShort(totalEvolution)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">patrimônio líquido</p>
+                </div>
+              </Card3D>
+            </motion.div>
+            <motion.div variants={fadeUp} custom={3}>
+              <Card3D className="h-full">
+                <div className="p-4">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <PiggyBank className="h-4 w-4 text-accent" />
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Tx. poupança média</span>
+                  </div>
+                  <p className="text-lg font-black tabular-nums tracking-tight text-foreground">{avgSavingsRate}%</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">no período</p>
+                </div>
+              </Card3D>
+            </motion.div>
+            <motion.div variants={fadeUp} custom={4}>
+              <Card3D className="h-full">
+                <div className="p-4">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Meses fechados</span>
+                  </div>
+                  <p className="text-lg font-black tabular-nums tracking-tight text-foreground">{monthlyClosings.length}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{monthlyClosings.length === 1 ? "fechamento" : "fechamentos"}</p>
+                </div>
+              </Card3D>
+            </motion.div>
+            <motion.div variants={fadeUp} custom={5}>
+              <Card3D className="h-full">
+                <div className="p-4">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Período</span>
+                  </div>
+                  <p className="text-sm font-black tabular-nums tracking-tight text-foreground capitalize">{periodLabel}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">primeiro → último</p>
+                </div>
+              </Card3D>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+
     </PageTransition>
   );
 };
