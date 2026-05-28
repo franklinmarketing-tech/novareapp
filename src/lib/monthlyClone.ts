@@ -55,26 +55,35 @@ export async function cloneToNextMonth(
   ]);
 
   // ── Etapa 1: lê o ÚLTIMO valor lançado em acompanhamento_entradas para cada item.
-  // Esses lançamentos sobrescrevem o "amount" do clone, garantindo que o próximo
-  // mês comece com os valores REAIS do mês anterior — não com o orçamento inicial.
+  // O valor_atual representa o PROGRESSO (delta) em direção à meta:
+  //   - expenses/debts/insurance: redução conseguida (subtrai do original)
+  //   - income/assets: aumento conseguido (soma ao original)
+  // Ex.: despesa cadastrada R$ 2.500, lançou redução de R$ 200 → próximo mês = R$ 2.300
   const { data: lancamentos } = await supabase
     .from("acompanhamento_entradas")
     .select("source_table, source_id, valor_atual, snapshotted_at")
     .eq("client_id", clientId)
     .eq("is_closing_snapshot", false)
     .order("snapshotted_at", { ascending: false });
-  const valorRealizadoMap = new Map<string, number>();
+  const deltaMap = new Map<string, number>();
   (lancamentos || []).forEach((l: any) => {
     if (l.valor_atual == null) return;
     const key = `${l.source_table}:${l.source_id}`;
     // Como ordenamos DESC, o primeiro que aparece é o mais recente
-    if (!valorRealizadoMap.has(key)) {
-      valorRealizadoMap.set(key, Number(l.valor_atual));
+    if (!deltaMap.has(key)) {
+      deltaMap.set(key, Number(l.valor_atual));
     }
   });
-  const getValorRealizado = (table: string, id: string, fallback: number) => {
-    const v = valorRealizadoMap.get(`${table}:${id}`);
-    return v != null ? v : fallback;
+
+  // Direção da meta por tabela: -1 reduz (despesa/divida/seguro), +1 cresce (renda/patrimonio)
+  const isReducing = (table: string) =>
+    table === "expenses" || table === "debts" || table === "insurance";
+
+  const applyDelta = (table: string, id: string, original: number): number => {
+    const delta = deltaMap.get(`${table}:${id}`);
+    if (delta == null) return original;
+    const next = isReducing(table) ? original - delta : original + delta;
+    return Math.max(0, next); // nunca negativo
   };
 
   // ── INCOME ──
@@ -91,7 +100,7 @@ export async function cloneToNextMonth(
         ...r,
         client_id: clientId,
         month_ref: nextRef,
-        amount: getValorRealizado("income", id as string, Number(r.amount) || 0),
+        amount: applyDelta("income", id as string, Number(r.amount) || 0),
       }));
       const { error } = await supabase.from("income").insert(rows);
       if (!error) result.income = rows.length;
@@ -112,7 +121,7 @@ export async function cloneToNextMonth(
         ...r,
         client_id: clientId,
         month_ref: nextRef,
-        amount: getValorRealizado("expenses", id as string, Number(r.amount) || 0),
+        amount: applyDelta("expenses", id as string, Number(r.amount) || 0),
       }));
       const { error } = await supabase.from("expenses").insert(rows);
       if (!error) result.expenses = rows.length;
@@ -133,7 +142,7 @@ export async function cloneToNextMonth(
         ...r,
         client_id: clientId,
         month_ref: nextRef,
-        total_amount: getValorRealizado("debts", id as string, Number(r.total_amount) || 0),
+        total_amount: applyDelta("debts", id as string, Number(r.total_amount) || 0),
       }));
       const { error } = await supabase.from("debts").insert(rows);
       if (!error) result.debts = rows.length;
@@ -154,7 +163,7 @@ export async function cloneToNextMonth(
         ...r,
         client_id: clientId,
         month_ref: nextRef,
-        estimated_value: getValorRealizado("assets", id as string, Number(r.estimated_value) || 0),
+        estimated_value: applyDelta("assets", id as string, Number(r.estimated_value) || 0),
       }));
       const { error } = await supabase.from("assets").insert(rows);
       if (!error) result.assets = rows.length;
@@ -175,7 +184,7 @@ export async function cloneToNextMonth(
         ...r,
         client_id: clientId,
         month_ref: nextRef,
-        monthly_premium: getValorRealizado("insurance", id as string, Number(r.monthly_premium) || 0),
+        monthly_premium: applyDelta("insurance", id as string, Number(r.monthly_premium) || 0),
       }));
       const { error } = await supabase.from("insurance").insert(rows);
       if (!error) result.insurance = rows.length;
