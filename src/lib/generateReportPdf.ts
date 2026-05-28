@@ -734,6 +734,498 @@ const canvasBarStacked = (
 };
 
 // ──────────────────────────────────────────────────────────
+// Donut com cores customizadas + total no centro (para Status / Categoria)
+// ──────────────────────────────────────────────────────────
+const canvasColoredDonut = (
+  items: Array<{ label: string; value: number; color: string }>,
+  pw: number, ph: number,
+  centerLabel: string
+): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  const total = items.reduce((s, i) => s + i.value, 0);
+  if (!total) return cvs.toDataURL();
+
+  // Donut à esquerda, legenda à direita
+  const cx = pw * 0.30;
+  const cy = ph / 2;
+  const OR = Math.min(pw * 0.26, ph * 0.46);
+  const IR = OR * 0.58;
+
+  // Sombra suave
+  ctx.save();
+  ctx.shadowColor = "rgba(20, 30, 50, 0.18)";
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 2;
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(cx, cy, OR + 1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Segmentos
+  let a = -Math.PI / 2;
+  items.forEach((item) => {
+    const sweep = (item.value / total) * 2 * Math.PI;
+    const grad = ctx.createRadialGradient(cx, cy, IR, cx, cy, OR);
+    grad.addColorStop(0, _lighten(item.color, 0.35));
+    grad.addColorStop(1, item.color);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, OR, a, a + sweep);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    a += sweep;
+  });
+
+  // Furo interno
+  ctx.beginPath();
+  ctx.arc(cx, cy, IR, 0, 2 * Math.PI);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+
+  // Total no centro
+  const centerNumSize = Math.max(Math.round(OR * 0.42), 20);
+  const centerLblSize = Math.max(Math.round(OR * 0.16), 10);
+  ctx.fillStyle = "#1e3a5f";
+  ctx.font = `bold ${centerNumSize}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(String(total), cx, cy + centerNumSize * 0.15);
+  ctx.fillStyle = "#787880";
+  ctx.font = `${centerLblSize}px Arial`;
+  ctx.fillText(centerLabel, cx, cy + centerNumSize * 0.15 + centerLblSize + 4);
+
+  // Legenda à direita
+  const lx = pw * 0.62;
+  const rx = pw - 8;
+  const fs = Math.max(Math.round(pw * 0.028), 11);
+  ctx.font = `${fs}px Arial`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  const maxI = Math.min(items.length, 7);
+  const rowH = Math.min((ph - 24) / Math.max(maxI, 1), fs * 2.0);
+  const startY = cy - ((maxI - 1) * rowH) / 2;
+  const sorted = items.slice().sort((a, b) => b.value - a.value).slice(0, maxI);
+  sorted.forEach((it, i) => {
+    const ly = startY + i * rowH;
+    const dotR = Math.max(fs * 0.42, 5);
+    ctx.beginPath();
+    ctx.arc(lx + dotR, ly, dotR, 0, 2 * Math.PI);
+    ctx.fillStyle = it.color;
+    ctx.fill();
+    const pct = ((it.value / total) * 100).toFixed(0);
+    ctx.fillStyle = "#404050";
+    ctx.font = `${fs}px Arial`;
+    const maxChars = Math.max(8, Math.floor((rx - (lx + dotR * 2 + 8) - fs * 4) / (fs * 0.55)));
+    const lbl = it.label.length > maxChars ? it.label.slice(0, maxChars) + "…" : it.label;
+    ctx.textAlign = "left";
+    ctx.fillText(lbl, lx + dotR * 2 + 8, ly);
+    ctx.fillStyle = it.color;
+    ctx.font = `bold ${fs}px Arial`;
+    ctx.textAlign = "right";
+    ctx.fillText(`${it.value} (${pct}%)`, rx, ly);
+  });
+
+  return cvs.toDataURL("image/png");
+};
+
+// ──────────────────────────────────────────────────────────
+// Barras horizontais com "trilha" cinza (Progresso por meta)
+// ──────────────────────────────────────────────────────────
+const canvasBarHWithTrack = (
+  bars: Array<{ label: string; value: number; color: string }>,
+  pw: number, ph: number,
+  maxValue: number,
+  fmtFn: (v: number) => string
+): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  const pL = Math.min(pw * 0.34, 240);
+  const pR = Math.min(pw * 0.14, 90);
+  const pT = 10;
+  const pB = 10;
+  const cW = pw - pL - pR;
+  const cH = ph - pT - pB;
+  const rowH = cH / Math.max(bars.length, 1);
+  const bH = Math.min(rowH * 0.55, 16);
+  const maxV = Math.max(maxValue, 1);
+
+  const fs = Math.max(Math.round(rowH * 0.42), 10);
+
+  bars.forEach((bar, i) => {
+    const y = pT + rowH * i + (rowH - bH) / 2;
+    // Trilha (100% width = maxV)
+    ctx.fillStyle = "#e5e7eb";
+    _rr(ctx, pL, y, cW, bH, bH / 2);
+    ctx.fill();
+
+    // Barra
+    const ratio = Math.min(bar.value / maxV, 1);
+    const bW = Math.max(ratio * cW, 2);
+    const grad = ctx.createLinearGradient(pL, 0, pL + bW, 0);
+    grad.addColorStop(0, bar.color);
+    grad.addColorStop(1, _lighten(bar.color, 0.30));
+    ctx.fillStyle = grad;
+    _rr(ctx, pL, y, bW, bH, bH / 2);
+    ctx.fill();
+
+    // Label esquerda
+    ctx.fillStyle = "#1e1e23";
+    ctx.font = `bold ${fs}px Arial`;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    const maxLblChars = Math.max(20, Math.floor((pL - 12) / (fs * 0.55)));
+    const lbl = bar.label.length > maxLblChars ? bar.label.slice(0, maxLblChars - 1) + "…" : bar.label;
+    ctx.fillText(lbl, pL - 8, y + bH / 2);
+
+    // Valor à direita
+    ctx.fillStyle = bar.color;
+    ctx.font = `bold ${fs}px Arial`;
+    ctx.textAlign = "left";
+    ctx.fillText(fmtFn(bar.value), pL + bW + 6, y + bH / 2);
+  });
+
+  return cvs.toDataURL("image/png");
+};
+
+// ──────────────────────────────────────────────────────────
+// Barras agrupadas (Alvo vs Atual)
+// ──────────────────────────────────────────────────────────
+const canvasBarGrouped = (
+  groups: Array<{ label: string; series: Array<{ name: string; value: number; color: string }> }>,
+  pw: number, ph: number,
+  fmtCompact: (v: number) => string
+): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  if (groups.length === 0) return cvs.toDataURL();
+
+  const pL = 42;
+  const pR = 14;
+  const pT = 28; // espaço pra legenda no topo
+  const pB = 58; // espaço pra labels rotacionados embaixo
+  const cW = pw - pL - pR;
+  const cH = ph - pT - pB;
+
+  const allVals = groups.flatMap((g) => g.series.map((s) => s.value));
+  const rawMax = Math.max(...allVals, 1);
+  const niceMax = Math.ceil(rawMax / 1000) * 1000 || rawMax;
+
+  const yToPx = (v: number) => pT + cH - (v / niceMax) * cH;
+
+  // Legenda no topo (usa nomes da primeira group)
+  const legend = groups[0]?.series.map((s) => ({ name: s.name, color: s.color })) || [];
+  let legX = pL;
+  const legY = 10;
+  const legFs = 10;
+  ctx.font = `${legFs}px Arial`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  legend.forEach((lg) => {
+    ctx.fillStyle = lg.color;
+    _rr(ctx, legX, legY - 5, 10, 10, 2);
+    ctx.fill();
+    ctx.fillStyle = "#404050";
+    ctx.fillText(lg.name, legX + 14, legY);
+    legX += 14 + ctx.measureText(lg.name).width + 18;
+  });
+
+  // Grid + Y labels
+  ctx.strokeStyle = "#eef0f3";
+  ctx.lineWidth = 0.8;
+  ctx.fillStyle = "#a0a0a8";
+  ctx.font = "10px Arial";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  for (let i = 0; i <= 4; i++) {
+    const t = i / 4;
+    const gy = pT + cH * (1 - t);
+    ctx.beginPath();
+    ctx.moveTo(pL, gy);
+    ctx.lineTo(pL + cW, gy);
+    ctx.stroke();
+    const v = niceMax * t;
+    ctx.fillText(fmtCompact(v), pL - 4, gy);
+  }
+
+  // Barras
+  const groupW = cW / groups.length;
+  const innerGap = 4;
+  const seriesCount = legend.length || 1;
+  const bW = Math.min((groupW - 14) / seriesCount - innerGap, 24);
+
+  groups.forEach((g, gi) => {
+    const groupCx = pL + groupW * gi + groupW / 2;
+    g.series.forEach((s, si) => {
+      const totalSeriesW = bW * seriesCount + innerGap * (seriesCount - 1);
+      const x = groupCx - totalSeriesW / 2 + si * (bW + innerGap);
+      const bH = Math.max((s.value / niceMax) * cH, 1);
+      const yy = pT + cH - bH;
+      const grad = ctx.createLinearGradient(0, yy, 0, yy + bH);
+      grad.addColorStop(0, _lighten(s.color, 0.25));
+      grad.addColorStop(1, s.color);
+      ctx.fillStyle = grad;
+      _rrTop(ctx, x, yy, bW, bH, Math.min(4, bW / 2));
+      ctx.fill();
+    });
+    // Label rotacionado
+    ctx.save();
+    ctx.translate(groupCx, pT + cH + 6);
+    ctx.rotate(-Math.PI / 6);
+    ctx.fillStyle = "#787880";
+    ctx.font = "9px Arial";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    const lbl = g.label.length > 16 ? g.label.slice(0, 15) + "…" : g.label;
+    ctx.fillText(lbl, 0, 0);
+    ctx.restore();
+  });
+
+  return cvs.toDataURL("image/png");
+};
+
+// ──────────────────────────────────────────────────────────
+// Linhas múltiplas — Evolução de várias séries (% no eixo Y)
+// ──────────────────────────────────────────────────────────
+const canvasMultiLine = (
+  xLabels: string[],
+  series: Array<{ name: string; color: string; points: Array<number | null> }>,
+  pw: number, ph: number
+): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  if (xLabels.length === 0 || series.length === 0) return cvs.toDataURL();
+
+  const pL = 40;
+  const pR = 14;
+  const pT = 14;
+  const pB = 50; // espaço pra X labels + legenda
+  const cW = pw - pL - pR;
+  const cH = ph - pT - pB;
+
+  // domínio Y 0 - 110 (ou maior se algum ponto excede)
+  const allVals = series.flatMap((s) => s.points.filter((p): p is number => p != null));
+  const maxV = Math.max(110, Math.ceil((Math.max(...allVals, 0) + 10) / 10) * 10);
+
+  const yToPx = (v: number) => pT + cH - (v / maxV) * cH;
+  const xToPx = (i: number) =>
+    xLabels.length === 1 ? pL + cW / 2 : pL + (i / (xLabels.length - 1)) * cW;
+
+  // Grid + Y labels
+  ctx.strokeStyle = "#eef0f3";
+  ctx.lineWidth = 0.8;
+  ctx.fillStyle = "#a0a0a8";
+  ctx.font = "10px Arial";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  const steps = 5;
+  for (let i = 0; i <= steps; i++) {
+    const v = (maxV * i) / steps;
+    const py = yToPx(v);
+    ctx.beginPath();
+    ctx.moveTo(pL, py);
+    ctx.lineTo(pL + cW, py);
+    ctx.stroke();
+    ctx.fillText(`${Math.round(v)}%`, pL - 4, py);
+  }
+
+  // X labels
+  ctx.fillStyle = "#787880";
+  ctx.font = "9px Arial";
+  ctx.textBaseline = "top";
+  const stepX = Math.max(1, Math.ceil(xLabels.length / 8));
+  xLabels.forEach((lbl, i) => {
+    if (i % stepX !== 0 && i !== xLabels.length - 1) return;
+    const px = xToPx(i);
+    ctx.save();
+    if (xLabels.length > 6) {
+      ctx.translate(px, pT + cH + 6);
+      ctx.rotate(-Math.PI / 6);
+      ctx.textAlign = "right";
+      ctx.fillText(lbl, 0, 0);
+    } else {
+      ctx.textAlign = "center";
+      ctx.fillText(lbl, px, pT + cH + 6);
+    }
+    ctx.restore();
+  });
+
+  // Linhas (uma por série), pulando gaps de null
+  series.forEach((s) => {
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 2.0;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    let started = false;
+    ctx.beginPath();
+    s.points.forEach((p, i) => {
+      if (p == null) {
+        started = false;
+        return;
+      }
+      const x = xToPx(i);
+      const y = yToPx(p);
+      if (!started) {
+        ctx.moveTo(x, y);
+        started = true;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    ctx.stroke();
+
+    // Pontos
+    s.points.forEach((p, i) => {
+      if (p == null) return;
+      const x = xToPx(i);
+      const y = yToPx(p);
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(x, y, 2.3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  });
+
+  // Legenda no rodapé (com wrap se muitas)
+  const fsL = 10;
+  ctx.font = `${fsL}px Arial`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  let lgx = pL;
+  let lgy = ph - 16;
+  const maxX = pw - pR;
+  series.forEach((s) => {
+    const txt = s.name;
+    const itemW = 14 + ctx.measureText(txt).width + 16;
+    if (lgx + itemW > maxX) {
+      lgx = pL;
+      lgy += 14;
+    }
+    ctx.fillStyle = s.color;
+    ctx.beginPath();
+    ctx.arc(lgx + 5, lgy, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#404050";
+    ctx.fillText(txt, lgx + 14, lgy);
+    lgx += itemW;
+  });
+
+  return cvs.toDataURL("image/png");
+};
+
+// ──────────────────────────────────────────────────────────
+// Barras empilhadas por série (Lançamentos por mês por categoria)
+// ──────────────────────────────────────────────────────────
+const canvasBarStackedSeries = (
+  buckets: Array<{ label: string; counts: Record<string, number> }>,
+  categories: Array<{ key: string; label: string; color: string }>,
+  pw: number, ph: number
+): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  if (buckets.length === 0 || categories.length === 0) return cvs.toDataURL();
+
+  const pL = 32;
+  const pR = 14;
+  const pT = 28;
+  const pB = 38;
+  const cW = pw - pL - pR;
+  const cH = ph - pT - pB;
+
+  // Total por bucket (para domínio Y)
+  const totals = buckets.map((b) => categories.reduce((s, c) => s + (b.counts[c.key] || 0), 0));
+  const rawMax = Math.max(...totals, 1);
+  const niceMax = Math.max(rawMax, Math.ceil(rawMax / 5) * 5);
+
+  const yToPx = (v: number) => pT + cH - (v / niceMax) * cH;
+
+  // Legenda topo
+  let legX = pL;
+  const legY = 10;
+  const legFs = 10;
+  ctx.font = `${legFs}px Arial`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  const maxX = pw - pR;
+  categories.forEach((c) => {
+    const txt = c.label;
+    const itemW = 14 + ctx.measureText(txt).width + 16;
+    if (legX + itemW > maxX) {
+      legX = pL;
+    }
+    ctx.fillStyle = c.color;
+    _rr(ctx, legX, legY - 5, 10, 10, 2);
+    ctx.fill();
+    ctx.fillStyle = "#404050";
+    ctx.fillText(txt, legX + 14, legY);
+    legX += itemW;
+  });
+
+  // Grid + Y labels
+  ctx.strokeStyle = "#eef0f3";
+  ctx.lineWidth = 0.8;
+  ctx.fillStyle = "#a0a0a8";
+  ctx.font = "10px Arial";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  const ySteps = 5;
+  for (let i = 0; i <= ySteps; i++) {
+    const v = (niceMax * i) / ySteps;
+    const py = yToPx(v);
+    ctx.beginPath();
+    ctx.moveTo(pL, py);
+    ctx.lineTo(pL + cW, py);
+    ctx.stroke();
+    ctx.fillText(String(Math.round(v)), pL - 4, py);
+  }
+
+  // Barras
+  const groupW = cW / buckets.length;
+  const bW = Math.min(groupW * 0.6, 40);
+
+  buckets.forEach((b, gi) => {
+    const cxp = pL + groupW * gi + groupW / 2;
+    let yCursor = pT + cH;
+    let totalThis = 0;
+    categories.forEach((c) => {
+      const v = b.counts[c.key] || 0;
+      if (v <= 0) return;
+      const segH = (v / niceMax) * cH;
+      const yy = yCursor - segH;
+      const grad = ctx.createLinearGradient(0, yy, 0, yy + segH);
+      grad.addColorStop(0, _lighten(c.color, 0.18));
+      grad.addColorStop(1, c.color);
+      ctx.fillStyle = grad;
+      ctx.fillRect(cxp - bW / 2, yy, bW, segH);
+      yCursor = yy;
+      totalThis += v;
+    });
+
+    // Label X
+    ctx.fillStyle = "#787880";
+    ctx.font = "10px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(b.label, cxp, pT + cH + 6);
+
+    // Total acima
+    if (totalThis > 0) {
+      ctx.fillStyle = "#404050";
+      ctx.font = "bold 10px Arial";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(String(totalThis), cxp, yCursor - 4);
+    }
+  });
+
+  return cvs.toDataURL("image/png");
+};
+
+// ──────────────────────────────────────────────────────────
 // Tipos
 // ──────────────────────────────────────────────────────────
 export interface ReportData {
@@ -2009,6 +2501,270 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     }
 
     y += 4;
+  }
+
+  // ── Análise Visual das Metas (6 gráficos)
+  if (data.parecerMetas && data.parecerMetas.length > 0) {
+    const metasAll = data.parecerMetas;
+
+    // ── Helpers de categoria
+    const CAT_DEFS: Array<{ key: string; label: string; color: string }> = [
+      { key: "income", label: "Renda", color: "#16a34a" },
+      { key: "expenses", label: "Despesa", color: "#dc2626" },
+      { key: "debts", label: "Dívida", color: "#ea580c" },
+      { key: "assets", label: "Patrimônio", color: "#2563eb" },
+      { key: "insurance", label: "Seguro", color: "#7c3aed" },
+    ];
+    const catColorByKey = new Map(CAT_DEFS.map((c) => [c.key, c.color]));
+    const catLabelByKey = new Map(CAT_DEFS.map((c) => [c.key, c.label]));
+
+    // ── 1. Status das Metas
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let cConcluidas = 0, cAndamento = 0, cSemLanc = 0, cAtrasadas = 0;
+    metasAll.forEach((m) => {
+      const pct = m.progressPct;
+      const isAtrasada = m.prazo && new Date(m.prazo + "T12:00:00") < today && (pct == null || pct < 100);
+      const semLanc = m.latestValor == null && !m.latestEstado && (m.totalLancamentos ?? 0) === 0;
+      if (isAtrasada) cAtrasadas++;
+      else if (pct != null && pct >= 100) cConcluidas++;
+      else if (semLanc) cSemLanc++;
+      else if (pct != null && pct >= 1) cAndamento++;
+      else cSemLanc++; // sem dados/sem lançamentos vão pro "sem lançamentos"
+    });
+    const statusItems = [
+      { label: "Concluídas", value: cConcluidas, color: "#16a34a" },
+      { label: "Em andamento", value: cAndamento, color: "#2563eb" },
+      { label: "Sem lançamentos", value: cSemLanc, color: "#94a3b8" },
+      { label: "Atrasadas", value: cAtrasadas, color: "#dc2626" },
+    ].filter((s) => s.value > 0);
+
+    // ── 2. Metas por Categoria
+    const catCount = new Map<string, number>();
+    metasAll.forEach((m) => {
+      const k = m.sourceTable;
+      catCount.set(k, (catCount.get(k) ?? 0) + 1);
+    });
+    const categoryItems = Array.from(catCount.entries())
+      .map(([k, v]) => ({
+        label: catLabelByKey.get(k) || k,
+        value: v,
+        color: catColorByKey.get(k) || "#787880",
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    // ── 3. Progresso por Meta (top 12)
+    const progressoMetas = metasAll
+      .filter((m) => m.progressPct != null)
+      .map((m) => {
+        const pct = m.progressPct ?? 0;
+        const color =
+          pct >= 100 ? "#16a34a" :
+          pct >= 60 ? "#2563eb" :
+          pct >= 30 ? "#d97706" :
+          "#dc2626";
+        return { label: m.sourceLabel, value: pct, color };
+      })
+      .sort((a, b) => b.value - a.value);
+    let progressoBars: Array<{ label: string; value: number; color: string }> = [];
+    if (progressoMetas.length > 12) {
+      progressoBars = progressoMetas.slice(0, 11);
+      const restantes = progressoMetas.slice(11);
+      const avg = restantes.reduce((s, p) => s + p.value, 0) / restantes.length;
+      progressoBars.push({ label: `Outras (${restantes.length})`, value: avg, color: "#94a3b8" });
+    } else {
+      progressoBars = progressoMetas;
+    }
+
+    // ── 4. Alvo vs Atual (top 8)
+    const alvoVsAtualGroups = metasAll
+      .filter((m) => (m.metaValor ?? 0) > 0)
+      .sort((a, b) => (b.metaValor ?? 0) - (a.metaValor ?? 0))
+      .slice(0, 8)
+      .map((m) => {
+        const alvo = m.metaValor ?? 0;
+        const atual = m.latestValor ?? 0;
+        const atingiu = atual >= alvo;
+        return {
+          label: m.sourceLabel,
+          series: [
+            { name: "Alvo", value: alvo, color: "#94a3b8" },
+            { name: "Atual", value: atual, color: atingiu ? "#16a34a" : "#2563eb" },
+          ],
+        };
+      });
+
+    // ── 5. Evolução Mensal (top 6 metas com mais lançamentos)
+    const metasParaEvolucao = metasAll
+      .filter((m) => (m.totalLancamentos ?? 0) >= 2 && m.history && m.history.length >= 2)
+      .sort((a, b) => (b.totalLancamentos ?? 0) - (a.totalLancamentos ?? 0))
+      .slice(0, 6);
+
+    // Coletar todas as datas (ym) ordenadas ASC
+    const ymSet = new Set<string>();
+    metasParaEvolucao.forEach((m) => {
+      (m.history || []).forEach((h) => {
+        if (h.date) ymSet.add(h.date.slice(0, 7));
+      });
+    });
+    const ymSorted = Array.from(ymSet).sort();
+    const xLabels = ymSorted.map((ym) => {
+      const [yyyy, mm] = ym.split("-");
+      return `${mm}/${yyyy.slice(2)}`;
+    });
+    const evolucaoSeries = metasParaEvolucao.map((m, i) => {
+      // último pct por ym
+      const pctByYm = new Map<string, number | null>();
+      (m.history || []).forEach((h) => {
+        if (!h.date) return;
+        const ym = h.date.slice(0, 7);
+        pctByYm.set(ym, h.pct ?? null);
+      });
+      const points = ymSorted.map((ym) => (pctByYm.has(ym) ? pctByYm.get(ym)! : null));
+      const short = m.sourceLabel.length > 22 ? m.sourceLabel.slice(0, 20) + "…" : m.sourceLabel;
+      return { name: short, color: CP[i % CP.length], points };
+    });
+
+    // ── 6. Lançamentos por Mês (por categoria)
+    const monthCatMap = new Map<string, Record<string, number>>();
+    metasAll.forEach((m) => {
+      const cat = m.sourceTable;
+      (m.history || []).forEach((h) => {
+        if (!h.date) return;
+        const ym = h.date.slice(0, 7);
+        const row = monthCatMap.get(ym) ?? {};
+        row[cat] = (row[cat] ?? 0) + 1;
+        monthCatMap.set(ym, row);
+      });
+    });
+    const lancamentosBuckets = Array.from(monthCatMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([ym, counts]) => {
+        const [yyyy, mm] = ym.split("-");
+        return { label: `${mm}/${yyyy.slice(2)}`, counts };
+      });
+    const catsPresentes = new Set<string>();
+    lancamentosBuckets.forEach((b) => {
+      Object.keys(b.counts).forEach((k) => catsPresentes.add(k));
+    });
+    const categoriesForStacked = CAT_DEFS.filter((c) => catsPresentes.has(c.key));
+
+    // Há ao menos algum gráfico para mostrar?
+    const hasAnyChart =
+      statusItems.length > 0 ||
+      categoryItems.length > 0 ||
+      progressoBars.length > 0 ||
+      alvoVsAtualGroups.length > 0 ||
+      (evolucaoSeries.length > 0 && xLabels.length >= 2) ||
+      lancamentosBuckets.length >= 2;
+
+    if (hasAnyChart) {
+      ensureSpace(20);
+      sectionHeader("Análise Visual das Metas", "Distribuição, progresso e evolução das metas em gráficos");
+
+      // Linha 1: Status (esq) + Categoria (dir)
+      if (statusItems.length > 0 || categoryItems.length > 0) {
+        const chartH = 56;
+        ensureSpace(chartH + 12);
+        const halfW = (CONTENT_W - 6) / 2;
+
+        if (statusItems.length > 0) {
+          // Título
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(...C.text);
+          pdf.text("Status das Metas", MARGIN, y);
+          const img = canvasColoredDonut(statusItems, 640, 360, "metas");
+          pdf.addImage(img, "PNG", MARGIN, y + 3, halfW, chartH);
+        }
+        if (categoryItems.length > 0) {
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(...C.text);
+          pdf.text("Metas por Categoria", MARGIN + halfW + 6, y);
+          const img = canvasColoredDonut(categoryItems, 640, 360, "categorias");
+          pdf.addImage(img, "PNG", MARGIN + halfW + 6, y + 3, halfW, chartH);
+        }
+        y += chartH + 6;
+      }
+
+      // Linha 2: Progresso por Meta (full)
+      if (progressoBars.length > 0) {
+        const chartH = Math.max(40, Math.min(progressoBars.length * 6 + 12, 90));
+        ensureSpace(chartH + 12);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9.5);
+        pdf.setTextColor(...C.text);
+        pdf.text("Progresso por Meta", MARGIN, y);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text("Percentual de atingimento de cada meta", MARGIN, y + 4);
+        const img = canvasBarHWithTrack(
+          progressoBars,
+          1200, Math.max(360, progressoBars.length * 50 + 60),
+          110,
+          (v) => `${Math.round(v)}%`
+        );
+        pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, chartH);
+        y += chartH + 8;
+      }
+
+      // Linha 3: Alvo vs Atual (full)
+      if (alvoVsAtualGroups.length > 0) {
+        const chartH = 70;
+        ensureSpace(chartH + 12);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9.5);
+        pdf.setTextColor(...C.text);
+        pdf.text("Valor Alvo vs Valor Atual (Top 8)", MARGIN, y);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text("Comparação entre objetivo e progresso real por meta", MARGIN, y + 4);
+        const img = canvasBarGrouped(alvoVsAtualGroups, 1300, 540, (v) => {
+          if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+          if (v >= 1_000) return `${(v / 1_000).toFixed(0)}k`;
+          return String(Math.round(v));
+        });
+        pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, chartH);
+        y += chartH + 8;
+      }
+
+      // Linha 4: Evolução Mensal (full)
+      if (evolucaoSeries.length > 0 && xLabels.length >= 2) {
+        const chartH = 70;
+        ensureSpace(chartH + 12);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9.5);
+        pdf.setTextColor(...C.text);
+        pdf.text("Evolução Mensal das Metas Ativas", MARGIN, y);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text("Trajetória de progresso (%) ao longo dos meses", MARGIN, y + 4);
+        const img = canvasMultiLine(xLabels, evolucaoSeries, 1300, 540);
+        pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, chartH);
+        y += chartH + 8;
+      }
+
+      // Linha 5: Lançamentos por Mês (full)
+      if (lancamentosBuckets.length >= 2 && categoriesForStacked.length > 0) {
+        const chartH = 65;
+        ensureSpace(chartH + 12);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9.5);
+        pdf.setTextColor(...C.text);
+        pdf.text("Lançamentos por Mês (por Categoria)", MARGIN, y);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text("Quantidade de registros agrupados por categoria financeira", MARGIN, y + 4);
+        const img = canvasBarStackedSeries(lancamentosBuckets, categoriesForStacked, 1300, 500);
+        pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, chartH);
+        y += chartH + 8;
+      }
+    }
   }
 
   // ── Fechamentos Mensais
