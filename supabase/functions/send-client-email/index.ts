@@ -6,9 +6,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
+// Chamamos a API do Resend direto (sem gateway intermediario) — mais robusto.
+const RESEND_API = "https://api.resend.com";
 const LOGO_URL = "https://novareapp.com.br/logo-novare-email.png";
 const APP_URL = "https://novareapp.com.br";
+const FROM = "Novare <suporte@novareapp.com.br>";
 
 const PRIMARY = "#2b4464";
 const ACCENT = "#c9643a";
@@ -253,11 +255,16 @@ Deno.serve(async (req) => {
       _role: "admin",
     });
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY_1") || Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
+    // Prioriza RESEND_API_KEY (chave principal). Mantem fallback para RESEND_API_KEY_1
+    // por compatibilidade com setups antigos via connector.
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || Deno.env.get("RESEND_API_KEY_1");
+    if (!RESEND_API_KEY) {
+      console.error("send-client-email: RESEND_API_KEY nao configurada nas secrets do Supabase");
+      return new Response(JSON.stringify({ error: "RESEND_API_KEY ausente — configure em Project Settings > Functions > Secrets" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // ── INPUT VALIDATION ──
     const { to, templateName, templateData } = await req.json();
@@ -297,15 +304,14 @@ Deno.serve(async (req) => {
     const templateFn = TEMPLATES[templateName];
     const { subject, html } = templateFn(templateData || {});
 
-    const response = await fetch(`${GATEWAY_URL}/emails`, {
+    const response = await fetch(`${RESEND_API}/emails`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": RESEND_API_KEY,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Novare <suporte@novareapp.com.br>",
+        from: FROM,
         to: [to],
         subject,
         html,
@@ -315,14 +321,15 @@ Deno.serve(async (req) => {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("Resend error:", JSON.stringify(result));
-      return new Response(JSON.stringify({ error: "Falha ao enviar email" }), {
+      console.error("send-client-email: Resend retornou erro", response.status, JSON.stringify(result));
+      return new Response(JSON.stringify({ error: "Falha ao enviar email", detail: result }), {
         status: response.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    console.log("send-client-email: enviado", { to, templateName, id: result.id });
+    return new Response(JSON.stringify({ success: true, id: result.id }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -5,7 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
+// Chamada direta na API do Resend (sem gateway intermediario)
+const RESEND_API = "https://api.resend.com";
 const LOGO_URL = "https://novareapp.com.br/logo-novare-email.png";
 const PRIMARY = "#2b4464";
 const ACCENT = "#c9643a";
@@ -96,19 +97,20 @@ Deno.serve(async (req) => {
       .maybeSingle();
     const inviterName = inviterProfile?.full_name || inviterProfile?.email || "Um administrador";
 
-    // Enviar email via Resend Gateway
+    // Enviar email via Resend (chamada direta na API)
     let emailSent = false;
     let emailError: string | null = null;
     try {
-      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY_1") || Deno.env.get("RESEND_API_KEY");
-      if (LOVABLE_API_KEY && RESEND_API_KEY) {
-        const r = await fetch(`${GATEWAY_URL}/emails`, {
+      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || Deno.env.get("RESEND_API_KEY_1");
+      if (!RESEND_API_KEY) {
+        emailError = "RESEND_API_KEY ausente — configure nas Secrets do Supabase";
+        console.error("super-admin-invite:", emailError);
+      } else {
+        const r = await fetch(`${RESEND_API}/emails`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "X-Connection-Api-Key": RESEND_API_KEY,
+            Authorization: `Bearer ${RESEND_API_KEY}`,
           },
           body: JSON.stringify({
             from: "Novare <suporte@novareapp.com.br>",
@@ -122,14 +124,12 @@ Deno.serve(async (req) => {
         } else {
           const errBody = await r.text();
           emailError = `Resend ${r.status}: ${errBody.slice(0, 200)}`;
-          console.error("Resend error:", emailError);
+          console.error("super-admin-invite: Resend retornou erro", emailError);
         }
-      } else {
-        emailError = "API keys não configuradas";
       }
     } catch (e: any) {
       emailError = e.message;
-      console.error("Email send error:", e);
+      console.error("super-admin-invite: erro ao enviar email", e);
     }
 
     return json({ ok: true, token, invite_url: inviteUrl, email_sent: emailSent, email_error: emailError });
