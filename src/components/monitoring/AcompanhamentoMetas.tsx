@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -181,10 +181,59 @@ function MetaAcompRow({
     if (!estado.trim() && !valor.trim()) return;
     // Em modo edição passa o id do entry para fazer UPDATE no lugar de criar novo
     onSave(meta.id, estado.trim(), valor.trim(), editMode ? latestEntry?.id : undefined);
+    lastSyncedRef.current = `${estado.trim()}||${valor.trim()}`;
     setSaved(true);
     setEditMode(false);
     setTimeout(() => setSaved(false), 2000);
   };
+
+  // ── Auto-save com debounce ──
+  // Salva automaticamente após o usuário parar de digitar por 1.5s.
+  // Se houver um entry registrado hoje, faz UPDATE; senão cria um INSERT.
+  // Após o primeiro INSERT, o refetch traz o novo latestEntry e os próximos
+  // auto-saves passam a fazer UPDATE neste mesmo entry (sem duplicar histórico).
+  const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSyncedRef = useRef<string>(`${latestEntry?.estado_atual || ""}||${latestEntry?.valor_atual != null ? String(latestEntry.valor_atual) : ""}`);
+  const [autoStatus, setAutoStatus] = useState<"idle" | "pending" | "saved">("idle");
+
+  const isSameDay = (iso?: string) => {
+    if (!iso) return false;
+    const d = new Date(iso);
+    const today = new Date();
+    return (
+      d.getFullYear() === today.getFullYear() &&
+      d.getMonth() === today.getMonth() &&
+      d.getDate() === today.getDate()
+    );
+  };
+
+  useEffect(() => {
+    if (meta.is_synthetic) return; // sem campo de registro nesse modo
+    const trimEstado = estado.trim();
+    const trimValor = valor.trim();
+    if (!trimEstado && !trimValor) return;
+
+    const key = `${trimEstado}||${trimValor}`;
+    if (key === lastSyncedRef.current) return;
+
+    setAutoStatus("pending");
+    if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+    autoTimerRef.current = setTimeout(() => {
+      // Update no entry de hoje se houver; senão INSERT (e depois refetch
+      // alimenta o latestEntry com o id criado para próximos updates).
+      const targetId = editMode
+        ? latestEntry?.id
+        : (isSameDay(latestEntry?.snapshotted_at) ? latestEntry?.id : undefined);
+      onSave(meta.id, trimEstado, trimValor, targetId);
+      lastSyncedRef.current = key;
+      setAutoStatus("saved");
+      setTimeout(() => setAutoStatus("idle"), 2500);
+    }, 1500);
+
+    return () => {
+      if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+    };
+  }, [estado, valor, editMode, latestEntry?.id, latestEntry?.snapshotted_at, meta.id, meta.is_synthetic, onSave]);
 
   return (
     <div className={cn(
@@ -431,6 +480,24 @@ function MetaAcompRow({
               className="text-sm min-h-[52px] resize-none py-2 bg-background border-border/60"
               rows={2}
             />
+            {/* Indicador de auto-save */}
+            <div className="flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground min-h-[14px]">
+              {autoStatus === "pending" && (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>Salvando automaticamente...</span>
+                </>
+              )}
+              {autoStatus === "saved" && (
+                <>
+                  <Check className="w-3 h-3 text-emerald-600" />
+                  <span className="text-emerald-600">Salvo automaticamente</span>
+                </>
+              )}
+              {autoStatus === "idle" && (estado.trim() || valor.trim()) && (
+                <span className="opacity-60">Salva sozinho enquanto você digita</span>
+              )}
+            </div>
           </div>
         )}
       </div>
