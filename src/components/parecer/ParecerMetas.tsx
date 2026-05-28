@@ -42,6 +42,7 @@ interface FinancialItem {
   unit?: string;
   detail?: string;
   created_at?: string;
+  month_ref?: string | null;
 }
 
 interface ParecerMeta {
@@ -216,6 +217,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       unit: `/${r.frequency === "mensal" ? "mês" : r.frequency === "anual" ? "ano" : "eventual"}`,
       detail: `Estabilidade: ${r.stability}${r.is_primary ? " · Principal" : ""}`,
       created_at: r.created_at,
+      month_ref: r.month_ref ?? null,
     })),
     ...(expenses as any[]).map((r) => ({
       source_table: "expenses" as SourceTable,
@@ -225,6 +227,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       unit: "/mês",
       detail: r.is_fixed ? "Fixa" : `Variável${r.due_day ? ` · vence dia ${r.due_day}` : ""}`,
       created_at: r.created_at,
+      month_ref: r.month_ref ?? null,
     })),
     ...(debts as any[]).map((r) => ({
       source_table: "debts" as SourceTable,
@@ -237,6 +240,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         r.remaining_months ? `${r.remaining_months} meses restantes` : null,
       ].filter(Boolean).join(" · "),
       created_at: r.created_at,
+      month_ref: r.month_ref ?? null,
     })),
     ...(assets as any[]).map((r) => ({
       source_table: "assets" as SourceTable,
@@ -244,6 +248,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       source_label: `${r.type}${r.description ? ` — ${r.description}` : ""}`,
       current_value: Number(r.estimated_value),
       created_at: r.created_at,
+      month_ref: r.month_ref ?? null,
     })),
     ...(insurance as any[]).map((r) => ({
       source_table: "insurance" as SourceTable,
@@ -253,6 +258,7 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
       unit: "/mês",
       detail: r.coverage_amount ? `Cobertura: ${formatBRL(Number(r.coverage_amount))}` : undefined,
       created_at: r.created_at,
+      month_ref: r.month_ref ?? null,
     })),
     ...(goals as any[]).filter((r) => !r.completed_at).map((r) => ({
       source_table: "goals" as SourceTable,
@@ -266,14 +272,19 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
         r.deadline ? `Prazo: ${new Date(r.deadline).toLocaleDateString("pt-BR")}` : null,
       ].filter(Boolean).join(" · "),
       created_at: r.created_at,
+      month_ref: r.month_ref ?? null,
     })),
   ];
 
-  // Meses disponíveis a partir dos created_at de todos os itens
+  // Meses disponíveis: usa month_ref do registro (representa o mês de referência
+  // do dado, não a data de criação que vira "agora" após clones)
   const monthOptions = (() => {
     const set = new Set<string>();
     allItems.forEach((it) => {
-      if (it.created_at) {
+      if (it.month_ref) {
+        set.add(String(it.month_ref).slice(0, 7)); // "2026-06-01" → "2026-06"
+      } else if (it.created_at) {
+        // fallback para legados sem month_ref
         const d = new Date(it.created_at);
         set.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
       }
@@ -281,9 +292,11 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     return Array.from(set).sort().reverse();
   })();
 
-  // Se o mês corrente não tem dados, seleciona automaticamente o último mês com informações
+  // Quando o mês selecionado não tem dados, só ajusta SE estivermos vendo um mês
+  // que não existe nas opções. Não sobrescreve a escolha global se já está em uma opção.
   useEffect(() => {
     if (monthFilter !== "all" && monthOptions.length > 0 && !monthOptions.includes(monthFilter)) {
+      // Em vez de forçar para monthOptions[0], só atualiza se o contexto realmente está em um mês inexistente
       setMonthFilter(monthOptions[0]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -292,10 +305,14 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
   const filteredItems = monthFilter === "all"
     ? allItems
     : allItems.filter((it) => {
-        if (!it.created_at) return false;
-        const d = new Date(it.created_at);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        return key === monthFilter;
+        // Filtra pelo month_ref do item (correto após clones)
+        if (it.month_ref) return String(it.month_ref).slice(0, 7) === monthFilter;
+        // Fallback legado: usa created_at
+        if (it.created_at) {
+          const d = new Date(it.created_at);
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}` === monthFilter;
+        }
+        return false;
       });
 
   const bySection = SECTION_ORDER.reduce(
