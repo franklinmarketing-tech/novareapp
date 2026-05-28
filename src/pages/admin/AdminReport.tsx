@@ -336,12 +336,13 @@ const AdminReport = () => {
           .maybeSingle(),
         supabase.from("monitoring_snapshots").select("*").eq("client_id", clientId).order("snapshot_date", { ascending: true }),
         supabase.from("parecer_metas").select("*").eq("client_id", clientId).order("created_at"),
+        // Histórico de lançamentos: busca TODOS do cliente (sem filtro de mês)
+        // para que o relatório mostre a evolução consultiva completa, não só
+        // o que aconteceu no mês selecionado.
         supabase
           .from("acompanhamento_entradas")
           .select("*")
           .eq("client_id", clientId)
-          .gte("snapshotted_at", monthStart)
-          .lt("snapshotted_at", monthEnd)
           .order("snapshotted_at", { ascending: false }),
       ]);
 
