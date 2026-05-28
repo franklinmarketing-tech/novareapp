@@ -15,7 +15,8 @@ import {
   Printer, TrendingUp, TrendingDown, Wallet, Shield, AlertTriangle,
   CheckCircle2, Target, Banknote, PiggyBank, Scale, ArrowRight,
   Calendar, CreditCard, BarChart3, Gem, Clock, ArrowUpRight,
-  Download, Loader2, Gauge, Sparkles,
+  Download, Loader2, Gauge, Sparkles, PieChart as PieChartIcon,
+  LineChart as LineChartIcon, Layers, Activity,
 } from "lucide-react";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import { toast } from "sonner";
@@ -2045,44 +2046,65 @@ const AdminReport = () => {
                     {statusData.length > 0 && (
                       <Card>
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Status das Metas</CardTitle>
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <PieChartIcon className="w-4 h-4 text-novare-blue" />
+                            Status das Metas
+                          </CardTitle>
+                          <p className="text-[11px] text-muted-foreground -mt-0.5">Distribuição por situação atual</p>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-2">
                           <div className="relative">
-                            <ResponsiveContainer width="100%" height={220}>
+                            <ResponsiveContainer width="100%" height={230}>
                               <PieChart>
+                                <defs>
+                                  {statusData.map((s, i) => (
+                                    <linearGradient key={i} id={`statusGrad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="0%" stopColor={s.color} stopOpacity={1} />
+                                      <stop offset="100%" stopColor={s.color} stopOpacity={0.75} />
+                                    </linearGradient>
+                                  ))}
+                                </defs>
                                 <Pie
                                   data={statusData}
                                   dataKey="value"
                                   nameKey="name"
-                                  innerRadius={55}
-                                  outerRadius={80}
-                                  paddingAngle={2}
+                                  innerRadius={58}
+                                  outerRadius={85}
+                                  paddingAngle={3}
+                                  stroke="hsl(var(--card))"
+                                  strokeWidth={2}
                                 >
-                                  {statusData.map((s, i) => (
-                                    <Cell key={i} fill={s.color} />
+                                  {statusData.map((_, i) => (
+                                    <Cell key={i} fill={`url(#statusGrad-${i})`} />
                                   ))}
                                 </Pie>
                                 <RTooltip
-                                  contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                                  contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "8px 12px", backgroundColor: "hsl(var(--card))", boxShadow: "0 4px 12px hsl(0 0% 0% / 0.08)" }}
+                                  labelStyle={{ fontWeight: 700, color: "hsl(var(--foreground))", marginBottom: 4 }}
+                                  itemStyle={{ padding: "2px 0" }}
                                   formatter={(v: number, n: string) => [`${v} meta${v !== 1 ? "s" : ""} (${totalMetas > 0 ? ((v / totalMetas) * 100).toFixed(1) : 0}%)`, n]}
                                 />
                               </PieChart>
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                              <span className="text-2xl font-black text-foreground tabular-nums">{totalMetas}</span>
-                              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Metas</span>
+                              <span className="text-3xl font-black text-foreground tabular-nums leading-none">{totalMetas}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1 font-semibold">{totalMetas === 1 ? "meta" : "metas"}</span>
                             </div>
                           </div>
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-3 space-y-1.5">
                             {statusData.map((s) => (
                               <div key={s.name} className="flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-2">
-                                  <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: s.color }} />
-                                  <span className="text-foreground">{s.name}</span>
+                                  <span
+                                    className="inline-flex items-center justify-center w-5 h-5 rounded-full border tabular-nums font-bold text-[10px]"
+                                    style={{ background: `${s.color}1a`, borderColor: `${s.color}66`, color: s.color }}
+                                  >
+                                    {s.value}
+                                  </span>
+                                  <span className="text-foreground font-medium">{s.name}</span>
                                 </div>
                                 <span className="tabular-nums text-muted-foreground font-semibold">
-                                  {s.value} ({totalMetas > 0 ? ((s.value / totalMetas) * 100).toFixed(0) : 0}%)
+                                  {totalMetas > 0 ? ((s.value / totalMetas) * 100).toFixed(0) : 0}%
                                 </span>
                               </div>
                             ))}
@@ -2093,37 +2115,63 @@ const AdminReport = () => {
                     {categoriaData.length > 0 && (
                       <Card>
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Metas por Categoria</CardTitle>
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Layers className="w-4 h-4 text-novare-blue" />
+                            Metas por Categoria
+                          </CardTitle>
+                          <p className="text-[11px] text-muted-foreground -mt-0.5">Composição por área financeira</p>
                         </CardHeader>
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={220}>
-                            <PieChart>
-                              <Pie
-                                data={categoriaData}
-                                dataKey="value"
-                                nameKey="name"
-                                outerRadius={85}
-                                label={(entry: { name: string; value: number }) => `${entry.name}: ${entry.value}`}
-                                labelLine={false}
-                              >
-                                {categoriaData.map((c, i) => (
-                                  <Cell key={i} fill={c.color} />
-                                ))}
-                              </Pie>
-                              <RTooltip
-                                contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
-                                formatter={(v: number, n: string) => [`${v} meta${v !== 1 ? "s" : ""} (${totalMetas > 0 ? ((v / totalMetas) * 100).toFixed(1) : 0}%)`, n]}
-                              />
-                            </PieChart>
-                          </ResponsiveContainer>
-                          <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1">
+                        <CardContent className="pt-2">
+                          <div className="relative">
+                            <ResponsiveContainer width="100%" height={230}>
+                              <PieChart>
+                                <defs>
+                                  {categoriaData.map((c, i) => (
+                                    <linearGradient key={i} id={`catGrad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="0%" stopColor={c.color} stopOpacity={1} />
+                                      <stop offset="100%" stopColor={c.color} stopOpacity={0.75} />
+                                    </linearGradient>
+                                  ))}
+                                </defs>
+                                <Pie
+                                  data={categoriaData}
+                                  dataKey="value"
+                                  nameKey="name"
+                                  innerRadius={58}
+                                  outerRadius={85}
+                                  paddingAngle={3}
+                                  stroke="hsl(var(--card))"
+                                  strokeWidth={2}
+                                >
+                                  {categoriaData.map((_, i) => (
+                                    <Cell key={i} fill={`url(#catGrad-${i})`} />
+                                  ))}
+                                </Pie>
+                                <RTooltip
+                                  contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "8px 12px", backgroundColor: "hsl(var(--card))", boxShadow: "0 4px 12px hsl(0 0% 0% / 0.08)" }}
+                                  labelStyle={{ fontWeight: 700, color: "hsl(var(--foreground))", marginBottom: 4 }}
+                                  itemStyle={{ padding: "2px 0" }}
+                                  formatter={(v: number, n: string) => [`${v} meta${v !== 1 ? "s" : ""} (${totalMetas > 0 ? ((v / totalMetas) * 100).toFixed(1) : 0}%)`, n]}
+                                />
+                              </PieChart>
+                            </ResponsiveContainer>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                              <span className="text-3xl font-black text-foreground tabular-nums leading-none">{categoriaData.length}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1 font-semibold">{categoriaData.length === 1 ? "categoria" : "categorias"}</span>
+                            </div>
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5">
                             {categoriaData.map((c) => (
                               <div key={c.name} className="flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className="inline-block w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: c.color }} />
-                                  <span className="text-foreground truncate">{c.name}</span>
+                                  <span
+                                    className="inline-flex items-center justify-center w-5 h-5 rounded-full border tabular-nums font-bold text-[10px] shrink-0"
+                                    style={{ background: `${c.color}1a`, borderColor: `${c.color}66`, color: c.color }}
+                                  >
+                                    {c.value}
+                                  </span>
+                                  <span className="text-foreground truncate font-medium">{c.name}</span>
                                 </div>
-                                <span className="tabular-nums text-muted-foreground font-semibold shrink-0">{c.value}</span>
                               </div>
                             ))}
                           </div>
@@ -2137,15 +2185,45 @@ const AdminReport = () => {
                 {progressoTop.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Progresso por Meta</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Target className="w-4 h-4 text-novare-blue" />
+                        Progresso por Meta
+                      </CardTitle>
+                      <p className="text-[11px] text-muted-foreground -mt-0.5">Percentual de atingimento de cada meta</p>
                     </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={Math.max(220, progressoTop.length * 28 + 40)}>
+                    <CardContent className="pt-2">
+                      {/* Legenda custom (Cell variável quebra Legend do Recharts) */}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-3 text-[11px]">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: "hsl(152, 60%, 42%)" }} />
+                          <span className="text-muted-foreground">100%+ Concluída</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: "hsl(215, 60%, 50%)" }} />
+                          <span className="text-muted-foreground">60-99% Avançada</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: "hsl(38, 92%, 50%)" }} />
+                          <span className="text-muted-foreground">30-59% Em curso</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: "hsl(0, 72%, 55%)" }} />
+                          <span className="text-muted-foreground">&lt;30% Inicial</span>
+                        </div>
+                      </div>
+                      <ResponsiveContainer width="100%" height={Math.max(220, progressoTop.length * 32 + 40)}>
                         <BarChart
                           data={progressoTop}
                           layout="vertical"
-                          margin={{ top: 8, right: 48, left: 8, bottom: 4 }}
+                          margin={{ top: 8, right: 56, left: 8, bottom: 4 }}
+                          barCategoryGap="20%"
                         >
+                          <defs>
+                            <linearGradient id="progBgGrad" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%" stopColor="hsl(var(--muted))" stopOpacity={0.3} />
+                              <stop offset="100%" stopColor="hsl(var(--muted))" stopOpacity={0.5} />
+                            </linearGradient>
+                          </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" horizontal={false} />
                           <XAxis
                             type="number"
@@ -2158,13 +2236,16 @@ const AdminReport = () => {
                           <YAxis
                             dataKey="nome"
                             type="category"
-                            width={140}
+                            width={160}
                             tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                             axisLine={false}
                             tickLine={false}
                           />
                           <RTooltip
-                            contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                            cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+                            contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "8px 12px", backgroundColor: "hsl(var(--card))", boxShadow: "0 4px 12px hsl(0 0% 0% / 0.08)" }}
+                            labelStyle={{ fontWeight: 700, color: "hsl(var(--foreground))", marginBottom: 4 }}
+                            itemStyle={{ padding: "2px 0" }}
                             formatter={(_: unknown, __: unknown, item: { payload?: { pctReal?: number; valor_atual?: number; valor_meta?: number; nomeCompleto?: string } }) => {
                               const p = item?.payload;
                               if (!p) return ["", ""];
@@ -2175,7 +2256,12 @@ const AdminReport = () => {
                             }}
                             labelFormatter={() => ""}
                           />
-                          <Bar dataKey="pct" radius={[0, 6, 6, 0]} barSize={18}>
+                          <Bar
+                            dataKey="pct"
+                            radius={[0, 6, 6, 0]}
+                            barSize={20}
+                            background={{ fill: "hsl(var(--muted) / 0.35)", radius: 6 }}
+                          >
                             {progressoTop.map((d, i) => (
                               <Cell key={i} fill={d.cor} />
                             ))}
@@ -2183,7 +2269,7 @@ const AdminReport = () => {
                               dataKey="pctReal"
                               position="right"
                               formatter={(v: number) => `${v.toFixed(0)}%`}
-                              style={{ fontSize: 10, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                              style={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 700 }}
                             />
                           </Bar>
                         </BarChart>
@@ -2196,45 +2282,81 @@ const AdminReport = () => {
                 {alvoVsAtual.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Valor Alvo vs Valor Atual (Top 8)</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4 text-novare-blue" />
+                        Valor Alvo vs Valor Atual <span className="text-muted-foreground font-normal">(Top 8)</span>
+                      </CardTitle>
+                      <p className="text-[11px] text-muted-foreground -mt-0.5">Comparação entre objetivo e progresso real • barras com contorno verde indicam meta atingida</p>
                     </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={240}>
+                    <CardContent className="pt-2">
+                      <ResponsiveContainer width="100%" height={340}>
                         <BarChart
                           data={alvoVsAtual}
-                          margin={{ top: 20, right: 12, left: 8, bottom: 50 }}
+                          margin={{ top: 16, right: 16, left: 8, bottom: 70 }}
                           barGap={4}
+                          barCategoryGap="18%"
                         >
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                          <defs>
+                            <linearGradient id="alvoGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="hsl(215, 15%, 70%)" stopOpacity={0.9} />
+                              <stop offset="100%" stopColor="hsl(215, 15%, 70%)" stopOpacity={0.6} />
+                            </linearGradient>
+                            <linearGradient id="atualGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="hsl(215, 75%, 55%)" stopOpacity={1} />
+                              <stop offset="100%" stopColor="hsl(215, 75%, 45%)" stopOpacity={0.85} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" vertical={false} />
                           <XAxis
                             dataKey="nome"
                             tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                             axisLine={false}
                             tickLine={false}
-                            angle={-25}
+                            angle={-30}
                             textAnchor="end"
                             interval={0}
-                            height={50}
+                            height={70}
                           />
                           <YAxis
                             tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                             axisLine={false}
                             tickLine={false}
-                            tickFormatter={(v: number) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`}
+                            tickCount={5}
+                            domain={[0, "dataMax"]}
+                            tickFormatter={(v: number) => {
+                              if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+                              if (v >= 1_000) return `${(v / 1_000).toFixed(v >= 10_000 ? 0 : 1)}k`;
+                              return `${v}`;
+                            }}
                           />
                           <RTooltip
-                            contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
-                            formatter={(v: number, n: string) => [fmt(v), n]}
+                            cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+                            contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "8px 12px", backgroundColor: "hsl(var(--card))", boxShadow: "0 4px 12px hsl(0 0% 0% / 0.08)" }}
+                            labelStyle={{ fontWeight: 700, color: "hsl(var(--foreground))", marginBottom: 4 }}
+                            itemStyle={{ padding: "2px 0" }}
+                            formatter={(v: number, n: string, item: { payload?: { Alvo?: number; Atual?: number } }) => {
+                              const p = item?.payload;
+                              if (n === "Atual" && p && p.Alvo) {
+                                const pct = (p.Atual ?? 0) / p.Alvo * 100;
+                                return [`${fmt(v)} (${pct.toFixed(1)}%)`, n];
+                              }
+                              return [fmt(v), n];
+                            }}
                             labelFormatter={(_, payload: ReadonlyArray<{ payload?: { nomeCompleto?: string } }>) => payload?.[0]?.payload?.nomeCompleto ?? ""}
                           />
                           <Legend
-                            wrapperStyle={{ fontSize: 11 }}
-                            iconType="square"
+                            wrapperStyle={{ fontSize: 11, paddingTop: 4 }}
+                            iconType="circle"
+                            iconSize={9}
                           />
-                          <Bar dataKey="Alvo" fill="hsl(0, 0%, 70%)" radius={[6, 6, 0, 0]} />
-                          <Bar dataKey="Atual" radius={[6, 6, 0, 0]}>
+                          <Bar dataKey="Alvo" fill="url(#alvoGrad)" radius={[6, 6, 0, 0]} barSize={20} />
+                          <Bar dataKey="Atual" fill="url(#atualGrad)" radius={[6, 6, 0, 0]} barSize={20}>
                             {alvoVsAtual.map((d, i) => (
-                              <Cell key={i} fill={d.atingiu ? "hsl(152, 60%, 42%)" : "hsl(215, 60%, 50%)"} />
+                              <Cell
+                                key={i}
+                                stroke={d.atingiu ? "hsl(152, 60%, 42%)" : "transparent"}
+                                strokeWidth={d.atingiu ? 2 : 0}
+                              />
                             ))}
                           </Bar>
                         </BarChart>
@@ -2247,20 +2369,25 @@ const AdminReport = () => {
                 {evolucaoData.length >= 2 && metasComHistoria.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Evolução Mensal das Metas Ativas</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <LineChartIcon className="w-4 h-4 text-novare-blue" />
+                        Evolução Mensal das Metas Ativas
+                      </CardTitle>
+                      <p className="text-[11px] text-muted-foreground -mt-0.5">Trajetória de progresso ao longo dos meses</p>
                     </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={260}>
+                    <CardContent className="pt-2">
+                      <ResponsiveContainer width="100%" height={280}>
                         <LineChart
                           data={evolucaoData}
-                          margin={{ top: 20, right: 12, left: 8, bottom: 4 }}
+                          margin={{ top: 16, right: 16, left: 8, bottom: 4 }}
                         >
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" vertical={false} />
                           <XAxis
                             dataKey="periodo"
                             tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                             axisLine={false}
                             tickLine={false}
+                            padding={{ left: 8, right: 8 }}
                           />
                           <YAxis
                             tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
@@ -2270,21 +2397,29 @@ const AdminReport = () => {
                             domain={[0, (dataMax: number) => Math.max(100, Math.ceil(dataMax / 10) * 10)]}
                           />
                           <RTooltip
-                            contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                            cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1, strokeDasharray: "3 3" }}
+                            contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "8px 12px", backgroundColor: "hsl(var(--card))", boxShadow: "0 4px 12px hsl(0 0% 0% / 0.08)" }}
+                            labelStyle={{ fontWeight: 700, color: "hsl(var(--foreground))", marginBottom: 4 }}
+                            itemStyle={{ padding: "2px 0" }}
                             formatter={(v: number, n: string) => [v != null ? `${v.toFixed(1)}%` : "—", n]}
                           />
-                          <Legend wrapperStyle={{ fontSize: 10, paddingTop: 8 }} iconType="line" />
+                          <Legend
+                            wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+                            iconType="circle"
+                            iconSize={9}
+                          />
                           {metasComHistoria.map((g, i) => {
                             const nome = metaNameByKey.get(g.key)!;
+                            const cor = lineColors[i % lineColors.length];
                             return (
                               <Line
                                 key={g.key}
                                 type="monotone"
                                 dataKey={nome}
-                                stroke={lineColors[i % lineColors.length]}
-                                strokeWidth={2}
-                                dot={{ r: 3, fill: lineColors[i % lineColors.length] }}
-                                activeDot={{ r: 5 }}
+                                stroke={cor}
+                                strokeWidth={2.5}
+                                dot={{ r: 4, fill: cor, strokeWidth: 0 }}
+                                activeDot={{ r: 6, strokeWidth: 2, stroke: "hsl(var(--card))" }}
                                 connectNulls
                               />
                             );
@@ -2299,15 +2434,20 @@ const AdminReport = () => {
                 {lancamentosPorMes.length >= 2 && catsPresentes.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Lançamentos por Mês (por Categoria)</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-novare-blue" />
+                        Lançamentos por Mês <span className="text-muted-foreground font-normal">(por Categoria)</span>
+                      </CardTitle>
+                      <p className="text-[11px] text-muted-foreground -mt-0.5">Volume de registros mensais agrupados por área</p>
                     </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={240}>
+                    <CardContent className="pt-2">
+                      <ResponsiveContainer width="100%" height={260}>
                         <BarChart
                           data={lancamentosPorMes}
-                          margin={{ top: 20, right: 12, left: 8, bottom: 4 }}
+                          margin={{ top: 16, right: 16, left: 8, bottom: 4 }}
+                          barCategoryGap="22%"
                         >
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" vertical={false} />
                           <XAxis
                             dataKey="periodo"
                             tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
@@ -2321,10 +2461,17 @@ const AdminReport = () => {
                             allowDecimals={false}
                           />
                           <RTooltip
-                            contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                            cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+                            contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "8px 12px", backgroundColor: "hsl(var(--card))", boxShadow: "0 4px 12px hsl(0 0% 0% / 0.08)" }}
+                            labelStyle={{ fontWeight: 700, color: "hsl(var(--foreground))", marginBottom: 4 }}
+                            itemStyle={{ padding: "2px 0" }}
                             formatter={(v: number, n: string) => [`${v} lançamento${v !== 1 ? "s" : ""}`, n]}
                           />
-                          <Legend wrapperStyle={{ fontSize: 10, paddingTop: 8 }} iconType="square" />
+                          <Legend
+                            wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+                            iconType="circle"
+                            iconSize={9}
+                          />
                           {catsPresentes.map((cat, i) => {
                             const tableKey = Object.entries(CATEGORY_LABELS).find(([, lbl]) => lbl === cat)?.[0];
                             const cor = tableKey ? CATEGORY_COLORS[tableKey] : lineColors[i % lineColors.length];
@@ -2334,6 +2481,7 @@ const AdminReport = () => {
                                 dataKey={cat}
                                 stackId="lanc"
                                 fill={cor}
+                                barSize={28}
                                 radius={i === catsPresentes.length - 1 ? [6, 6, 0, 0] : [0, 0, 0, 0]}
                               />
                             );
