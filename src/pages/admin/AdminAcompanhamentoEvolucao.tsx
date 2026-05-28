@@ -186,13 +186,15 @@ const AdminAcompanhamentoEvolucao = () => {
     const goalsConcluidos = goals.filter((g) => g.completed_at);
     const goalsAtivos = goals.filter((g) => !g.completed_at);
 
-    // Progresso médio: usa último entry por meta
+    // Progresso médio: usa último entry por (source_table:source_label)
+    // — chave persistente entre clones mensais
     const latestByMeta = new Map<string, AcompEntry>();
     entries.forEach((e) => {
-      if (!e.meta_id || e.is_closing_snapshot) return;
-      const prev = latestByMeta.get(e.meta_id);
+      if (e.is_closing_snapshot || !e.source_label) return;
+      const key = `${e.source_table}:${e.source_label}`;
+      const prev = latestByMeta.get(key);
       if (!prev || new Date(e.snapshotted_at) > new Date(prev.snapshotted_at)) {
-        latestByMeta.set(e.meta_id, e);
+        latestByMeta.set(key, e);
       }
     });
     const allPct = Array.from(latestByMeta.values())
@@ -275,8 +277,14 @@ const AdminAcompanhamentoEvolucao = () => {
     const map = new Map<string, MetaForecast>();
     const today = new Date();
     metas.forEach((meta) => {
+      // Match estendido: meta_id direto OU source_table+source_label (cross-month)
       const history = (entries
-        .filter((e) => !e.is_closing_snapshot && e.meta_id === meta.id && e.valor_atual != null))
+        .filter((e) =>
+          !e.is_closing_snapshot && e.valor_atual != null && (
+            e.meta_id === meta.id ||
+            (e.source_table === meta.source_table && e.source_label === meta.source_label)
+          )
+        ))
         .slice()
         .sort((a, b) => new Date(a.snapshotted_at).getTime() - new Date(b.snapshotted_at).getTime());
 
@@ -462,14 +470,15 @@ const AdminAcompanhamentoEvolucao = () => {
     return out;
   }, [cashflow, metas, goals, forecastByMeta]);
 
-  // ── Histórico por meta (sparkline) ──
+  // ── Histórico por (source_table:source_label) — preserva sparkline entre clones ──
   const historyByMeta = useMemo(() => {
     const map = new Map<string, AcompEntry[]>();
     entries
-      .filter((e) => !e.is_closing_snapshot && e.meta_id)
+      .filter((e) => !e.is_closing_snapshot && e.source_label)
       .forEach((e) => {
-        if (!map.has(e.meta_id!)) map.set(e.meta_id!, []);
-        map.get(e.meta_id!)!.push(e);
+        const key = `${e.source_table}:${e.source_label}`;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(e);
       });
     map.forEach((arr) => arr.sort((a, b) => new Date(a.snapshotted_at).getTime() - new Date(b.snapshotted_at).getTime()));
     return map;
@@ -828,7 +837,7 @@ const AdminAcompanhamentoEvolucao = () => {
             {activeMetas.map((meta) => {
               const sourceColor = SECTION_COLOR[meta.source_table as SourceTable] ?? "hsl(var(--primary))";
               const Icon = SECTION_ICON[meta.source_table as SourceTable] ?? Target;
-              const history = historyByMeta.get(meta.id) || [];
+              const history = historyByMeta.get(`${meta.source_table}:${meta.source_label}`) || [];
               const last = history[history.length - 1];
               const prev = history[history.length - 2];
               const sparkData = history.slice(-12).map((e) => ({
