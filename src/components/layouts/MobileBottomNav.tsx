@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 interface Props {
   /** Show a small dot indicator on "Meus Dados" when there's pending action */
   dataPending?: boolean;
+  /** Esconde "Meus Dados" do menu (usado apos primeiro fechamento mensal) */
+  hideMeusDados?: boolean;
 }
 
 // Lançamento do mês adicionado — visibilidade da edição é controlada por client_can_log_acompanhamento
@@ -19,12 +21,14 @@ const buildItems = (basePath: string) => [
  * Fixed bottom navigation for mobile (cliente role).
  * Hidden on lg+ where the sidebar is always visible.
  */
-export const MobileBottomNav = ({ dataPending = false }: Props) => {
+export const MobileBottomNav = ({ dataPending = false, hideMeusDados = false }: Props) => {
   const location = useLocation();
   const { clientSlug } = useParams<{ clientSlug?: string }>();
   const isPreview = location.pathname.startsWith("/admin/preview/");
   const basePath = isPreview && clientSlug ? `/admin/preview/${clientSlug}` : "/cliente";
-  const items = buildItems(basePath);
+  const items = buildItems(basePath).filter(
+    (i) => !(hideMeusDados && i.key === "meus-dados"),
+  );
   return (
   <nav
     aria-label="Navegação principal"

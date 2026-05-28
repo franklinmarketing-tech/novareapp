@@ -51,6 +51,7 @@ export const ClientLayout = ({ children }: Props) => {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dataPending, setDataPending] = useState(false);
+  const [hasClosedMonth, setHasClosedMonth] = useState(false);
   const [profile, setProfile] = useState<{ full_name: string; email: string } | null>(null);
 
   useEffect(() => {
@@ -63,12 +64,21 @@ export const ClientLayout = ({ children }: Props) => {
       if (p) setProfile(p);
       if (!client) return;
       const monthRef = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-01`;
-      const { data: conf } = await supabase
-        .from("data_confirmations").select("id").eq("client_id", client.id).eq("month_ref", monthRef).maybeSingle();
+      const [{ data: conf }, { data: firstClosing }] = await Promise.all([
+        supabase.from("data_confirmations").select("id").eq("client_id", client.id).eq("month_ref", monthRef).maybeSingle(),
+        supabase.from("monthly_closings").select("id").eq("client_id", client.id).limit(1).maybeSingle(),
+      ]);
       setDataPending(!conf);
+      setHasClosedMonth(!!firstClosing);
     };
     check();
   }, [user]);
+
+  // Após o primeiro fechamento mensal, "Meus Dados" some do menu — o consultor
+  // passa a ser o único responsável por ajustes nos dados do onboarding.
+  const visibleNavItems = navItems.filter(
+    (i) => !(hasClosedMonth && i.to === `${basePath}/meus-dados`),
+  );
 
   const handleSignOut = async () => {
     await signOut();
@@ -128,7 +138,7 @@ export const ClientLayout = ({ children }: Props) => {
 
       {/* Navigation */}
       <nav className="px-3 space-y-0.5 shrink-0">
-        {navItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -228,7 +238,7 @@ export const ClientLayout = ({ children }: Props) => {
       )}
 
       {/* Mobile bottom nav (cliente) */}
-      <MobileBottomNav dataPending={dataPending} />
+      <MobileBottomNav dataPending={dataPending} hideMeusDados={hasClosedMonth} />
 
       {/* Main content */}
       <main className="flex-1 lg:ml-[260px] pt-14 lg:pt-0 pb-20 lg:pb-0 min-h-screen">

@@ -8,6 +8,27 @@
 
 ## 28 de maio de 2026
 
+### Dashboard do cliente reformulado: dados consolidados + histórico mensal
+
+**Resumo executivo:**
+O painel principal do cliente passou a ser o centro único de informação. Agora ele vê **todos os dados do onboarding consolidados** no dashboard e o **histórico mensal de evolução** ali mesmo — sem precisar abrir telas separadas. Após o primeiro fechamento mensal, o menu "Meus Dados" some automaticamente, mantendo só o que faz sentido para o cliente.
+
+**O que mudou para o cliente:**
+
+| Onde | Antes | Agora |
+|------|-------|-------|
+| Final do dashboard | Botões "Meus Dados" e "Plano de Ação" como atalho | Removidos — os dados agora aparecem direto no próprio dashboard |
+| Dashboard — corpo da página | Resumo financeiro básico + objetivos | Adicionado bloco "Seus dados consolidados" com 6 cards (Renda, Despesas, Dívidas, Patrimônio, Seguros, Objetivos), cada um com total + breakdown |
+| Dashboard — histórico | — | Novo bloco "Sua evolução mês a mês": gráfico de área (Patrimônio Líquido / Ativos / Dívidas) + tabela dos 6 últimos fechamentos + 4 stats (evolução total, taxa de poupança média, meses fechados, período) |
+| Menu lateral / inferior | "Meus Dados" sempre visível | Some automaticamente após o primeiro fechamento mensal — restando Dashboard + Plano de Ação + Lançamento do mês |
+
+**Por que essa mudança?**
+- Cliente tem uma única tela como fonte da verdade — sem caminhos paralelos.
+- Após o fechamento, faz mais sentido o cliente acompanhar a evolução do que tentar editar dados consolidados.
+- O histórico mensal estimula o engajamento — o cliente vê o crescimento visual do patrimônio mês a mês.
+
+---
+
 ### Trava de edição dos dados após o primeiro fechamento mensal
 
 **Resumo executivo:**
