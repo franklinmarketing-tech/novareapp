@@ -6,6 +6,29 @@
 
 ---
 
+## 28 de maio de 2026
+
+### Auto-save no acompanhamento mensal
+
+**Resumo executivo:**
+O campo de descrição do estado atual ("Como está agora? Descreva brevemente...") agora **salva automaticamente** enquanto o cliente digita — não é mais necessário clicar em "Salvar" para preservar o que foi escrito.
+
+**O que mudou para o usuário:**
+
+| Onde | Antes | Agora |
+|------|-------|-------|
+| Campo de descrição do estado em cada meta acompanhada | Salvava apenas ao clicar no botão de salvar — texto era perdido se o usuário trocasse de tela | Salva sozinho 1,5 segundo após parar de digitar |
+| Feedback visual | Apenas via toast no clique manual | Indicador discreto abaixo do campo: "Salvando..." → "Salvo automaticamente" |
+| Risco de perder texto | Alto — fácil esquecer de clicar em salvar | Eliminado |
+
+**Comportamento técnico:**
+- Auto-save com debounce de 1,5s evita salvamentos excessivos a cada tecla.
+- Se já existe um registro do dia, o auto-save atualiza esse registro (não cria histórico duplicado).
+- Se for o primeiro registro do dia, cria um novo lançamento — os auto-saves seguintes atualizam o mesmo registro.
+- O botão "Salvar" manual continua disponível para confirmação imediata.
+
+---
+
 ## 26 de maio de 2026
 
 ### 1. Nova funcionalidade: Editar, Incluir e Excluir no Acompanhamento
