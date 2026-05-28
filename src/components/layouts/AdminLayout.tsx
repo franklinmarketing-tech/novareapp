@@ -21,6 +21,7 @@ import {
   CreditCard,
   Lock,
   Shield,
+  Mail,
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react";
@@ -55,6 +56,7 @@ const sections = [
     items: [
       { to: "/admin/clientes", icon: Users, label: "Clientes" },
       { to: "/admin/novo-cliente", icon: UserPlus, label: "Novo Cliente" },
+      { to: "/admin/leads", icon: Mail, label: "Leads" },
       { to: "/admin/financeiro", icon: Wallet, label: "Financeiro" },
     ],
   },

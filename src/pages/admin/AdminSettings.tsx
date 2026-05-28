@@ -23,6 +23,7 @@ import { useSettingsCompletion, type SettingsTabId } from "@/hooks/useSettingsCo
 import { fetchFounders, type Founder } from "@/lib/founders";
 import { FounderEditor } from "@/components/FounderEditor";
 import { BrandSettings } from "@/components/admin/BrandSettings";
+import { EmailTestPanel } from "@/components/admin/EmailTestPanel";
 
 const TABS: { id: SettingsTabId; label: string; icon: typeof User }[] = [
   { id: "perfil", label: "Perfil", icon: User },
@@ -420,6 +421,9 @@ const AdminSettings = () => {
               </p>
             </CardContent>
           </Card>
+
+          {/* Painel para validar a configuração de envio de email */}
+          <EmailTestPanel />
         </TabsContent>
 
         {/* ── COBRANÇA ───────────────────────────────── */}
