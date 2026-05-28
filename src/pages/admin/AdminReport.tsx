@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
-  Tooltip as RTooltip, CartesianGrid, Legend,
+  Tooltip as RTooltip, CartesianGrid, Legend, LineChart, Line,
 } from "recharts";
 import {
   Printer, TrendingUp, TrendingDown, Wallet, Shield, AlertTriangle,
@@ -519,8 +519,23 @@ const AdminReport = () => {
         planPct,
         snapshots,
         parecerMetas: parecerMetas.map((m) => {
-          const entries = acompEntries.filter((e) => e.meta_id === m.id);
+          // Match cross-month: meta_id direto OU source_label (mesmo item em meses diferentes)
+          const entries = acompEntries
+            .filter((e) =>
+              !e.is_closing_snapshot && (
+                e.meta_id === m.id ||
+                (e.source_table === m.source_table && e.source_label === m.source_label)
+              )
+            )
+            .sort((a, b) => b.snapshotted_at.localeCompare(a.snapshotted_at));
           const latest = entries[0];
+          // Histórico para a tabela do PDF (até 12 últimos lançamentos)
+          const history = entries.slice(0, 12).map((e) => ({
+            date: e.snapshotted_at.slice(0, 10),
+            valor: e.valor_atual ?? null,
+            pct: e.progresso_pct ?? null,
+            estado: e.estado_atual ?? null,
+          }));
           return {
             sourceLabel: m.source_label,
             sourceTable: m.source_table,
@@ -530,6 +545,8 @@ const AdminReport = () => {
             latestValor: latest?.valor_atual ?? undefined,
             latestEstado: latest?.estado_atual ?? undefined,
             progressPct: latest?.progresso_pct ?? undefined,
+            history,
+            totalLancamentos: entries.length,
           };
         }),
         monthlyClosings: (() => {
@@ -1353,12 +1370,17 @@ const AdminReport = () => {
 
         {/* ══════ ACOMPANHAMENTO ══════ */}
         {acompEntries.length > 0 && (() => {
-          const groups: Record<string, { label: string; meta?: ParecerMeta; entries: AcompEntry[] }> = {};
+          // Agrupa por (source_table:source_label) — chave preservada após clones mensais
+          const groups: Record<string, { label: string; sourceTable: string; meta?: ParecerMeta; entries: AcompEntry[] }> = {};
           acompEntries.forEach((e) => {
-            const key = e.meta_id || `${e.source_table || "x"}:${e.source_id || e.id}`;
-            const meta = e.meta_id ? parecerMetas.find((m) => m.id === e.meta_id) : undefined;
-            const label = meta?.source_label || e.source_label || "Item acompanhado";
-            if (!groups[key]) groups[key] = { label, meta, entries: [] };
+            const label = e.source_label || "Item acompanhado";
+            const sourceTable = e.source_table || "";
+            const key = `${sourceTable}:${label}`;
+            // Procura a meta vigente para este item (pelo label, pega a mais recente)
+            const meta = parecerMetas.find((m) => m.source_table === sourceTable && m.source_label === label && !m.completed_at)
+              || parecerMetas.find((m) => m.id === e.meta_id);
+            if (!groups[key]) groups[key] = { label, sourceTable, meta, entries: [] };
+            else if (!groups[key].meta && meta) groups[key].meta = meta;
             groups[key].entries.push(e);
           });
           const grouped = Object.values(groups).map((g) => ({
@@ -1411,18 +1433,91 @@ const AdminReport = () => {
                         {latest?.estado_atual && (
                           <p className="text-xs text-foreground/80 italic mb-2">"{latest.estado_atual}"</p>
                         )}
-                        {g.entries.length > 1 && (
-                          <div className="border-t border-border/50 pt-2 mt-2 space-y-1">
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-1">Histórico</p>
-                            {g.entries.slice(0, 6).map((e) => (
-                              <div key={e.id} className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                                <span className="tabular-nums shrink-0">{new Date(e.snapshotted_at).toLocaleDateString("pt-BR")}</span>
-                                {e.valor_atual != null && <span className="font-semibold text-foreground tabular-nums">{fmt(e.valor_atual)}</span>}
-                                {e.progresso_pct != null && <span className="ml-auto tabular-nums">{Math.round(e.progresso_pct)}%</span>}
+
+                        {/* ── Histórico de evolução com sparkline + tabela ── */}
+                        {g.entries.length > 1 && (() => {
+                          // Ordenar cronologicamente (mais antigo primeiro) para o gráfico
+                          const sortedAsc = [...g.entries].sort((a, b) => a.snapshotted_at.localeCompare(b.snapshotted_at));
+                          const sparkData = sortedAsc.slice(-12).map((e) => ({
+                            date: new Date(e.snapshotted_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+                            valor: Number(e.valor_atual ?? 0),
+                            pct: Number(e.progresso_pct ?? 0),
+                          }));
+                          const isReducing = g.sourceTable === "expenses" || g.sourceTable === "debts" || g.sourceTable === "insurance";
+                          const lineColor = isReducing ? "hsl(38 95% 48%)" : "hsl(142 65% 42%)";
+                          const firstValor = sortedAsc[0]?.valor_atual ?? null;
+                          const lastValor = latest?.valor_atual ?? null;
+                          const delta = firstValor != null && lastValor != null ? Number(lastValor) - Number(firstValor) : null;
+                          const verbo = isReducing ? "Reduziu" : "Cresceu";
+
+                          return (
+                            <div className="border-t border-border/50 pt-3 mt-2 space-y-2">
+                              {/* Resumo da evolução */}
+                              <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Evolução</span>
+                                  <span className="font-bold">
+                                    {g.entries.length} lançamento{g.entries.length !== 1 ? "s" : ""}
+                                  </span>
+                                  {delta != null && delta !== 0 && (
+                                    <span className={`font-bold tabular-nums ${(isReducing && delta > 0) || (!isReducing && delta < 0) ? "text-rose-600" : "text-emerald-600"}`}>
+                                      ({verbo.toLowerCase()} {fmt(Math.abs(delta))})
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[11px] text-muted-foreground tabular-nums">
+                                  {new Date(sortedAsc[0].snapshotted_at).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })} → {new Date(latest.snapshotted_at).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })}
+                                </span>
                               </div>
-                            ))}
-                          </div>
-                        )}
+
+                              {/* Sparkline — gráfico de linha da evolução */}
+                              {sparkData.length > 1 && (
+                                <div className="h-[80px] -mx-1">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={sparkData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.25)" vertical={false} />
+                                      <XAxis dataKey="date" hide />
+                                      <YAxis hide domain={["auto", "auto"]} />
+                                      <RTooltip
+                                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 11, padding: "4px 8px" }}
+                                        formatter={(v: number) => fmt(v)}
+                                      />
+                                      <Line type="monotone" dataKey="valor" stroke={lineColor} strokeWidth={2.5} dot={{ r: 2.5, fill: lineColor }} activeDot={{ r: 4 }} />
+                                    </LineChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              )}
+
+                              {/* Tabela compacta de lançamentos */}
+                              <div className="space-y-0.5">
+                                {sortedAsc.slice(-6).reverse().map((e) => {
+                                  const prevIdx = sortedAsc.findIndex((x) => x.id === e.id) - 1;
+                                  const prevEntry = prevIdx >= 0 ? sortedAsc[prevIdx] : null;
+                                  const dValor = prevEntry?.valor_atual != null && e.valor_atual != null
+                                    ? Number(e.valor_atual) - Number(prevEntry.valor_atual) : null;
+                                  return (
+                                    <div key={e.id} className="flex items-center gap-2 text-[11px] py-1 border-b border-border/20 last:border-0">
+                                      <span className="tabular-nums shrink-0 text-muted-foreground w-20">
+                                        {new Date(e.snapshotted_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" })}
+                                      </span>
+                                      {e.valor_atual != null && (
+                                        <span className="font-bold text-foreground tabular-nums">{fmt(e.valor_atual)}</span>
+                                      )}
+                                      {dValor != null && dValor !== 0 && (
+                                        <span className={`text-[10px] tabular-nums ${dValor > 0 ? (isReducing ? "text-rose-600" : "text-emerald-600") : (isReducing ? "text-emerald-600" : "text-rose-600")}`}>
+                                          {dValor > 0 ? "+" : ""}{fmt(dValor)}
+                                        </span>
+                                      )}
+                                      {e.progresso_pct != null && (
+                                        <span className="ml-auto font-bold tabular-nums text-accent">{Math.round(e.progresso_pct)}%</span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </CardContent>
                     </Card>
                   );

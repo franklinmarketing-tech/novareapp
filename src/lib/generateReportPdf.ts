@@ -775,6 +775,8 @@ export interface ReportData {
     latestValor?: number;
     latestEstado?: string;
     progressPct?: number;
+    history?: Array<{ date: string; valor: number | null; pct: number | null; estado: string | null }>;
+    totalLancamentos?: number;
   }>;
   monthlyClosings?: Array<{
     date: string;
@@ -1832,7 +1834,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     y += 18;
   }
 
-  // ── Acompanhamento de Metas
+  // ── Acompanhamento de Metas — tabela resumo + cards de histórico por meta
   if (data.parecerMetas && data.parecerMetas.length > 0) {
     ensureSpace(20);
     sectionHeader("Acompanhamento de Metas", `${data.parecerMetas.length} metas definidas`);
@@ -1903,6 +1905,109 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       pdf.line(MARGIN, y + 9, MARGIN + CONTENT_W, y + 9);
       y += 10;
     });
+    y += 6;
+
+    // ── Histórico Detalhado por Meta (cards individuais) ──
+    const metasComHistorico = data.parecerMetas.filter((m) => m.history && m.history.length > 0);
+    if (metasComHistorico.length > 0) {
+      ensureSpace(20);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      pdf.setTextColor(...C.primary);
+      pdf.text("Histórico de Evolução por Meta", MARGIN, y);
+      y += 2;
+      pdf.setDrawColor(...C.primary);
+      pdf.setLineWidth(0.5);
+      pdf.line(MARGIN, y, MARGIN + 60, y);
+      y += 6;
+
+      metasComHistorico.forEach((m) => {
+        const hist = m.history || [];
+        const cardHeight = 12 + Math.min(hist.length, 6) * 5 + 6;
+        ensureSpace(cardHeight + 4);
+
+        // Card background
+        pdf.setFillColor(...C.bgSoft);
+        pdf.roundedRect(MARGIN, y, CONTENT_W, cardHeight, 2, 2, "F");
+        pdf.setDrawColor(...C.border);
+        pdf.setLineWidth(0.2);
+        pdf.roundedRect(MARGIN, y, CONTENT_W, cardHeight, 2, 2, "S");
+
+        // Cor lateral (categoria)
+        const isReducing = m.sourceTable === "expenses" || m.sourceTable === "debts" || m.sourceTable === "insurance";
+        const accentColor: [number, number, number] = isReducing ? [217, 119, 6] : [22, 163, 74];
+        pdf.setFillColor(...accentColor);
+        pdf.rect(MARGIN, y, 1.5, cardHeight, "F");
+
+        // Header da meta
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9);
+        pdf.setTextColor(...C.text);
+        pdf.text(pdf.splitTextToSize(m.sourceLabel, 110)[0], MARGIN + 4, y + 5);
+
+        // Tags: categoria | alvo | atingido
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7);
+        pdf.setTextColor(...C.muted);
+        const tagParts: string[] = [catLabel[m.sourceTable] || m.sourceTable];
+        if (m.metaValor) tagParts.push(`Alvo ${fmt(m.metaValor)}`);
+        if (m.progressPct != null) tagParts.push(`${m.progressPct}% atingido`);
+        if (m.totalLancamentos) tagParts.push(`${m.totalLancamentos} lançamentos`);
+        pdf.text(tagParts.join("  ·  "), MARGIN + 4, y + 9.5);
+
+        // Mini-tabela de evolução cronológica (do mais recente para o mais antigo, até 6)
+        const headerY = y + 13;
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(6.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text("DATA", MARGIN + 4, headerY);
+        pdf.text("VALOR", MARGIN + 35, headerY);
+        pdf.text("VARIAÇÃO", MARGIN + 70, headerY);
+        pdf.text("PROGRESSO", MARGIN + CONTENT_W - 30, headerY);
+
+        let rowY = headerY + 4;
+        // hist está em ordem DESC (mais recente primeiro), pegamos os 6 mais recentes
+        const histAsc = [...hist].reverse(); // ASC para calcular delta
+        const recentEntries = hist.slice(0, 6); // os mais recentes
+        recentEntries.forEach((e) => {
+          // Encontra o anterior em ordem ASC para calcular delta
+          const ascIdx = histAsc.findIndex((h) => h.date === e.date);
+          const prev = ascIdx > 0 ? histAsc[ascIdx - 1] : null;
+          const dValor = prev?.valor != null && e.valor != null ? e.valor - prev.valor : null;
+
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(7);
+          pdf.setTextColor(...C.text);
+          pdf.text(new Date(e.date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" }), MARGIN + 4, rowY);
+          if (e.valor != null) {
+            pdf.setFont("helvetica", "bold");
+            pdf.text(fmt(e.valor), MARGIN + 35, rowY);
+          } else {
+            pdf.setTextColor(...C.muted);
+            pdf.text("—", MARGIN + 35, rowY);
+          }
+          if (dValor != null && dValor !== 0) {
+            const goingRight = (isReducing && dValor > 0) || (!isReducing && dValor < 0);
+            const dColor: [number, number, number] = goingRight ? C.danger : C.success;
+            pdf.setTextColor(...dColor);
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(6.5);
+            pdf.text(`${dValor > 0 ? "+" : ""}${fmt(dValor)}`, MARGIN + 70, rowY);
+          }
+          if (e.pct != null) {
+            const pctC: [number, number, number] = e.pct >= 100 ? C.success : e.pct >= 60 ? [37, 99, 235] : e.pct >= 30 ? C.warning : C.danger;
+            pdf.setTextColor(...pctC);
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(7);
+            pdf.text(`${Math.round(e.pct)}%`, MARGIN + CONTENT_W - 4, rowY, { align: "right" });
+          }
+          rowY += 5;
+        });
+
+        y += cardHeight + 4;
+      });
+    }
+
     y += 4;
   }
 
