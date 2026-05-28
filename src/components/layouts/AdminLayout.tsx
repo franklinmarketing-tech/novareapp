@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+﻿import { useAuth } from "@/contexts/AuthContext";
 import logoBranca from "@/assets/logo-branca.png";
 import { NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -41,7 +41,7 @@ import { useSettingsCompletion, type SettingsTabId } from "@/hooks/useSettingsCo
 import { CommandPalette } from "@/components/CommandPalette";
 import { NotificationsBell } from "@/components/NotificationsBell";
 
-/* ── nav config ─────────────────────────────────────────── */
+/* â”€â”€ nav config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 const sections = [
   {
@@ -51,7 +51,7 @@ const sections = [
     ],
   },
   {
-    label: "Gestão",
+    label: "GestÃ£o",
     items: [
       { to: "/admin/clientes", icon: Users, label: "Clientes" },
       { to: "/admin/novo-cliente", icon: UserPlus, label: "Novo Cliente" },
@@ -62,24 +62,24 @@ const sections = [
 ];
 
 
-/* ── breadcrumb helpers ─────────────────────────────────── */
+/* â”€â”€ breadcrumb helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 const staticSegments: Record<string, string> = {
   admin: "Dashboard",
   clientes: "Clientes",
   "novo-cliente": "Novo Cliente",
   financeiro: "Financeiro",
-  configuracoes: "Configurações",
+  configuracoes: "ConfiguraÃ§Ãµes",
   cliente: "Cliente",
   onboarding: "Onboarding",
-  diagnostico: "Diagnóstico",
+  diagnostico: "DiagnÃ³stico",
   parecer: "Parecer",
-  "plano-acao": "Plano de Ação",
+  "plano-acao": "Plano de AÃ§Ã£o",
   investimentos: "Investimentos",
-  implementacao: "Implementação",
-  acompanhamento: "Lançamento do mês",
+  implementacao: "ImplementaÃ§Ã£o",
+  acompanhamento: "LanÃ§amento do mÃªs",
   evolucao: "Acompanhamento",
-  relatorio: "Relatório",
+  relatorio: "RelatÃ³rio",
   workspace: "Workspace",
   ajuda: "Ajuda & Manual",
   leads: "Leads",
@@ -120,9 +120,9 @@ export const AdminLayout = ({ children }: Props) => {
       { id: "perfil", label: "Perfil", icon: UserIcon },
       { id: "equipe", label: "Equipe", icon: Users },
       { id: "marca", label: "Marca", icon: ImageIcon },
-      { id: "notificacoes", label: "Notificações", icon: Bell },
-      { id: "cobranca", label: "Cobrança", icon: CreditCard },
-      { id: "seguranca", label: "Segurança", icon: Lock },
+      { id: "notificacoes", label: "NotificaÃ§Ãµes", icon: Bell },
+      { id: "cobranca", label: "CobranÃ§a", icon: CreditCard },
+      { id: "seguranca", label: "SeguranÃ§a", icon: Lock },
     ],
     []
   );
@@ -177,7 +177,7 @@ export const AdminLayout = ({ children }: Props) => {
         .toUpperCase()
     : "A";
 
-  /* ── breadcrumbs ──────────────────────────────────────── */
+  /* â”€â”€ breadcrumbs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
   const buildBreadcrumbs = () => {
     const segments = pathParts;
@@ -188,10 +188,10 @@ export const AdminLayout = ({ children }: Props) => {
       const seg = segments[i];
       accumulated += "/" + seg;
 
-      // Skip "admin" as first crumb — it's implicit
+      // Skip "admin" as first crumb â€” it's implicit
       if (i === 0 && seg === "admin") continue;
 
-      // Slug segment after "cliente" → show client name
+      // Slug segment after "cliente" â†’ show client name
       if (clientSlug && seg === clientSlug) {
         crumbs.push({ label: clientNames[clientSlug] || clientSlug, path: accumulated });
         continue;
@@ -208,9 +208,9 @@ export const AdminLayout = ({ children }: Props) => {
 
   const breadcrumbs = buildBreadcrumbs();
 
-  /* ── sidebar content ──────────────────────────────────── */
+  /* â”€â”€ sidebar content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-  // V9: sidebar — modo "expanded" (cheio, 232/260px) vs "collapsed" (apenas
+  // V9: sidebar â€” modo "expanded" (cheio, 232/260px) vs "collapsed" (apenas
   // icones, 64px). Mobile sempre usa expanded.
   const sidebarContent = (forceExpanded = false) => {
     const collapsed = sidebarCollapsed && !forceExpanded;
@@ -221,7 +221,7 @@ export const AdminLayout = ({ children }: Props) => {
         {!collapsed && (
           <>
             <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
-            <span className="text-xs text-white font-mono font-semibold">v4.0</span>
+            <span className="text-xs text-white font-mono font-semibold">v5.0</span>
           </>
         )}
         {!forceExpanded && (
@@ -236,7 +236,7 @@ export const AdminLayout = ({ children }: Props) => {
         )}
       </div>
 
-      {/* Admin profile — TOP (with dropdown) */}
+      {/* Admin profile â€” TOP (with dropdown) */}
       <div className={cn("pb-4 shrink-0", collapsed ? "px-2" : "px-3")}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -275,7 +275,7 @@ export const AdminLayout = ({ children }: Props) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => { setMobileOpen(false); navigate("/admin/configuracoes"); }}>
               <Settings className="h-4 w-4 mr-2" />
-              Configurações
+              ConfiguraÃ§Ãµes
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
@@ -322,7 +322,7 @@ export const AdminLayout = ({ children }: Props) => {
         ))}
       </nav>
 
-      {/* Founders — esconde quando collapsed */}
+      {/* Founders â€” esconde quando collapsed */}
       {!collapsed && (
         <div className="border-t border-sidebar-border/30 mt-4 shrink-0">
           <FoundersShowcase variant="sidebar" />
@@ -364,7 +364,7 @@ export const AdminLayout = ({ children }: Props) => {
               setSettingsOpen(true);
               setMobileOpen(false);
             }}
-            title={collapsed ? "Configurações" : undefined}
+            title={collapsed ? "ConfiguraÃ§Ãµes" : undefined}
             className={({ isActive }) =>
               cn(
                 "relative flex items-center rounded-xl text-[0.8125rem] font-medium transition-colors duration-200",
@@ -378,7 +378,7 @@ export const AdminLayout = ({ children }: Props) => {
             <Settings className="h-[18px] w-[18px] shrink-0" />
             {!collapsed && (
               <>
-                <span className="flex-1 text-left truncate">Configurações</span>
+                <span className="flex-1 text-left truncate">ConfiguraÃ§Ãµes</span>
                 {!settingsCompletion.loading && settingsCompletion.pendingCount > 0 && (
                   <span
                     className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold"
@@ -443,7 +443,7 @@ export const AdminLayout = ({ children }: Props) => {
         </Button>
         <div className="flex items-center ml-2">
           <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
-          <span className="text-xs text-white font-mono font-semibold ml-1.5">v4.0</span>
+          <span className="text-xs text-white font-mono font-semibold ml-1.5">v5.0</span>
         </div>
         <div className="ml-auto flex items-center gap-1">
           <NotificationsBell className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
@@ -505,15 +505,15 @@ export const AdminLayout = ({ children }: Props) => {
         <footer className="px-4 sm:px-6 xl:px-8 py-3 border-t border-border/40 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground/60">
             <Lock className="h-3 w-3" />
-            <span>Dados protegidos conforme a LGPD · Criptografia de ponta a ponta</span>
+            <span>Dados protegidos conforme a LGPD Â· Criptografia de ponta a ponta</span>
           </div>
           <span className="text-[0.6875rem] text-muted-foreground/40">
-            Novare Consultoria Financeira © {new Date().getFullYear()}
+            Novare Consultoria Financeira Â© {new Date().getFullYear()}
           </span>
         </footer>
       </main>
 
-      {/* Global ⌘K palette (admin only) */}
+      {/* Global âŒ˜K palette (admin only) */}
       <CommandPalette />
     </div>
   );

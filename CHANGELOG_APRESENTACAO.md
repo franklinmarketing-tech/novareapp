@@ -8,6 +8,20 @@
 
 ## 28 de maio de 2026
 
+### Versão 5.0 — auditoria completa e dashboard reformulado
+
+**Resumo executivo:**
+A plataforma Novare entra na versão **5.0** após uma rodada completa de auditoria de arquitetura, banco de dados, UX e fluxo de consultoria. Build, type-check e lint passaram sem erros (exit 0 em todos). Esta versão consolida o dashboard do cliente, trava edição de dados pós-fechamento, traz auto-save no acompanhamento e amplia a análise visual (relatório web + PDF com 12+ gráficos novos).
+
+**O que o cliente vê de diferente na v5.0:**
+- Dashboard com **resumo consolidado** dos dados e **histórico mensal** de evolução
+- Menu se simplifica após o primeiro fechamento (some "Meus Dados")
+- Trava automática de edição de Renda/Despesas/Dívidas/Patrimônio/Seguros/Objetivos após fechamento
+- Auto-save no campo de descrição do estado em cada meta acompanhada
+- Botão "Liberar lançamento" do consultor passa a funcionar de fato
+
+---
+
 ### Dashboard do cliente reformulado: dados consolidados + histórico mensal
 
 **Resumo executivo:**
