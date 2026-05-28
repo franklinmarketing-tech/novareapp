@@ -171,13 +171,15 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     queryFn: async () => { const { data } = await supabase.from("goals").select("*").eq("client_id", clientId); return data || []; },
   });
 
-  // Lançamentos realizados — usados para mostrar histórico consultivo em cada card
+  // Lançamentos realizados — usados para mostrar histórico consultivo em cada card.
+  // Buscamos source_label para que o histórico persista mesmo após clonar (source_id muda
+  // a cada mês, mas o label do item permanece igual entre clones).
   const { data: lancamentos = [] } = useQuery({
     queryKey: ["acompanhamento_lancamentos", clientId],
     queryFn: async () => {
       const { data } = await supabase
         .from("acompanhamento_entradas")
-        .select("source_table, source_id, valor_atual, estado_atual, snapshotted_at")
+        .select("source_table, source_id, source_label, valor_atual, valor_meta, estado_atual, snapshotted_at")
         .eq("client_id", clientId)
         .eq("is_closing_snapshot", false)
         .order("snapshotted_at", { ascending: false });
@@ -185,18 +187,24 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     },
   });
 
-  // Map: "table:id" → último valor lançado para essa meta (com data e estado)
+  // Map: "table:label" → último lançamento (com valor, data, estado e meta de referência)
   const ultimoLancado = useMemo(() => {
-    const map = new Map<string, { valor: number; data: string; estado: string | null }>();
+    const map = new Map<string, { valor: number; meta_valor: number | null; data: string; estado: string | null; count: number }>();
     (lancamentos as any[]).forEach((l) => {
-      if (l.valor_atual == null) return;
-      const key = `${l.source_table}:${l.source_id}`;
-      if (!map.has(key)) {
+      if (l.valor_atual == null || !l.source_label) return;
+      const key = `${l.source_table}:${l.source_label}`;
+      const existing = map.get(key);
+      if (!existing) {
+        // como ordenamos DESC, o primeiro é o mais recente
         map.set(key, {
           valor: Number(l.valor_atual),
+          meta_valor: l.valor_meta != null ? Number(l.valor_meta) : null,
           data: l.snapshotted_at,
           estado: l.estado_atual,
+          count: 1,
         });
+      } else {
+        existing.count += 1;
       }
     });
     return map;
@@ -737,32 +745,51 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                             </div>
                           </div>
 
-                          {/* ── HISTÓRICO consultivo: última redução/aumento conseguida ── */}
+                          {/* ── HISTÓRICO consultivo: progresso acumulado da meta ── */}
                           {(() => {
-                            const last = ultimoLancado.get(`${item.source_table}:${item.source_id}`);
+                            const last = ultimoLancado.get(`${item.source_table}:${item.source_label}`);
                             if (!last || !last.valor) return null;
                             const isReducing = section === "expenses" || section === "debts" || section === "insurance";
                             const isCrescer = section === "income" || section === "assets";
                             const lastDate = new Date(last.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" });
+                            // Meta de referência: usa a do lançamento ou a definida no campo
+                            const metaRef = last.meta_valor || (f?.metaValor ? parseFloat(f.metaValor) : null);
+                            const pctAtingido = metaRef && metaRef > 0 ? Math.min(Math.round((last.valor / metaRef) * 100), 100) : null;
                             const tone = isReducing
                               ? "bg-amber-50/70 dark:bg-amber-950/30 border-amber-300/50 text-amber-800 dark:text-amber-300"
                               : isCrescer
                                 ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300/50 text-emerald-800 dark:text-emerald-300"
                                 : "bg-sky-50/70 dark:bg-sky-950/30 border-sky-300/50 text-sky-800 dark:text-sky-300";
-                            const verbo = isReducing ? "Reduziu" : isCrescer ? "Cresceu" : "Lançou";
+                            const verbo = isReducing ? "Já reduziu" : isCrescer ? "Já cresceu" : "Já lançou";
+                            const barColor = isReducing ? "bg-amber-500" : isCrescer ? "bg-emerald-500" : "bg-sky-500";
                             return (
-                              <div className={cn("mx-4 mt-3 mb-1 px-3 py-2 rounded-lg border text-xs", tone)}>
+                              <div className={cn("mx-4 mt-3 mb-1 px-3 py-2.5 rounded-lg border text-xs", tone)}>
                                 <div className="flex items-center justify-between gap-2 flex-wrap">
                                   <div className="flex items-center gap-1.5 font-bold">
                                     <span className="text-[10px] uppercase tracking-wider opacity-75">Histórico</span>
                                     <span>·</span>
                                     <span>{verbo} <span className="tabular-nums">{formatBRL(last.valor)}</span></span>
+                                    {metaRef && <span className="opacity-60">de {formatBRL(metaRef)}</span>}
                                   </div>
-                                  <span className="text-[10px] opacity-70 tabular-nums">{lastDate}</span>
+                                  {pctAtingido != null && (
+                                    <span className="text-[11px] font-black tabular-nums px-1.5 py-0.5 rounded-md bg-white/60 dark:bg-black/30">
+                                      {pctAtingido}% da meta
+                                    </span>
+                                  )}
                                 </div>
-                                {last.estado && (
-                                  <p className="text-[11px] opacity-85 mt-1 line-clamp-2">{last.estado}</p>
+                                {/* Barra de progresso */}
+                                {pctAtingido != null && (
+                                  <div className="mt-2 h-1.5 rounded-full bg-white/40 dark:bg-black/30 overflow-hidden">
+                                    <div className={cn("h-full rounded-full transition-all duration-500", barColor)} style={{ width: `${pctAtingido}%` }} />
+                                  </div>
                                 )}
+                                {/* Rodapé: estado + data + contagem */}
+                                <div className="flex items-center justify-between gap-2 mt-1.5 text-[10px] opacity-75">
+                                  <span className="truncate">{last.estado || "—"}</span>
+                                  <span className="whitespace-nowrap tabular-nums shrink-0">
+                                    {last.count > 1 ? `${last.count} lançamentos · ` : ""}último em {lastDate}
+                                  </span>
+                                </div>
                               </div>
                             );
                           })()}

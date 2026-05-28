@@ -242,6 +242,37 @@ function MetaAcompRow({
         </div>
       )}
 
+      {/* ── Linha de progresso acumulado (histórico consultivo) ── */}
+      {latestEntry?.valor_atual != null && (meta.meta_valor || latestEntry.valor_meta) && (() => {
+        const valorReduzido = Number(latestEntry.valor_atual);
+        const metaTotal = Number(meta.meta_valor || latestEntry.valor_meta || 0);
+        if (metaTotal <= 0) return null;
+        const pctAtingido = Math.min(Math.round((valorReduzido / metaTotal) * 100), 100);
+        const isReducing = meta.source_table === "expenses" || meta.source_table === "debts" || meta.source_table === "insurance";
+        const verbo = isReducing ? "Já reduziu" : "Já cresceu";
+        const tone = isReducing
+          ? { bg: "bg-amber-50/70 dark:bg-amber-950/30", border: "border-amber-300/50", text: "text-amber-800 dark:text-amber-300", bar: "bg-amber-500" }
+          : { bg: "bg-emerald-50/70 dark:bg-emerald-950/30", border: "border-emerald-300/50", text: "text-emerald-800 dark:text-emerald-300", bar: "bg-emerald-500" };
+        return (
+          <div className={cn("px-4 py-2 border-b text-xs", tone.bg, tone.border, tone.text)}>
+            <div className="flex items-center justify-between gap-2 flex-wrap mb-1.5">
+              <div className="flex items-center gap-1.5 font-bold">
+                <span className="text-[10px] uppercase tracking-wider opacity-75">Histórico</span>
+                <span>·</span>
+                <span className="tabular-nums">{verbo} {formatBRL(valorReduzido)}</span>
+                <span className="opacity-60 tabular-nums">de {formatBRL(metaTotal)}</span>
+              </div>
+              <span className="text-[11px] font-black tabular-nums px-1.5 py-0.5 rounded-md bg-white/60 dark:bg-black/30">
+                {pctAtingido}% da meta
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-white/40 dark:bg-black/30 overflow-hidden">
+              <div className={cn("h-full rounded-full transition-all duration-500", tone.bar)} style={{ width: `${pctAtingido}%` }} />
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Corpo: Plano | Atualizar  (ou só Atualizar quando não há meta) ── */}
       <div className={cn(
         "grid divide-x divide-border/40",
@@ -1129,10 +1160,15 @@ export function AcompanhamentoMetas({
         if (!items || !items.length) return null;
         const cfg  = SECTION_CONFIG[section];
         const Icon = cfg.icon;
-        const matchEntry = (e: AcompEntry, m: MetaEntry) =>
-          m.is_synthetic
-            ? (e.meta_id == null && e.source_table === m.source_table && e.source_id === m.source_id)
-            : e.meta_id === m.id;
+        // Match estendido: além de meta_id/source_id, casa também por source_label
+        // (mesmo item após clone para outro mês — source_id muda, label preservado)
+        const matchEntry = (e: AcompEntry, m: MetaEntry) => {
+          if (!m.is_synthetic && e.meta_id === m.id) return true;
+          if (m.is_synthetic && e.meta_id == null && e.source_table === m.source_table && e.source_id === m.source_id) return true;
+          // Fallback por source_label — preserva histórico através dos clones
+          if (e.source_table === m.source_table && (e as any).source_label === m.source_label) return true;
+          return false;
+        };
         const comAcomp = items.filter((m) => entradas.some((e) => matchEntry(e, m))).length;
 
         const sectionAccent: Record<string, string> = {
@@ -1198,11 +1234,7 @@ export function AcompanhamentoMetas({
             <div className="space-y-3">
               {items.map((meta) => {
                 const metaHistory = entradas
-                  .filter((e) => !e.is_closing_snapshot && (
-                    meta.is_synthetic
-                      ? (e.meta_id == null && e.source_table === meta.source_table && e.source_id === meta.source_id)
-                      : e.meta_id === meta.id
-                  ))
+                  .filter((e) => !e.is_closing_snapshot && matchEntry(e, meta))
                   .slice(0, 10);
                 return (
                   <MetaAcompRow
