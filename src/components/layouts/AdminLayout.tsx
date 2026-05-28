@@ -221,7 +221,7 @@ export const AdminLayout = ({ children }: Props) => {
         {!collapsed && (
           <>
             <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
-            <span className="text-xs text-white font-mono font-semibold">v3.4</span>
+            <span className="text-xs text-white font-mono font-semibold">v3.9</span>
           </>
         )}
         {!forceExpanded && (
@@ -443,7 +443,7 @@ export const AdminLayout = ({ children }: Props) => {
         </Button>
         <div className="flex items-center ml-2">
           <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
-          <span className="text-xs text-white font-mono font-semibold ml-1.5">v3.4</span>
+          <span className="text-xs text-white font-mono font-semibold ml-1.5">v3.9</span>
         </div>
         <div className="ml-auto flex items-center gap-1">
           <NotificationsBell className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
