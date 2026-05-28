@@ -1046,20 +1046,36 @@ export function AcompanhamentoMetas({
     );
   }
 
-  const currentMonth = new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-  const currentMonthLabel = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
+  // Label do mês ativo: usa o mês selecionado (Onboarding) se houver, senão mês atual
+  const activeMonthLabel = (() => {
+    const names = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    if (selectedMonth) {
+      const [y, m] = selectedMonth.split("-").map(Number);
+      return `${names[m - 1]} de ${y}`;
+    }
+    const d = new Date();
+    return `${names[d.getMonth()]} de ${d.getFullYear()}`;
+  })();
+  const isCurrentMonth = (() => {
+    if (!selectedMonth) return true;
+    const d = new Date();
+    const current = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+    return selectedMonth === current;
+  })();
 
   return (
     <div className="space-y-6">
-      {/* Cabeçalho do mês corrente */}
+      {/* Cabeçalho do mês ativo */}
       <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-novare-blue/20 bg-gradient-to-r from-novare-blue/10 via-novare-blue-light/30 to-transparent px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="h-10 w-10 rounded-xl bg-novare-blue text-white flex items-center justify-center shrink-0 shadow-sm">
             <CalendarDays className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-novare-blue/70 dark:text-novare-blue-bright/80">Mês corrente</p>
-            <p className="text-base font-bold text-novare-blue dark:text-novare-blue-bright leading-tight truncate">{currentMonthLabel}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-novare-blue/70 dark:text-novare-blue-bright/80">
+              {isCurrentMonth ? "Mês corrente" : "Mês ativo"}
+            </p>
+            <p className="text-base font-bold text-novare-blue dark:text-novare-blue-bright leading-tight truncate">{activeMonthLabel}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
