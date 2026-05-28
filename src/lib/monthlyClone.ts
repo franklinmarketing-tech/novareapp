@@ -86,6 +86,12 @@ export async function cloneToNextMonth(
     return Math.max(0, next); // nunca negativo
   };
 
+  // Mapping oldId → newId por tabela — usado depois para clonar parecer_metas
+  const idMapping: Record<string, Map<string, string>> = {
+    income: new Map(), expenses: new Map(), debts: new Map(),
+    assets: new Map(), insurance: new Map(), goals: new Map(),
+  };
+
   // ── INCOME ──
   const { data: incomeExisting } = await supabase
     .from("income").select("id").eq("client_id", clientId).eq("month_ref", nextRef).limit(1);
@@ -102,8 +108,11 @@ export async function cloneToNextMonth(
         month_ref: nextRef,
         amount: applyDelta("income", id as string, Number(r.amount) || 0),
       }));
-      const { error } = await supabase.from("income").insert(rows);
-      if (!error) result.income = rows.length;
+      const { data: inserted, error } = await supabase.from("income").insert(rows).select("id");
+      if (!error && inserted) {
+        result.income = inserted.length;
+        src.forEach((s, i) => idMapping.income.set(s.id as string, inserted[i].id as string));
+      }
     }
   }
 
@@ -123,8 +132,11 @@ export async function cloneToNextMonth(
         month_ref: nextRef,
         amount: applyDelta("expenses", id as string, Number(r.amount) || 0),
       }));
-      const { error } = await supabase.from("expenses").insert(rows);
-      if (!error) result.expenses = rows.length;
+      const { data: inserted, error } = await supabase.from("expenses").insert(rows).select("id");
+      if (!error && inserted) {
+        result.expenses = inserted.length;
+        src.forEach((s, i) => idMapping.expenses.set(s.id as string, inserted[i].id as string));
+      }
     }
   }
 
@@ -144,8 +156,11 @@ export async function cloneToNextMonth(
         month_ref: nextRef,
         total_amount: applyDelta("debts", id as string, Number(r.total_amount) || 0),
       }));
-      const { error } = await supabase.from("debts").insert(rows);
-      if (!error) result.debts = rows.length;
+      const { data: inserted, error } = await supabase.from("debts").insert(rows).select("id");
+      if (!error && inserted) {
+        result.debts = inserted.length;
+        src.forEach((s, i) => idMapping.debts.set(s.id as string, inserted[i].id as string));
+      }
     }
   }
 
@@ -165,8 +180,11 @@ export async function cloneToNextMonth(
         month_ref: nextRef,
         estimated_value: applyDelta("assets", id as string, Number(r.estimated_value) || 0),
       }));
-      const { error } = await supabase.from("assets").insert(rows);
-      if (!error) result.assets = rows.length;
+      const { data: inserted, error } = await supabase.from("assets").insert(rows).select("id");
+      if (!error && inserted) {
+        result.assets = inserted.length;
+        src.forEach((s, i) => idMapping.assets.set(s.id as string, inserted[i].id as string));
+      }
     }
   }
 
@@ -186,8 +204,11 @@ export async function cloneToNextMonth(
         month_ref: nextRef,
         monthly_premium: applyDelta("insurance", id as string, Number(r.monthly_premium) || 0),
       }));
-      const { error } = await supabase.from("insurance").insert(rows);
-      if (!error) result.insurance = rows.length;
+      const { data: inserted, error } = await supabase.from("insurance").insert(rows).select("id");
+      if (!error && inserted) {
+        result.insurance = inserted.length;
+        src.forEach((s, i) => idMapping.insurance.set(s.id as string, inserted[i].id as string));
+      }
     }
   }
 
@@ -197,14 +218,65 @@ export async function cloneToNextMonth(
   if (!goalsExisting || goalsExisting.length === 0) {
     const { data: src } = await supabase
       .from("goals")
-      .select("description, target_amount, deadline, priority, amount_applied")
+      .select("id, description, target_amount, deadline, priority, amount_applied")
       .eq("client_id", clientId)
       .is("completed_at", null)
       .eq("month_ref", closedMonthRef);
     if (src && src.length > 0) {
-      const rows = src.map((r) => ({ ...r, client_id: clientId, month_ref: nextRef }));
-      const { error } = await supabase.from("goals").insert(rows);
-      if (!error) result.goals = rows.length;
+      const rows = src.map(({ id, ...r }) => ({ ...r, client_id: clientId, month_ref: nextRef }));
+      const { data: inserted, error } = await supabase.from("goals").insert(rows).select("id");
+      if (!error && inserted) {
+        result.goals = inserted.length;
+        src.forEach((s, i) => idMapping.goals.set(s.id as string, inserted[i].id as string));
+      }
+    }
+  }
+
+  // ── Etapa 2: clona PARECER_METAS para os novos source_ids ──
+  // Mantém o histórico consultivo: meta_text, meta_valor e prazo definidos em Maio
+  // continuam visíveis em Junho (vinculados ao novo item). Consultor pode editar.
+  const { data: existingMetas } = await supabase
+    .from("parecer_metas")
+    .select("source_table, source_id")
+    .eq("client_id", clientId);
+  const existingMetaKeys = new Set(
+    (existingMetas || []).map((m: any) => `${m.source_table}:${m.source_id}`),
+  );
+
+  for (const [table, mapping] of Object.entries(idMapping)) {
+    if (mapping.size === 0) continue;
+    const oldIds = Array.from(mapping.keys());
+    const { data: metasFromOld } = await supabase
+      .from("parecer_metas")
+      .select("source_id, source_label, meta_text, meta_valor, prazo, current_value, ai_suggestion")
+      .eq("client_id", clientId)
+      .eq("source_table", table)
+      .in("source_id", oldIds);
+
+    if (!metasFromOld || metasFromOld.length === 0) continue;
+
+    const rowsToInsert = metasFromOld
+      .map((m: any) => {
+        const newId = mapping.get(m.source_id);
+        if (!newId) return null;
+        const key = `${table}:${newId}`;
+        if (existingMetaKeys.has(key)) return null; // já existe meta para o item novo
+        return {
+          client_id: clientId,
+          source_table: table,
+          source_id: newId,
+          source_label: m.source_label,
+          meta_text: m.meta_text,
+          meta_valor: m.meta_valor,
+          prazo: m.prazo,
+          current_value: m.current_value,
+          ai_suggestion: m.ai_suggestion,
+        };
+      })
+      .filter(Boolean);
+
+    if (rowsToInsert.length > 0) {
+      await supabase.from("parecer_metas").insert(rowsToInsert as any);
     }
   }
 
