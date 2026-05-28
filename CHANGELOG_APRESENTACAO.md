@@ -8,6 +8,27 @@
 
 ## 28 de maio de 2026
 
+### Trava de edição dos dados após o primeiro fechamento mensal
+
+**Resumo executivo:**
+Depois que o consultor concluir o **primeiro fechamento mensal** de um cliente, a tela **"Meus Dados"** do cliente passa a ficar em **modo visualização** — ele continua acessando todas as informações, mas não consegue mais alterar Renda, Despesas, Dívidas, Patrimônio, Seguros ou Objetivos no painel dele. A partir daí, ajustes nesses dados passam a ser feitos pelo consultor.
+
+**O que mudou para o cliente:**
+
+| Onde | Antes | Agora |
+|------|-------|-------|
+| Botão "Editar" em cada seção (Renda, Despesas, Dívidas, Patrimônio, Seguros, Objetivos) | Sempre disponível | Vira um selo "🔒 Travado" assim que existe um fechamento mensal |
+| Aviso no topo da página | — | Card destacado em azul: "Edição encerrada — seus dados foram fechados a partir do primeiro fechamento mensal" com mês do fechamento |
+| Botão "Confirmar Dados" / "Atualizar dados novamente" | Sempre disponível | Some quando há fechamento — não faz sentido confirmar dados que já estão consolidados |
+| Tentativa de salvar (caso burlando UI) | Salvava normalmente | Bloqueada por salvaguarda no código com toast: "Edição bloqueada — solicite ao consultor" |
+
+**Por que essa mudança?**
+- Garante que o histórico do cliente reflete sempre o que foi efetivamente analisado no fechamento.
+- Evita que cliente altere dados retroativos e desalinhe a evolução mensal do plano.
+- Mantém a consultoria como autoridade única para ajustes pós-fechamento — o cliente continua acompanhando lançamentos do mês (que NÃO ficam travados).
+
+---
+
 ### Auto-save no acompanhamento mensal
 
 **Resumo executivo:**

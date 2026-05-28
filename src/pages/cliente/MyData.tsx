@@ -23,7 +23,7 @@ import {
   Pencil, Save, X, User, Loader2,
   Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain,
   type LucideIcon,
-  CheckCircle2, AlertTriangle, Heart, Flame, Sparkles, RefreshCw,
+  CheckCircle2, AlertTriangle, Heart, Flame, Sparkles, RefreshCw, Lock,
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
@@ -132,6 +132,11 @@ const MyData = () => {
   const [loading, setLoading] = useState(true);
   const [modifiedSections, setModifiedSections] = useState<Set<number>>(new Set());
   const [monthlyConfirmed, setMonthlyConfirmed] = useState<Date | null>(null);
+  // Trava de edição: depois do primeiro fechamento mensal do cliente,
+  // ele perde a permissão de alterar os dados do onboarding (Renda, Despesas,
+  // Dívidas, etc.). Só o consultor passa a editar a partir daí.
+  const [firstClosingDate, setFirstClosingDate] = useState<string | null>(null);
+  const isLocked = !!firstClosingDate;
   const [confirmingData, setConfirmingData] = useState(false);
   const [highlightActive, setHighlightActive] = useState(false);
   const [highlightedOnce, setHighlightedOnce] = useState(false);
@@ -215,6 +220,17 @@ const MyData = () => {
 
       const { data: conf } = await supabase.from("data_confirmations").select("confirmed_at").eq("client_id", clientData.id).eq("month_ref", getMonthRef()).maybeSingle();
       if (conf) setMonthlyConfirmed(new Date(conf.confirmed_at));
+
+      // Verifica se ja existe pelo menos um fechamento mensal — se sim,
+      // a edicao dos dados do onboarding fica travada para o cliente.
+      const { data: firstClosing } = await supabase
+        .from("monthly_closings")
+        .select("month_ref")
+        .eq("client_id", clientData.id)
+        .order("month_ref", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (firstClosing) setFirstClosingDate(firstClosing.month_ref);
 
       const c = clientData;
       setIdentificacao({ full_name: profileData?.full_name ?? "", cpf: c.cpf ?? "", date_of_birth: c.date_of_birth ?? "", marital_status: c.marital_status ?? "", property_regime: c.property_regime ?? "", profession: c.profession ?? "", company: c.company ?? "", years_in_profession: c.years_in_profession?.toString() ?? "", dependents_count: c.dependents_count?.toString() ?? "", dependents_ages: c.dependents_ages ?? "", city: c.city ?? "", state: c.state ?? "" });
@@ -338,6 +354,13 @@ const MyData = () => {
   };
 
   const handleSaveDialog = async (section: number) => {
+    if (isLocked) {
+      toast.error("Edição bloqueada", {
+        description: "Seus dados estão travados após o primeiro fechamento mensal. Solicite ao consultor para ajustar.",
+      });
+      setEditingDialog(null);
+      return;
+    }
     setSubmitting(true);
     await saveSection(section);
     setSubmitting(false);
@@ -569,9 +592,31 @@ const MyData = () => {
         </Card>
       </motion.div>
 
+      {/* ━━━ TRAVA APOS FECHAMENTO MENSAL ━━━ */}
+      {isLocked && (
+        <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={1.5}>
+          <div className="rounded-2xl border-2 border-novare-blue/40 bg-gradient-to-br from-novare-blue/[0.06] via-novare-blue-light/40 to-transparent dark:from-novare-blue/15 dark:via-novare-blue/5 px-5 py-4 flex items-start gap-4">
+            <div className="h-10 w-10 rounded-2xl bg-novare-blue text-white flex items-center justify-center shrink-0 shadow-md">
+              <Lock className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-novare-blue dark:text-novare-blue-bright">
+                Edição encerrada
+              </p>
+              <p className="text-sm font-bold text-foreground leading-tight mt-0.5">
+                Seus dados foram fechados a partir do primeiro fechamento mensal
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Após o consultor concluir seu primeiro fechamento{firstClosingDate ? ` em ${new Date(firstClosingDate + "T00:00:00").toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}` : ""}, esta tela ficou em modo visualização. Se algo precisar mudar, fale com seu consultor — ele ajusta pra você.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* ━━━ MONTHLY CONFIRMATION ━━━ */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={2}>
-        {monthlyConfirmed ? (
+        {isLocked ? null : monthlyConfirmed ? (
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-success/30 bg-success/[0.04] px-5 py-3.5">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-6 w-6 text-success shrink-0" />
@@ -661,14 +706,20 @@ const MyData = () => {
                 </div>
                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   {s.key !== 7 && (
-                    <Button
-                      variant={monthlyConfirmed ? "ghost" : show3D ? "premium" : "ghost"}
-                      size="sm"
-                      onClick={() => setEditingDialog(s.key)}
-                      className={`h-8 px-3 text-xs gap-1.5 rounded-xl transition-all duration-500 ${monthlyConfirmed ? "opacity-40 hover:opacity-100" : ""}`}
-                    >
-                      <Pencil className="h-6 w-6" /> Editar
-                    </Button>
+                    isLocked ? (
+                      <span className="inline-flex items-center gap-1.5 h-8 px-3 text-[11px] font-semibold rounded-xl bg-novare-blue/10 text-novare-blue dark:text-novare-blue-bright border border-novare-blue/20">
+                        <Lock className="h-3.5 w-3.5" /> Travado
+                      </span>
+                    ) : (
+                      <Button
+                        variant={monthlyConfirmed ? "ghost" : show3D ? "premium" : "ghost"}
+                        size="sm"
+                        onClick={() => setEditingDialog(s.key)}
+                        className={`h-8 px-3 text-xs gap-1.5 rounded-xl transition-all duration-500 ${monthlyConfirmed ? "opacity-40 hover:opacity-100" : ""}`}
+                      >
+                        <Pencil className="h-6 w-6" /> Editar
+                      </Button>
+                    )
                   )}
                 </div>
                 <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-muted-foreground/40">
