@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useClientId } from "@/contexts/ClientContext";
+import { useClientId, useSelectedMonth } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import { CheckCircle2, Clock, Target, TrendingUp, ChevronDown } from "lucide-react";
@@ -111,6 +111,7 @@ const EmptyState = ({ message }: { message: string }) => (
 
 const AdminActionPlan = () => {
   const { clientId } = useClientId();
+  const { selectedMonth, setSelectedMonth } = useSelectedMonth();
   const now = new Date();
 
   // Meses disponíveis = apenas meses com dados salvos (goals.month_ref ou parecer_metas/source linked).
@@ -131,18 +132,14 @@ const AdminActionPlan = () => {
     enabled: !!clientId,
   });
 
-  // Default: mês salvo mais recente; fallback para mês atual
-  const defaultYM =
-    availableMonths[0] ||
-    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const [selectedYM, setSelectedYM] = useState<string>(defaultYM);
-
-  // Sincroniza quando a lista carrega
-  if (availableMonths.length > 0 && !availableMonths.includes(selectedYM) &&
-      selectedYM === `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`) {
-    // primeiro carregamento — alinha ao mais recente salvo
-    setTimeout(() => setSelectedYM(availableMonths[0]), 0);
-  }
+  // Sincroniza com o mês escolhido no Onboarding (contexto compartilhado)
+  // Formato interno: YYYY-MM ; Contexto: YYYY-MM-01
+  const selectedYM = selectedMonth
+    ? selectedMonth.slice(0, 7)
+    : (availableMonths[0] || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
+  const setSelectedYM = (v: string) => {
+    setSelectedMonth(`${v}-01`); // propaga para todas as outras abas
+  };
 
   const [yStr, mStr] = selectedYM.split("-");
   const filterYear = Number(yStr);
