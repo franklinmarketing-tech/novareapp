@@ -6,7 +6,8 @@
 // - CTA "Avancar para Parecer" no rodape
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useClientId } from "@/contexts/ClientContext";
+import { useClientId, useSelectedMonth, ensureMonth } from "@/contexts/ClientContext";
+import { CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -220,6 +221,8 @@ const INSIGHT_TONES: Record<
 
 const ClientDiagnosis = () => {
   const { clientId } = useClientId();
+  const { selectedMonth } = useSelectedMonth();
+  const activeMonth = ensureMonth(selectedMonth);
   const navigate = useNavigate();
   const { clientSlug } = useParams<{ clientSlug: string }>();
 
@@ -244,11 +247,11 @@ const ClientDiagnosis = () => {
     const load = async () => {
       setLoading(true);
       const [incomeRes, expenseRes, debtRes, assetRes, diagRes] = await Promise.all([
-        supabase.from("income").select("*").eq("client_id", clientId),
-        supabase.from("expenses").select("*").eq("client_id", clientId),
-        supabase.from("debts").select("*").eq("client_id", clientId),
-        supabase.from("assets").select("*").eq("client_id", clientId),
-        supabase.from("diagnosis").select("*").eq("client_id", clientId).maybeSingle(),
+        supabase.from("income").select("*").eq("client_id", clientId).eq("month_ref", activeMonth),
+        supabase.from("expenses").select("*").eq("client_id", clientId).eq("month_ref", activeMonth),
+        supabase.from("debts").select("*").eq("client_id", clientId).eq("month_ref", activeMonth),
+        supabase.from("assets").select("*").eq("client_id", clientId).eq("month_ref", activeMonth),
+        supabase.from("diagnosis").select("*").eq("client_id", clientId).eq("month_ref", activeMonth).maybeSingle(),
       ]);
 
       if (diagRes.data) {
@@ -341,6 +344,7 @@ const ClientDiagnosis = () => {
       // Auto-save diagnosis row (sem campo de notes manual)
       const payload = {
         client_id: clientId,
+        month_ref: activeMonth,
         total_income: totalIncome,
         total_expenses: totalExpenses,
         total_debts: totalDebts,
@@ -368,7 +372,7 @@ const ClientDiagnosis = () => {
     };
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientId]);
+  }, [clientId, activeMonth]);
 
   // ── Executa análise da IA e persiste no banco ────
   const runAnalyzeAI = async (silent = false) => {
@@ -445,18 +449,31 @@ const ClientDiagnosis = () => {
   // ── Render ───────────────────────────────────────
   if (loading || !diagnosis || !risk) return <LoadingState variant="page" rows={4} />;
 
+  // Label legível do mês ativo
+  const monthLabel = (() => {
+    const [y, m] = activeMonth.split("-").map(Number);
+    const names = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    return `${names[m - 1]} ${y}`;
+  })();
+
   return (
     <div className="space-y-6">
       {/* ── HEADER ────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <div>
+        <div className="flex-1 min-w-0">
           <h1 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight flex items-center gap-2">
             <Stethoscope className="h-5 w-5 text-accent" />
             Diagnóstico Financeiro
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Análise automática dos dados do onboarding. A IA gera os insights iniciais para você refinar no Parecer.
+            Análise automática dos dados do mês ativo. A IA gera os insights iniciais para você refinar no Parecer.
           </p>
+          <div className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 rounded-lg bg-novare-blue-light/40 dark:bg-novare-blue/15 border border-novare-blue/25">
+            <CalendarDays className="h-3.5 w-3.5 text-novare-blue dark:text-novare-blue-bright" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-novare-blue/70 dark:text-novare-blue-bright/80">Mês ativo:</span>
+            <span className="text-xs font-bold text-novare-blue dark:text-novare-blue-bright">{monthLabel}</span>
+            <span className="text-[10px] text-muted-foreground ml-1">(altere em Onboarding)</span>
+          </div>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button

@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useClientId } from "@/contexts/ClientContext";
+import { useClientId, useSelectedMonth } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { type IncomeItem } from "@/components/onboarding/StepRenda";
@@ -212,8 +212,8 @@ const ClientOnboarding = () => {
     spending_triggers: "", family_money_history: "",
   });
 
-  // ── Filtro de mês ──
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null); // YYYY-MM-01
+  // ── Filtro de mês (compartilhado entre abas) ──
+  const { selectedMonth, setSelectedMonth } = useSelectedMonth();
   const [availableMonths, setAvailableMonths] = useState<string[]>([]);
   const [closedMonths, setClosedMonths] = useState<Set<string>>(new Set());
   const baselineMonth = availableMonths.length > 0 ? availableMonths[0] : null;

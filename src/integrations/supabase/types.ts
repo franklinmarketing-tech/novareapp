@@ -804,6 +804,7 @@ export type Database = {
           created_at: string
           debt_ratio: number | null
           id: string
+          month_ref: string | null
           notes: string | null
           risk_classification:
             | Database["public"]["Enums"]["risk_classification"]
@@ -823,6 +824,7 @@ export type Database = {
           created_at?: string
           debt_ratio?: number | null
           id?: string
+          month_ref?: string | null
           notes?: string | null
           risk_classification?:
             | Database["public"]["Enums"]["risk_classification"]
@@ -842,6 +844,7 @@ export type Database = {
           created_at?: string
           debt_ratio?: number | null
           id?: string
+          month_ref?: string | null
           notes?: string | null
           risk_classification?:
             | Database["public"]["Enums"]["risk_classification"]
