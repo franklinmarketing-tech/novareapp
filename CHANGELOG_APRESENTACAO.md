@@ -8,6 +8,57 @@
 
 ## 28 de maio de 2026
 
+### Notificações automáticas para o cliente
+
+**Resumo executivo:**
+O cliente agora recebe **notificações em tempo real** no app sempre que o consultor pratica uma ação relevante. Antes, o cliente entrava no app sem saber se houve novidade.
+
+**Eventos que disparam notificação ao cliente:**
+
+| Evento (ação do consultor) | Notificação que o cliente recebe |
+|------|------|
+| Parecer salvo ou atualizado | "Seu parecer foi atualizado" → leva ao dashboard |
+| Mês fechado | "Mês fechado pelo seu consultor" → leva ao dashboard |
+| Liberar lançamento | "Você pode atualizar suas metas!" → leva à tela de Lançamento do mês |
+| Bloquear lançamento | "Lançamentos em modo visualização" |
+| Nova meta criada | "Nova meta definida" → leva ao Plano de Ação |
+
+**Como o cliente vê:**
+- Notificação aparece no app em tempo real (Supabase Realtime), sem precisar recarregar
+- Cada notificação tem um link direto para a tela relevante
+- Histórico das últimas 30 notificações fica disponível
+
+**Salvaguardas:**
+- Sistema nunca notifica o próprio cliente quando ele mesmo é quem fez a ação (consultor viu como cliente, por ex.)
+- Falhas no envio de notificação não bloqueiam o fluxo principal de salvamento (try/catch silencioso)
+- Updates em metas existentes não notificam (apenas a criação) para evitar spam
+
+---
+
+### Conformidade LGPD — Termos de Uso, Privacidade e aceite obrigatório
+
+**Resumo executivo:**
+A plataforma passou a respeitar a **Lei Geral de Proteção de Dados** com termos legais visíveis, aceite obrigatório no cadastro e registro auditável.
+
+**O que mudou:**
+
+| Onde | Antes | Agora |
+|------|------|------|
+| Páginas legais | — | Termos de Uso (`/termos`) e Política de Privacidade (`/privacidade`) acessíveis publicamente |
+| Convite aceito | Cliente criava conta sem aceitar nada | Checkbox obrigatório: "Li e aceito os Termos e a Política de Privacidade". Botão Criar Conta desabilita sem aceite. |
+| Cadastro pelo Login | Mesmo cenário acima | Idem — checkbox obrigatório no modo signup |
+| Registro do aceite | Não havia | Persiste em `profiles` (`terms_accepted_at`, `terms_version`, `privacy_accepted_at`, `privacy_version`) — auditável |
+| Rodapé do menu | Sem links legais | Links discretos "Termos · Privacidade" no menu lateral (admin e cliente) |
+| Cookies | Sem aviso | Banner discreto no rodapé na primeira visita, com botão Aceitar (válido 365 dias) |
+
+**Conteúdo das páginas (PT-BR formal):**
+- **Termos de Uso**: descrição do serviço, obrigações, propriedade intelectual, disclaimer CVM (recomendações são educativas, não constituem oferta de valores mobiliários), foro, lei aplicável.
+- **Política de Privacidade**: controlador, dados coletados, finalidade, base legal LGPD, compartilhamento (Supabase/OpenAI/Anthropic declarados), direitos do titular, retenção, DPO (encarregado@novareapp.com.br), transferência internacional.
+
+**Pendência operacional**: aplicar a migration `supabase/migrations/APLICAR_LGPD.sql` no Supabase Dashboard > SQL Editor para criar as colunas de registro do aceite.
+
+---
+
 ### Versão 5.0 — auditoria completa e dashboard reformulado
 
 **Resumo executivo:**

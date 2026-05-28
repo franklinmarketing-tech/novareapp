@@ -401,7 +401,7 @@ export const AdminLayout = ({ children }: Props) => {
         </div>
 
         {/* Sign out */}
-        <div className={cn("pt-1 pb-4", collapsed ? "px-2" : "px-3")}>
+        <div className={cn("pt-1 pb-2", collapsed ? "px-2" : "px-3")}>
           <button
             onClick={handleSignOut}
             title={collapsed ? "Sair" : undefined}
@@ -414,6 +414,19 @@ export const AdminLayout = ({ children }: Props) => {
             {!collapsed && "Sair"}
           </button>
         </div>
+
+        {/* LGPD footer links — discretos (oculta quando collapsed) */}
+        {!collapsed && (
+          <div className="px-5 pb-3 flex items-center gap-3 text-[10px] uppercase tracking-wider text-sidebar-foreground/35">
+            <NavLink to="/termos" onClick={() => setMobileOpen(false)} className="hover:text-sidebar-foreground/60 transition-colors">
+              Termos
+            </NavLink>
+            <span className="text-sidebar-foreground/20">·</span>
+            <NavLink to="/privacidade" onClick={() => setMobileOpen(false)} className="hover:text-sidebar-foreground/60 transition-colors">
+              Privacidade
+            </NavLink>
+          </div>
+        )}
       </div>
     </div>
     );

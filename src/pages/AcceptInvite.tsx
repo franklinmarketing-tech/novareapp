@@ -9,6 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck, AlertCircle, CheckCircle2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { Checkbox } from "@/components/ui/checkbox";
+import { TERMS_VERSION } from "@/pages/Termos";
+import { PRIVACY_VERSION } from "@/pages/Privacidade";
 
 type State =
   | { kind: "loading" }
@@ -25,6 +28,7 @@ const AcceptInvite = () => {
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,6 +81,12 @@ const AcceptInvite = () => {
       toast.error("Senhas diferentes", { description: "Confirme a senha corretamente." });
       return;
     }
+    if (!acceptedTerms) {
+      toast.error("Aceite obrigatório", {
+        description: "Você precisa aceitar os Termos de Uso e a Política de Privacidade.",
+      });
+      return;
+    }
     setState({ kind: "submitting", email: state.email, role: state.role });
     const { data, error } = await supabase.functions.invoke("accept-admin-invite", {
       body: { action: "accept", token: token?.trim(), full_name: fullName.trim(), password },
@@ -109,6 +119,25 @@ const AcceptInvite = () => {
       toast.success("Conta criada", { description: "Faça login para continuar." });
       navigate("/login", { replace: true });
       return;
+    }
+    // Registra aceite de termos/privacidade (LGPD) — best-effort, nao bloqueia
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (uid) {
+        const nowIso = new Date().toISOString();
+        await supabase
+          .from("profiles")
+          .update({
+            terms_accepted_at: nowIso,
+            terms_version: TERMS_VERSION,
+            privacy_accepted_at: nowIso,
+            privacy_version: PRIVACY_VERSION,
+          } as any)
+          .eq("user_id", uid);
+      }
+    } catch (err) {
+      console.error("Falha ao registrar aceite LGPD:", err);
     }
     setState({ kind: "success" });
     setTimeout(() => {
@@ -197,7 +226,44 @@ const AcceptInvite = () => {
                   disabled={state.kind === "submitting"}
                 />
               </div>
-              <Button onClick={submit} className="w-full" disabled={state.kind === "submitting"}>
+              <div className="flex items-start gap-2 pt-1">
+                <Checkbox
+                  id="accept-terms"
+                  checked={acceptedTerms}
+                  onCheckedChange={(v) => setAcceptedTerms(v === true)}
+                  disabled={state.kind === "submitting"}
+                  className="mt-0.5"
+                />
+                <Label
+                  htmlFor="accept-terms"
+                  className="text-xs leading-relaxed text-muted-foreground font-normal cursor-pointer"
+                >
+                  Li e aceito os{" "}
+                  <a
+                    href="/termos"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:no-underline"
+                  >
+                    Termos de Uso
+                  </a>
+                  {" "}e a{" "}
+                  <a
+                    href="/privacidade"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:no-underline"
+                  >
+                    Política de Privacidade
+                  </a>
+                  .
+                </Label>
+              </div>
+              <Button
+                onClick={submit}
+                className="w-full"
+                disabled={state.kind === "submitting" || !acceptedTerms}
+              >
                 {state.kind === "submitting" && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Criar conta e entrar
               </Button>

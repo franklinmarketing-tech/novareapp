@@ -190,7 +190,7 @@ export const ClientLayout = ({ children }: Props) => {
         </div>
 
         {/* Sign out */}
-        <div className="px-3 pt-1 pb-4">
+        <div className="px-3 pt-1 pb-2">
           <button
             onClick={handleSignOut}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/70 transition-all duration-200 w-full"
@@ -198,6 +198,17 @@ export const ClientLayout = ({ children }: Props) => {
             <LogOut className="h-[18px] w-[18px]" />
             Sair
           </button>
+        </div>
+
+        {/* LGPD footer links — discretos */}
+        <div className="px-5 pb-3 flex items-center gap-3 text-[10px] uppercase tracking-wider text-sidebar-foreground/35">
+          <NavLink to="/termos" onClick={() => setMobileOpen(false)} className="hover:text-sidebar-foreground/60 transition-colors">
+            Termos
+          </NavLink>
+          <span className="text-sidebar-foreground/20">·</span>
+          <NavLink to="/privacidade" onClick={() => setMobileOpen(false)} className="hover:text-sidebar-foreground/60 transition-colors">
+            Privacidade
+          </NavLink>
         </div>
       </div>
     </div>

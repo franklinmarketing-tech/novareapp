@@ -9,6 +9,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import logoPreta from "@/assets/logo-preta.png";
 import { SEO } from "@/components/SEO";
+import { Checkbox } from "@/components/ui/checkbox";
+import { TERMS_VERSION } from "@/pages/Termos";
+import { PRIVACY_VERSION } from "@/pages/Privacidade";
 
 /* ── Premium easing for smooth growth feel ─── */
 const PREMIUM_EASE = [0.22, 1, 0.36, 1] as const;
@@ -193,6 +196,8 @@ const Login = () => {
   // Estado pos-signup: se o Supabase pediu confirmacao de e-mail, mostramos o aviso
   // em vez de deixar o usuario olhando para o form sem saber o que fazer.
   const [signupSent, setSignupSent] = useState(false);
+  // Aceite obrigatorio dos termos/privacidade no signup (LGPD)
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { signIn, role } = useAuth();
   const navigate = useNavigate();
 
@@ -235,6 +240,9 @@ const Login = () => {
         if (password.length < 6) {
           throw new Error("A senha precisa ter pelo menos 6 caracteres.");
         }
+        if (!acceptedTerms) {
+          throw new Error("Você precisa aceitar os Termos de Uso e a Política de Privacidade.");
+        }
 
         const { data, error } = await supabase.auth.signUp({
           email: trimmedEmail,
@@ -245,6 +253,27 @@ const Login = () => {
           },
         });
         if (error) throw error;
+
+        // Registra aceite de termos/privacidade (LGPD) — best-effort.
+        // Quando ha sessao imediata (sem confirmacao por e-mail) conseguimos
+        // gravar agora; caso contrario fica para o proximo login.
+        try {
+          const uid = data.user?.id;
+          if (uid && data.session) {
+            const nowIso = new Date().toISOString();
+            await supabase
+              .from("profiles")
+              .update({
+                terms_accepted_at: nowIso,
+                terms_version: TERMS_VERSION,
+                privacy_accepted_at: nowIso,
+                privacy_version: PRIVACY_VERSION,
+              } as any)
+              .eq("user_id", uid);
+          }
+        } catch (err) {
+          console.error("Falha ao registrar aceite LGPD:", err);
+        }
 
         // Dispara e-mail de boas-vindas (nao bloqueia o fluxo se falhar)
         supabase.functions
@@ -414,9 +443,43 @@ const Login = () => {
                       </div>
                     )}
 
+                    {mode === "signup" && (
+                      <div className="flex items-start gap-2 pt-1">
+                        <Checkbox
+                          id="login-accept-terms"
+                          checked={acceptedTerms}
+                          onCheckedChange={(v) => setAcceptedTerms(v === true)}
+                          className="mt-0.5"
+                        />
+                        <Label
+                          htmlFor="login-accept-terms"
+                          className="text-xs leading-relaxed text-muted-foreground font-normal cursor-pointer"
+                        >
+                          Li e aceito os{" "}
+                          <a
+                            href="/termos"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-accent underline hover:no-underline"
+                          >
+                            Termos de Uso
+                          </a>
+                          {" "}e a{" "}
+                          <a
+                            href="/privacidade"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-accent underline hover:no-underline"
+                          >
+                            Política de Privacidade
+                          </a>
+                          .
+                        </Label>
+                      </div>
+                    )}
                     <button
                       type="submit"
-                      disabled={isLoading}
+                      disabled={isLoading || (mode === "signup" && !acceptedTerms)}
                       className="group relative w-full inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-medium text-sm shadow-[0_6px_20px_-4px_hsl(var(--accent)/0.5)] hover:shadow-[0_8px_28px_-4px_hsl(var(--accent)/0.6)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.4)] transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none mt-2"
                     >
                       {isLoading

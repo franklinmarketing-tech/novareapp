@@ -15,11 +15,14 @@ import AdminClientLayout from "@/components/layouts/AdminClientLayout";
 import { SuperAdminLayout } from "@/components/layouts/SuperAdminLayout";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAResetListener } from "@/components/PWAResetListener";
+import { CookieBanner } from "@/components/CookieBanner";
 
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
 import AcceptInvite from "@/pages/AcceptInvite";
 import NotFound from "@/pages/NotFound";
+import Termos from "@/pages/Termos";
+import Privacidade from "@/pages/Privacidade";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import ClientList from "@/pages/admin/ClientList";
 import NewClient from "@/pages/admin/NewClient";
@@ -86,6 +89,8 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/aceitar-convite/:token" element={<AcceptInvite />} />
+                <Route path="/termos" element={<Termos />} />
+                <Route path="/privacidade" element={<Privacidade />} />
                 <Route path="/ferramentas/calculadora-de-investimentos" element={<YieldGuide />} />
 
                 {/* Super Admin routes */}
@@ -147,6 +152,7 @@ const App = () => (
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <CookieBanner />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
