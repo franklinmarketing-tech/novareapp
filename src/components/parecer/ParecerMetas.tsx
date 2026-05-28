@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -170,6 +170,37 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
     queryKey: ["goals", clientId],
     queryFn: async () => { const { data } = await supabase.from("goals").select("*").eq("client_id", clientId); return data || []; },
   });
+
+  // Lançamentos realizados — usados para mostrar histórico consultivo em cada card
+  const { data: lancamentos = [] } = useQuery({
+    queryKey: ["acompanhamento_lancamentos", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("acompanhamento_entradas")
+        .select("source_table, source_id, valor_atual, estado_atual, snapshotted_at")
+        .eq("client_id", clientId)
+        .eq("is_closing_snapshot", false)
+        .order("snapshotted_at", { ascending: false });
+      return data || [];
+    },
+  });
+
+  // Map: "table:id" → último valor lançado para essa meta (com data e estado)
+  const ultimoLancado = useMemo(() => {
+    const map = new Map<string, { valor: number; data: string; estado: string | null }>();
+    (lancamentos as any[]).forEach((l) => {
+      if (l.valor_atual == null) return;
+      const key = `${l.source_table}:${l.source_id}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          valor: Number(l.valor_atual),
+          data: l.snapshotted_at,
+          estado: l.estado_atual,
+        });
+      }
+    });
+    return map;
+  }, [lancamentos]);
 
   const { data: metas = [] } = useQuery({
     queryKey: ["parecer_metas", clientId],
@@ -705,6 +736,36 @@ export function ParecerMetas({ clientId }: { clientId: string }) {
                               {item.unit && <p className="text-[9px] font-medium" style={{ color: "hsl(0 0% 100% / 0.55)" }}>{item.unit}</p>}
                             </div>
                           </div>
+
+                          {/* ── HISTÓRICO consultivo: última redução/aumento conseguida ── */}
+                          {(() => {
+                            const last = ultimoLancado.get(`${item.source_table}:${item.source_id}`);
+                            if (!last || !last.valor) return null;
+                            const isReducing = section === "expenses" || section === "debts" || section === "insurance";
+                            const isCrescer = section === "income" || section === "assets";
+                            const lastDate = new Date(last.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" });
+                            const tone = isReducing
+                              ? "bg-amber-50/70 dark:bg-amber-950/30 border-amber-300/50 text-amber-800 dark:text-amber-300"
+                              : isCrescer
+                                ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300/50 text-emerald-800 dark:text-emerald-300"
+                                : "bg-sky-50/70 dark:bg-sky-950/30 border-sky-300/50 text-sky-800 dark:text-sky-300";
+                            const verbo = isReducing ? "Reduziu" : isCrescer ? "Cresceu" : "Lançou";
+                            return (
+                              <div className={cn("mx-4 mt-3 mb-1 px-3 py-2 rounded-lg border text-xs", tone)}>
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <div className="flex items-center gap-1.5 font-bold">
+                                    <span className="text-[10px] uppercase tracking-wider opacity-75">Histórico</span>
+                                    <span>·</span>
+                                    <span>{verbo} <span className="tabular-nums">{formatBRL(last.valor)}</span></span>
+                                  </div>
+                                  <span className="text-[10px] opacity-70 tabular-nums">{lastDate}</span>
+                                </div>
+                                {last.estado && (
+                                  <p className="text-[11px] opacity-85 mt-1 line-clamp-2">{last.estado}</p>
+                                )}
+                              </div>
+                            );
+                          })()}
 
                           {/* Meta fields */}
                           <div

@@ -644,7 +644,16 @@ function GoalDirectRow({
  *  - "client": cliente final — só edita valor_atual + estado_atual nas metas existentes.
  *    Esconde botões de adicionar/editar/excluir item/meta/objetivo e o cabeçalho de revalidar.
  */
-export function AcompanhamentoMetas({ clientId, mode = "admin" }: { clientId: string; mode?: "admin" | "client" }) {
+export function AcompanhamentoMetas({
+  clientId,
+  mode = "admin",
+  selectedMonth = null,
+}: {
+  clientId: string;
+  mode?: "admin" | "client";
+  /** Mês ativo para filtrar items (YYYY-MM-01). Quando null, mostra todos. */
+  selectedMonth?: string | null;
+}) {
   const isClient = mode === "client";
   const queryClient = useQueryClient();
   const [savingId, setSavingId]                 = useState<string | null>(null);
@@ -772,14 +781,16 @@ export function AcompanhamentoMetas({ clientId, mode = "admin" }: { clientId: st
 
   // ── Onboarding raw items (todas as fontes, mesmo sem meta) ──
   const { data: onboarding } = useQuery({
-    queryKey: ["onboarding_full", clientId],
+    queryKey: ["onboarding_full", clientId, selectedMonth],
     queryFn: async () => {
+      // Quando há mês selecionado, filtra itens por month_ref daquele mês
+      const filterMonth = (q: any) => selectedMonth ? q.eq("month_ref", selectedMonth) : q;
       const [income, expenses, debts, assets, insurance] = await Promise.all([
-        supabase.from("income").select("id, description, amount, frequency").eq("client_id", clientId),
-        supabase.from("expenses").select("id, category, description, amount, is_fixed").eq("client_id", clientId),
-        supabase.from("debts").select("id, type, creditor, total_amount, monthly_payment").eq("client_id", clientId),
-        supabase.from("assets").select("id, type, description, estimated_value").eq("client_id", clientId),
-        supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount").eq("client_id", clientId),
+        filterMonth(supabase.from("income").select("id, description, amount, frequency").eq("client_id", clientId)),
+        filterMonth(supabase.from("expenses").select("id, category, description, amount, is_fixed").eq("client_id", clientId)),
+        filterMonth(supabase.from("debts").select("id, type, creditor, total_amount, monthly_payment").eq("client_id", clientId)),
+        filterMonth(supabase.from("assets").select("id, type, description, estimated_value").eq("client_id", clientId)),
+        filterMonth(supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount").eq("client_id", clientId)),
       ]);
       return {
         income:    (income.data    || []).map((r: any) => ({ id: r.id, label: r.description || "Renda", value: Number(r.amount || 0) })),
