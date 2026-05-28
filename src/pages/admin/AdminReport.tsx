@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useClientId } from "@/contexts/ClientContext";
+import { useClientId, useSelectedMonth } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -236,11 +236,39 @@ const MONTH_NAMES = [
 
 const AdminReport = () => {
   const { clientId } = useClientId();
+  const { selectedMonth, setSelectedMonth } = useSelectedMonth();
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const now = new Date();
-  const [filterMonth, setFilterMonth] = useState<number>(now.getMonth() + 1);
-  const [filterYear, setFilterYear] = useState<number>(now.getFullYear());
+  // Sincroniza com mês escolhido no Onboarding (contexto compartilhado).
+  // Quando o usuário muda mês/ano aqui, propaga para todas as outras abas.
+  const initialMonth = selectedMonth
+    ? Number(selectedMonth.split("-")[1])
+    : now.getMonth() + 1;
+  const initialYear = selectedMonth
+    ? Number(selectedMonth.split("-")[0])
+    : now.getFullYear();
+  const [filterMonth, setFilterMonthState] = useState<number>(initialMonth);
+  const [filterYear, setFilterYearState] = useState<number>(initialYear);
+
+  // Sempre que selectedMonth mudar (vindo de outra aba), atualiza filtros locais
+  useEffect(() => {
+    if (!selectedMonth) return;
+    const m = Number(selectedMonth.split("-")[1]);
+    const y = Number(selectedMonth.split("-")[0]);
+    setFilterMonthState(m);
+    setFilterYearState(y);
+  }, [selectedMonth]);
+
+  // Wrappers que propagam para o contexto global ao mudar localmente
+  const setFilterMonth = (m: number) => {
+    setFilterMonthState(m);
+    setSelectedMonth(`${filterYear}-${String(m).padStart(2, "0")}-01`);
+  };
+  const setFilterYear = (y: number) => {
+    setFilterYearState(y);
+    setSelectedMonth(`${y}-${String(filterMonth).padStart(2, "0")}-01`);
+  };
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiDraft, setAiDraft] = useState("");
@@ -259,6 +287,18 @@ const AdminReport = () => {
   const [snapshots, setSnapshots] = useState<ReportSnapshot[]>([]);
   const [parecerMetas, setParecerMetas] = useState<ParecerMeta[]>([]);
   const [acompEntries, setAcompEntries] = useState<AcompEntry[]>([]);
+  // Histórico de fechamentos mensais — usado para mostrar a evolução do cliente
+  const [closings, setClosings] = useState<Array<{
+    month_ref: string;
+    total_income: number | null;
+    total_expenses: number | null;
+    total_debts: number | null;
+    total_assets: number | null;
+    net_worth: number | null;
+    savings_rate: number | null;
+    emergency_reserve_months: number | null;
+    plan_completion_pct: number | null;
+  }>>([]);
   const [parecerNote, setParecerNote] = useState<{ title: string; content: string } | null>(null);
   // V9: plano aplicado e variantes geradas pela IA
   const [activePlan, setActivePlan] = useState<{
@@ -323,6 +363,14 @@ const AdminReport = () => {
       setSnapshots((snapRes.data ?? []) as ReportSnapshot[]);
       setParecerMetas((metaRes.data ?? []) as ParecerMeta[]);
       setAcompEntries((acompRes.data ?? []) as AcompEntry[]);
+
+      // Histórico de fechamentos mensais (para a seção de evolução)
+      const { data: closingsData } = await supabase
+        .from("monthly_closings")
+        .select("month_ref, total_income, total_expenses, total_debts, total_assets, net_worth, savings_rate, emergency_reserve_months, plan_completion_pct")
+        .eq("client_id", clientId)
+        .order("month_ref", { ascending: true });
+      setClosings((closingsData ?? []) as any);
 
       if (planRes.data) {
         const { data: items } = await supabase
@@ -1415,6 +1463,107 @@ const AdminReport = () => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+          </section>
+        )}
+
+        {/* ══════ HISTÓRICO MENSAL (FECHAMENTOS) ══════ */}
+        {closings.length > 0 && (
+          <section className="print:break-before-page">
+            <SectionHeader
+              number={sectionNumber()}
+              title="Histórico Mensal"
+              subtitle={`Evolução de ${closings.length} fechamento${closings.length !== 1 ? "s" : ""} consolidado${closings.length !== 1 ? "s" : ""} do cliente`}
+            />
+            <Card>
+              <CardContent className="p-0 overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/40 border-b border-border">
+                    <tr>
+                      <th className="text-left px-3 py-2 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Mês</th>
+                      <th className="text-right px-3 py-2 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Renda</th>
+                      <th className="text-right px-3 py-2 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Despesas</th>
+                      <th className="text-right px-3 py-2 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Patrim. Líq.</th>
+                      <th className="text-right px-3 py-2 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Tx. Poup.</th>
+                      <th className="text-right px-3 py-2 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Reserva</th>
+                      <th className="text-right px-3 py-2 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Plano %</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {closings.map((c, idx) => {
+                      const prev = idx > 0 ? closings[idx - 1] : null;
+                      const dNet = prev?.net_worth != null && c.net_worth != null
+                        ? Number(c.net_worth) - Number(prev.net_worth) : null;
+                      const ml = new Date(c.month_ref + "T00:00:00").toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
+                      return (
+                        <tr key={c.month_ref} className="hover:bg-muted/20">
+                          <td className="px-3 py-2 font-bold tabular-nums">{ml.charAt(0).toUpperCase() + ml.slice(1)}</td>
+                          <td className="px-3 py-2 text-right tabular-nums text-emerald-700 dark:text-emerald-400">{c.total_income != null ? fmt(Number(c.total_income)) : "—"}</td>
+                          <td className="px-3 py-2 text-right tabular-nums text-rose-700 dark:text-rose-400">{c.total_expenses != null ? fmt(Number(c.total_expenses)) : "—"}</td>
+                          <td className="px-3 py-2 text-right tabular-nums">
+                            <span className="font-semibold">{c.net_worth != null ? fmt(Number(c.net_worth)) : "—"}</span>
+                            {dNet != null && (
+                              <span className={`block text-[10px] tabular-nums ${dNet >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                                {dNet >= 0 ? "+" : ""}{fmt(dNet)}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums">{c.savings_rate != null ? `${Number(c.savings_rate).toFixed(1)}%` : "—"}</td>
+                          <td className="px-3 py-2 text-right tabular-nums">{c.emergency_reserve_months != null ? `${Number(c.emergency_reserve_months).toFixed(1)}m` : "—"}</td>
+                          <td className="px-3 py-2 text-right tabular-nums">{c.plan_completion_pct != null ? `${Math.round(Number(c.plan_completion_pct))}%` : "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+
+            {/* Resumo de evolução total */}
+            {closings.length >= 2 && (() => {
+              const first = closings[0];
+              const last = closings[closings.length - 1];
+              const dNet = (Number(last.net_worth) || 0) - (Number(first.net_worth) || 0);
+              const dPct = first.net_worth ? ((Number(last.net_worth) - Number(first.net_worth)) / Number(first.net_worth)) * 100 : null;
+              return (
+                <div className="mt-3 grid gap-3 grid-cols-2 lg:grid-cols-4">
+                  <Card className="border-emerald-300/40">
+                    <CardContent className="p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Evolução total</p>
+                      <p className={`text-lg font-black tabular-nums mt-0.5 ${dNet >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+                        {dNet >= 0 ? "+" : ""}{fmt(dNet)}
+                      </p>
+                      {dPct != null && (
+                        <p className="text-[11px] text-muted-foreground">
+                          {dPct >= 0 ? "+" : ""}{dPct.toFixed(1)}% vs primeiro fechamento
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Tx. poupança média</p>
+                      <p className="text-lg font-black tabular-nums mt-0.5">
+                        {(closings.filter((c) => c.savings_rate != null).reduce((s, c) => s + Number(c.savings_rate || 0), 0) / closings.filter((c) => c.savings_rate != null).length || 0).toFixed(1)}%
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Meses fechados</p>
+                      <p className="text-lg font-black tabular-nums mt-0.5">{closings.length}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Período</p>
+                      <p className="text-xs font-bold tabular-nums mt-0.5">
+                        {new Date(first.month_ref + "T00:00:00").toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })} → {new Date(last.month_ref + "T00:00:00").toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })()}
           </section>
         )}
 
