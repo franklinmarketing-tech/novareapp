@@ -52,7 +52,7 @@ const sections = [
     ],
   },
   {
-    label: "GestÃ£o",
+    label: "Gestão",
     items: [
       { to: "/admin/clientes", icon: Users, label: "Clientes" },
       { to: "/admin/novo-cliente", icon: UserPlus, label: "Novo Cliente" },
@@ -122,9 +122,9 @@ export const AdminLayout = ({ children }: Props) => {
       { id: "perfil", label: "Perfil", icon: UserIcon },
       { id: "equipe", label: "Equipe", icon: Users },
       { id: "marca", label: "Marca", icon: ImageIcon },
-      { id: "notificacoes", label: "NotificaÃ§Ãµes", icon: Bell },
-      { id: "cobranca", label: "CobranÃ§a", icon: CreditCard },
-      { id: "seguranca", label: "SeguranÃ§a", icon: Lock },
+      { id: "notificacoes", label: "Notificações", icon: Bell },
+      { id: "cobranca", label: "Cobrança", icon: CreditCard },
+      { id: "seguranca", label: "Segurança", icon: Lock },
     ],
     []
   );
