@@ -17,6 +17,7 @@ import {
   Calendar, CreditCard, BarChart3, Gem, Clock, ArrowUpRight,
   Download, Loader2, Gauge, Sparkles, PieChart as PieChartIcon,
   LineChart as LineChartIcon, Layers, Activity,
+  ShieldCheck, Lightbulb, Percent, Coins, Building2, Droplet, Hourglass,
 } from "lucide-react";
 import { sendClientEmail } from "@/lib/sendClientEmail";
 import { toast } from "sonner";
