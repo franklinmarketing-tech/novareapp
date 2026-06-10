@@ -22,19 +22,28 @@ const getCookie = (name: string): string | null => {
   return null;
 };
 
+const hasConsent = (): boolean => {
+  if (typeof window === "undefined") return false;
+  try {
+    if (window.localStorage?.getItem(COOKIE_NAME) === "accepted") return true;
+  } catch { /* storage bloqueado */ }
+  return getCookie(COOKIE_NAME) === "accepted";
+};
+
 export const CookieBanner = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     // Atraso curto para nao competir com o splash/preloader inicial
     const t = setTimeout(() => {
-      if (!getCookie(COOKIE_NAME)) setVisible(true);
+      if (!hasConsent()) setVisible(true);
     }, 600);
     return () => clearTimeout(t);
   }, []);
 
   const accept = () => {
     setCookie(COOKIE_NAME, "accepted", COOKIE_DAYS);
+    try { window.localStorage?.setItem(COOKIE_NAME, "accepted"); } catch { /* ignore */ }
     setVisible(false);
   };
 
