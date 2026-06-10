@@ -52,7 +52,7 @@ const sections = [
     ],
   },
   {
-    label: "GestÃ£o",
+    label: "Gestão",
     items: [
       { to: "/admin/clientes", icon: Users, label: "Clientes" },
       { to: "/admin/novo-cliente", icon: UserPlus, label: "Novo Cliente" },
@@ -74,14 +74,14 @@ const staticSegments: Record<string, string> = {
   configuracoes: "Configurações",
   cliente: "Cliente",
   onboarding: "Onboarding",
-  diagnostico: "DiagnÃ³stico",
-  parecer: "Parecer",
-  "plano-acao": "Plano de AÃ§Ã£o",
+  diagnostico: "Diagnóstico",
+  parecer: "Plano de Ação",
+  "plano-acao": "Ver Ações",
   investimentos: "Investimentos",
-  implementacao: "ImplementaÃ§Ã£o",
-  acompanhamento: "LanÃ§amento do mÃªs",
+  implementacao: "Implementação",
+  acompanhamento: "Lançamento do mês",
   evolucao: "Acompanhamento",
-  relatorio: "RelatÃ³rio",
+  relatorio: "Relatório",
   workspace: "Workspace",
   ajuda: "Ajuda & Manual",
   leads: "Leads",
@@ -122,9 +122,9 @@ export const AdminLayout = ({ children }: Props) => {
       { id: "perfil", label: "Perfil", icon: UserIcon },
       { id: "equipe", label: "Equipe", icon: Users },
       { id: "marca", label: "Marca", icon: ImageIcon },
-      { id: "notificacoes", label: "NotificaÃ§Ãµes", icon: Bell },
-      { id: "cobranca", label: "CobranÃ§a", icon: CreditCard },
-      { id: "seguranca", label: "SeguranÃ§a", icon: Lock },
+      { id: "notificacoes", label: "Notificações", icon: Bell },
+      { id: "cobranca", label: "Cobrança", icon: CreditCard },
+      { id: "seguranca", label: "Segurança", icon: Lock },
     ],
     []
   );
@@ -223,7 +223,7 @@ export const AdminLayout = ({ children }: Props) => {
         {!collapsed && (
           <>
             <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
-            <span className="text-xs text-white font-mono font-semibold">v5.1</span>
+            <span className="text-xs text-white font-mono font-semibold">v5.2</span>
           </>
         )}
         {!forceExpanded && (
@@ -458,7 +458,7 @@ export const AdminLayout = ({ children }: Props) => {
         </Button>
         <div className="flex items-center ml-2">
           <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
-          <span className="text-xs text-white font-mono font-semibold ml-1.5">v5.1</span>
+          <span className="text-xs text-white font-mono font-semibold ml-1.5">v5.2</span>
         </div>
         <div className="ml-auto flex items-center gap-1">
           <NotificationsBell className="text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40" />
