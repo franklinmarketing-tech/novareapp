@@ -1203,6 +1203,163 @@ const AdminReport = () => {
             <StatCard label="Passivos Totais" value={fmt(totalDebts)} icon={AlertTriangle} color="bg-red-500/10 text-red-500" />
             <StatCard label="Patrimônio Líquido" value={fmt(netWorth)} icon={Scale} color={netWorth >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-500"} className={netWorth >= 0 ? "card-glow-success" : "card-glow-destructive"} />
           </div>
+
+          {/* ── Indicadores Patrimoniais ─────────────────────── */}
+          {(() => {
+            const monthlyOutflow = totalExpenses + monthlyDebtPayments;
+            const annualIncome = totalIncome * 12;
+
+            // Classificação heurística dos ativos
+            const liquidRegex = /poupanc|conta|cdb|tesouro|cdi|caixa|aplicac|renda fixa|fundo|liquid/i;
+            const investRegex = /investiment|acao|ação|bolsa|fii|etf|cripto|previd/i;
+            const realEstateRegex = /imove|imóvel|casa|apartamento|terreno|sala/i;
+            const vehicleRegex = /carro|moto|veicul|veículo|caminh/i;
+
+            let liquidValue = 0, investValue = 0, realEstateValue = 0, vehicleValue = 0, otherValue = 0;
+            assets.forEach((a) => {
+              const v = a.estimated_value || 0;
+              const key = `${a.type || ""} ${a.description || ""}`;
+              if (liquidRegex.test(key)) liquidValue += v;
+              else if (investRegex.test(key)) investValue += v;
+              else if (realEstateRegex.test(key)) realEstateValue += v;
+              else if (vehicleRegex.test(key)) vehicleValue += v;
+              else otherValue += v;
+            });
+
+            const liquidityMonths = monthlyOutflow > 0 ? liquidValue / monthlyOutflow : 0;
+            const leverage = totalAssets > 0 ? (totalDebts / totalAssets) * 100 : 0;
+            const pwYears = annualIncome > 0 ? netWorth / annualIncome : 0;
+            const liquidPct = totalAssets > 0 ? ((liquidValue + investValue) / totalAssets) * 100 : 0;
+
+            type IndCard = { icon: React.ElementType; label: string; value: string; hint: string; tone: "emerald" | "blue" | "amber" | "red" };
+            const indicators: IndCard[] = [
+              {
+                icon: Hourglass,
+                label: "Reserva de emergência",
+                value: liquidValue > 0 && monthlyOutflow > 0 ? `${liquidityMonths.toFixed(1)}m` : "—",
+                hint: liquidityMonths >= 6
+                  ? "Cobertura saudável (≥ 6 meses)"
+                  : liquidityMonths >= 3
+                  ? "Construir até 6 meses"
+                  : "Insuficiente — meta mínima 3 meses",
+                tone: liquidityMonths >= 6 ? "emerald" : liquidityMonths >= 3 ? "amber" : "red",
+              },
+              {
+                icon: Scale,
+                label: "Alavancagem",
+                value: totalAssets > 0 ? fmtPct(leverage) : "—",
+                hint: leverage <= 30
+                  ? "Endividamento saudável"
+                  : leverage <= 50
+                  ? "Atenção — meta abaixo de 30%"
+                  : "Elevado — priorizar quitação",
+                tone: leverage <= 30 ? "emerald" : leverage <= 50 ? "amber" : "red",
+              },
+              {
+                icon: Clock,
+                label: "Patrimônio × Renda anual",
+                value: annualIncome > 0 ? `${pwYears.toFixed(1)}x` : "—",
+                hint: pwYears >= 3
+                  ? "Trajetória sólida de acumulação"
+                  : pwYears >= 1
+                  ? "Em construção — manter aporte"
+                  : "Acelerar acumulação patrimonial",
+                tone: pwYears >= 3 ? "emerald" : pwYears >= 1 ? "blue" : "amber",
+              },
+              {
+                icon: Droplet,
+                label: "Liquidez do patrimônio",
+                value: totalAssets > 0 ? fmtPct(liquidPct) : "—",
+                hint: liquidPct >= 30
+                  ? "Boa proporção líquida/investida"
+                  : liquidPct >= 15
+                  ? "Aumentar parcela investida"
+                  : "Patrimônio muito imobilizado",
+                tone: liquidPct >= 30 ? "emerald" : liquidPct >= 15 ? "amber" : "red",
+              },
+            ];
+            const toneMap: Record<string, { bg: string; text: string; border: string }> = {
+              emerald: { bg: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-500/25" },
+              blue:    { bg: "bg-blue-500/10",    text: "text-blue-600",    border: "border-blue-500/25" },
+              amber:   { bg: "bg-amber-500/10",   text: "text-amber-700",   border: "border-amber-500/25" },
+              red:     { bg: "bg-red-500/10",     text: "text-red-600",     border: "border-red-500/25" },
+            };
+
+            // Composição por categoria do patrimônio
+            const composition = [
+              { label: "Líquido", value: liquidValue, color: "#2563eb", icon: Droplet },
+              { label: "Investido", value: investValue, color: "#16a34a", icon: TrendingUp },
+              { label: "Imóveis", value: realEstateValue, color: "#7c3aed", icon: Building2 },
+              { label: "Veículos", value: vehicleValue, color: "#ea580c", icon: Activity },
+              { label: "Outros", value: otherValue, color: "#64748b", icon: Layers },
+            ].filter((c) => c.value > 0);
+
+            return (
+              <>
+                <Card className="mb-4">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-primary/10"><Gauge className="h-4 w-4 text-primary" /></div>
+                      <div className="min-w-0">
+                        <CardTitle className="text-sm">Indicadores patrimoniais</CardTitle>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Métricas-chave que mostram a saúde estrutural do patrimônio — solvência, liquidez e ritmo de acumulação.
+                        </p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                      {indicators.map((it) => {
+                        const tm = toneMap[it.tone];
+                        return (
+                          <div key={it.label} className={`rounded-xl border ${tm.border} ${tm.bg} p-3.5`}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <it.icon className={`h-4 w-4 ${tm.text}`} />
+                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{it.label}</p>
+                            </div>
+                            <p className={`text-2xl font-black tabular-nums leading-none ${tm.text}`}>{it.value}</p>
+                            <p className="text-[11px] text-muted-foreground mt-2 leading-snug">{it.hint}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {composition.length > 0 && totalAssets > 0 && (
+                      <div className="mt-5 pt-4 border-t border-border/50">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
+                          Qualidade do patrimônio
+                        </p>
+                        <div className="w-full h-3 rounded-full overflow-hidden flex border border-border/40">
+                          {composition.map((c) => (
+                            <div
+                              key={c.label}
+                              style={{ width: `${(c.value / totalAssets) * 100}%`, background: c.color }}
+                              title={`${c.label}: ${fmt(c.value)}`}
+                            />
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-3">
+                          {composition.map((c) => (
+                            <div key={c.label} className="flex items-center gap-2 rounded-lg border border-border/40 bg-card px-2.5 py-1.5">
+                              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: c.color }} />
+                              <div className="min-w-0">
+                                <p className="text-[10px] uppercase tracking-wider text-muted-foreground leading-none">{c.label}</p>
+                                <p className="text-[11.5px] font-semibold text-foreground tabular-nums truncate">
+                                  {((c.value / totalAssets) * 100).toFixed(0)}% · {fmt(c.value)}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            );
+          })()}
+
           {assets.length > 0 && (
             <Card>
               <CardHeader className="pb-2">
