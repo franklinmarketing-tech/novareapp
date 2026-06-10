@@ -986,7 +986,214 @@ const AdminReport = () => {
               </div>
             );
           })()}
+
+          {/* ── Critérios da avaliação ──────────────────────────── */}
+          {totalIncome > 0 && (() => {
+            type Criterion = {
+              icon: React.ElementType;
+              label: string;
+              hint: string;
+              value: number;
+              displayValue: string;
+              target: number;
+              direction: "higher" | "lower";
+              ranges: { good: number; warn: number };
+            };
+            const criteria: Criterion[] = [
+              {
+                icon: PiggyBank,
+                label: "Taxa de poupança",
+                hint: "Quanto da renda sobra para investir e construir patrimônio.",
+                value: savingsRate,
+                displayValue: fmtPct(savingsRate),
+                target: 20,
+                direction: "higher",
+                ranges: { good: 20, warn: 10 },
+              },
+              {
+                icon: Scale,
+                label: "Comprometimento com dívidas",
+                hint: "Parcelas de dívidas sobre a renda mensal — ideal abaixo de 30%.",
+                value: debtRatio,
+                displayValue: fmtPct(debtRatio),
+                target: 30,
+                direction: "lower",
+                ranges: { good: 30, warn: 50 },
+              },
+              {
+                icon: Gauge,
+                label: "Despesas sobre renda",
+                hint: "Custo de vida total sobre a renda — quanto menor, mais folga.",
+                value: expenseRatio,
+                displayValue: fmtPct(expenseRatio),
+                target: 70,
+                direction: "lower",
+                ranges: { good: 70, warn: 90 },
+              },
+            ];
+
+            const statusOf = (c: Criterion) => {
+              if (c.direction === "higher") {
+                if (c.value >= c.ranges.good) return { label: "Saudável", tone: "emerald" as const };
+                if (c.value >= c.ranges.warn) return { label: "Atenção", tone: "amber" as const };
+                return { label: "Crítico", tone: "red" as const };
+              }
+              if (c.value <= c.ranges.good) return { label: "Saudável", tone: "emerald" as const };
+              if (c.value <= c.ranges.warn) return { label: "Atenção", tone: "amber" as const };
+              return { label: "Crítico", tone: "red" as const };
+            };
+            const toneCfg: Record<"emerald" | "amber" | "red", { bar: string; chip: string; text: string }> = {
+              emerald: { bar: "bg-emerald-500", chip: "bg-emerald-500/10 text-emerald-700 border-emerald-500/25", text: "text-emerald-600" },
+              amber:   { bar: "bg-amber-500",   chip: "bg-amber-500/10 text-amber-700 border-amber-500/25",     text: "text-amber-600" },
+              red:     { bar: "bg-red-500",     chip: "bg-red-500/10 text-red-700 border-red-500/25",           text: "text-red-600" },
+            };
+
+            return (
+              <Card className="mt-4">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-primary/10"><ShieldCheck className="h-4 w-4 text-primary" /></div>
+                    <div className="min-w-0">
+                      <CardTitle className="text-sm">Critérios da avaliação</CardTitle>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Os três pilares que geram a nota <span className="font-semibold text-foreground">{risk}</span> — cada um comparado ao benchmark de mercado.
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {criteria.map((c) => {
+                    const st = statusOf(c);
+                    const tone = toneCfg[st.tone];
+                    const pct = c.direction === "higher"
+                      ? Math.min(100, (c.value / Math.max(c.ranges.good, 1)) * 100)
+                      : Math.max(0, 100 - Math.min(100, (c.value / Math.max(c.ranges.warn, 1)) * 100));
+                    const targetLabel = c.direction === "higher"
+                      ? `meta ≥ ${c.target}%`
+                      : `teto ≤ ${c.target}%`;
+                    return (
+                      <div key={c.label} className="rounded-xl border border-border/60 bg-card p-3.5">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <div className={`p-1.5 rounded-md ${tone.chip} border shrink-0`}>
+                              <c.icon className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[13px] font-semibold text-foreground leading-tight">{c.label}</p>
+                              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{c.hint}</p>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className={`text-base font-black tabular-nums leading-none ${tone.text}`}>{c.displayValue}</p>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">{targetLabel}</p>
+                          </div>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div className={`h-full ${tone.bar} transition-all duration-500`} style={{ width: `${pct}%` }} />
+                        </div>
+                        <div className="flex items-center justify-between mt-1.5">
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${tone.chip}`}>
+                            {st.label}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {c.direction === "higher" ? "Quanto maior, melhor" : "Quanto menor, melhor"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            );
+          })()}
+
+          {/* ── Recomendações estratégicas para a classificação atual ── */}
+          {(() => {
+            const recommendationsMap: Record<string, { tone: string; items: { title: string; desc: string }[] }> = {
+              A: {
+                tone: "emerald",
+                items: [
+                  { title: "Diversificar carteira de investimentos", desc: "Distribuir capital entre renda fixa, variável e ativos internacionais conforme o perfil de risco." },
+                  { title: "Estruturar previdência privada", desc: "PGBL/VGBL para otimização tributária e construção de renda futura." },
+                  { title: "Planejamento sucessório", desc: "Holding patrimonial, testamento e seguros de vida com cobertura adequada." },
+                  { title: "Metas de longo prazo", desc: "Aposentadoria, independência financeira e projetos de impacto familiar." },
+                ],
+              },
+              B: {
+                tone: "blue",
+                items: [
+                  { title: "Elevar taxa de poupança para 25%+", desc: "Identificar despesas evitáveis e direcionar para investimentos automáticos." },
+                  { title: "Consolidar reserva de emergência", desc: "Atingir 6 meses de despesas em ativos de alta liquidez (CDB, Tesouro Selic)." },
+                  { title: "Diversificar começando aos poucos", desc: "Incluir renda variável de forma gradual conforme tolerância." },
+                  { title: "Revisar seguros essenciais", desc: "Vida, saúde e residencial proporcionais ao patrimônio." },
+                ],
+              },
+              C: {
+                tone: "amber",
+                items: [
+                  { title: "Mapear e cortar 10–15% das despesas", desc: "Categorizar gastos, eliminar duplicidades de assinaturas e renegociar contratos recorrentes." },
+                  { title: "Criar reserva mínima de 3 meses", desc: "Antes de investir em produtos de maior risco, garantir colchão financeiro." },
+                  { title: "Renegociar dívidas com juros altos", desc: "Trocar cartão e cheque especial por crédito consignado ou portabilidade." },
+                  { title: "Definir orçamento mensal escrito", desc: "Método 50/30/20 ou envelopes — controle ativo das saídas." },
+                ],
+              },
+              D: {
+                tone: "orange",
+                items: [
+                  { title: "Estancar o déficit imediatamente", desc: "Listar todas as despesas e cortar agora as não essenciais — meta de equilíbrio em 60 dias." },
+                  { title: "Consolidar dívidas em uma única operação", desc: "Trocar várias dívidas caras por uma com juros menores (consignado, garantia)." },
+                  { title: "Buscar renda extra recorrente", desc: "Trabalho complementar, monetização de habilidades ou aluguel de ativos parados." },
+                  { title: "Acompanhamento quinzenal", desc: "Revisões frequentes com o consultor até estabilizar fluxo de caixa." },
+                ],
+              },
+              E: {
+                tone: "red",
+                items: [
+                  { title: "Plano de emergência financeira", desc: "Levantamento completo de dívidas e renegociação prioritária com credores." },
+                  { title: "Corte drástico de despesas", desc: "Reduzir custo de vida em 25–40% nos próximos 90 dias — todas as despesas variáveis na mira." },
+                  { title: "Evitar novas dívidas", desc: "Cancelar cartões e linhas de crédito ativas até reequilibrar." },
+                  { title: "Apoio profissional contínuo", desc: "Acompanhamento semanal com consultor financeiro até sair da zona crítica." },
+                ],
+              },
+            };
+            const rec = recommendationsMap[risk] || recommendationsMap.C;
+            const toneStyles: Record<string, { ring: string; bg: string; icon: string; dot: string }> = {
+              emerald: { ring: "ring-emerald-500/20", bg: "bg-emerald-500/5", icon: "text-emerald-600", dot: "bg-emerald-500" },
+              blue:    { ring: "ring-blue-500/20",    bg: "bg-blue-500/5",    icon: "text-blue-600",    dot: "bg-blue-500" },
+              amber:   { ring: "ring-amber-500/20",   bg: "bg-amber-500/5",   icon: "text-amber-600",   dot: "bg-amber-500" },
+              orange:  { ring: "ring-orange-500/20",  bg: "bg-orange-500/5",  icon: "text-orange-600",  dot: "bg-orange-500" },
+              red:     { ring: "ring-red-500/20",     bg: "bg-red-500/5",     icon: "text-red-600",     dot: "bg-red-500" },
+            };
+            const ts = toneStyles[rec.tone];
+            return (
+              <Card className={`mt-4 ring-1 ${ts.ring}`}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-lg ${ts.bg}`}><Lightbulb className={`h-4 w-4 ${ts.icon}`} /></div>
+                    <div className="min-w-0">
+                      <CardTitle className="text-sm">Recomendações para a classificação {risk}</CardTitle>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{riskInfo.advice}</p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {rec.items.map((it, idx) => (
+                      <div key={idx} className={`rounded-xl border border-border/50 ${ts.bg} p-3 flex gap-2.5`}>
+                        <div className={`mt-0.5 w-1.5 h-1.5 rounded-full ${ts.dot} shrink-0`} />
+                        <div className="min-w-0">
+                          <p className="text-[12.5px] font-semibold text-foreground leading-tight">{it.title}</p>
+                          <p className="text-[11px] text-muted-foreground mt-1 leading-snug">{it.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
         </section>
+
 
         {/* ══════ 3. BALANÇO ══════ */}
         <section>
