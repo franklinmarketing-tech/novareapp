@@ -358,8 +358,10 @@ const AdminClientLayout = () => {
                               }
                             : isAccent
                             ? {
-                                background: "hsl(var(--novare-terracotta) / 0.12)",
-                                boxShadow: "0 0 0 1px hsl(var(--novare-terracotta) / 0.55)",
+                                background:
+                                  "color-mix(in srgb, hsl(var(--novare-terracotta)) 14%, hsl(var(--card)))",
+                                boxShadow:
+                                  "0 0 0 1.5px hsl(var(--novare-terracotta)), 0 2px 6px -2px hsl(var(--novare-terracotta) / 0.35)",
                               }
                             : {
                                 background: "hsl(var(--card))",
