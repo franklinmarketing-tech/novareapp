@@ -1441,7 +1441,121 @@ const AdminReport = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* ── Composição dos Passivos ──────────────────────── */}
+          {debts.length > 0 && (() => {
+            const grouped: Record<string, { value: number; count: number; monthly: number }> = {};
+            debts.forEach((d) => {
+              const k = (d.type || "Outros").toString();
+              const v = d.total_amount || 0;
+              if (!grouped[k]) grouped[k] = { value: 0, count: 0, monthly: 0 };
+              grouped[k].value += v;
+              grouped[k].count += 1;
+              grouped[k].monthly += d.monthly_payment || 0;
+            });
+            const debtBars = Object.entries(grouped)
+              .map(([k, v], i) => ({
+                name: k.charAt(0).toUpperCase() + k.slice(1),
+                value: v.value,
+                count: v.count,
+                monthly: v.monthly,
+                fill: CHART_COLORS[i % CHART_COLORS.length],
+              }))
+              .filter((b) => b.value > 0)
+              .sort((a, b) => b.value - a.value);
+
+            const highInterest = debts.filter((d) => (d.interest_rate || 0) > 5);
+            const shortTerm = debts.filter((d) => d.remaining_months != null && (d.remaining_months as number) <= 12);
+
+            return (
+              <Card className="mt-4">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-red-500/10"><CreditCard className="h-4 w-4 text-red-500" /></div>
+                    <div className="min-w-0">
+                      <CardTitle className="text-sm">Composição dos Passivos</CardTitle>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Distribuição das dívidas por tipo — concentração, custo financeiro e prazo de quitação.
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-4">
+                    <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Total devedor</p>
+                      <p className="text-lg font-black text-red-600 tabular-nums mt-1">{fmt(totalDebts)}</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">{debts.length} dívida{debts.length !== 1 ? "s" : ""} ativa{debts.length !== 1 ? "s" : ""}</p>
+                    </div>
+                    <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Juros &gt; 5% a.m.</p>
+                      <p className="text-lg font-black text-amber-700 tabular-nums mt-1">{highInterest.length}</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        {highInterest.length > 0 ? "Renegociar com prioridade" : "Custo financeiro controlado"}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Curto prazo (≤ 12m)</p>
+                      <p className="text-lg font-black text-blue-600 tabular-nums mt-1">{shortTerm.length}</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        {shortTerm.length > 0 ? "Quitações em até 1 ano" : "Todas de médio/longo prazo"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {debtBars.length >= 2 && (
+                    <div className="pt-3 border-t border-border/40">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+                        Distribuição por tipo
+                      </p>
+                      <div style={{ height: Math.max(debtBars.length * 32 + 30, 140) }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={debtBars}
+                            layout="vertical"
+                            margin={{ top: 4, right: 60, left: 8, bottom: 4 }}
+                            barCategoryGap={6}
+                          >
+                            <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                            <XAxis
+                              type="number"
+                              tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              type="category"
+                              dataKey="name"
+                              width={110}
+                              tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <RTooltip
+                              formatter={(v: number) => fmt(v)}
+                              contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12, padding: "6px 10px", backgroundColor: "hsl(var(--card))" }}
+                            />
+                            <Bar dataKey="value" radius={[0, 6, 6, 0]}>
+                              {debtBars.map((d, i) => (<Cell key={i} fill={d.fill} />))}
+                              <LabelList
+                                dataKey="value"
+                                position="right"
+                                formatter={(v: number) => fmt(v)}
+                                style={{ fontSize: 10, fontWeight: 600, fill: "hsl(var(--foreground))" }}
+                              />
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
         </section>
+
 
         {/* ══════ 4. FLUXO DE CAIXA ══════ */}
         <section className="print:break-before-page">
