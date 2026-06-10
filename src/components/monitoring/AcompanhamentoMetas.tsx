@@ -93,6 +93,8 @@ interface AcompEntry {
   source_id: string;
   source_table?: string;
   valor_atual?: number;
+  valor_meta?: number | null;
+  prazo?: string | null;
   estado_atual?: string;
   progresso_pct?: number;
   snapshotted_at: string;

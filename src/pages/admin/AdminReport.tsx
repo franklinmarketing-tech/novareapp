@@ -185,6 +185,7 @@ type ParecerMeta = {
   meta_text?: string | null;
   meta_valor?: number | null;
   prazo?: string | null;
+  completed_at?: string | null;
 };
 
 type AcompEntry = {
