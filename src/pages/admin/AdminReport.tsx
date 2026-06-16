@@ -329,9 +329,9 @@ const AdminReport = () => {
         supabase.from("diagnosis").select("*").eq("client_id", clientId).maybeSingle(),
         supabase.from("income").select("*").eq("client_id", clientId).or(monthFilter),
         supabase.from("expenses").select("*").eq("client_id", clientId).or(monthFilter),
-        supabase.from("debts").select("*").eq("client_id", clientId),
-        supabase.from("assets").select("*").eq("client_id", clientId),
-        supabase.from("insurance").select("*").eq("client_id", clientId),
+        supabase.from("debts").select("*").eq("client_id", clientId).or(monthFilter),
+        supabase.from("assets").select("*").eq("client_id", clientId).or(monthFilter),
+        supabase.from("insurance").select("*").eq("client_id", clientId).or(monthFilter),
         supabase.from("goals").select("*").eq("client_id", clientId).or(monthFilter),
         supabase
           .from("action_plans")
