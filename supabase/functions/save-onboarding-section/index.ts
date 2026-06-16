@@ -203,6 +203,25 @@ Deno.serve(async (req) => {
       committed = payload;
     }
 
+    // Quando o admin/super-admin preenche o onboarding pelo painel,
+    // avança automaticamente o status do cliente para "em_diagnostico" —
+    // assim o cliente não é forçado a refazer o onboarding ao logar.
+    try {
+      const { data: currentClient } = await admin
+        .from("clients")
+        .select("status")
+        .eq("id", clientId)
+        .single();
+      if (currentClient?.status === "onboarding_pendente") {
+        await admin
+          .from("clients")
+          .update({ status: "em_diagnostico" })
+          .eq("id", clientId);
+      }
+    } catch (statusErr) {
+      console.error("save-onboarding-section: falha ao avançar status", statusErr);
+    }
+
     return json({ section, committed });
   } catch (error) {
     console.error("save-onboarding-section error:", error);
