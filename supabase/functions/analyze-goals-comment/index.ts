@@ -17,6 +17,11 @@ const preferMonthRows = <T extends { month_ref?: string | null }>(rows: T[], mon
   return rows.filter((row) => !row.month_ref);
 };
 
+type GoalRow = { id: string; description: string; target_amount?: number | null; priority?: string | null; deadline?: string | null; amount_applied?: number | null; month_ref?: string | null };
+type ActionRow = { description: string; status: string; financial_impact?: number | null; objective?: string | null; goal_id?: string | null; month_ref?: string | null };
+type MetaRow = { id: string; source_label: string; meta_valor?: number | null; meta_text?: string | null; prazo?: string | null };
+type AcompRow = { meta_id?: string | null; valor_atual?: number | null; estado_atual?: string | null; progresso_pct?: number | null; snapshotted_at: string };
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -82,18 +87,18 @@ Deno.serve(async (req) => {
     const userId = profileLookup.data?.user_id ?? "00000000-0000-0000-0000-000000000000";
     const { data: profile } = await service.from("profiles").select("full_name").eq("user_id", userId).maybeSingle();
 
-    const goals = preferMonthRows((goalsRes.data || []) as any[], monthStart);
+    const goals = preferMonthRows((goalsRes.data || []) as GoalRow[], monthStart);
     const plan = plansRes.data;
-    const metas = metasRes.data || [];
+    const metas = (metasRes.data || []) as MetaRow[];
 
-    let actions: any[] = [];
+    let actions: ActionRow[] = [];
     if (plan?.id) {
       let actionsQuery = service.from("action_items")
         .select("description, status, financial_impact, objective, goal_id, month_ref")
         .eq("action_plan_id", plan.id);
       if (monthFilter) actionsQuery = actionsQuery.or(monthFilter);
       const { data } = await actionsQuery;
-      actions = preferMonthRows((data || []) as any[], monthStart);
+      actions = preferMonthRows((data || []) as ActionRow[], monthStart);
     }
 
     let acompQuery = service.from("acompanhamento_entradas")
@@ -105,8 +110,8 @@ Deno.serve(async (req) => {
     }
     const { data: acomp } = await acompQuery;
 
-    const latestByMeta: Record<string, any> = {};
-    (acomp || []).forEach((e: any) => {
+    const latestByMeta: Record<string, AcompRow> = {};
+    ((acomp || []) as AcompRow[]).forEach((e) => {
       if (e.meta_id && !latestByMeta[e.meta_id]) latestByMeta[e.meta_id] = e;
     });
 
@@ -114,7 +119,7 @@ Deno.serve(async (req) => {
     const doneActions = actions.filter((a) => a.status === "concluido").length;
     const planPct = totalActions > 0 ? Math.round((doneActions / totalActions) * 100) : 0;
 
-    const goalsCtx = goals.map((g: any) => {
+    const goalsCtx = goals.map((g) => {
       const related = actions.filter((a) => a.goal_id === g.id);
       const done = related.filter((a) => a.status === "concluido").length;
       const pct = related.length > 0 ? Math.round((done / related.length) * 100) : 0;
@@ -124,7 +129,7 @@ Deno.serve(async (req) => {
       return `- ${g.description} | meta: R$ ${target.toFixed(0)} | aplicado: R$ ${applied.toFixed(0)}${pctApplied != null ? ` (${pctApplied}%)` : ""} | prazo: ${g.deadline || "—"} | ações: ${done}/${related.length} (${pct}%)`;
     }).join("\n") || "- (sem objetivos cadastrados)";
 
-    const metasCtx = metas.map((m: any) => {
+    const metasCtx = metas.map((m) => {
       const last = latestByMeta[m.id];
       const meta = m.meta_valor != null ? `R$ ${Number(m.meta_valor).toFixed(0)}` : (m.meta_text || "—");
       const atual = last?.valor_atual != null ? `R$ ${Number(last.valor_atual).toFixed(0)}` : (last?.estado_atual || "sem registro");
