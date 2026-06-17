@@ -85,12 +85,20 @@ interface GoalWithProgress {
   tasksTotal: number;
 }
 
-interface IncomeItem { id: string; description: string; amount: number }
-interface ExpenseItem { id: string; category: string; amount: number }
-interface DebtItem { id: string; type: string; total_amount: number; monthly_payment: number | null }
-interface AssetItem { id: string; type: string; estimated_value: number }
-interface InsuranceItem { id: string; type: string; provider: string | null; monthly_premium: number | null; coverage_amount: number | null }
-interface GoalItem { id: string; description: string; target_amount: number | null }
+interface IncomeItem { id: string; description: string; amount: number; frequency?: string | null; month_ref?: string | null }
+interface ExpenseItem { id: string; category: string; amount: number; month_ref?: string | null }
+interface DebtItem { id: string; type: string; total_amount: number; monthly_payment: number | null; month_ref?: string | null }
+interface AssetItem { id: string; type: string; estimated_value: number; month_ref?: string | null }
+interface InsuranceItem { id: string; type: string; provider: string | null; monthly_premium: number | null; coverage_amount: number | null; month_ref?: string | null }
+interface GoalItem { id: string; description: string; target_amount: number | null; month_ref?: string | null }
+interface DiagnosisSummary { total_income?: number | null; total_expenses?: number | null; total_assets?: number | null; total_debts?: number | null; month_ref?: string | null; updated_at?: string | null; created_at?: string | null }
+type RawIncome = IncomeItem;
+type RawExpense = ExpenseItem;
+type RawDebt = DebtItem;
+type RawAsset = AssetItem;
+type RawInsurance = InsuranceItem;
+type RawGoal = GoalItem & { deadline?: string | null; priority?: string | null };
+type RawActionItem = { status: string; parent_id: string | null; goal_id: string | null; month_ref?: string | null };
 interface MonthlyClosing {
   month_ref: string;
   total_income: number | null;
@@ -109,11 +117,26 @@ const fmtMonthLabel = (monthRef: string) => {
   return d.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }).replace(".", "");
 };
 
+const normalizeDateOnly = (value?: string | null) => value?.slice(0, 10) ?? null;
+
+const preferMonthRows = <T extends { month_ref?: string | null }>(rows: T[], monthRef: string): T[] => {
+  const exactRows = rows.filter((row) => normalizeDateOnly(row.month_ref) === monthRef);
+  if (exactRows.length > 0) return exactRows;
+  return rows.filter((row) => !row.month_ref);
+};
+
+const pickMonthRow = <T extends { month_ref?: string | null; updated_at?: string | null; created_at?: string | null }>(rows: T[], monthRef: string): T | null => {
+  const candidates = preferMonthRows(rows, monthRef);
+  return candidates
+    .slice()
+    .sort((a, b) => String(b.updated_at || b.created_at || "").localeCompare(String(a.updated_at || a.created_at || "")))[0] ?? null;
+};
+
 const ClientDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [clientStatus, setClientStatus] = useState<string | null>(null);
-  const [diagnosis, setDiagnosis] = useState<any>(null);
+  const [diagnosis, setDiagnosis] = useState<DiagnosisSummary | null>(null);
   const [financials, setFinancials] = useState<{ totalIncome: number; totalExpenses: number; totalAssets: number; totalDebts: number } | null>(null);
   const [actionProgress, setActionProgress] = useState<{ total: number; done: number } | null>(null);
   const [dataConfirmedThisMonth, setDataConfirmedThisMonth] = useState(true);
@@ -149,17 +172,17 @@ const ClientDashboard = () => {
       const monthFilter = `month_ref.is.null,month_ref.eq.${currentMonthRef}`;
 
       const [
-        { data: diag }, incomeRes, expensesRes, assetsRes, debtsRes,
+        diagRes, incomeRes, expensesRes, assetsRes, debtsRes,
         { data: plans }, { data: goalsData }, insuranceRes, closingsRes,
       ] = await Promise.all([
-        supabase.from("diagnosis").select("*").eq("client_id", client.id).maybeSingle(),
-        supabase.from("income").select("id, description, amount").eq("client_id", client.id).or(monthFilter),
-        supabase.from("expenses").select("id, category, amount").eq("client_id", client.id).or(monthFilter),
-        supabase.from("assets").select("id, type, estimated_value").eq("client_id", client.id).or(monthFilter),
-        supabase.from("debts").select("id, type, total_amount, monthly_payment").eq("client_id", client.id).or(monthFilter),
+        supabase.from("diagnosis").select("*").eq("client_id", client.id).or(monthFilter).order("updated_at", { ascending: false }),
+        supabase.from("income").select("id, description, amount, frequency, month_ref").eq("client_id", client.id).or(monthFilter),
+        supabase.from("expenses").select("id, category, amount, month_ref").eq("client_id", client.id).or(monthFilter),
+        supabase.from("assets").select("id, type, estimated_value, month_ref").eq("client_id", client.id).or(monthFilter),
+        supabase.from("debts").select("id, type, total_amount, monthly_payment, month_ref").eq("client_id", client.id).or(monthFilter),
         supabase.from("action_plans").select("id").eq("client_id", client.id),
         supabase.from("goals").select("*").eq("client_id", client.id).or(monthFilter),
-        supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount").eq("client_id", client.id).or(monthFilter),
+        supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount, month_ref").eq("client_id", client.id).or(monthFilter),
         supabase
           .from("monthly_closings")
           .select("month_ref, total_income, total_expenses, total_debts, total_assets, net_worth, savings_rate, plan_completion_pct, emergency_reserve_months")
@@ -167,15 +190,17 @@ const ClientDashboard = () => {
           .order("month_ref", { ascending: true }),
       ]);
 
+      const diag = pickMonthRow((diagRes.data || []) as DiagnosisSummary[], currentMonthRef);
       if (diag) setDiagnosis(diag);
 
-      const incList: IncomeItem[] = (incomeRes.data || []).map((r: any) => ({ id: r.id, description: r.description, amount: Number(r.amount) }));
-      const expList: ExpenseItem[] = (expensesRes.data || []).map((r: any) => ({ id: r.id, category: r.category, amount: Number(r.amount) }));
-      const debtList: DebtItem[] = (debtsRes.data || []).map((r: any) => ({ id: r.id, type: r.type, total_amount: Number(r.total_amount), monthly_payment: r.monthly_payment != null ? Number(r.monthly_payment) : null }));
-      const assetList: AssetItem[] = (assetsRes.data || []).map((r: any) => ({ id: r.id, type: r.type, estimated_value: Number(r.estimated_value) }));
-      const insList: InsuranceItem[] = (insuranceRes.data || []).map((r: any) => ({ id: r.id, type: r.type, provider: r.provider, monthly_premium: r.monthly_premium != null ? Number(r.monthly_premium) : null, coverage_amount: r.coverage_amount != null ? Number(r.coverage_amount) : null }));
-      const goalList: GoalItem[] = (goalsData || []).map((g: any) => ({ id: g.id, description: g.description, target_amount: g.target_amount != null ? Number(g.target_amount) : null }));
-      const closings: MonthlyClosing[] = (closingsRes.data || []).map((c: any) => ({
+      const incList: IncomeItem[] = preferMonthRows((incomeRes.data || []) as RawIncome[], currentMonthRef).map((r) => ({ id: r.id, description: r.description, amount: Number(r.frequency === "anual" ? Number(r.amount || 0) / 12 : r.amount), frequency: r.frequency, month_ref: r.month_ref }));
+      const expList: ExpenseItem[] = preferMonthRows((expensesRes.data || []) as RawExpense[], currentMonthRef).map((r) => ({ id: r.id, category: r.category, amount: Number(r.amount), month_ref: r.month_ref }));
+      const debtList: DebtItem[] = preferMonthRows((debtsRes.data || []) as RawDebt[], currentMonthRef).map((r) => ({ id: r.id, type: r.type, total_amount: Number(r.total_amount), monthly_payment: r.monthly_payment != null ? Number(r.monthly_payment) : null, month_ref: r.month_ref }));
+      const assetList: AssetItem[] = preferMonthRows((assetsRes.data || []) as RawAsset[], currentMonthRef).map((r) => ({ id: r.id, type: r.type, estimated_value: Number(r.estimated_value), month_ref: r.month_ref }));
+      const insList: InsuranceItem[] = preferMonthRows((insuranceRes.data || []) as RawInsurance[], currentMonthRef).map((r) => ({ id: r.id, type: r.type, provider: r.provider, monthly_premium: r.monthly_premium != null ? Number(r.monthly_premium) : null, coverage_amount: r.coverage_amount != null ? Number(r.coverage_amount) : null, month_ref: r.month_ref }));
+      const activeGoalsData = preferMonthRows((goalsData || []) as RawGoal[], currentMonthRef);
+      const goalList: GoalItem[] = activeGoalsData.map((g) => ({ id: g.id, description: g.description, target_amount: g.target_amount != null ? Number(g.target_amount) : null, month_ref: g.month_ref }));
+      const closings: MonthlyClosing[] = ((closingsRes.data || []) as MonthlyClosing[]).map((c) => ({
         month_ref: c.month_ref,
         total_income: c.total_income != null ? Number(c.total_income) : null,
         total_expenses: c.total_expenses != null ? Number(c.total_expenses) : null,
@@ -206,17 +231,17 @@ const ClientDashboard = () => {
 
       if (plans && plans.length > 0) {
         const { data: items } = await supabase
-          .from("action_items").select("status, parent_id, goal_id").eq("action_plan_id", plans[0].id);
+          .from("action_items").select("status, parent_id, goal_id, month_ref").eq("action_plan_id", plans[0].id).or(monthFilter);
         if (items) {
-          allItems = items;
-          const children = items.filter((i) => i.parent_id);
+          allItems = preferMonthRows(items as RawActionItem[], currentMonthRef);
+          const children = allItems.filter((i) => i.parent_id);
           setActionProgress({ total: children.length, done: children.filter((i) => i.status === "concluido").length });
         }
       }
 
       // Build goals with task progress
-      if (goalsData && goalsData.length > 0) {
-        const goalsWithProgress: GoalWithProgress[] = goalsData.map((g) => {
+      if (activeGoalsData.length > 0) {
+        const goalsWithProgress: GoalWithProgress[] = activeGoalsData.map((g) => {
           const goalTasks = allItems.filter((t) => t.goal_id === g.id);
           return {
             id: g.id,
@@ -242,10 +267,10 @@ const ClientDashboard = () => {
     fetchData();
   }, [user]);
 
-  const totalIncome = diagnosis?.total_income || financials?.totalIncome || 0;
-  const totalExpenses = diagnosis?.total_expenses || financials?.totalExpenses || 0;
-  const totalAssets = diagnosis?.total_assets || financials?.totalAssets || 0;
-  const totalDebts = diagnosis?.total_debts || financials?.totalDebts || 0;
+  const totalIncome = financials?.totalIncome ?? diagnosis?.total_income ?? 0;
+  const totalExpenses = financials?.totalExpenses ?? diagnosis?.total_expenses ?? 0;
+  const totalAssets = financials?.totalAssets ?? diagnosis?.total_assets ?? 0;
+  const totalDebts = financials?.totalDebts ?? diagnosis?.total_debts ?? 0;
   const netWorth = totalAssets - totalDebts;
   const netCashFlow = totalIncome - totalExpenses;
   const savingsRate = totalIncome > 0 ? Math.round((netCashFlow / totalIncome) * 100) : 0;

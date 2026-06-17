@@ -115,19 +115,21 @@ type ReportClient = {
   cpf?: string | null;
   [k: string]: unknown;
 };
-type ReportDiagnosis = { risk_classification?: string | null; [k: string]: unknown };
+type ReportDiagnosis = { risk_classification?: string | null; month_ref?: string | null; [k: string]: unknown };
 type ReportIncome = {
   id: string;
   description: string;
   amount: number | null;
   frequency: string;
   is_primary?: boolean | null;
+  month_ref?: string | null;
 };
 type ReportExpense = {
   id: string;
   category: string;
   amount: number | null;
   description?: string | null;
+  month_ref?: string | null;
 };
 type ReportDebt = {
   id: string;
@@ -137,12 +139,14 @@ type ReportDebt = {
   monthly_payment: number | null;
   interest_rate?: number | null;
   remaining_months?: number | null;
+  month_ref?: string | null;
 };
 type ReportAsset = {
   id: string;
   type: string;
   description?: string | null;
   estimated_value: number | null;
+  month_ref?: string | null;
 };
 type ReportInsurance = {
   id: string;
@@ -150,6 +154,7 @@ type ReportInsurance = {
   provider?: string | null;
   monthly_premium?: number | null;
   coverage_amount?: number | null;
+  month_ref?: string | null;
 };
 type ReportGoal = {
   id: string;
@@ -158,6 +163,7 @@ type ReportGoal = {
   amount_applied?: number | null;
   deadline?: string | null;
   priority?: string | null;
+  month_ref?: string | null;
 };
 type ReportActionItem = {
   id: string;
@@ -169,6 +175,7 @@ type ReportActionItem = {
   responsible?: string | null;
   deadline?: string | null;
   financial_impact?: number | null;
+  month_ref?: string | null;
 };
 type ReportSnapshot = {
   snapshot_date: string;
@@ -220,6 +227,28 @@ type AIPlanVariant = {
   }>;
 };
 
+type ActivePlanRow = {
+  objective: string | null;
+  applied_variant: string | null;
+  applied_at: string | null;
+  goal_id: string | null;
+  ai_generated_plans: unknown;
+};
+
+type MonthlyClosingRow = {
+  month_ref: string;
+  total_income: number | null;
+  total_expenses: number | null;
+  total_debts: number | null;
+  total_assets: number | null;
+  net_worth: number | null;
+  savings_rate: number | null;
+  emergency_reserve_months: number | null;
+  plan_completion_pct: number | null;
+};
+
+const getErrorMessage = (err: unknown) => err instanceof Error ? err.message : "Tente novamente";
+
 // ── Main ─────────────────────────────────────────────
 // Helpers de mês
 const monthStartISO = (year: number, month: number) => {
@@ -232,6 +261,24 @@ const nextMonthStartISO = (year: number, month: number) => {
 };
 const monthLabel = (year: number, month: number) =>
   new Date(year, month - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+
+const normalizeDateOnly = (value?: string | null) => value?.slice(0, 10) ?? null;
+
+const preferMonthRows = <T extends { month_ref?: string | null }>(rows: T[], monthRef: string): T[] => {
+  const exactRows = rows.filter((row) => normalizeDateOnly(row.month_ref) === monthRef);
+  if (exactRows.length > 0) return exactRows;
+  return rows.filter((row) => !row.month_ref);
+};
+
+const pickMonthRow = <T extends { month_ref?: string | null; updated_at?: string | null; created_at?: string | null }>(
+  rows: T[],
+  monthRef: string,
+): T | null => {
+  const candidates = preferMonthRows(rows, monthRef);
+  return candidates
+    .slice()
+    .sort((a, b) => String(b.updated_at || b.created_at || "").localeCompare(String(a.updated_at || a.created_at || "")))[0] ?? null;
+};
 
 const MONTH_NAMES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -322,11 +369,11 @@ const AdminReport = () => {
     if (!clientId) return;
     const load = async () => {
       setLoading(true);
-      // Filtro mensal: itens do mês selecionado OU itens legados (month_ref nulo)
+      // Filtro mensal: busca mês selecionado + legado, mas usa legado só se o mês não tiver linhas próprias.
       const monthFilter = `month_ref.is.null,month_ref.eq.${monthStart}`;
       const [clientRes, diagRes, incRes, expRes, debRes, assRes, insRes, goalRes, planRes, snapRes, metaRes, acompRes] = await Promise.all([
         supabase.from("clients").select("*").eq("id", clientId).single(),
-        supabase.from("diagnosis").select("*").eq("client_id", clientId).maybeSingle(),
+        supabase.from("diagnosis").select("*").eq("client_id", clientId).or(monthFilter).order("updated_at", { ascending: false }),
         supabase.from("income").select("*").eq("client_id", clientId).or(monthFilter),
         supabase.from("expenses").select("*").eq("client_id", clientId).or(monthFilter),
         supabase.from("debts").select("*").eq("client_id", clientId).or(monthFilter),
@@ -338,15 +385,14 @@ const AdminReport = () => {
           .select("id, objective, applied_variant, applied_at, goal_id, ai_generated_plans, source_parecer_id")
           .eq("client_id", clientId)
           .maybeSingle(),
-        supabase.from("monitoring_snapshots").select("*").eq("client_id", clientId).order("snapshot_date", { ascending: true }),
+        supabase.from("monitoring_snapshots").select("*").eq("client_id", clientId).lt("snapshot_date", monthEnd).order("snapshot_date", { ascending: true }),
         supabase.from("parecer_metas").select("*").eq("client_id", clientId).order("created_at"),
-        // Histórico de lançamentos: busca TODOS do cliente (sem filtro de mês)
-        // para que o relatório mostre a evolução consultiva completa, não só
-        // o que aconteceu no mês selecionado.
+        // Histórico consultivo até o fim do mês selecionado — nunca puxa lançamentos futuros.
         supabase
           .from("acompanhamento_entradas")
           .select("*")
           .eq("client_id", clientId)
+          .lt("snapshotted_at", monthEnd)
           .order("snapshotted_at", { ascending: false }),
       ]);
 
@@ -358,13 +404,13 @@ const AdminReport = () => {
           setClientEmail(profile.email);
         }
       }
-      setDiagnosis((diagRes.data ?? null) as ReportDiagnosis | null);
-      setIncomes((incRes.data ?? []) as ReportIncome[]);
-      setExpenses((expRes.data ?? []) as ReportExpense[]);
-      setDebts((debRes.data ?? []) as ReportDebt[]);
-      setAssets((assRes.data ?? []) as ReportAsset[]);
-      setInsurance((insRes.data ?? []) as ReportInsurance[]);
-      setGoals((goalRes.data ?? []) as ReportGoal[]);
+      setDiagnosis(pickMonthRow((diagRes.data ?? []) as ReportDiagnosis[], monthStart));
+      setIncomes(preferMonthRows((incRes.data ?? []) as ReportIncome[], monthStart));
+      setExpenses(preferMonthRows((expRes.data ?? []) as ReportExpense[], monthStart));
+      setDebts(preferMonthRows((debRes.data ?? []) as ReportDebt[], monthStart));
+      setAssets(preferMonthRows((assRes.data ?? []) as ReportAsset[], monthStart));
+      setInsurance(preferMonthRows((insRes.data ?? []) as ReportInsurance[], monthStart));
+      setGoals(preferMonthRows((goalRes.data ?? []) as ReportGoal[], monthStart));
       setSnapshots((snapRes.data ?? []) as ReportSnapshot[]);
       setParecerMetas((metaRes.data ?? []) as ParecerMeta[]);
       setAcompEntries((acompRes.data ?? []) as AcompEntry[]);
@@ -374,23 +420,25 @@ const AdminReport = () => {
         .from("monthly_closings")
         .select("month_ref, total_income, total_expenses, total_debts, total_assets, net_worth, savings_rate, emergency_reserve_months, plan_completion_pct")
         .eq("client_id", clientId)
+        .lte("month_ref", monthStart)
         .order("month_ref", { ascending: true });
-      setClosings((closingsData ?? []) as any);
+      setClosings((closingsData ?? []) as MonthlyClosingRow[]);
 
       if (planRes.data) {
+        const plan = planRes.data as ActivePlanRow;
         const { data: items } = await supabase
           .from("action_items")
           .select("*")
           .eq("action_plan_id", planRes.data.id)
           .or(monthFilter)
           .order("created_at");
-        setActionItems((items ?? []) as ReportActionItem[]);
-        const rawVariants = (planRes.data as any).ai_generated_plans;
+        setActionItems(preferMonthRows((items ?? []) as ReportActionItem[], monthStart));
+        const rawVariants = plan.ai_generated_plans;
         setActivePlan({
-          objective: (planRes.data as any).objective ?? null,
-          applied_variant: (planRes.data as any).applied_variant ?? null,
-          applied_at: (planRes.data as any).applied_at ?? null,
-          goal_id: (planRes.data as any).goal_id ?? null,
+          objective: plan.objective ?? null,
+          applied_variant: plan.applied_variant ?? null,
+          applied_at: plan.applied_at ?? null,
+          goal_id: plan.goal_id ?? null,
           ai_generated_plans: Array.isArray(rawVariants) ? (rawVariants as AIPlanVariant[]) : null,
         });
       } else {
@@ -480,6 +528,8 @@ const AdminReport = () => {
     dividas: s.total_debts || 0,
     poupanca: s.savings_rate || 0,
   }));
+  const trackingEntries = acompEntries.filter((e) => !e.is_closing_snapshot);
+  const closingSnapshotEntries = acompEntries.filter((e) => e.is_closing_snapshot);
 
   const handlePrint = () => window.print();
 
@@ -555,9 +605,8 @@ const AdminReport = () => {
           };
         }),
         monthlyClosings: (() => {
-          const closingEntries = acompEntries.filter((e) => e.is_closing_snapshot);
           const byDate: Record<string, AcompEntry[]> = {};
-          closingEntries.forEach((e) => {
+          closingSnapshotEntries.forEach((e) => {
             const date = e.snapshotted_at.slice(0, 10);
             if (!byDate[date]) byDate[date] = [];
             byDate[date].push(e);
@@ -614,8 +663,8 @@ const AdminReport = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setAiDraft(data?.comment || "");
-    } catch (err: any) {
-      toast.error("Erro ao gerar análise", { description: err?.message || "Tente novamente" });
+    } catch (err: unknown) {
+      toast.error("Erro ao gerar análise", { description: getErrorMessage(err) });
     } finally {
       setAiLoading(false);
     }
@@ -631,8 +680,8 @@ const AdminReport = () => {
       if (data?.error) throw new Error(data.error);
       setAiDraft(data?.comment || "");
       toast.success("Análise regenerada");
-    } catch (err: any) {
-      toast.error("Erro ao regenerar", { description: err?.message || "Tente novamente" });
+    } catch (err: unknown) {
+      toast.error("Erro ao regenerar", { description: getErrorMessage(err) });
     } finally {
       setAiLoading(false);
     }
@@ -2141,10 +2190,10 @@ const AdminReport = () => {
         </section>
 
         {/* ══════ ACOMPANHAMENTO ══════ */}
-        {acompEntries.length > 0 && (() => {
+        {trackingEntries.length > 0 && (() => {
           // Agrupa por (source_table:source_label) — chave preservada após clones mensais
           const groups: Record<string, { label: string; sourceTable: string; meta?: ParecerMeta; entries: AcompEntry[] }> = {};
-          acompEntries.forEach((e) => {
+          trackingEntries.forEach((e) => {
             const label = e.source_label || "Item acompanhado";
             const sourceTable = e.source_table || "";
             const key = `${sourceTable}:${label}`;
@@ -2159,7 +2208,7 @@ const AdminReport = () => {
             ...g,
             entries: [...g.entries].sort((a, b) => b.snapshotted_at.localeCompare(a.snapshotted_at)),
           }));
-          const totalRegistros = acompEntries.length;
+          const totalRegistros = trackingEntries.length;
           return (
             <section className="print:break-before-page">
               <SectionHeader
@@ -2300,7 +2349,7 @@ const AdminReport = () => {
         })()}
 
         {/* ══════ ANÁLISE VISUAL DAS METAS ══════ */}
-        {(parecerMetas.length > 0 || acompEntries.length > 0) && (() => {
+        {(parecerMetas.length > 0 || trackingEntries.length > 0) && (() => {
           const CATEGORY_LABELS: Record<string, string> = {
             income: "Renda",
             expenses: "Despesa",
@@ -2319,7 +2368,7 @@ const AdminReport = () => {
           // Último lançamento por meta (chave source_table:source_id ou meta_id)
           const latestByMeta = new Map<string, AcompEntry>();
           const allByMeta = new Map<string, AcompEntry[]>();
-          acompEntries.forEach((e) => {
+          trackingEntries.forEach((e) => {
             const key = e.meta_id ?? `${e.source_table ?? ""}:${e.source_id ?? ""}:${e.source_label ?? ""}`;
             const existing = latestByMeta.get(key);
             if (!existing || e.snapshotted_at > existing.snapshotted_at) {
@@ -2481,7 +2530,7 @@ const AdminReport = () => {
 
           // ── 6. Lançamentos por mês (Barras empilhadas) ──
           const monthCatMap = new Map<string, Record<string, number>>();
-          acompEntries.forEach((e) => {
+          trackingEntries.forEach((e) => {
             const d = new Date(e.snapshotted_at);
             const ymKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
             const cat = CATEGORY_LABELS[e.source_table ?? ""] ?? "Outros";

@@ -74,6 +74,14 @@ const monthLabel = (iso: string) => {
 const firstOfMonth = (year: number, month: number) =>
   `${year}-${String(month + 1).padStart(2, "0")}-01`;
 
+const normalizeDateOnly = (value?: string | null) => value?.slice(0, 10) ?? null;
+
+const preferMonthRows = <T extends { month_ref?: string | null }>(rows: T[], monthRef: string): T[] => {
+  const exactRows = rows.filter((row) => normalizeDateOnly(row.month_ref) === monthRef);
+  if (exactRows.length > 0) return exactRows;
+  return rows.filter((row) => !row.month_ref);
+};
+
 function Delta({ curr, prev }: { curr: number | null; prev: number | null }) {
   if (curr == null || prev == null) return <span className="text-muted-foreground/40">—</span>;
   const diff = curr - prev;
@@ -178,22 +186,23 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
     [closings],
   );
 
-  const buildSnapshot = async () => {
+  const buildSnapshot = async (monthRef: string) => {
+    const monthFilter = `month_ref.is.null,month_ref.eq.${monthRef}`;
     const [incRes, expRes, debRes, assRes, insRes, goalsRes, planRes] = await Promise.all([
-      supabase.from("income").select("*").eq("client_id", clientId),
-      supabase.from("expenses").select("*").eq("client_id", clientId),
-      supabase.from("debts").select("*").eq("client_id", clientId),
-      supabase.from("assets").select("*").eq("client_id", clientId),
-      supabase.from("insurance").select("*").eq("client_id", clientId),
-      supabase.from("goals").select("*").eq("client_id", clientId),
+      supabase.from("income").select("*").eq("client_id", clientId).or(monthFilter),
+      supabase.from("expenses").select("*").eq("client_id", clientId).or(monthFilter),
+      supabase.from("debts").select("*").eq("client_id", clientId).or(monthFilter),
+      supabase.from("assets").select("*").eq("client_id", clientId).or(monthFilter),
+      supabase.from("insurance").select("*").eq("client_id", clientId).or(monthFilter),
+      supabase.from("goals").select("*").eq("client_id", clientId).or(monthFilter),
       supabase.from("action_plans").select("id").eq("client_id", clientId).maybeSingle(),
     ]);
-    const income = incRes.data || [];
-    const expenses = expRes.data || [];
-    const debts = debRes.data || [];
-    const assets = assRes.data || [];
-    const insurance = insRes.data || [];
-    const goals = goalsRes.data || [];
+    const income = preferMonthRows((incRes.data || []) as any[], monthRef);
+    const expenses = preferMonthRows((expRes.data || []) as any[], monthRef);
+    const debts = preferMonthRows((debRes.data || []) as any[], monthRef);
+    const assets = preferMonthRows((assRes.data || []) as any[], monthRef);
+    const insurance = preferMonthRows((insRes.data || []) as any[], monthRef);
+    const goals = preferMonthRows((goalsRes.data || []) as any[], monthRef);
 
     const totalIncome = income.reduce((s: number, r: any) => s + (r.frequency === "anual" ? Number(r.amount) / 12 : Number(r.amount) || 0), 0);
     const totalExpenses = expenses.reduce((s: number, r: any) => s + (Number(r.amount) || 0), 0);
@@ -207,8 +216,8 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
     let actionItems: any[] = [];
     let planPct = 0;
     if (planRes.data) {
-      const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id);
-      actionItems = items || [];
+      const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id).or(monthFilter);
+      actionItems = preferMonthRows((items || []) as any[], monthRef);
       if (actionItems.length > 0) planPct = Math.round((actionItems.filter((i) => i.status === "concluido").length / actionItems.length) * 100);
     }
     const parentItems = actionItems.filter((a) => !a.parent_id);
@@ -229,8 +238,8 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Sessão inválida.");
-      const snap = await buildSnapshot();
       const monthRef = firstOfMonth(targetYear, targetMonth);
+      const snap = await buildSnapshot(monthRef);
 
       const { data: existing } = await supabase.from("monthly_closings").select("id").eq("client_id", clientId).eq("month_ref", monthRef).maybeSingle();
 
@@ -304,7 +313,7 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Sessão inválida.");
-      const snap = await buildSnapshot();
+      const snap = await buildSnapshot(existing.month_ref);
       await supabase.from("monthly_closings").update({
         status: "fechado", ...snap.totals,
         income_snapshot: snap.income, expenses_snapshot: snap.expenses,
