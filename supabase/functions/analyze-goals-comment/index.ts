@@ -8,6 +8,15 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const normalizeDateOnly = (value?: string | null) => value?.slice(0, 10) ?? null;
+
+const preferMonthRows = <T extends { month_ref?: string | null }>(rows: T[], monthRef?: string): T[] => {
+  if (!monthRef) return rows;
+  const exactRows = rows.filter((row) => normalizeDateOnly(row.month_ref) === monthRef);
+  if (exactRows.length > 0) return exactRows;
+  return rows.filter((row) => !row.month_ref);
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -57,8 +66,14 @@ Deno.serve(async (req) => {
 
     const service = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
+    const monthFilter = monthStart ? `month_ref.is.null,month_ref.eq.${monthStart}` : undefined;
+    const goalsQuery = service
+      .from("goals")
+      .select("id, description, target_amount, priority, deadline, amount_applied, month_ref")
+      .eq("client_id", clientId);
+
     const [goalsRes, plansRes, metasRes, profileLookup] = await Promise.all([
-      service.from("goals").select("id, description, target_amount, priority, deadline, amount_applied").eq("client_id", clientId),
+      monthFilter ? goalsQuery.or(monthFilter) : goalsQuery,
       service.from("action_plans").select("id, objective, applied_variant, applied_at").eq("client_id", clientId).maybeSingle(),
       service.from("parecer_metas").select("id, source_label, meta_valor, meta_text, prazo").eq("client_id", clientId),
       service.from("clients").select("user_id").eq("id", clientId).maybeSingle(),
@@ -67,16 +82,18 @@ Deno.serve(async (req) => {
     const userId = profileLookup.data?.user_id ?? "00000000-0000-0000-0000-000000000000";
     const { data: profile } = await service.from("profiles").select("full_name").eq("user_id", userId).maybeSingle();
 
-    const goals = goalsRes.data || [];
+    const goals = preferMonthRows((goalsRes.data || []) as any[], monthStart);
     const plan = plansRes.data;
     const metas = metasRes.data || [];
 
     let actions: any[] = [];
     if (plan?.id) {
-      const { data } = await service.from("action_items")
-        .select("description, status, financial_impact, objective, goal_id")
+      let actionsQuery = service.from("action_items")
+        .select("description, status, financial_impact, objective, goal_id, month_ref")
         .eq("action_plan_id", plan.id);
-      actions = data || [];
+      if (monthFilter) actionsQuery = actionsQuery.or(monthFilter);
+      const { data } = await actionsQuery;
+      actions = preferMonthRows((data || []) as any[], monthStart);
     }
 
     let acompQuery = service.from("acompanhamento_entradas")
