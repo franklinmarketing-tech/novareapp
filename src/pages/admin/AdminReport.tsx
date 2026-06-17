@@ -662,8 +662,8 @@ const AdminReport = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setAiDraft(data?.comment || "");
-    } catch (err: any) {
-      toast.error("Erro ao gerar análise", { description: err?.message || "Tente novamente" });
+    } catch (err: unknown) {
+      toast.error("Erro ao gerar análise", { description: getErrorMessage(err) });
     } finally {
       setAiLoading(false);
     }
@@ -679,8 +679,8 @@ const AdminReport = () => {
       if (data?.error) throw new Error(data.error);
       setAiDraft(data?.comment || "");
       toast.success("Análise regenerada");
-    } catch (err: any) {
-      toast.error("Erro ao regenerar", { description: err?.message || "Tente novamente" });
+    } catch (err: unknown) {
+      toast.error("Erro ao regenerar", { description: getErrorMessage(err) });
     } finally {
       setAiLoading(false);
     }
