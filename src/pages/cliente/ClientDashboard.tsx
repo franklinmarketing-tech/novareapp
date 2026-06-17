@@ -173,7 +173,7 @@ const ClientDashboard = () => {
         supabase.from("assets").select("id, type, estimated_value, month_ref").eq("client_id", client.id).or(monthFilter),
         supabase.from("debts").select("id, type, total_amount, monthly_payment, month_ref").eq("client_id", client.id).or(monthFilter),
         supabase.from("action_plans").select("id").eq("client_id", client.id),
-        supabase.from("goals").select("*, month_ref").eq("client_id", client.id).or(monthFilter),
+        supabase.from("goals").select("*").eq("client_id", client.id).or(monthFilter),
         supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount, month_ref").eq("client_id", client.id).or(monthFilter),
         supabase
           .from("monthly_closings")
@@ -259,10 +259,10 @@ const ClientDashboard = () => {
     fetchData();
   }, [user]);
 
-  const totalIncome = diagnosis?.total_income || financials?.totalIncome || 0;
-  const totalExpenses = diagnosis?.total_expenses || financials?.totalExpenses || 0;
-  const totalAssets = diagnosis?.total_assets || financials?.totalAssets || 0;
-  const totalDebts = diagnosis?.total_debts || financials?.totalDebts || 0;
+  const totalIncome = financials?.totalIncome ?? diagnosis?.total_income ?? 0;
+  const totalExpenses = financials?.totalExpenses ?? diagnosis?.total_expenses ?? 0;
+  const totalAssets = financials?.totalAssets ?? diagnosis?.total_assets ?? 0;
+  const totalDebts = financials?.totalDebts ?? diagnosis?.total_debts ?? 0;
   const netWorth = totalAssets - totalDebts;
   const netCashFlow = totalIncome - totalExpenses;
   const savingsRate = totalIncome > 0 ? Math.round((netCashFlow / totalIncome) * 100) : 0;
