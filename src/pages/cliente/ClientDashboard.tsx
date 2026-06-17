@@ -169,12 +169,12 @@ const ClientDashboard = () => {
       ] = await Promise.all([
         supabase.from("diagnosis").select("*").eq("client_id", client.id).or(monthFilter).order("updated_at", { ascending: false }),
         supabase.from("income").select("id, description, amount, frequency, month_ref").eq("client_id", client.id).or(monthFilter),
-        supabase.from("expenses").select("id, category, amount").eq("client_id", client.id).or(monthFilter),
-        supabase.from("assets").select("id, type, estimated_value").eq("client_id", client.id).or(monthFilter),
-        supabase.from("debts").select("id, type, total_amount, monthly_payment").eq("client_id", client.id).or(monthFilter),
+        supabase.from("expenses").select("id, category, amount, month_ref").eq("client_id", client.id).or(monthFilter),
+        supabase.from("assets").select("id, type, estimated_value, month_ref").eq("client_id", client.id).or(monthFilter),
+        supabase.from("debts").select("id, type, total_amount, monthly_payment, month_ref").eq("client_id", client.id).or(monthFilter),
         supabase.from("action_plans").select("id").eq("client_id", client.id),
-        supabase.from("goals").select("*").eq("client_id", client.id).or(monthFilter),
-        supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount").eq("client_id", client.id).or(monthFilter),
+        supabase.from("goals").select("*, month_ref").eq("client_id", client.id).or(monthFilter),
+        supabase.from("insurance").select("id, type, provider, monthly_premium, coverage_amount, month_ref").eq("client_id", client.id).or(monthFilter),
         supabase
           .from("monthly_closings")
           .select("month_ref, total_income, total_expenses, total_debts, total_assets, net_worth, savings_rate, plan_completion_pct, emergency_reserve_months")
@@ -226,7 +226,7 @@ const ClientDashboard = () => {
           .from("action_items").select("status, parent_id, goal_id, month_ref").eq("action_plan_id", plans[0].id).or(monthFilter);
         if (items) {
           allItems = preferMonthRows(items as any[], currentMonthRef);
-          const children = items.filter((i) => i.parent_id);
+          const children = allItems.filter((i) => i.parent_id);
           setActionProgress({ total: children.length, done: children.filter((i) => i.status === "concluido").length });
         }
       }
