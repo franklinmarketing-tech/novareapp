@@ -91,6 +91,14 @@ interface DebtItem { id: string; type: string; total_amount: number; monthly_pay
 interface AssetItem { id: string; type: string; estimated_value: number; month_ref?: string | null }
 interface InsuranceItem { id: string; type: string; provider: string | null; monthly_premium: number | null; coverage_amount: number | null; month_ref?: string | null }
 interface GoalItem { id: string; description: string; target_amount: number | null; month_ref?: string | null }
+interface DiagnosisSummary { total_income?: number | null; total_expenses?: number | null; total_assets?: number | null; total_debts?: number | null; month_ref?: string | null; updated_at?: string | null; created_at?: string | null }
+type RawIncome = IncomeItem;
+type RawExpense = ExpenseItem;
+type RawDebt = DebtItem;
+type RawAsset = AssetItem;
+type RawInsurance = InsuranceItem;
+type RawGoal = GoalItem & { deadline?: string | null; priority?: string | null };
+type RawActionItem = { status: string; parent_id: string | null; goal_id: string | null; month_ref?: string | null };
 interface MonthlyClosing {
   month_ref: string;
   total_income: number | null;
@@ -128,7 +136,7 @@ const ClientDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [clientStatus, setClientStatus] = useState<string | null>(null);
-  const [diagnosis, setDiagnosis] = useState<any>(null);
+  const [diagnosis, setDiagnosis] = useState<DiagnosisSummary | null>(null);
   const [financials, setFinancials] = useState<{ totalIncome: number; totalExpenses: number; totalAssets: number; totalDebts: number } | null>(null);
   const [actionProgress, setActionProgress] = useState<{ total: number; done: number } | null>(null);
   const [dataConfirmedThisMonth, setDataConfirmedThisMonth] = useState(true);
@@ -182,17 +190,17 @@ const ClientDashboard = () => {
           .order("month_ref", { ascending: true }),
       ]);
 
-      const diag = pickMonthRow((diagRes.data || []) as any[], currentMonthRef);
+      const diag = pickMonthRow((diagRes.data || []) as DiagnosisSummary[], currentMonthRef);
       if (diag) setDiagnosis(diag);
 
-      const incList: IncomeItem[] = preferMonthRows((incomeRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, description: r.description, amount: Number(r.frequency === "anual" ? Number(r.amount || 0) / 12 : r.amount), frequency: r.frequency, month_ref: r.month_ref }));
-      const expList: ExpenseItem[] = preferMonthRows((expensesRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, category: r.category, amount: Number(r.amount), month_ref: r.month_ref }));
-      const debtList: DebtItem[] = preferMonthRows((debtsRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, type: r.type, total_amount: Number(r.total_amount), monthly_payment: r.monthly_payment != null ? Number(r.monthly_payment) : null, month_ref: r.month_ref }));
-      const assetList: AssetItem[] = preferMonthRows((assetsRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, type: r.type, estimated_value: Number(r.estimated_value), month_ref: r.month_ref }));
-      const insList: InsuranceItem[] = preferMonthRows((insuranceRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, type: r.type, provider: r.provider, monthly_premium: r.monthly_premium != null ? Number(r.monthly_premium) : null, coverage_amount: r.coverage_amount != null ? Number(r.coverage_amount) : null, month_ref: r.month_ref }));
-      const activeGoalsData = preferMonthRows((goalsData || []) as any[], currentMonthRef);
-      const goalList: GoalItem[] = activeGoalsData.map((g: any) => ({ id: g.id, description: g.description, target_amount: g.target_amount != null ? Number(g.target_amount) : null, month_ref: g.month_ref }));
-      const closings: MonthlyClosing[] = (closingsRes.data || []).map((c: any) => ({
+      const incList: IncomeItem[] = preferMonthRows((incomeRes.data || []) as RawIncome[], currentMonthRef).map((r) => ({ id: r.id, description: r.description, amount: Number(r.frequency === "anual" ? Number(r.amount || 0) / 12 : r.amount), frequency: r.frequency, month_ref: r.month_ref }));
+      const expList: ExpenseItem[] = preferMonthRows((expensesRes.data || []) as RawExpense[], currentMonthRef).map((r) => ({ id: r.id, category: r.category, amount: Number(r.amount), month_ref: r.month_ref }));
+      const debtList: DebtItem[] = preferMonthRows((debtsRes.data || []) as RawDebt[], currentMonthRef).map((r) => ({ id: r.id, type: r.type, total_amount: Number(r.total_amount), monthly_payment: r.monthly_payment != null ? Number(r.monthly_payment) : null, month_ref: r.month_ref }));
+      const assetList: AssetItem[] = preferMonthRows((assetsRes.data || []) as RawAsset[], currentMonthRef).map((r) => ({ id: r.id, type: r.type, estimated_value: Number(r.estimated_value), month_ref: r.month_ref }));
+      const insList: InsuranceItem[] = preferMonthRows((insuranceRes.data || []) as RawInsurance[], currentMonthRef).map((r) => ({ id: r.id, type: r.type, provider: r.provider, monthly_premium: r.monthly_premium != null ? Number(r.monthly_premium) : null, coverage_amount: r.coverage_amount != null ? Number(r.coverage_amount) : null, month_ref: r.month_ref }));
+      const activeGoalsData = preferMonthRows((goalsData || []) as RawGoal[], currentMonthRef);
+      const goalList: GoalItem[] = activeGoalsData.map((g) => ({ id: g.id, description: g.description, target_amount: g.target_amount != null ? Number(g.target_amount) : null, month_ref: g.month_ref }));
+      const closings: MonthlyClosing[] = ((closingsRes.data || []) as MonthlyClosing[]).map((c) => ({
         month_ref: c.month_ref,
         total_income: c.total_income != null ? Number(c.total_income) : null,
         total_expenses: c.total_expenses != null ? Number(c.total_expenses) : null,
@@ -225,7 +233,7 @@ const ClientDashboard = () => {
         const { data: items } = await supabase
           .from("action_items").select("status, parent_id, goal_id, month_ref").eq("action_plan_id", plans[0].id).or(monthFilter);
         if (items) {
-          allItems = preferMonthRows(items as any[], currentMonthRef);
+          allItems = preferMonthRows(items as RawActionItem[], currentMonthRef);
           const children = allItems.filter((i) => i.parent_id);
           setActionProgress({ total: children.length, done: children.filter((i) => i.status === "concluido").length });
         }
