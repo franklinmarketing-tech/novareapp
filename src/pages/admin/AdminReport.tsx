@@ -232,7 +232,7 @@ type ActivePlanRow = {
   applied_variant: string | null;
   applied_at: string | null;
   goal_id: string | null;
-  ai_generated_plans: AIPlanVariant[] | null;
+  ai_generated_plans: unknown;
 };
 
 type MonthlyClosingRow = {
