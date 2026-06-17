@@ -2190,10 +2190,10 @@ const AdminReport = () => {
         </section>
 
         {/* ══════ ACOMPANHAMENTO ══════ */}
-        {acompEntries.length > 0 && (() => {
+        {trackingEntries.length > 0 && (() => {
           // Agrupa por (source_table:source_label) — chave preservada após clones mensais
           const groups: Record<string, { label: string; sourceTable: string; meta?: ParecerMeta; entries: AcompEntry[] }> = {};
-          acompEntries.forEach((e) => {
+          trackingEntries.forEach((e) => {
             const label = e.source_label || "Item acompanhado";
             const sourceTable = e.source_table || "";
             const key = `${sourceTable}:${label}`;
@@ -2208,7 +2208,7 @@ const AdminReport = () => {
             ...g,
             entries: [...g.entries].sort((a, b) => b.snapshotted_at.localeCompare(a.snapshotted_at)),
           }));
-          const totalRegistros = acompEntries.length;
+          const totalRegistros = trackingEntries.length;
           return (
             <section className="print:break-before-page">
               <SectionHeader
@@ -2349,7 +2349,7 @@ const AdminReport = () => {
         })()}
 
         {/* ══════ ANÁLISE VISUAL DAS METAS ══════ */}
-        {(parecerMetas.length > 0 || acompEntries.length > 0) && (() => {
+        {(parecerMetas.length > 0 || trackingEntries.length > 0) && (() => {
           const CATEGORY_LABELS: Record<string, string> = {
             income: "Renda",
             expenses: "Despesa",
@@ -2368,7 +2368,7 @@ const AdminReport = () => {
           // Último lançamento por meta (chave source_table:source_id ou meta_id)
           const latestByMeta = new Map<string, AcompEntry>();
           const allByMeta = new Map<string, AcompEntry[]>();
-          acompEntries.forEach((e) => {
+          trackingEntries.forEach((e) => {
             const key = e.meta_id ?? `${e.source_table ?? ""}:${e.source_id ?? ""}:${e.source_label ?? ""}`;
             const existing = latestByMeta.get(key);
             if (!existing || e.snapshotted_at > existing.snapshotted_at) {
@@ -2530,7 +2530,7 @@ const AdminReport = () => {
 
           // ── 6. Lançamentos por mês (Barras empilhadas) ──
           const monthCatMap = new Map<string, Record<string, number>>();
-          acompEntries.forEach((e) => {
+          trackingEntries.forEach((e) => {
             const d = new Date(e.snapshotted_at);
             const ymKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
             const cat = CATEGORY_LABELS[e.source_table ?? ""] ?? "Outros";
