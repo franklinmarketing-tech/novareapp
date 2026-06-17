@@ -528,6 +528,8 @@ const AdminReport = () => {
     dividas: s.total_debts || 0,
     poupanca: s.savings_rate || 0,
   }));
+  const trackingEntries = acompEntries.filter((e) => !e.is_closing_snapshot);
+  const closingSnapshotEntries = acompEntries.filter((e) => e.is_closing_snapshot);
 
   const handlePrint = () => window.print();
 
@@ -603,9 +605,8 @@ const AdminReport = () => {
           };
         }),
         monthlyClosings: (() => {
-          const closingEntries = acompEntries.filter((e) => e.is_closing_snapshot);
           const byDate: Record<string, AcompEntry[]> = {};
-          closingEntries.forEach((e) => {
+          closingSnapshotEntries.forEach((e) => {
             const date = e.snapshotted_at.slice(0, 10);
             if (!byDate[date]) byDate[date] = [];
             byDate[date].push(e);
