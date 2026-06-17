@@ -85,12 +85,12 @@ interface GoalWithProgress {
   tasksTotal: number;
 }
 
-interface IncomeItem { id: string; description: string; amount: number }
-interface ExpenseItem { id: string; category: string; amount: number }
-interface DebtItem { id: string; type: string; total_amount: number; monthly_payment: number | null }
-interface AssetItem { id: string; type: string; estimated_value: number }
-interface InsuranceItem { id: string; type: string; provider: string | null; monthly_premium: number | null; coverage_amount: number | null }
-interface GoalItem { id: string; description: string; target_amount: number | null }
+interface IncomeItem { id: string; description: string; amount: number; frequency?: string | null; month_ref?: string | null }
+interface ExpenseItem { id: string; category: string; amount: number; month_ref?: string | null }
+interface DebtItem { id: string; type: string; total_amount: number; monthly_payment: number | null; month_ref?: string | null }
+interface AssetItem { id: string; type: string; estimated_value: number; month_ref?: string | null }
+interface InsuranceItem { id: string; type: string; provider: string | null; monthly_premium: number | null; coverage_amount: number | null; month_ref?: string | null }
+interface GoalItem { id: string; description: string; target_amount: number | null; month_ref?: string | null }
 interface MonthlyClosing {
   month_ref: string;
   total_income: number | null;
@@ -107,6 +107,21 @@ const fmtCurrencyFull = (v: number) => v.toLocaleString("pt-BR", { style: "curre
 const fmtMonthLabel = (monthRef: string) => {
   const d = new Date(monthRef + (monthRef.length === 7 ? "-01" : "") + "T00:00:00");
   return d.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }).replace(".", "");
+};
+
+const normalizeDateOnly = (value?: string | null) => value?.slice(0, 10) ?? null;
+
+const preferMonthRows = <T extends { month_ref?: string | null }>(rows: T[], monthRef: string): T[] => {
+  const exactRows = rows.filter((row) => normalizeDateOnly(row.month_ref) === monthRef);
+  if (exactRows.length > 0) return exactRows;
+  return rows.filter((row) => !row.month_ref);
+};
+
+const pickMonthRow = <T extends { month_ref?: string | null; updated_at?: string | null; created_at?: string | null }>(rows: T[], monthRef: string): T | null => {
+  const candidates = preferMonthRows(rows, monthRef);
+  return candidates
+    .slice()
+    .sort((a, b) => String(b.updated_at || b.created_at || "").localeCompare(String(a.updated_at || a.created_at || "")))[0] ?? null;
 };
 
 const ClientDashboard = () => {
@@ -149,11 +164,11 @@ const ClientDashboard = () => {
       const monthFilter = `month_ref.is.null,month_ref.eq.${currentMonthRef}`;
 
       const [
-        { data: diag }, incomeRes, expensesRes, assetsRes, debtsRes,
+        diagRes, incomeRes, expensesRes, assetsRes, debtsRes,
         { data: plans }, { data: goalsData }, insuranceRes, closingsRes,
       ] = await Promise.all([
-        supabase.from("diagnosis").select("*").eq("client_id", client.id).maybeSingle(),
-        supabase.from("income").select("id, description, amount").eq("client_id", client.id).or(monthFilter),
+        supabase.from("diagnosis").select("*").eq("client_id", client.id).or(monthFilter).order("updated_at", { ascending: false }),
+        supabase.from("income").select("id, description, amount, frequency, month_ref").eq("client_id", client.id).or(monthFilter),
         supabase.from("expenses").select("id, category, amount").eq("client_id", client.id).or(monthFilter),
         supabase.from("assets").select("id, type, estimated_value").eq("client_id", client.id).or(monthFilter),
         supabase.from("debts").select("id, type, total_amount, monthly_payment").eq("client_id", client.id).or(monthFilter),
@@ -167,14 +182,16 @@ const ClientDashboard = () => {
           .order("month_ref", { ascending: true }),
       ]);
 
+      const diag = pickMonthRow((diagRes.data || []) as any[], currentMonthRef);
       if (diag) setDiagnosis(diag);
 
-      const incList: IncomeItem[] = (incomeRes.data || []).map((r: any) => ({ id: r.id, description: r.description, amount: Number(r.amount) }));
-      const expList: ExpenseItem[] = (expensesRes.data || []).map((r: any) => ({ id: r.id, category: r.category, amount: Number(r.amount) }));
-      const debtList: DebtItem[] = (debtsRes.data || []).map((r: any) => ({ id: r.id, type: r.type, total_amount: Number(r.total_amount), monthly_payment: r.monthly_payment != null ? Number(r.monthly_payment) : null }));
-      const assetList: AssetItem[] = (assetsRes.data || []).map((r: any) => ({ id: r.id, type: r.type, estimated_value: Number(r.estimated_value) }));
-      const insList: InsuranceItem[] = (insuranceRes.data || []).map((r: any) => ({ id: r.id, type: r.type, provider: r.provider, monthly_premium: r.monthly_premium != null ? Number(r.monthly_premium) : null, coverage_amount: r.coverage_amount != null ? Number(r.coverage_amount) : null }));
-      const goalList: GoalItem[] = (goalsData || []).map((g: any) => ({ id: g.id, description: g.description, target_amount: g.target_amount != null ? Number(g.target_amount) : null }));
+      const incList: IncomeItem[] = preferMonthRows((incomeRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, description: r.description, amount: Number(r.frequency === "anual" ? Number(r.amount || 0) / 12 : r.amount), frequency: r.frequency, month_ref: r.month_ref }));
+      const expList: ExpenseItem[] = preferMonthRows((expensesRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, category: r.category, amount: Number(r.amount), month_ref: r.month_ref }));
+      const debtList: DebtItem[] = preferMonthRows((debtsRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, type: r.type, total_amount: Number(r.total_amount), monthly_payment: r.monthly_payment != null ? Number(r.monthly_payment) : null, month_ref: r.month_ref }));
+      const assetList: AssetItem[] = preferMonthRows((assetsRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, type: r.type, estimated_value: Number(r.estimated_value), month_ref: r.month_ref }));
+      const insList: InsuranceItem[] = preferMonthRows((insuranceRes.data || []) as any[], currentMonthRef).map((r: any) => ({ id: r.id, type: r.type, provider: r.provider, monthly_premium: r.monthly_premium != null ? Number(r.monthly_premium) : null, coverage_amount: r.coverage_amount != null ? Number(r.coverage_amount) : null, month_ref: r.month_ref }));
+      const activeGoalsData = preferMonthRows((goalsData || []) as any[], currentMonthRef);
+      const goalList: GoalItem[] = activeGoalsData.map((g: any) => ({ id: g.id, description: g.description, target_amount: g.target_amount != null ? Number(g.target_amount) : null, month_ref: g.month_ref }));
       const closings: MonthlyClosing[] = (closingsRes.data || []).map((c: any) => ({
         month_ref: c.month_ref,
         total_income: c.total_income != null ? Number(c.total_income) : null,
@@ -206,17 +223,17 @@ const ClientDashboard = () => {
 
       if (plans && plans.length > 0) {
         const { data: items } = await supabase
-          .from("action_items").select("status, parent_id, goal_id").eq("action_plan_id", plans[0].id);
+          .from("action_items").select("status, parent_id, goal_id, month_ref").eq("action_plan_id", plans[0].id).or(monthFilter);
         if (items) {
-          allItems = items;
+          allItems = preferMonthRows(items as any[], currentMonthRef);
           const children = items.filter((i) => i.parent_id);
           setActionProgress({ total: children.length, done: children.filter((i) => i.status === "concluido").length });
         }
       }
 
       // Build goals with task progress
-      if (goalsData && goalsData.length > 0) {
-        const goalsWithProgress: GoalWithProgress[] = goalsData.map((g) => {
+      if (activeGoalsData.length > 0) {
+        const goalsWithProgress: GoalWithProgress[] = activeGoalsData.map((g) => {
           const goalTasks = allItems.filter((t) => t.goal_id === g.id);
           return {
             id: g.id,
