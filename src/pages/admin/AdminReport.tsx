@@ -227,6 +227,28 @@ type AIPlanVariant = {
   }>;
 };
 
+type ActivePlanRow = {
+  objective: string | null;
+  applied_variant: string | null;
+  applied_at: string | null;
+  goal_id: string | null;
+  ai_generated_plans: AIPlanVariant[] | null;
+};
+
+type MonthlyClosingRow = {
+  month_ref: string;
+  total_income: number | null;
+  total_expenses: number | null;
+  total_debts: number | null;
+  total_assets: number | null;
+  net_worth: number | null;
+  savings_rate: number | null;
+  emergency_reserve_months: number | null;
+  plan_completion_pct: number | null;
+};
+
+const getErrorMessage = (err: unknown) => err instanceof Error ? err.message : "Tente novamente";
+
 // ── Main ─────────────────────────────────────────────
 // Helpers de mês
 const monthStartISO = (year: number, month: number) => {
@@ -400,9 +422,10 @@ const AdminReport = () => {
         .eq("client_id", clientId)
         .lte("month_ref", monthStart)
         .order("month_ref", { ascending: true });
-      setClosings((closingsData ?? []) as any);
+      setClosings((closingsData ?? []) as MonthlyClosingRow[]);
 
       if (planRes.data) {
+        const plan = planRes.data as ActivePlanRow;
         const { data: items } = await supabase
           .from("action_items")
           .select("*")
@@ -410,12 +433,12 @@ const AdminReport = () => {
           .or(monthFilter)
           .order("created_at");
         setActionItems(preferMonthRows((items ?? []) as ReportActionItem[], monthStart));
-        const rawVariants = (planRes.data as any).ai_generated_plans;
+        const rawVariants = plan.ai_generated_plans;
         setActivePlan({
-          objective: (planRes.data as any).objective ?? null,
-          applied_variant: (planRes.data as any).applied_variant ?? null,
-          applied_at: (planRes.data as any).applied_at ?? null,
-          goal_id: (planRes.data as any).goal_id ?? null,
+          objective: plan.objective ?? null,
+          applied_variant: plan.applied_variant ?? null,
+          applied_at: plan.applied_at ?? null,
+          goal_id: plan.goal_id ?? null,
           ai_generated_plans: Array.isArray(rawVariants) ? (rawVariants as AIPlanVariant[]) : null,
         });
       } else {
