@@ -76,6 +76,20 @@ const firstOfMonth = (year: number, month: number) =>
 
 const normalizeDateOnly = (value?: string | null) => value?.slice(0, 10) ?? null;
 
+// Base da reserva de emergência = ativos líquidos.
+// Prioriza ativos rotulados como "reserva"/"emergência"; senão, ativos líquidos
+// (investimento, poupança, conta, caixa, tesouro, CDB). Nunca usa imóvel/veículo.
+const emergencyReserveBase = (assets: Array<{ type?: string | null; description?: string | null; estimated_value?: number | null }>): number => {
+  const norm = (s?: string | null) => (s ?? "").toString().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+  const isReserve = (a: { type?: string | null; description?: string | null }) =>
+    /reserva|emergenc/.test(norm(a.type)) || /reserva|emergenc/.test(norm(a.description));
+  const isLiquid = (a: { type?: string | null }) =>
+    /investiment|poupanc|conta|caixa|tesouro|cdb|liquid/.test(norm(a.type));
+  const labeled = assets.filter(isReserve);
+  const pool = labeled.length > 0 ? labeled : assets.filter(isLiquid);
+  return pool.reduce((s, a) => s + (Number(a.estimated_value) || 0), 0);
+};
+
 const preferMonthRows = <T extends { month_ref?: string | null }>(rows: T[], monthRef: string): T[] => {
   const exactRows = rows.filter((row) => normalizeDateOnly(row.month_ref) === monthRef);
   if (exactRows.length > 0) return exactRows;
@@ -211,7 +225,10 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
     const monthlyDebtPayments = debts.reduce((s: number, r: any) => s + (Number(r.monthly_payment) || 0), 0);
     const netWorth = totalAssets - totalDebts;
     const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses - monthlyDebtPayments) / totalIncome) * 100 : 0;
-    const emergencyMonths = totalExpenses > 0 ? totalAssets / totalExpenses : 0;
+    // Reserva de emergência: usar SÓ os ativos líquidos (reserva/investimentos),
+    // nunca o patrimônio total (que inclui imóvel, carro, etc.).
+    const reserveBase = emergencyReserveBase(assets);
+    const emergencyMonths = totalExpenses > 0 ? reserveBase / totalExpenses : 0;
 
     let actionItems: any[] = [];
     let planPct = 0;

@@ -107,7 +107,12 @@ Deno.serve(async (req) => {
     const monthlyDebtPayments = debts.reduce((s, d) => s + (Number(d.monthly_payment) || 0), 0);
     const netCashFlow = totalIncome - totalExpenses - monthlyDebtPayments;
     const savingsRate = totalIncome > 0 ? (netCashFlow / totalIncome) * 100 : 0;
-    const emergencyMonths = totalExpenses > 0 ? totalAssets / totalExpenses : 0;
+    // Reserva de emergência = ativos líquidos (reserva/investimentos), nunca o patrimônio total.
+    const _norm = (s: unknown) => String(s ?? "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+    const _reserveLabeled = assets.filter((a) => /reserva|emergenc/.test(_norm(a.type)) || /reserva|emergenc/.test(_norm(a.description)));
+    const _reservePool = _reserveLabeled.length > 0 ? _reserveLabeled : assets.filter((a) => /investiment|poupanc|conta|caixa|tesouro|cdb|liquid/.test(_norm(a.type)));
+    const reserveBase = _reservePool.reduce((s, a) => s + (Number(a.estimated_value) || 0), 0);
+    const emergencyMonths = totalExpenses > 0 ? reserveBase / totalExpenses : 0;
     const debtRatio = totalIncome > 0 ? (monthlyDebtPayments / totalIncome) * 100 : 0;
     const expenseRatio = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
 

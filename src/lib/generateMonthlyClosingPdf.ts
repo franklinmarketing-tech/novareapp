@@ -82,7 +82,6 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 export async function generateMonthlyClosingPdf(data: MonthlyClosingPdfData): Promise<void> {
   const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
   let y = 0;
-  let pageNumber = 1;
 
   let logoWhite: { dataUrl: string; w: number; h: number } | null = null;
   let logoBlack: { dataUrl: string; w: number; h: number } | null = null;
@@ -91,38 +90,49 @@ export async function generateMonthlyClosingPdf(data: MonthlyClosingPdfData): Pr
   } catch { /* segue sem logo */ }
 
   // ── Cabeçalho/rodapé ──
+  const HEADER_H = 13;
   const addHeader = () => {
     pdf.setFillColor(...C.primary);
-    pdf.rect(0, 0, PAGE_W, 10, "F");
+    pdf.rect(0, 0, PAGE_W, HEADER_H, "F");
     if (logoWhite) {
       const ratio = logoWhite.w / logoWhite.h;
-      const h = 5;
-      try { pdf.addImage(logoWhite.dataUrl, "PNG", MARGIN, 2.5, h * ratio, h); } catch {}
+      const h = 8; // maior para dar legibilidade ao "Consultoria de Investimentos"
+      try { pdf.addImage(logoWhite.dataUrl, "PNG", MARGIN, (HEADER_H - h) / 2, h * ratio, h); } catch {}
     }
     pdf.setTextColor(...C.white);
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8);
-    pdf.text("Fechamento Mensal", PAGE_W / 2, 6.5, { align: "center" });
-    pdf.text(data.clientName, PAGE_W - MARGIN, 6.5, { align: "right" });
+    pdf.setFontSize(8.5);
+    pdf.text("Fechamento Mensal", PAGE_W / 2, HEADER_H / 2 + 1, { align: "center" });
+    // Mês de fechamento à direita (substitui o nome do cliente)
+    pdf.setFont("helvetica", "bold");
+    pdf.text(data.monthLabel, PAGE_W - MARGIN, HEADER_H / 2 + 1, { align: "right" });
   };
 
-  const addFooter = () => {
-    pdf.setDrawColor(...C.border);
-    pdf.setLineWidth(0.2);
-    pdf.line(MARGIN, PAGE_H - 12, PAGE_W - MARGIN, PAGE_H - 12);
-    pdf.setTextColor(...C.muted);
-    pdf.setFontSize(7);
-    pdf.setFont("helvetica", "normal");
-    pdf.text("Novare — Consultoria Financeira", MARGIN, PAGE_H - 7);
-    pdf.text(`Página ${pageNumber}`, PAGE_W - MARGIN, PAGE_H - 7, { align: "right" });
+  // Rodapé estampado numa passada final (numeração correta mesmo com páginas
+  // criadas internamente pelo autoTable).
+  const stampFooters = () => {
+    const total = pdf.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
+      pdf.setPage(i);
+      pdf.setDrawColor(...C.border);
+      pdf.setLineWidth(0.2);
+      pdf.line(MARGIN, PAGE_H - 12, PAGE_W - MARGIN, PAGE_H - 12);
+      pdf.setTextColor(...C.muted);
+      pdf.setFontSize(7);
+      pdf.setFont("helvetica", "normal");
+      pdf.text("Novare — Consultoria Financeira", MARGIN, PAGE_H - 7);
+      pdf.text(`Página ${i} de ${total}`, PAGE_W - MARGIN, PAGE_H - 7, { align: "right" });
+    }
   };
+
+  // Desenha o cabeçalho em páginas criadas pelo autoTable (continuação de tabela).
+  const onAutoTablePage = (d: { pageNumber: number }) => { if (d.pageNumber > 1) addHeader(); };
+  const tableMargin = { top: HEADER_H + 7, bottom: 16, left: MARGIN, right: MARGIN };
 
   const newPage = () => {
-    addFooter();
     pdf.addPage();
-    pageNumber++;
     addHeader();
-    y = 18;
+    y = HEADER_H + 7;
   };
 
   const ensureSpace = (need: number) => {
@@ -247,9 +257,8 @@ export async function generateMonthlyClosingPdf(data: MonthlyClosingPdfData): Pr
       pdf.setTextColor(...C.text);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(7);
-      const valTxt = Math.abs(it.value) >= 1000
-        ? `${it.value < 0 ? "-" : ""}R$${(Math.abs(it.value) / 1000).toFixed(0)}k`
-        : `R$${Math.round(it.value)}`;
+      // Valor exato, sem centavos, com separador de milhar (ex.: R$ 12.008)
+      const valTxt = `${it.value < 0 ? "-" : ""}R$ ${Math.round(Math.abs(it.value)).toLocaleString("pt-BR")}`;
       pdf.text(valTxt, bx + barW / 2, baseY - bh - 1.5, { align: "center" });
     });
   };
@@ -333,7 +342,8 @@ export async function generateMonthlyClosingPdf(data: MonthlyClosingPdfData): Pr
   sectionTitle("Resumo Executivo", "Indicadores consolidados do mês");
   autoTable(pdf, {
     startY: y,
-    margin: { left: MARGIN, right: MARGIN },
+    margin: tableMargin,
+    didDrawPage: onAutoTablePage,
     theme: "grid",
     styles: { fontSize: 9, cellPadding: 3 },
     headStyles: { fillColor: C.primary, textColor: C.white, fontStyle: "bold" },
@@ -342,6 +352,7 @@ export async function generateMonthlyClosingPdf(data: MonthlyClosingPdfData): Pr
       ["Receita total mensal", fmtBRL(data.totals.total_income)],
       ["Despesas totais", fmtBRL(data.totals.total_expenses)],
       ["Pagamentos mensais de dívida", fmtBRL(data.totals.monthly_debt_payments)],
+      ["Saldo líquido de caixa (mês)", fmtBRL(data.totals.total_income - data.totals.total_expenses - data.totals.monthly_debt_payments)],
       ["Ativos totais", fmtBRL(data.totals.total_assets)],
       ["Dívidas totais", fmtBRL(data.totals.total_debts)],
       ["Patrimônio líquido", fmtBRL(data.totals.net_worth)],
@@ -490,16 +501,19 @@ export async function generateMonthlyClosingPdf(data: MonthlyClosingPdfData): Pr
   // ═════════════ Tabelas detalhadas ═════════════
   const addTable = (title: string, head: string[], body: any[][]) => {
     if (!body.length) return;
+    // Evita cabeçalho órfão: garante título + cabeçalho da tabela + ~2 linhas juntos.
+    ensureSpace(16 + 10 + Math.min(body.length, 2) * 8);
     sectionTitle(title);
     autoTable(pdf, {
       startY: y,
-      margin: { left: MARGIN, right: MARGIN },
+      margin: tableMargin,
       theme: "striped",
       styles: { fontSize: 8.5, cellPadding: 2.5 },
       headStyles: { fillColor: C.primary, textColor: C.white, fontStyle: "bold" },
       alternateRowStyles: { fillColor: C.bgSoft },
       head: [head],
       body,
+      didDrawPage: onAutoTablePage,
     });
     y = (pdf as any).lastAutoTable.finalY + 6;
   };
@@ -569,7 +583,7 @@ export async function generateMonthlyClosingPdf(data: MonthlyClosingPdfData): Pr
     y += lines.length * 4 + 6;
   }
 
-  addFooter();
+  stampFooters();
 
   const safeName = data.clientName.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
   const safeMonth = data.monthLabel.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
