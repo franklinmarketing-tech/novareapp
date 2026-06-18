@@ -70,7 +70,7 @@ const AdminMonitoring = () => {
       <ClientPermissionToggle clientId={clientId} />
 
       {/* Histórico de fechamentos mensais e evolução */}
-      <MonthlyClosings clientId={clientId} />
+      <MonthlyClosings clientId={clientId} clientName={client?.full_name ?? undefined} />
 
       {/* Acompanhamento de metas e objetivos */}
       <AcompanhamentoMetas clientId={clientId} selectedMonth={selectedMonth} />

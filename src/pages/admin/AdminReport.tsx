@@ -249,6 +249,19 @@ type MonthlyClosingRow = {
 
 const getErrorMessage = (err: unknown) => err instanceof Error ? err.message : "Tente novamente";
 
+// supabase-js lança FunctionsHttpError em respostas non-2xx e esconde o corpo.
+// O motivo real fica em err.context (a Response). Extrai a mensagem de verdade.
+const extractFnError = async (err: unknown): Promise<string> => {
+  const ctx = (err as { context?: Response } | null)?.context;
+  if (ctx && typeof ctx.clone === "function") {
+    try {
+      const body = await ctx.clone().json();
+      if (body?.error) return body.error as string;
+    } catch { /* corpo não-JSON, segue para fallback */ }
+  }
+  return getErrorMessage(err);
+};
+
 // ── Main ─────────────────────────────────────────────
 // Helpers de mês
 const monthStartISO = (year: number, month: number) => {
@@ -664,7 +677,7 @@ const AdminReport = () => {
       if (data?.error) throw new Error(data.error);
       setAiDraft(data?.comment || "");
     } catch (err: unknown) {
-      toast.error("Erro ao gerar análise", { description: getErrorMessage(err) });
+      toast.error("Erro ao gerar análise", { description: await extractFnError(err) });
     } finally {
       setAiLoading(false);
     }
@@ -681,7 +694,7 @@ const AdminReport = () => {
       setAiDraft(data?.comment || "");
       toast.success("Análise regenerada");
     } catch (err: unknown) {
-      toast.error("Erro ao regenerar", { description: getErrorMessage(err) });
+      toast.error("Erro ao regenerar", { description: await extractFnError(err) });
     } finally {
       setAiLoading(false);
     }
