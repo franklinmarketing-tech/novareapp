@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { planCompletion } from "@/lib/actionPlan";
 import {
   ClipboardList, CheckCircle2, TrendingUp, Circle,
   PieChart as PieChartIcon, Target, DollarSign, Info,
@@ -210,9 +211,10 @@ const ActionPlan = () => {
   const allParentTasks = items.filter((i) => !i.parent_id);
   const parentTasks = allParentTasks.filter((i) => i.status !== "concluido");
   const childrenOf = (parentId: string) => items.filter((i) => i.parent_id === parentId);
-  const allChildren = items.filter((i) => i.parent_id);
-  const completedChildren = allChildren.filter((i) => i.status === "concluido").length;
-  const overallPct = allChildren.length > 0 ? Math.round((completedChildren / allChildren.length) * 100) : 0;
+  // Progresso geral por tarefas folha (funciona para planos planos e aninhados),
+  // consistente com o dashboard, relatório e fechamento.
+  const plan = planCompletion(items);
+  const overallPct = plan.pct;
 
   // Group tasks by goal
   const goalGroups = goals.map(goal => {
@@ -337,7 +339,7 @@ const ActionPlan = () => {
       )}
 
       {/* ── 3D PROGRESS HERO ────────────────────── */}
-      {allChildren.length > 0 && (
+      {plan.total > 0 && (
         <div className="mb-6" style={{ perspective: "800px" }}>
           <div
             className="relative rounded-2xl overflow-hidden"
@@ -370,7 +372,7 @@ const ActionPlan = () => {
                   background: "rgba(255,255,255,0.04)",
                   border: "1px solid rgba(255,255,255,0.06)",
                 }}>
-                  {completedChildren} de {allChildren.length} ações
+                  {plan.done} de {plan.total} ações
                 </span>
               </div>
               <div className="relative h-3 rounded-full overflow-hidden" style={{

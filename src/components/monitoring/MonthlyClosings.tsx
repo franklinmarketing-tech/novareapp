@@ -26,6 +26,7 @@ import { generateMonthlyClosingPdf } from "@/lib/generateMonthlyClosingPdf";
 import { criarSnapshotFechamento } from "./AcompanhamentoMetas";
 import { cloneToNextMonth } from "@/lib/monthlyClone";
 import { emergencyReserveBase } from "@/lib/finance";
+import { planCompletion } from "@/lib/actionPlan";
 import { cn } from "@/lib/utils";
 import { pushNotification } from "@/hooks/useNotifications";
 
@@ -222,7 +223,8 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
     if (planRes.data) {
       const { data: items } = await supabase.from("action_items").select("*").eq("action_plan_id", planRes.data.id).or(monthFilter);
       actionItems = preferMonthRows((items || []) as any[], monthRef);
-      if (actionItems.length > 0) planPct = Math.round((actionItems.filter((i) => i.status === "concluido").length / actionItems.length) * 100);
+      // Conclusão por tarefas folha (consistente com painel do cliente e relatório).
+      planPct = planCompletion(actionItems).pct;
     }
     const parentItems = actionItems.filter((a) => !a.parent_id);
     const goalsSnapshot = goals.map((g: any) => {

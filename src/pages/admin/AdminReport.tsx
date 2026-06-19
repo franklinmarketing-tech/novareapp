@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { ScrollableTable } from "@/components/ui/scrollable-table";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
+import { planCompletion } from "@/lib/actionPlan";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -503,11 +504,10 @@ const AdminReport = () => {
     amount, percentage: totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0,
   })).sort((a, b) => b.amount - a.amount);
 
-  // Parent tasks only for progress
+  // parentItems ainda é usado para o agrupamento por objetivo e a lista do PDF.
   const parentItems = actionItems.filter((a) => !a.parent_id);
-  const completedActions = parentItems.filter((a) => a.status === "concluido").length;
-  const totalActions = parentItems.length;
-  const planPct = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0;
+  // Conclusão geral por tarefas folha (consistente com painel do cliente/fechamento).
+  const { done: completedActions, total: totalActions, pct: planPct } = planCompletion(actionItems);
   const totalImpact = actionItems.reduce((s: number, a) => s + (a.financial_impact || 0), 0);
 
   // Per-goal progress

@@ -17,6 +17,7 @@ import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
 import { emergencyReserveBase } from "@/lib/finance";
+import { planCompletion } from "@/lib/actionPlan";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ResponsiveContainer, Legend,
@@ -99,7 +100,7 @@ type RawDebt = DebtItem;
 type RawAsset = AssetItem;
 type RawInsurance = InsuranceItem;
 type RawGoal = GoalItem & { deadline?: string | null; priority?: string | null };
-type RawActionItem = { status: string; parent_id: string | null; goal_id: string | null; month_ref?: string | null };
+type RawActionItem = { id: string; status: string; parent_id: string | null; goal_id: string | null; month_ref?: string | null };
 interface MonthlyClosing {
   month_ref: string;
   total_income: number | null;
@@ -228,15 +229,16 @@ const ClientDashboard = () => {
         totalDebts: debtList.reduce((s, r) => s + r.total_amount, 0),
       });
 
-      let allItems: { status: string; parent_id: string | null; goal_id: string | null }[] = [];
+      let allItems: { id: string; status: string; parent_id: string | null; goal_id: string | null }[] = [];
 
       if (plans && plans.length > 0) {
         const { data: items } = await supabase
-          .from("action_items").select("status, parent_id, goal_id, month_ref").eq("action_plan_id", plans[0].id).or(monthFilter);
+          .from("action_items").select("id, status, parent_id, goal_id, month_ref").eq("action_plan_id", plans[0].id).or(monthFilter);
         if (items) {
           allItems = preferMonthRows(items as RawActionItem[], currentMonthRef);
-          const children = allItems.filter((i) => i.parent_id);
-          setActionProgress({ total: children.length, done: children.filter((i) => i.status === "concluido").length });
+          // Conclusão por tarefas folha (consistente com relatório/fechamento).
+          const { total, done } = planCompletion(allItems);
+          setActionProgress({ total, done });
         }
       }
 
