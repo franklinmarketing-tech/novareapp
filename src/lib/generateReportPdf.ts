@@ -90,11 +90,14 @@ const _lighten = (hex: string, amount: number): string => {
 };
 
 // Formata valor de forma compacta para labels (k/M)
+// Mostra até 2 casas decimais, sem arredondar para o milhar inteiro
+// (ex.: 3700 → "3,7k", 12000 → "12k", 3750 → "3,75k").
 const _compact = (v: number): string => {
   const abs = Math.abs(v);
-  if (abs >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (abs >= 1_000) return `${(v / 1_000).toFixed(0)}k`;
-  return `${v.toFixed(0)}`;
+  const f = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+  if (abs >= 1_000_000) return `${f(v / 1_000_000)}M`;
+  if (abs >= 1_000) return `${f(v / 1_000)}k`;
+  return f(v);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -2855,7 +2858,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   pdf.text("Próximos passos", MARGIN, y);
   y += 6;
   paragraph(
-    "Este relatório consolida o diagnóstico, plano e indicadores do seu acompanhamento financeiro. Recomendamos revisão a cada 90 dias para reavaliar metas, atualizar dados e ajustar o plano conforme novas oportunidades.",
+    "Este relatório consolida o diagnóstico, plano e indicadores do seu acompanhamento financeiro.",
     9,
     C.muted
   );
