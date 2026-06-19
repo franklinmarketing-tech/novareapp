@@ -112,8 +112,9 @@ const PulseBar = ({ value, max, color, label }: { value: number; max: number; co
 };
 
 /* ── Financial Story Generator ── */
-const getFinancialNarrative = (renda: number, despesas: number, patrimonio: number, dividas: number, firstName: string) => {
-  const savings = renda - despesas;
+const getFinancialNarrative = (renda: number, despesas: number, patrimonio: number, dividas: number, firstName: string, monthlyDebtPayments = 0) => {
+  // Sobra/poupança descontam também as parcelas de dívida (definição canônica do sistema).
+  const savings = renda - despesas - monthlyDebtPayments;
   const savingsRate = renda > 0 ? (savings / renda) * 100 : 0;
 
   if (renda === 0) return { emoji: "📝", title: `${firstName}, sua história financeira começa aqui`, subtitle: "Preencha seus dados para descobrir seu Pulso Financeiro.", tone: "neutral" as const };
@@ -387,11 +388,12 @@ const MyData = () => {
   const totalDespesas = despesas.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
   const totalPatrimonio = patrimonio.reduce((s, a) => s + (parseFloat(a.estimated_value) || 0), 0);
   const totalDividas = dividas.reduce((s, d) => s + (parseFloat(d.total_amount) || 0), 0);
+  const totalDebtPayments = dividas.reduce((s, d) => s + (parseFloat(d.monthly_payment) || 0), 0);
   const netWorth = totalPatrimonio - totalDividas;
-  const savings = totalRenda - totalDespesas;
+  const savings = totalRenda - totalDespesas - totalDebtPayments;
   const maxBar = Math.max(totalRenda, totalDespesas, totalPatrimonio, totalDividas, 1);
   const firstName = profileName.split(" ")[0] || "Cliente";
-  const narrative = getFinancialNarrative(totalRenda, totalDespesas, totalPatrimonio, totalDividas, firstName);
+  const narrative = getFinancialNarrative(totalRenda, totalDespesas, totalPatrimonio, totalDividas, firstName, totalDebtPayments);
   const behavProfile = computeProfile(comportamental);
   const behavInfo = PROFILE_INFO[behavProfile];
 

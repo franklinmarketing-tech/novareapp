@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { generateMonthlyClosingPdf } from "@/lib/generateMonthlyClosingPdf";
 import { criarSnapshotFechamento } from "./AcompanhamentoMetas";
 import { cloneToNextMonth } from "@/lib/monthlyClone";
+import { emergencyReserveBase } from "@/lib/finance";
 import { cn } from "@/lib/utils";
 import { pushNotification } from "@/hooks/useNotifications";
 
@@ -75,20 +76,6 @@ const firstOfMonth = (year: number, month: number) =>
   `${year}-${String(month + 1).padStart(2, "0")}-01`;
 
 const normalizeDateOnly = (value?: string | null) => value?.slice(0, 10) ?? null;
-
-// Base da reserva de emergência = ativos líquidos.
-// Prioriza ativos rotulados como "reserva"/"emergência"; senão, ativos líquidos
-// (investimento, poupança, conta, caixa, tesouro, CDB). Nunca usa imóvel/veículo.
-const emergencyReserveBase = (assets: Array<{ type?: string | null; description?: string | null; estimated_value?: number | null }>): number => {
-  const norm = (s?: string | null) => (s ?? "").toString().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
-  const isReserve = (a: { type?: string | null; description?: string | null }) =>
-    /reserva|emergenc/.test(norm(a.type)) || /reserva|emergenc/.test(norm(a.description));
-  const isLiquid = (a: { type?: string | null }) =>
-    /investiment|poupanc|conta|caixa|tesouro|cdb|liquid/.test(norm(a.type));
-  const labeled = assets.filter(isReserve);
-  const pool = labeled.length > 0 ? labeled : assets.filter(isLiquid);
-  return pool.reduce((s, a) => s + (Number(a.estimated_value) || 0), 0);
-};
 
 const preferMonthRows = <T extends { month_ref?: string | null }>(rows: T[], monthRef: string): T[] => {
   const exactRows = rows.filter((row) => normalizeDateOnly(row.month_ref) === monthRef);
