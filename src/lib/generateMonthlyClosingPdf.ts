@@ -102,10 +102,11 @@ export async function generateMonthlyClosingPdf(data: MonthlyClosingPdfData): Pr
     pdf.setTextColor(...C.white);
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8.5);
-    pdf.text("Fechamento Mensal", PAGE_W / 2, HEADER_H / 2 + 1, { align: "center" });
-    // Mês de fechamento à direita (substitui o nome do cliente)
+    // Centro: "Fechamento Mensal — <mês>"
+    pdf.text(`Fechamento Mensal — ${data.monthLabel}`, PAGE_W / 2, HEADER_H / 2 + 1, { align: "center" });
+    // Direita: nome do cliente (mantido)
     pdf.setFont("helvetica", "bold");
-    pdf.text(data.monthLabel, PAGE_W - MARGIN, HEADER_H / 2 + 1, { align: "right" });
+    pdf.text(data.clientName, PAGE_W - MARGIN, HEADER_H / 2 + 1, { align: "right" });
   };
 
   // Rodapé estampado numa passada final (numeração correta mesmo com páginas
