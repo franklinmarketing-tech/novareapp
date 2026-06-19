@@ -72,6 +72,9 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const email = String(body.email ?? "").trim().toLowerCase();
     const name = body.name ? String(body.name).trim().slice(0, 120) : null;
+    // Telefone (WhatsApp) opcional — guardamos apenas os dígitos, com limite de tamanho
+    const phoneRaw = body.phone ? String(body.phone).replace(/\D/g, "").slice(0, 15) : "";
+    const phone = phoneRaw.length >= 8 ? phoneRaw : null;
     const pdfBase64 = String(body.pdfBase64 ?? "");
     const filename = (String(body.filename ?? "simulacao-novare.pdf") || "simulacao-novare.pdf").slice(0, 120);
     const snapshot = (body.snapshot && typeof body.snapshot === "object") ? body.snapshot : null;
@@ -111,12 +114,17 @@ Deno.serve(async (req) => {
     let leadId: string;
     if (existing?.id) {
       leadId = existing.id;
+      // Atualiza o telefone se o lead já existia e informou um agora
+      if (phone) {
+        await admin.from("pdf_leads").update({ phone }).eq("id", leadId);
+      }
     } else {
       const { data: ins, error: insErr } = await admin
         .from("pdf_leads")
         .insert({
           email,
           name,
+          phone,
           source: "calculadora",
           status: "new",
           ip_address: ip,

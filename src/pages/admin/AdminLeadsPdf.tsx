@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import {
   Mail, Search, RefreshCcw, Send, FileText, CheckCircle2, Clock,
   User as UserIcon, ChevronRight, Download, Inbox, ArrowDownLeft, ArrowUpRight,
+  MessageCircle, Phone,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +19,7 @@ interface PdfLead {
   id: string;
   email: string;
   name: string | null;
+  phone: string | null;
   source: string;
   status: string;
   reply_count: number;
@@ -45,6 +47,24 @@ interface Message {
   created_at: string;
 }
 
+// Exibe telefone BR formatado: (11) 91234-5678
+const formatPhoneBR = (raw: string | null): string => {
+  if (!raw) return "";
+  const d = raw.replace(/\D/g, "");
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return raw;
+};
+
+// Link wa.me (assume DDI 55 quando não informado)
+const waLink = (raw: string | null): string | null => {
+  if (!raw) return null;
+  let d = raw.replace(/\D/g, "");
+  if (d.length < 10) return null;
+  if (d.length <= 11) d = `55${d}`;
+  return `https://wa.me/${d}`;
+};
+
 const statusBadge = (s: string) => {
   if (s === "responded")
     return <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">Respondido</Badge>;
@@ -59,6 +79,7 @@ export default function AdminLeadsPdf() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "new" | "responded">("all");
   const [pdfFilter, setPdfFilter] = useState<"all" | "with_pdf" | "without_pdf">("all");
+  const [phoneFilter, setPhoneFilter] = useState<"all" | "with_phone">("all");
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const [selected, setSelected] = useState<PdfLead | null>(null);
@@ -88,12 +109,18 @@ export default function AdminLeadsPdf() {
     if (filter !== "all") arr = arr.filter((l) => l.status === filter);
     if (pdfFilter === "with_pdf") arr = arr.filter((l) => !!l.pdf_url);
     else if (pdfFilter === "without_pdf") arr = arr.filter((l) => !l.pdf_url);
+    if (phoneFilter === "with_phone") arr = arr.filter((l) => !!l.phone);
     if (search.trim()) {
       const s = search.toLowerCase();
-      arr = arr.filter((l) => l.email.toLowerCase().includes(s) || (l.name ?? "").toLowerCase().includes(s));
+      const sDigits = s.replace(/\D/g, "");
+      arr = arr.filter((l) =>
+        l.email.toLowerCase().includes(s) ||
+        (l.name ?? "").toLowerCase().includes(s) ||
+        (!!sDigits && (l.phone ?? "").replace(/\D/g, "").includes(sDigits))
+      );
     }
     return arr;
-  }, [leads, filter, pdfFilter, search]);
+  }, [leads, filter, pdfFilter, phoneFilter, search]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -102,12 +129,13 @@ export default function AdminLeadsPdf() {
     [filtered, currentPage],
   );
 
-  useEffect(() => { setPage(1); }, [search, filter, pdfFilter]);
+  useEffect(() => { setPage(1); }, [search, filter, pdfFilter, phoneFilter]);
 
   const stats = useMemo(() => ({
     total: leads.length,
     novos: leads.filter((l) => l.status === "new").length,
     respondidos: leads.filter((l) => l.status === "responded").length,
+    comWhatsapp: leads.filter((l) => !!l.phone).length,
   }), [leads]);
 
   const openLead = async (lead: PdfLead) => {
@@ -186,7 +214,7 @@ export default function AdminLeadsPdf() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card><CardContent className="p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Inbox className="w-5 h-5 text-primary" /></div>
           <div><p className="text-xs text-muted-foreground">Total</p><p className="text-2xl font-bold">{stats.total}</p></div>
@@ -198,6 +226,10 @@ export default function AdminLeadsPdf() {
         <Card><CardContent className="p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center"><CheckCircle2 className="w-5 h-5 text-emerald-600" /></div>
           <div><p className="text-xs text-muted-foreground">Respondidos</p><p className="text-2xl font-bold">{stats.respondidos}</p></div>
+        </CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center"><MessageCircle className="w-5 h-5 text-green-600" /></div>
+          <div><p className="text-xs text-muted-foreground">Com WhatsApp</p><p className="text-2xl font-bold">{stats.comWhatsapp}</p></div>
         </CardContent></Card>
       </div>
 
@@ -222,6 +254,12 @@ export default function AdminLeadsPdf() {
               {f === "all" ? "Todos" : f === "with_pdf" ? "PDF enviado" : "Sem PDF"}
             </Button>
           ))}
+          <span className="text-xs text-muted-foreground mx-1">WhatsApp:</span>
+          {(["all", "with_phone"] as const).map((f) => (
+            <Button key={f} size="sm" variant={phoneFilter === f ? "default" : "outline"} onClick={() => setPhoneFilter(f)}>
+              {f === "all" ? "Todos" : "Com WhatsApp"}
+            </Button>
+          ))}
         </div>
       </CardContent></Card>
 
@@ -235,8 +273,17 @@ export default function AdminLeadsPdf() {
           ) : (
             <>
               <div className="divide-y divide-border">
-                {paginated.map((lead) => (
-                  <button key={lead.id} onClick={() => openLead(lead)} className="w-full text-left p-4 hover:bg-muted/40 transition-colors flex items-center gap-3">
+                {paginated.map((lead) => {
+                  const wa = waLink(lead.phone);
+                  return (
+                  <div
+                    key={lead.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openLead(lead)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openLead(lead); } }}
+                    className="w-full text-left p-4 hover:bg-muted/40 transition-colors flex items-center gap-3 cursor-pointer"
+                  >
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0"><UserIcon className="w-5 h-5 text-primary" /></div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -245,14 +292,31 @@ export default function AdminLeadsPdf() {
                         {lead.pdf_url
                           ? <Badge variant="outline" className="text-xs"><FileText className="w-3 h-3 mr-1" />PDF enviado</Badge>
                           : <Badge variant="outline" className="text-xs text-muted-foreground">Sem PDF</Badge>}
+                        {lead.phone && <Badge className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30 text-xs"><MessageCircle className="w-3 h-3 mr-1" />WhatsApp</Badge>}
                         {lead.inbound_count > 0 && <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-xs">{lead.inbound_count} resp. cliente</Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground truncate">{lead.email}</p>
-                      <p className="text-xs text-muted-foreground/70 mt-0.5">{fmtDate(lead.created_at)} · {lead.source}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">
+                        {fmtDate(lead.created_at)} · {lead.source}
+                        {lead.phone && <> · {formatPhoneBR(lead.phone)}</>}
+                      </p>
                     </div>
+                    {wa && (
+                      <a
+                        href={wa}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Abrir conversa no WhatsApp"
+                        className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-colors"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </a>
+                    )}
                     <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
-                  </button>
-                ))}
+                  </div>
+                  );
+                })}
               </div>
               {totalPages > 1 && (
                 <div className="flex items-center justify-between gap-2 p-4 border-t border-border">
@@ -285,13 +349,28 @@ export default function AdminLeadsPdf() {
                 <div>
                   <p><strong>Para:</strong> {selected.email}</p>
                   {selected.name && <p><strong>Nome:</strong> {selected.name}</p>}
+                  {selected.phone && (
+                    <p className="flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+                      <strong>WhatsApp:</strong> {formatPhoneBR(selected.phone)}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">Gerou PDF em {fmtDate(selected.created_at)}</p>
                 </div>
-                {selected.pdf_url && (
-                  <Button size="sm" variant="outline" onClick={() => downloadPdf(selected)}>
-                    <Download className="w-4 h-4 mr-2" /> PDF
-                  </Button>
-                )}
+                <div className="flex flex-col gap-2 shrink-0">
+                  {waLink(selected.phone) && (
+                    <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+                      <a href={waLink(selected.phone)!} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="w-4 h-4 mr-2" /> WhatsApp
+                      </a>
+                    </Button>
+                  )}
+                  {selected.pdf_url && (
+                    <Button size="sm" variant="outline" onClick={() => downloadPdf(selected)}>
+                      <Download className="w-4 h-4 mr-2" /> PDF
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {selected.simulation_snapshot && (

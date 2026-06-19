@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Mail, FileDown, Loader2, ShieldCheck } from "lucide-react";
+import { Mail, FileDown, Loader2, ShieldCheck, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { generateRendimentoPDF } from "@/lib/generateRendimentoPDF";
@@ -54,9 +54,20 @@ const emailSchema = z.object({
 
 export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
+
+  // Formata o telefone brasileiro enquanto digita: (11) 91234-5678
+  const formatPhone = (value: string): string => {
+    const d = value.replace(/\D/g, "").slice(0, 11);
+    if (d.length === 0) return "";
+    if (d.length <= 2) return `(${d}`;
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  };
 
   const validateEmail = (value: string): string | null => {
     const parsed = emailSchema.safeParse({ email: value });
@@ -106,6 +117,7 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
       const { data, error } = await supabase.functions.invoke("send-pdf-lead", {
         body: {
           email: parsed.data.email,
+          phone: phone.replace(/\D/g, "") || undefined,
           pdfBase64: base64,
           filename: fileName,
           snapshot,
@@ -126,6 +138,7 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
         });
       }
       setEmail("");
+      setPhone("");
       setEmailError(null);
       setTouched(false);
       onOpenChange(false);
@@ -176,6 +189,27 @@ export function PdfEmailDialog({ open, onOpenChange, result, input }: Props) {
                 {emailError}
               </p>
             )}
+          </div>
+
+          <div>
+            <Label htmlFor="pdf-phone" className="text-sm font-medium">
+              <MessageCircle className="inline h-3.5 w-3.5 mr-1 align-text-bottom" />
+              WhatsApp <span className="text-muted-foreground font-normal">(opcional)</span>
+            </Label>
+            <Input
+              id="pdf-phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="(11) 91234-5678"
+              value={phone}
+              onChange={(e) => setPhone(formatPhone(e.target.value))}
+              disabled={loading}
+              className="mt-1.5"
+            />
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Se quiser, deixe seu WhatsApp para um consultor falar com você.
+            </p>
           </div>
 
           <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
