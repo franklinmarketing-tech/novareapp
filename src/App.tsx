@@ -1,4 +1,5 @@
 // Novareapp - protocolo visual ativo
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,52 +18,61 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAResetListener } from "@/components/PWAResetListener";
 import { CookieBanner } from "@/components/CookieBanner";
 
-import Login from "@/pages/Login";
-import ResetPassword from "@/pages/ResetPassword";
-import AcceptInvite from "@/pages/AcceptInvite";
-import NotFound from "@/pages/NotFound";
-import Termos from "@/pages/Termos";
-import Privacidade from "@/pages/Privacidade";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import ClientList from "@/pages/admin/ClientList";
-import NewClient from "@/pages/admin/NewClient";
-import ClientOnboarding from "@/pages/admin/ClientOnboarding";
-import ClientDiagnosis from "@/pages/admin/ClientDiagnosis";
-import AdminActionPlan from "@/pages/admin/AdminActionPlan";
+// Páginas carregadas sob demanda (code-splitting) — cada rota vira um chunk
+// separado, então o carregamento inicial (login/calculadora) não baixa o app
+// inteiro (admin, cliente, jsPDF, Three.js, recharts etc.).
+const Login = lazy(() => import("@/pages/Login"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const Termos = lazy(() => import("@/pages/Termos"));
+const Privacidade = lazy(() => import("@/pages/Privacidade"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const ClientList = lazy(() => import("@/pages/admin/ClientList"));
+const NewClient = lazy(() => import("@/pages/admin/NewClient"));
+const ClientOnboarding = lazy(() => import("@/pages/admin/ClientOnboarding"));
+const ClientDiagnosis = lazy(() => import("@/pages/admin/ClientDiagnosis"));
+const AdminActionPlan = lazy(() => import("@/pages/admin/AdminActionPlan"));
+const AdminMonitoring = lazy(() => import("@/pages/admin/AdminMonitoring"));
+const AdminAcompanhamentoEvolucao = lazy(() => import("@/pages/admin/AdminAcompanhamentoEvolucao"));
+const AdminClientPreview = lazy(() => import("@/pages/admin/AdminClientPreview"));
+const AdminReport = lazy(() => import("@/pages/admin/AdminReport"));
+const AdminFinanceiro = lazy(() => import("@/pages/admin/AdminFinanceiro"));
+const AdminSettings = lazy(() => import("@/pages/admin/AdminSettings"));
+const AdminParecer = lazy(() => import("@/pages/admin/AdminParecer"));
+const AdminWorkspace = lazy(() => import("@/pages/admin/AdminWorkspace"));
+const AdminAjuda = lazy(() => import("@/pages/admin/AdminAjuda"));
+const AdminLeadsNewsletter = lazy(() => import("@/pages/AdminLeadsNewsletter"));
+const AdminLeadsPdf = lazy(() => import("@/pages/admin/AdminLeadsPdf"));
+const AdminLeads = lazy(() => import("@/pages/admin/AdminLeads"));
+const ClientDashboard = lazy(() => import("@/pages/cliente/ClientDashboard"));
+const ClientOnboardingPage = lazy(() => import("@/pages/cliente/ClientOnboarding"));
+const MyData = lazy(() => import("@/pages/cliente/MyData"));
+const ActionPlan = lazy(() => import("@/pages/cliente/ActionPlan"));
+const ClientLancamentoMes = lazy(() => import("@/pages/cliente/ClientLancamentoMes"));
+const ClientSettings = lazy(() => import("@/pages/cliente/ClientSettings"));
+const YieldGuide = lazy(() => import("@/pages/YieldGuide"));
+const ReportPreview = lazy(() => import("@/pages/dev/ReportPreview"));
+const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/SuperAdminDashboard"));
+const SuperAdminAdmins = lazy(() => import("@/pages/super-admin/SuperAdminAdmins"));
+const SuperAdminClients = lazy(() => import("@/pages/super-admin/SuperAdminClients"));
+const SuperAdminAudit = lazy(() => import("@/pages/super-admin/SuperAdminAudit"));
+const SuperAdminFeatureFlags = lazy(() => import("@/pages/super-admin/SuperAdminFeatureFlags"));
+const SuperAdminConfig = lazy(() => import("@/pages/super-admin/SuperAdminConfig"));
+const SuperAdminBackups = lazy(() => import("@/pages/super-admin/SuperAdminBackups"));
+const SuperAdminSeguranca = lazy(() => import("@/pages/super-admin/SuperAdminSeguranca"));
+const SuperAdminUsuarios = lazy(() => import("@/pages/super-admin/SuperAdminUsuarios"));
+const SuperAdminOperacoes = lazy(() => import("@/pages/super-admin/SuperAdminOperacoes"));
+const SuperAdminSaude = lazy(() => import("@/pages/super-admin/SuperAdminSaude"));
 
-import AdminMonitoring from "@/pages/admin/AdminMonitoring";
-import AdminAcompanhamentoEvolucao from "@/pages/admin/AdminAcompanhamentoEvolucao";
-import AdminClientPreview from "@/pages/admin/AdminClientPreview";
-import AdminReport from "@/pages/admin/AdminReport";
-import AdminFinanceiro from "@/pages/admin/AdminFinanceiro";
-import AdminSettings from "@/pages/admin/AdminSettings";
-import AdminParecer from "@/pages/admin/AdminParecer";
-import AdminWorkspace from "@/pages/admin/AdminWorkspace";
-import AdminAjuda from "@/pages/admin/AdminAjuda";
-import AdminLeadsNewsletter from "@/pages/AdminLeadsNewsletter";
-import AdminLeadsPdf from "@/pages/admin/AdminLeadsPdf";
-import AdminLeads from "@/pages/admin/AdminLeads";
-import ClientDashboard from "@/pages/cliente/ClientDashboard";
-import ClientOnboardingPage from "@/pages/cliente/ClientOnboarding";
-
-import MyData from "@/pages/cliente/MyData";
-import ActionPlan from "@/pages/cliente/ActionPlan";
-import ClientLancamentoMes from "@/pages/cliente/ClientLancamentoMes";
-import ClientSettings from "@/pages/cliente/ClientSettings";
-import YieldGuide from "@/pages/YieldGuide";
-
-import SuperAdminDashboard from "@/pages/super-admin/SuperAdminDashboard";
-import SuperAdminAdmins from "@/pages/super-admin/SuperAdminAdmins";
-import SuperAdminClients from "@/pages/super-admin/SuperAdminClients";
-import SuperAdminAudit from "@/pages/super-admin/SuperAdminAudit";
-import SuperAdminFeatureFlags from "@/pages/super-admin/SuperAdminFeatureFlags";
-import SuperAdminConfig from "@/pages/super-admin/SuperAdminConfig";
-import SuperAdminBackups from "@/pages/super-admin/SuperAdminBackups";
-import SuperAdminSeguranca from "@/pages/super-admin/SuperAdminSeguranca";
-import SuperAdminUsuarios from "@/pages/super-admin/SuperAdminUsuarios";
-import SuperAdminOperacoes from "@/pages/super-admin/SuperAdminOperacoes";
-import SuperAdminSaude from "@/pages/super-admin/SuperAdminSaude";
 const queryClient = new QueryClient();
+
+// Fallback enquanto o chunk da rota carrega
+const PageFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="h-7 w-7 rounded-full border-[3px] border-[#e4e4e8] border-t-[#1e3a5f] animate-spin" />
+  </div>
+);
 
 const RootRedirect = () => {
   const { user, role, loading } = useAuth();
@@ -84,6 +94,7 @@ const App = () => (
           <PWAResetListener />
           <BrowserRouter>
             <AuthProvider>
+              <Suspense fallback={<PageFallback />}>
               <Routes>
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="/login" element={<Login />} />
@@ -92,6 +103,7 @@ const App = () => (
                 <Route path="/termos" element={<Termos />} />
                 <Route path="/privacidade" element={<Privacidade />} />
                 <Route path="/ferramentas/calculadora-de-investimentos" element={<YieldGuide />} />
+                <Route path="/dev/report-preview" element={<ReportPreview />} />
 
                 {/* Super Admin routes */}
                 <Route path="/super-admin" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminDashboard /></SuperAdminLayout></SuperAdminRoute>} />
@@ -152,6 +164,7 @@ const App = () => (
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </Suspense>
               <CookieBanner />
             </AuthProvider>
           </BrowserRouter>
