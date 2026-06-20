@@ -76,8 +76,10 @@ export const ClientLayout = ({ children }: Props) => {
 
   // Após o primeiro fechamento mensal, "Meus Dados" some do menu — o consultor
   // passa a ser o único responsável por ajustes nos dados do onboarding.
+  // No preview do admin, porém, mantemos sempre visível (o consultor precisa
+  // acessar os dados do cliente).
   const visibleNavItems = navItems.filter(
-    (i) => !(hasClosedMonth && i.to === `${basePath}/meus-dados`),
+    (i) => !(hasClosedMonth && !isPreview && i.to === `${basePath}/meus-dados`),
   );
 
   const handleSignOut = async () => {

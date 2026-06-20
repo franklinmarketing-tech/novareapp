@@ -27,7 +27,8 @@ export const MobileBottomNav = ({ dataPending = false, hideMeusDados = false }: 
   const isPreview = location.pathname.startsWith("/admin/preview/");
   const basePath = isPreview && clientSlug ? `/admin/preview/${clientSlug}` : "/cliente";
   const items = buildItems(basePath).filter(
-    (i) => !(hideMeusDados && i.key === "meus-dados"),
+    // No preview do admin, "Meus dados" fica sempre visível (só some para o cliente real)
+    (i) => !(hideMeusDados && !isPreview && i.key === "meus-dados"),
   );
   return (
   <nav
