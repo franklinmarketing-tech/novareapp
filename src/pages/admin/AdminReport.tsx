@@ -551,6 +551,15 @@ const AdminReport = () => {
     setGenerating(true);
     try {
       const { generateReportPdf } = await import("@/lib/generateReportPdf");
+      // Consultores (sócios) para a assinatura do relatório
+      let consultants: Array<{ name: string; role?: string; certs?: string }> = [];
+      try {
+        const { fetchFounders } = await import("@/lib/founders");
+        const fs = await fetchFounders(false);
+        consultants = fs.map((f) => ({ name: f.name, role: f.role, certs: f.certs }));
+      } catch (e) {
+        console.warn("Falha ao carregar consultores para o relatório:", e);
+      }
       await generateReportPdf({
         clientName,
         clientEmail,
@@ -654,8 +663,19 @@ const AdminReport = () => {
             }
           : null,
         goalsAnalysisComment: aiComment || undefined,
+        consultants,
+        parecer: parecerNote ?? undefined,
+        periodLabel,
       });
-      toast.success("PDF gerado com sucesso!");
+      const cpfDigits = (clientData?.cpf || "").replace(/\D/g, "");
+      if (cpfDigits.length >= 4) {
+        toast.success("PDF gerado com sucesso!", {
+          description: `🔒 Protegido por senha: os 4 primeiros dígitos do CPF do cliente (${cpfDigits.slice(0, 4)}).`,
+          duration: 9000,
+        });
+      } else {
+        toast.success("PDF gerado com sucesso!");
+      }
     } catch (err) {
       if (import.meta.env.DEV) console.error("PDF generation error:", err);
       toast.error("Erro ao gerar PDF", { description: "Tente novamente" });

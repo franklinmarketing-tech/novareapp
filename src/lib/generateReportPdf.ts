@@ -29,9 +29,9 @@ const CP = [
   "#2563eb", "#7c3aed", "#0891b2", "#be185d", "#65a30d",
 ];
 
-// Helper para criar canvas em alta resolução (2x DPR)
+// Helper para criar canvas em alta resolução (DPR otimizado p/ tamanho do PDF)
 const _mkCanvas = (pw: number, ph: number): { ctx: CanvasRenderingContext2D; cvs: HTMLCanvasElement } => {
-  const dpr = 2;
+  const dpr = 1.5;
   const cvs = document.createElement("canvas");
   cvs.width = pw * dpr;
   cvs.height = ph * dpr;
@@ -211,7 +211,7 @@ const canvasDonut = (
     ctx.fillText(`${pct}%`, rx, ly);
   });
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 
@@ -286,7 +286,7 @@ const canvasBarV = (
     ctx.fillText(bar.label.slice(0, 14), x + bW / 2, pT + cH + 8);
   });
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -350,7 +350,7 @@ const canvasBarH = (
     ctx.fillText(`(${pct}%)`, pL + bW + 6 + vTextWidth + 4, y + bH / 2);
   });
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -528,7 +528,7 @@ const canvasAreaLine = (
     lx += ctx.measureText(lg.label).width + 30;
   });
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -635,7 +635,7 @@ const canvasGauge = (risk: string, pw: number, ph: number): string => {
   ctx.textBaseline = "top";
   ctx.fillText("Classificação", cx, 6);
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -733,7 +733,7 @@ const canvasBarStacked = (
     lx += sq + 8 + ctx.measureText(txt).width + 14;
   });
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -834,7 +834,362 @@ const canvasColoredDonut = (
     ctx.fillText(`${it.value} (${pct}%)`, rx, ly);
   });
 
+  return cvs.toDataURL("image/jpeg", 0.9);
+};
+
+// ──────────────────────────────────────────────────────────
+// Anel de progresso (KPI em "pizza") — um único indicador
+// ──────────────────────────────────────────────────────────
+const canvasKpiRing = (
+  pct: number,
+  color: string,
+  centerText: string,
+  sublabel: string,
+  pw: number,
+  ph: number
+): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  const cx = pw / 2;
+  const cy = ph * 0.46;
+  const R = Math.min(pw, ph * 0.92) * 0.40;
+  const lw = Math.max(R * 0.26, 7);
+  const p = Math.max(0, Math.min(pct, 100)) / 100;
+
+  ctx.lineCap = "round";
+  // Trilha
+  ctx.strokeStyle = "#eef0f3";
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.stroke();
+  // Progresso
+  const start = -Math.PI / 2;
+  if (p > 0) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, start, start + p * Math.PI * 2);
+    ctx.stroke();
+  }
+  // Centro
+  ctx.fillStyle = "#1e1e23";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const numSize = Math.max(Math.round(R * 0.52), 15);
+  ctx.font = `bold ${numSize}px Arial`;
+  ctx.fillText(centerText, cx, cy - (sublabel ? R * 0.06 : 0));
+  if (sublabel) {
+    const sSize = Math.max(Math.round(R * 0.22), 9);
+    ctx.fillStyle = "#787880";
+    ctx.font = `${sSize}px Arial`;
+    ctx.fillText(sublabel, cx, cy + R * 0.42);
+  }
+  return cvs.toDataURL("image/jpeg", 0.9);
+};
+
+// ──────────────────────────────────────────────────────────
+// Pizza/Rosca flexível — centro custom + legenda com valor
+// ──────────────────────────────────────────────────────────
+const canvasPie = (
+  items: Array<{ label: string; value: number; color?: string }>,
+  pw: number,
+  ph: number,
+  opts?: {
+    centerTop?: string;
+    centerBottom?: string;
+    fmtVal?: (v: number) => string;
+    showLegend?: boolean;
+  }
+): string => {
+  const { ctx, cvs } = _mkCanvas(pw, ph);
+  const list = items.filter((i) => i.value > 0);
+  const total = list.reduce((s, i) => s + i.value, 0);
+  if (!total) return cvs.toDataURL();
+  const showLegend = opts?.showLegend !== false;
+  const fmtVal = opts?.fmtVal;
+
+  const cx = showLegend ? pw * 0.28 : pw * 0.5;
+  const cy = ph / 2;
+  const OR = Math.min(showLegend ? pw * 0.24 : pw * 0.42, ph * 0.46);
+  const IR = OR * 0.60;
+
+  // Sombra suave
+  ctx.save();
+  ctx.shadowColor = "rgba(20, 30, 50, 0.18)";
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetY = 2;
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(cx, cy, OR + 1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Segmentos com gradiente + separadores brancos
+  let a = -Math.PI / 2;
+  list.forEach((item, i) => {
+    const color = item.color || CP[i % CP.length];
+    const sweep = (item.value / total) * 2 * Math.PI;
+    const grad = ctx.createRadialGradient(cx, cy, IR, cx, cy, OR);
+    grad.addColorStop(0, _lighten(color, 0.35));
+    grad.addColorStop(1, color);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, OR, a, a + sweep);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    a += sweep;
+  });
+
+  // Furo interno
+  ctx.beginPath();
+  ctx.arc(cx, cy, IR, 0, 2 * Math.PI);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+
+  // Centro custom — fonte ajustada para caber dentro do furo (IR)
+  ctx.textAlign = "center";
+  if (opts?.centerTop) {
+    const maxTextW = IR * 2 * 0.82; // margem interna para não tocar o anel
+    let numSize = Math.max(Math.round(OR * 0.40), 14);
+    ctx.font = `bold ${numSize}px Arial`;
+    while (ctx.measureText(opts.centerTop).width > maxTextW && numSize > 10) {
+      numSize -= 1;
+      ctx.font = `bold ${numSize}px Arial`;
+    }
+    ctx.fillStyle = "#1e3a5f";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(opts.centerTop, cx, cy + (opts.centerBottom ? 0 : numSize * 0.18));
+    if (opts.centerBottom) {
+      const sSize = Math.max(Math.round(numSize * 0.40), 9);
+      ctx.fillStyle = "#787880";
+      ctx.font = `${sSize}px Arial`;
+      ctx.textBaseline = "top";
+      ctx.fillText(opts.centerBottom, cx, cy + sSize * 0.4);
+    }
+  }
+
+  // Legenda à direita — rótulo "principal — detalhe" quebra em 2 linhas
+  // (principal em cima, detalhe embaixo em cinza) para não cortar o texto.
+  if (showLegend) {
+    const lx = pw * 0.54;
+    const rx = pw - 6;
+    const fs = Math.max(Math.round(pw * 0.0205), 10);
+    const fs2 = Math.max(Math.round(fs * 0.82), 8);
+    ctx.textBaseline = "middle";
+    const maxI = Math.min(list.length, 7);
+    const rowH = Math.min((ph - 14) / Math.max(maxI, 1), fs * 2.25);
+    const startY = cy - ((maxI - 1) * rowH) / 2;
+    const sorted = list.slice().sort((x, y) => y.value - x.value).slice(0, maxI);
+
+    // Desenha texto reduzindo a fonte até caber (só corta como último recurso)
+    const drawFit = (
+      text: string, x: number, ly: number, maxW: number,
+      startPx: number, minPx: number, color: string
+    ) => {
+      let px = startPx;
+      ctx.font = `${px}px Arial`;
+      while (px > minPx && ctx.measureText(text).width > maxW) {
+        px -= 1;
+        ctx.font = `${px}px Arial`;
+      }
+      let t = text;
+      if (ctx.measureText(t).width > maxW) {
+        while (t.length > 1 && ctx.measureText(t + "…").width > maxW) t = t.slice(0, -1);
+        t = t.trimEnd() + "…";
+      }
+      ctx.fillStyle = color;
+      ctx.textAlign = "left";
+      ctx.fillText(t, x, ly);
+    };
+
+    sorted.forEach((it, i) => {
+      const orig = list.indexOf(it);
+      const color = it.color || CP[orig % CP.length];
+      const ly = startY + i * rowH;
+      const dotR = Math.max(fs * 0.38, 5);
+      ctx.beginPath();
+      ctx.arc(lx + dotR, ly, dotR, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      const pct = ((it.value / total) * 100).toFixed(0);
+      const valStr = fmtVal ? fmtVal(it.value) : `${pct}%`;
+      ctx.font = `bold ${fs}px Arial`;
+      const valW = ctx.measureText(valStr).width;
+      const labelStart = lx + dotR * 2 + 8;
+      const labelMaxW = rx - valW - 12 - labelStart;
+
+      // separa "principal — detalhe"
+      const parts = it.label.split(/\s[—–-]\s/);
+      const main = parts[0];
+      const detail = parts.length > 1 ? parts.slice(1).join(" - ") : "";
+
+      if (detail) {
+        drawFit(main, labelStart, ly - fs * 0.55, labelMaxW, fs, Math.round(fs * 0.70), "#33373f");
+        drawFit(detail, labelStart, ly + fs * 0.62, labelMaxW, fs2, Math.round(fs2 * 0.66), "#9098a4");
+      } else {
+        drawFit(main, labelStart, ly, labelMaxW, fs, Math.round(fs * 0.70), "#33373f");
+      }
+
+      ctx.fillStyle = color;
+      ctx.font = `bold ${fs}px Arial`;
+      ctx.textAlign = "right";
+      ctx.fillText(valStr, rx, ly);
+    });
+  }
+
+  return cvs.toDataURL("image/jpeg", 0.9);
+};
+
+// ──────────────────────────────────────────────────────────
+// Ícones de linha (estilo premium) — desenhados em canvas 24x24
+// ──────────────────────────────────────────────────────────
+const canvasIcon = (name: string, hex: string): string => {
+  const unit = 24, px = 64, dpr = 2;
+  const cvs = document.createElement("canvas");
+  cvs.width = px * dpr;
+  cvs.height = px * dpr;
+  const ctx = cvs.getContext("2d")!;
+  const k = (px * dpr) / unit;
+  ctx.scale(k, k);
+  ctx.strokeStyle = hex;
+  ctx.fillStyle = hex;
+  ctx.lineWidth = 1.9;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  const S = (fn: () => void) => { ctx.beginPath(); fn(); ctx.stroke(); };
+  const dot = (x: number, y: number, r: number) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); };
+
+  switch (name) {
+    case "compass":
+      S(() => ctx.arc(12, 12, 9, 0, Math.PI * 2));
+      S(() => { ctx.moveTo(16, 8); ctx.lineTo(10.5, 10.5); ctx.lineTo(8, 16); ctx.lineTo(13.5, 13.5); ctx.closePath(); });
+      break;
+    case "gauge":
+      S(() => ctx.arc(12, 14, 8, Math.PI, 2 * Math.PI));
+      S(() => { ctx.moveTo(12, 14); ctx.lineTo(16, 10); });
+      dot(12, 14, 1.3);
+      break;
+    case "scale":
+      S(() => { ctx.moveTo(12, 4); ctx.lineTo(12, 20); });
+      S(() => { ctx.moveTo(5, 7); ctx.lineTo(19, 7); });
+      S(() => { ctx.moveTo(8.5, 20); ctx.lineTo(15.5, 20); });
+      S(() => { ctx.moveTo(2.5, 12); ctx.lineTo(5, 7); ctx.lineTo(7.5, 12); ctx.arc(5, 12, 2.5, 0, Math.PI); });
+      S(() => { ctx.moveTo(16.5, 12); ctx.lineTo(19, 7); ctx.lineTo(21.5, 12); ctx.arc(19, 12, 2.5, 0, Math.PI); });
+      dot(12, 5.2, 1.1);
+      break;
+    case "trending-up":
+      S(() => { ctx.moveTo(3, 17); ctx.lineTo(9, 11); ctx.lineTo(13, 15); ctx.lineTo(21, 7); });
+      S(() => { ctx.moveTo(16, 7); ctx.lineTo(21, 7); ctx.lineTo(21, 12); });
+      break;
+    case "card":
+      S(() => { const r = 2.5; ctx.moveTo(3 + r, 6); ctx.arcTo(21, 6, 21, 18, r); ctx.arcTo(21, 18, 3, 18, r); ctx.arcTo(3, 18, 3, 6, r); ctx.arcTo(3, 6, 21, 6, r); ctx.closePath(); });
+      S(() => { ctx.moveTo(3, 10); ctx.lineTo(21, 10); });
+      S(() => { ctx.moveTo(6, 14.5); ctx.lineTo(10, 14.5); });
+      break;
+    case "shield":
+      S(() => { ctx.moveTo(12, 3); ctx.lineTo(19.5, 6); ctx.lineTo(19.5, 12); ctx.bezierCurveTo(19.5, 16.5, 16, 19.5, 12, 21); ctx.bezierCurveTo(8, 19.5, 4.5, 16.5, 4.5, 12); ctx.lineTo(4.5, 6); ctx.closePath(); });
+      S(() => { ctx.moveTo(9, 12); ctx.lineTo(11, 14); ctx.lineTo(15, 9.5); });
+      break;
+    case "target":
+      S(() => ctx.arc(12, 12, 8.5, 0, Math.PI * 2));
+      S(() => ctx.arc(12, 12, 5, 0, Math.PI * 2));
+      dot(12, 12, 1.8);
+      break;
+    case "checklist":
+      S(() => { ctx.moveTo(4, 6); ctx.lineTo(6, 8); ctx.lineTo(9, 5); });
+      S(() => { ctx.moveTo(4, 13); ctx.lineTo(6, 15); ctx.lineTo(9, 12); });
+      S(() => { ctx.moveTo(12, 7); ctx.lineTo(20, 7); });
+      S(() => { ctx.moveTo(12, 14); ctx.lineTo(20, 14); });
+      S(() => { ctx.moveTo(4, 19.5); ctx.lineTo(20, 19.5); });
+      break;
+    case "percent":
+      S(() => { ctx.moveTo(19, 5); ctx.lineTo(5, 19); });
+      S(() => ctx.arc(7.5, 7.5, 2.5, 0, Math.PI * 2));
+      S(() => ctx.arc(16.5, 16.5, 2.5, 0, Math.PI * 2));
+      break;
+    case "activity":
+      S(() => { ctx.moveTo(3, 12); ctx.lineTo(8, 12); ctx.lineTo(11, 5); ctx.lineTo(14, 19); ctx.lineTo(17, 12); ctx.lineTo(21, 12); });
+      break;
+    case "pie":
+      S(() => ctx.arc(12, 12, 9, 0, Math.PI * 2));
+      S(() => { ctx.moveTo(12, 12); ctx.lineTo(12, 3); });
+      S(() => { ctx.moveTo(12, 12); ctx.lineTo(20, 15); });
+      break;
+    case "calendar":
+      S(() => { const r = 2; ctx.moveTo(4 + r, 6); ctx.arcTo(20, 6, 20, 20, r); ctx.arcTo(20, 20, 4, 20, r); ctx.arcTo(4, 20, 4, 6, r); ctx.arcTo(4, 6, 20, 6, r); ctx.closePath(); });
+      S(() => { ctx.moveTo(4, 10); ctx.lineTo(20, 10); });
+      S(() => { ctx.moveTo(8, 4); ctx.lineTo(8, 7.5); });
+      S(() => { ctx.moveTo(16, 4); ctx.lineTo(16, 7.5); });
+      dot(9, 14, 0.9); dot(12, 14, 0.9); dot(15, 14, 0.9);
+      break;
+    case "file":
+    default:
+      S(() => { ctx.moveTo(6, 3); ctx.lineTo(14, 3); ctx.lineTo(19, 8); ctx.lineTo(19, 21); ctx.lineTo(6, 21); ctx.closePath(); });
+      S(() => { ctx.moveTo(14, 3); ctx.lineTo(14, 8); ctx.lineTo(19, 8); });
+      S(() => { ctx.moveTo(9, 12); ctx.lineTo(16, 12); });
+      S(() => { ctx.moveTo(9, 15.5); ctx.lineTo(16, 15.5); });
+      S(() => { ctx.moveTo(9, 19); ctx.lineTo(13, 19); });
+      break;
+  }
   return cvs.toDataURL("image/png");
+};
+
+// Ícone temático por título de seção
+const ICON_BY_TITLE: Record<string, string> = {
+  "Método Novare": "compass",
+  "Classificação de Risco": "gauge",
+  "Balanço Patrimonial": "scale",
+  "Fluxo de Caixa Mensal": "activity",
+  "Mapa de Dívidas": "card",
+  "Proteção e Seguros": "shield",
+  "Objetivos Financeiros": "target",
+  "Plano de Ação": "checklist",
+  "Projeção de Ganhos": "trending-up",
+  "Plano de Ação Aplicado": "checklist",
+  "Evolução Patrimonial": "trending-up",
+  "Evolução da Taxa de Poupança": "percent",
+  "Acompanhamento de Metas": "activity",
+  "Análise Visual das Metas": "pie",
+  "Fechamentos Mensais": "calendar",
+  "Parecer Técnico": "file",
+  "Cronograma de Acompanhamento": "calendar",
+  "Glossário Financeiro": "file",
+};
+
+// ──────────────────────────────────────────────────────────
+// Assinatura manuscrita (caligrafia) — nome em fonte cursiva
+// ──────────────────────────────────────────────────────────
+const canvasSignature = (name: string): { dataUrl: string; aspect: number } => {
+  // Tamanho de fonte FIXO para todas as assinaturas → mesma altura de letra.
+  // A largura do canvas é proporcional ao texto (nomes longos ficam mais largos,
+  // não menores).
+  const fontPx = 58;
+  const padX = 10;
+  const ph = 84;
+  const font = `italic ${fontPx}px 'Segoe Script', 'Brush Script MT', 'Lucida Handwriting', 'Bradley Hand', 'Comic Sans MS', cursive`;
+
+  const measure = document.createElement("canvas").getContext("2d")!;
+  measure.font = font;
+  const tw = measure.measureText(name).width;
+  const pw = Math.ceil(tw + padX * 2);
+
+  const dpr = 2;
+  const cvs = document.createElement("canvas");
+  cvs.width = pw * dpr;
+  cvs.height = ph * dpr;
+  const ctx = cvs.getContext("2d")!;
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = "#15233a";
+  ctx.font = font;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(name, padX, ph * 0.72);
+  return { dataUrl: cvs.toDataURL("image/png"), aspect: pw / ph };
 };
 
 // ──────────────────────────────────────────────────────────
@@ -892,7 +1247,7 @@ const canvasBarHWithTrack = (
     ctx.fillText(fmtFn(bar.value), pL + bW + 6, y + bH / 2);
   });
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -987,7 +1342,7 @@ const canvasBarGrouped = (
     ctx.restore();
   });
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -1119,7 +1474,7 @@ const canvasMultiLine = (
     lgx += itemW;
   });
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -1225,7 +1580,7 @@ const canvasBarStackedSeries = (
     }
   });
 
-  return cvs.toDataURL("image/png");
+  return cvs.toDataURL("image/jpeg", 0.9);
 };
 
 // ──────────────────────────────────────────────────────────
@@ -1301,6 +1656,9 @@ export interface ReportData {
     }> | null;
   } | null;
   goalsAnalysisComment?: string;
+  consultants?: Array<{ name: string; role?: string; certs?: string }>;
+  parecer?: { title: string; content: string };
+  periodLabel?: string;
 }
 
 // ──────────────────────────────────────────────────────────
@@ -1340,6 +1698,25 @@ const PAGE_H = 297;
 const MARGIN = 18;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
+// Converte HTML simples (parecer do consultor) em blocos de texto
+const htmlToBlocks = (html: string): Array<{ bullet: boolean; text: string }> => {
+  const MARK = "@@BULLET@@";
+  let s = (html || "").replace(/\r/g, "");
+  s = s.replace(/<\/(p|div|h[1-6])>/gi, "\n\n").replace(/<br\s*\/?>/gi, "\n");
+  s = s.replace(/<li[^>]*>/gi, MARK).replace(/<\/li>/gi, "\n");
+  s = s.replace(/<[^>]+>/g, "");
+  s = s
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&hellip;/g, "...");
+  const blocks: Array<{ bullet: boolean; text: string }> = [];
+  for (const raw of s.split(/\n/)) {
+    const bullet = raw.includes(MARK);
+    const text = raw.split(MARK).join("").replace(/\s+/g, " ").trim();
+    if (text) blocks.push({ bullet, text });
+  }
+  return blocks;
+};
+
 // ──────────────────────────────────────────────────────────
 // Geração
 // ──────────────────────────────────────────────────────────
@@ -1375,21 +1752,31 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   void logoBlack;
 
   // ─── Helpers internos ────────────────────────────────
+  const HEADER_H = 13;
   const addHeader = () => {
     pdf.setFillColor(...C.primary);
-    pdf.rect(0, 0, PAGE_W, 10, "F");
-    // Logo branca pequena no header
+    pdf.rect(0, 0, PAGE_W, HEADER_H, "F");
+    // Logo branca no header (maior)
     if (logoWhite) {
       const ratio = logoWhite.w / logoWhite.h;
-      const h = 5;
+      const h = 8.5;
       const w = h * ratio;
-      try { pdf.addImage(logoWhite.dataUrl, "PNG", MARGIN, 2.5, w, h); } catch {}
+      try { pdf.addImage(logoWhite.dataUrl, "PNG", MARGIN, (HEADER_H - h) / 2, w, h); } catch {}
     }
+    // Nome do cliente fica SOMENTE na capa. No cabeçalho: título + mês de fechamento.
     pdf.setTextColor(...C.white);
-    pdf.setFontSize(8);
     pdf.setFont("helvetica", "normal");
-    pdf.text("Relatório de Consultoria", PAGE_W / 2, 6.5, { align: "center" });
-    pdf.text(data.clientName, PAGE_W - MARGIN, 6.5, { align: "right" });
+    pdf.setFontSize(8);
+    pdf.text("Relatório de Consultoria", PAGE_W / 2, HEADER_H / 2 + 1, { align: "center" });
+    const period = data.periodLabel
+      ? data.periodLabel.charAt(0).toUpperCase() + data.periodLabel.slice(1)
+      : "";
+    if (period) {
+      pdf.setFontSize(7.5);
+      pdf.setGState(pdf.GState({ opacity: 0.82 }));
+      pdf.text(`Fechamento · ${period}`, PAGE_W - MARGIN, HEADER_H / 2 + 1, { align: "right" });
+      pdf.setGState(pdf.GState({ opacity: 1 }));
+    }
   };
 
   const addFooter = () => {
@@ -1419,9 +1806,11 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     if (y + needed > PAGE_H - 18) newPage();
   };
 
-  const sectionHeader = (title: string, subtitle?: string) => {
+  // keepWith = altura do 1º bloco de conteúdo que deve ficar junto do título
+  // (evita título de seção sozinho no fim da página)
+  const sectionHeader = (title: string, subtitle?: string, keepWith = 28) => {
     sectionNum++;
-    ensureSpace(20);
+    ensureSpace(20 + keepWith);
     // Bullet com número
     pdf.setFillColor(...C.primary);
     pdf.roundedRect(MARGIN, y, 8, 8, 1.5, 1.5, "F");
@@ -1430,14 +1819,26 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     pdf.setFontSize(10);
     pdf.text(String(sectionNum), MARGIN + 4, y + 5.7, { align: "center" });
 
+    // Ícone temático entre o número e o título
+    const iconName = ICON_BY_TITLE[title];
+    let titleX = MARGIN + 12;
+    if (iconName) {
+      try {
+        const ic = canvasIcon(iconName, "#1e3a5f");
+        pdf.addImage(ic, "PNG", MARGIN + 11, y + 1, 6, 6);
+        titleX = MARGIN + 19.5;
+      } catch { /* ignora */ }
+    }
+
     pdf.setTextColor(...C.text);
+    pdf.setFont("helvetica", "bold");
     pdf.setFontSize(13);
-    pdf.text(title, MARGIN + 12, y + 4);
+    pdf.text(title, titleX, y + 4);
     if (subtitle) {
       pdf.setTextColor(...C.muted);
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(8.5);
-      pdf.text(subtitle, MARGIN + 12, y + 8.5);
+      pdf.text(subtitle, titleX, y + 8.5);
     }
     y += subtitle ? 14 : 11;
 
@@ -1458,6 +1859,52 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     y += lines.length * (size * 0.42) + 2;
   };
 
+  // Cartões de KPI coloridos por "tom" (verde/azul/âmbar/vermelho/neutro)
+  type KpiTone = "emerald" | "blue" | "amber" | "red" | "muted";
+  const TONE: Record<KpiTone, { bg: [number, number, number]; text: [number, number, number]; border: [number, number, number] }> = {
+    emerald: { bg: [236, 250, 242], text: C.success, border: [176, 224, 196] },
+    blue: { bg: [235, 242, 252], text: [37, 99, 235], border: [178, 200, 236] },
+    amber: { bg: [254, 248, 235], text: C.warning, border: [240, 216, 165] },
+    red: { bg: [252, 236, 236], text: C.danger, border: [240, 185, 185] },
+    muted: { bg: C.bgSoft, text: C.muted, border: C.border },
+  };
+  const drawKpiCards = (
+    cards: Array<{ label: string; value: string; hint?: string; tone: KpiTone }>,
+    cardH = 26
+  ) => {
+    const n = cards.length;
+    if (n === 0) return;
+    const gap = 4;
+    const cw = (CONTENT_W - gap * (n - 1)) / n;
+    ensureSpace(cardH + 4);
+    cards.forEach((c, i) => {
+      const cx = MARGIN + i * (cw + gap);
+      const t = TONE[c.tone];
+      pdf.setFillColor(...t.bg);
+      pdf.setDrawColor(...t.border);
+      pdf.setLineWidth(0.3);
+      pdf.roundedRect(cx, y, cw, cardH, 2, 2, "FD");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(6.5);
+      pdf.setTextColor(...C.muted);
+      const lblLines = pdf.splitTextToSize(c.label.toUpperCase(), cw - 6).slice(0, 2);
+      pdf.text(lblLines, cx + 4, y + 5);
+      const lblH = lblLines.length * 3;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(15);
+      pdf.setTextColor(...t.text);
+      pdf.text(c.value, cx + 4, y + 6 + lblH + 4.5);
+      if (c.hint) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(6.8);
+        pdf.setTextColor(...C.muted);
+        const hintLines = pdf.splitTextToSize(c.hint, cw - 6).slice(0, 2);
+        pdf.text(hintLines, cx + 4, y + 6 + lblH + 9.5);
+      }
+    });
+    y += cardH + 5;
+  };
+
   // ═════════════ CAPA ═════════════
   pdf.setFillColor(...C.primary);
   pdf.rect(0, 0, PAGE_W, PAGE_H, "F");
@@ -1472,9 +1919,9 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   // Logo grande no topo da capa
   if (logoWhite) {
     const ratio = logoWhite.w / logoWhite.h;
-    const h = 14;
+    const h = 20;
     const w = h * ratio;
-    try { pdf.addImage(logoWhite.dataUrl, "PNG", MARGIN, 28, w, h); } catch {}
+    try { pdf.addImage(logoWhite.dataUrl, "PNG", MARGIN, 26, w, h); } catch {}
   } else {
     pdf.setTextColor(...C.white);
     pdf.setFont("helvetica", "normal");
@@ -1554,6 +2001,50 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   // ═════════════ Páginas internas ═════════════
   newPage();
 
+  // ── Carta de abertura
+  {
+    const firstName = data.clientName.trim().split(/\s+/)[0];
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+    pdf.setTextColor(...C.primary);
+    pdf.text(`Olá, ${firstName}.`, MARGIN, y);
+    y += 7;
+    paragraph(
+      "Este relatório reúne o diagnóstico completo da sua vida financeira e o plano para os próximos meses. Mais do que números, ele mostra onde você está hoje, aonde quer chegar e o caminho para conseguir — com o acompanhamento da Novare ao seu lado.",
+      9.5,
+      C.text
+    );
+    y += 2;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    pdf.setTextColor(...C.text);
+    pdf.text("O que você vai encontrar neste relatório:", MARGIN, y);
+    y += 5.5;
+    const toc = [
+      "Diagnóstico da sua saúde financeira e classificação de risco",
+      "Balanço patrimonial, fluxo de caixa e mapa de dívidas",
+      "Seus objetivos, plano de ação e projeção de ganhos",
+      "Acompanhamento da evolução, mês a mês",
+      "Parecer do consultor e cronograma dos próximos passos",
+    ];
+    toc.forEach((t) => {
+      const lines = pdf.splitTextToSize(t, CONTENT_W - 8);
+      ensureSpace(lines.length * 4 + 1);
+      pdf.setFillColor(...C.accent);
+      pdf.circle(MARGIN + 2, y - 1.2, 0.9, "F");
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...C.text);
+      pdf.text(lines, MARGIN + 6, y);
+      y += lines.length * 4 + 1.5;
+    });
+    y += 4;
+    pdf.setDrawColor(...C.border);
+    pdf.setLineWidth(0.3);
+    pdf.line(MARGIN, y, PAGE_W - MARGIN, y);
+    y += 7;
+  }
+
   // ── 1. Metodologia
   sectionHeader("Método Novare", "Nossa abordagem em 5 etapas");
   paragraph(
@@ -1591,7 +2082,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   y += 32;
 
   // ── 2. Classificação de Risco
-  sectionHeader("Classificação de Risco", "Saúde financeira baseada na capacidade de poupança");
+  sectionHeader("Classificação de Risco", "Saúde financeira baseada na capacidade de poupança", 42);
   const riskColor = RISK_COLORS[data.risk] || C.warning;
 
   // Card principal com letra de risco + descrição
@@ -1644,23 +2135,103 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     const gaugeImg = canvasGauge(data.risk, 520, 320);
     pdf.addImage(gaugeImg, "PNG", MARGIN, y, halfW, blockH);
 
-    // Composição da Renda à direita
+    // Composição da Renda à direita (rosca)
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    pdf.setTextColor(...C.text);
+    pdf.text("Composição da Renda", MARGIN + halfW + 4, y + 2);
     const savings = Math.max(0, data.totalIncome * (data.savingsRate / 100));
-    const stackedImg = canvasBarStacked(
+    const expensesTot = data.totalExpenses + data.monthlyDebtPayments;
+    const outros = Math.max(0, data.totalIncome - expensesTot - savings);
+    const rendaImg = canvasPie(
+      [
+        { label: "Despesas", value: expensesTot, color: "#dc2626" },
+        { label: "Poupança", value: savings, color: "#16a34a" },
+        { label: "Outros", value: outros, color: "#a0a0a8" },
+      ],
+      820, Math.round(820 * (blockH / halfW)),
       {
-        income: data.totalIncome,
-        expenses: data.totalExpenses + data.monthlyDebtPayments,
-        savings,
-      },
-      520, 320
+        centerTop: `R$ ${_compact(data.totalIncome)}`,
+        centerBottom: "renda",
+        fmtVal: (v) => `R$ ${_compact(v)}`,
+      }
     );
-    pdf.addImage(stackedImg, "PNG", MARGIN + halfW + 4, y, halfW, blockH);
+    pdf.addImage(rendaImg, "PNG", MARGIN + halfW + 4, y + 3, halfW, blockH - 3);
 
     y += blockH + 4;
   }
 
+  // Por que este nível? — explicação consultiva em tópicos
+  {
+    const sr = data.savingsRate, dr = data.debtRatio, er = data.expenseRatio;
+    type Verdict = true | "warn" | false;
+    const bullets: Array<{ ok: Verdict; title: string; text: string }> = [
+      {
+        ok: sr >= 20 ? true : sr >= 10 ? "warn" : false,
+        title: `Taxa de poupança: ${fmtPct(sr)}`,
+        text: sr >= 20
+          ? "Acima do recomendado (20%). Excelente capacidade de transformar renda em patrimônio."
+          : sr >= 10
+            ? "Positiva, mas abaixo do ideal de 20%. Há espaço para acelerar a construção de reserva."
+            : "Abaixo do ideal de 20%. Sobra pouco no fim do mês para investir e proteger o futuro.",
+      },
+      {
+        ok: dr <= 30 ? true : dr <= 40 ? "warn" : false,
+        title: `Comprometimento com dívidas: ${fmtPct(dr)}`,
+        text: dr <= 30
+          ? "Dentro da faixa saudável (até 30% da renda). As parcelas cabem no orçamento."
+          : dr <= 40
+            ? "Pouco acima do limite saudável de 30%. Vale priorizar a quitação das dívidas mais caras."
+            : "Acima do limite de 30%. As parcelas pressionam o orçamento e limitam a poupança.",
+      },
+      {
+        ok: er <= 70 ? true : er <= 85 ? "warn" : false,
+        title: `Despesas sobre a renda: ${fmtPct(er)}`,
+        text: er <= 70
+          ? "Controladas (até 70% da renda), deixando margem para metas e imprevistos."
+          : er <= 85
+            ? "Elevadas: consomem boa parte da renda. Revisar gastos libera dinheiro para os objetivos."
+            : "Muito altas: quase toda a renda é consumida, exigindo ajuste imediato no orçamento.",
+      },
+    ];
+
+    ensureSpace(20 + bullets.length * 13);
+    pdf.setFillColor(...C.bgSoft);
+    const boxLines = bullets.map((b) => pdf.splitTextToSize(b.text, CONTENT_W - 14).length);
+    const boxH = 13 + bullets.reduce((s, _b, i) => s + 6 + boxLines[i] * 3.5 + 2, 0);
+    pdf.roundedRect(MARGIN, y, CONTENT_W, boxH, 2, 2, "F");
+    let by = y + 7;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(10);
+    pdf.setTextColor(...C.text);
+    pdf.text(`Por que você está no nível ${data.risk} (${data.riskLabel})?`, MARGIN + 5, by);
+    by += 6;
+
+    bullets.forEach((b, i) => {
+      const col: [number, number, number] = b.ok === true ? C.success : b.ok === "warn" ? C.warning : C.danger;
+      pdf.setFillColor(...col);
+      pdf.circle(MARGIN + 6.5, by + 1, 1.3, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(8.8);
+      pdf.setTextColor(...C.text);
+      pdf.text(b.title, MARGIN + 10, by + 2);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(...C.muted);
+      const lines = pdf.splitTextToSize(b.text, CONTENT_W - 18);
+      pdf.text(lines, MARGIN + 10, by + 6);
+      by += 6 + boxLines[i] * 3.5 + 2;
+    });
+    y += boxH + 4;
+  }
+
   // ── 3. Balanço Patrimonial
   sectionHeader("Balanço Patrimonial", "Visão consolidada de ativos e passivos");
+  paragraph(
+    "O balanço mostra tudo o que você tem (ativos) menos tudo o que você deve (passivos). O resultado é o seu patrimônio líquido — o melhor termômetro da sua evolução financeira ao longo do tempo.",
+    9,
+    C.muted
+  );
   ensureSpace(28);
   const cards = [
     { label: "Ativos Totais", value: fmt(data.totalAssets), color: [37, 99, 235] as [number, number, number] },
@@ -1685,6 +2256,114 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     pdf.text(c.value, cx + 5, y + 15);
   });
   y += 28;
+
+  // ── Indicadores Patrimoniais (mesmas métricas do painel)
+  {
+    const monthlyOutflow = data.totalExpenses + data.monthlyDebtPayments;
+    const annualIncome = data.totalIncome * 12;
+    const liquidRegex = /poupanc|conta|cdb|tesouro|cdi|caixa|aplicac|renda fixa|fundo|liquid/i;
+    const investRegex = /investiment|acao|ação|bolsa|fii|etf|cripto|previd/i;
+    const realEstateRegex = /imove|imóvel|casa|apartamento|terreno|sala/i;
+    const vehicleRegex = /carro|moto|veicul|veículo|caminh/i;
+    let liquidValue = 0, investValue = 0, realEstateValue = 0, vehicleValue = 0, otherValue = 0;
+    data.assets.forEach((a) => {
+      const v = a.estimated_value || 0;
+      const key = `${a.type || ""} ${a.description || ""}`;
+      if (liquidRegex.test(key)) liquidValue += v;
+      else if (investRegex.test(key)) investValue += v;
+      else if (realEstateRegex.test(key)) realEstateValue += v;
+      else if (vehicleRegex.test(key)) vehicleValue += v;
+      else otherValue += v;
+    });
+    const liquidityMonths = monthlyOutflow > 0 ? liquidValue / monthlyOutflow : 0;
+    const leverage = data.totalAssets > 0 ? (data.totalDebts / data.totalAssets) * 100 : 0;
+    const pwYears = annualIncome > 0 ? data.netWorth / annualIncome : 0;
+    const liquidPct = data.totalAssets > 0 ? ((liquidValue + investValue) / data.totalAssets) * 100 : 0;
+
+    ensureSpace(10);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9.5);
+    pdf.setTextColor(...C.text);
+    pdf.text("Indicadores patrimoniais", MARGIN, y);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(...C.muted);
+    pdf.text("Saúde estrutural do patrimônio: solvência, liquidez e ritmo de acumulação.", MARGIN, y + 4);
+    y += 8;
+
+    drawKpiCards([
+      {
+        label: "Reserva de emergência",
+        value: liquidValue > 0 && monthlyOutflow > 0 ? `${liquidityMonths.toFixed(1)}m` : "—",
+        hint: liquidityMonths >= 6 ? "Cobertura saudável (>= 6 meses)" : liquidityMonths >= 3 ? "Construir até 6 meses" : "Insuficiente — meta mínima 3 meses",
+        tone: liquidValue > 0 && liquidityMonths >= 6 ? "emerald" : liquidityMonths >= 3 ? "amber" : "red",
+      },
+      {
+        label: "Alavancagem",
+        value: data.totalAssets > 0 ? fmtPct(leverage) : "—",
+        hint: leverage <= 30 ? "Endividamento saudável" : leverage <= 50 ? "Atenção — meta abaixo de 30%" : "Elevado — priorizar quitação",
+        tone: leverage <= 30 ? "emerald" : leverage <= 50 ? "amber" : "red",
+      },
+      {
+        label: "Patrimônio x Renda anual",
+        value: annualIncome > 0 ? `${pwYears.toFixed(1)}x` : "—",
+        hint: pwYears >= 3 ? "Trajetória sólida de acumulação" : pwYears >= 1 ? "Em construção — manter aporte" : "Acelerar acumulação patrimonial",
+        tone: pwYears >= 3 ? "emerald" : pwYears >= 1 ? "blue" : "amber",
+      },
+      {
+        label: "Liquidez do patrimônio",
+        value: data.totalAssets > 0 ? fmtPct(liquidPct) : "—",
+        hint: liquidPct >= 30 ? "Boa proporção líquida/investida" : liquidPct >= 15 ? "Aumentar parcela investida" : "Patrimônio muito imobilizado",
+        tone: liquidPct >= 30 ? "emerald" : liquidPct >= 15 ? "amber" : "red",
+      },
+    ]);
+
+    // Qualidade do patrimônio — barra de composição
+    const hx = (h: string): [number, number, number] => {
+      const s = h.replace("#", "");
+      return [parseInt(s.slice(0, 2), 16), parseInt(s.slice(2, 4), 16), parseInt(s.slice(4, 6), 16)];
+    };
+    const comp = [
+      { label: "Líquido", value: liquidValue, color: "#2563eb" },
+      { label: "Investido", value: investValue, color: "#16a34a" },
+      { label: "Imóveis", value: realEstateValue, color: "#7c3aed" },
+      { label: "Veículos", value: vehicleValue, color: "#ea580c" },
+      { label: "Outros", value: otherValue, color: "#64748b" },
+    ].filter((c) => c.value > 0);
+    const compTotal = comp.reduce((s, c) => s + c.value, 0);
+    if (compTotal > 0) {
+      const legRows = Math.ceil(comp.length / 4);
+      ensureSpace(12 + legRows * 6);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(7);
+      pdf.setTextColor(...C.muted);
+      pdf.text("QUALIDADE DO PATRIMÔNIO", MARGIN, y);
+      y += 3;
+      const barH = 4;
+      let bx = MARGIN;
+      comp.forEach((c) => {
+        const w = (c.value / compTotal) * CONTENT_W;
+        pdf.setFillColor(...hx(c.color));
+        pdf.rect(bx, y, w, barH, "F");
+        bx += w;
+      });
+      y += barH + 5;
+      const legCols = Math.min(comp.length, 4);
+      const legW = CONTENT_W / legCols;
+      comp.forEach((c, i) => {
+        const col = i % legCols, row = Math.floor(i / legCols);
+        const lx = MARGIN + col * legW, ly = y + row * 6;
+        pdf.setFillColor(...hx(c.color));
+        pdf.circle(lx + 1.5, ly - 1, 1.2, "F");
+        const pct = Math.round((c.value / compTotal) * 100);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.text);
+        pdf.text(`${c.label}: ${pct}% · ${fmt(c.value)}`, lx + 4, ly);
+      });
+      y += legRows * 6 + 2;
+    }
+  }
 
   if (data.assets.length > 0) {
     autoTable(pdf, {
@@ -1716,11 +2395,23 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
           color: CP[i % CP.length],
         }));
       if (assetBars.length >= 2) {
-        const chartH = Math.min(assetBars.length * 10 + 12, 76);
-        ensureSpace(chartH + 4);
-        const img = canvasBarH(assetBars, 1100, assetBars.length * 38 + 24, fmt);
-        pdf.addImage(img, "PNG", MARGIN, y, CONTENT_W, chartH);
-        y += chartH + 6;
+        const chartH = 62;
+        ensureSpace(chartH + 12);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9.5);
+        pdf.setTextColor(...C.text);
+        pdf.text("Composição do Patrimônio", MARGIN, y);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text("Como seus ativos estão distribuídos hoje", MARGIN, y + 4);
+        const img = canvasPie(assetBars, 1300, Math.round(1300 * chartH / CONTENT_W), {
+          centerTop: `R$ ${_compact(data.totalAssets)}`,
+          centerBottom: "em ativos",
+          fmtVal: (v) => `R$ ${_compact(v)}`,
+        });
+        pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, chartH);
+        y += chartH + 8;
       }
     }
   }
@@ -1735,7 +2426,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       head: [[{ content: "Receitas", colSpan: 2, styles: { halign: "left", textColor: C.success, fontSize: 9.5 } }]],
       body: [
         ...data.incomes.map((i) => [
-          i.description + (i.is_primary ? "  ★" : ""),
+          i.description + (i.is_primary ? "  (principal)" : ""),
           fmt(i.frequency === "anual" ? (i.amount || 0) / 12 : i.amount || 0),
         ]),
         [{ content: "Total Receitas", styles: { fontStyle: "bold" } }, { content: fmt(data.totalIncome), styles: { fontStyle: "bold", textColor: C.success } }],
@@ -1790,7 +2481,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7.5);
   pdf.setTextColor(...C.muted);
-  pdf.text("Receitas − Despesas − Parcelas", MARGIN + 5, y + 12);
+  pdf.text("Receitas - Despesas - Parcelas", MARGIN + 5, y + 12);
   pdf.setTextColor(...saldoColor);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(16);
@@ -1802,43 +2493,78 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   );
   y += 22;
 
-  // Gráficos do fluxo de caixa — barra de comparação + donut de despesas
+  // Gráficos do fluxo de caixa — rosca "uso da renda" + donut de despesas
   {
     const halfW = (CONTENT_W - 6) / 2;
-    const chartH = 78;
+    const chartH = 66;
+    // Reserva títulos + roscas + caption juntos (evita separar de página)
+    ensureSpace(chartH + 26);
 
-    // Barra de comparação: Receitas | Despesas | Saldo
-    const flowBars = [
-      { label: "Receitas",  value: data.totalIncome,    color: "#16a34a" },
-      { label: "Despesas",  value: data.totalExpenses + data.monthlyDebtPayments, color: "#dc2626" },
-      { label: "Saldo",     value: Math.max(data.netCashFlow, 0), color: data.netCashFlow >= 0 ? "#2563eb" : "#d97706" },
-    ];
+    // Títulos das duas roscas
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    pdf.setTextColor(...C.text);
+    pdf.text("Para onde vai sua renda", MARGIN, y);
+    pdf.text("Despesas por categoria", MARGIN + halfW + 6, y);
+    const py = y + 4;
 
-    ensureSpace(chartH + 8);
+    const saidas = data.totalExpenses + data.monthlyDebtPayments;
+    const sobra = Math.max(data.netCashFlow, 0);
+    const sobraPct = data.totalIncome > 0 ? Math.round((sobra / data.totalIncome) * 100) : 0;
 
-    // Barra de comparação à esquerda
-    const barImg = canvasBarV(flowBars, 640, 460, fmt);
-    pdf.addImage(barImg, "PNG", MARGIN, y, halfW, chartH);
+    // Rosca "uso da renda" à esquerda (Saídas vs Sobra)
+    const usoImg = canvasPie(
+      [
+        { label: "Saídas", value: saidas, color: "#dc2626" },
+        { label: "Sobra", value: sobra, color: data.netCashFlow >= 0 ? "#16a34a" : "#d97706" },
+      ],
+      900, Math.round(900 * (chartH / halfW)),
+      { centerTop: `${sobraPct}%`, centerBottom: "sobra", fmtVal: (v) => `R$ ${_compact(v)}` }
+    );
+    pdf.addImage(usoImg, "PNG", MARGIN, py, halfW, chartH);
 
     // Donut de despesas à direita
     if (data.expensesByCategory.length >= 2) {
-      // Canvas com a mesma proporção do espaço no PDF (halfW x chartH) para o donut ficar redondo
-      const donutPxW = 900;
-      const donutPxH = Math.round(donutPxW * (chartH / halfW));
       const donutImg = canvasDonut(
         data.expensesByCategory.map((e) => ({ label: e.category, value: e.amount })),
-        donutPxW, donutPxH
+        900, Math.round(900 * (chartH / halfW))
       );
-      pdf.addImage(donutImg, "PNG", MARGIN + halfW + 6, y, halfW, chartH);
+      pdf.addImage(donutImg, "PNG", MARGIN + halfW + 6, py, halfW, chartH);
     }
 
-    y += chartH + 6;
+    y = py + chartH + 4;
+
+    // Caption explicativo (mantido junto das roscas pela reserva acima)
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(...C.muted);
+    const usoMsg = data.netCashFlow >= 0
+      ? `Neste mês, ${sobraPct}% da sua renda sobrou após despesas e parcelas — esse é o combustível das suas metas.`
+      : `As saídas superaram a renda neste mês. A prioridade imediata é reequilibrar o fluxo de caixa.`;
+    pdf.text(pdf.splitTextToSize(usoMsg, CONTENT_W), MARGIN, y);
+    y += 8;
   }
 
 
   // ── 5. Mapa de Dívidas
   if (data.debts.length > 0) {
     sectionHeader("Mapa de Dívidas", `${data.debts.length} dívida${data.debts.length !== 1 ? "s" : ""} ativa${data.debts.length !== 1 ? "s" : ""}`);
+    paragraph(
+      "Mapeamos cada dívida com saldo, parcela e prazo. A estratégia é priorizar a quitação das mais caras (maiores juros) para liberar a sua renda mais rápido.",
+      9,
+      C.muted
+    );
+
+    const highInterest = data.debts.filter((d) => (d.interest_rate || 0) > 5).length;
+    const shortTerm = data.debts.filter((d) => d.remaining_months != null && d.remaining_months <= 12).length;
+    const debtCommit = data.totalIncome > 0 ? (data.monthlyDebtPayments / data.totalIncome) * 100 : 0;
+    drawKpiCards([
+      { label: "Total devedor", value: fmt(data.totalDebts), hint: `${data.debts.length} dívida${data.debts.length !== 1 ? "s" : ""} ativa${data.debts.length !== 1 ? "s" : ""}`, tone: "red" },
+      { label: "Parcela mensal", value: fmt(data.monthlyDebtPayments), hint: `${fmtPct(debtCommit)} da sua renda`, tone: debtCommit > 30 ? "red" : debtCommit > 20 ? "amber" : "emerald" },
+      { label: "Juros > 5% a.m.", value: String(highInterest), hint: highInterest > 0 ? "Priorizar quitação" : "Custo financeiro controlado", tone: highInterest > 0 ? "red" : "amber" },
+      { label: "Curto prazo (<=12m)", value: String(shortTerm), hint: shortTerm > 0 ? `${shortTerm} quita${shortTerm !== 1 ? "m" : ""} em até 1 ano` : "Todas de médio/longo prazo", tone: "blue" },
+    ]);
+
     autoTable(pdf, {
       startY: y,
       head: [["Tipo", "Credor", "Saldo", "Parcela", "Juros", "Prazo"]],
@@ -1860,24 +2586,91 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
         ],
       ],
       theme: "striped",
-      styles: { fontSize: 8.5, cellPadding: 2.5 },
-      headStyles: { fillColor: C.primary, textColor: C.white, fontSize: 8 },
+      styles: { fontSize: 8, cellPadding: 2, overflow: "linebreak" },
+      headStyles: { fillColor: C.primary, textColor: C.white, fontSize: 7.5 },
       alternateRowStyles: { fillColor: C.bgSoft },
       columnStyles: {
-        2: { halign: "right" },
-        3: { halign: "right" },
-        4: { halign: "right" },
-        5: { halign: "right" },
+        0: { cellWidth: 34 },
+        1: { cellWidth: 36 },
+        2: { halign: "right", cellWidth: 28 },
+        3: { halign: "right", cellWidth: 26 },
+        4: { halign: "right", cellWidth: 22 },
+        5: { halign: "right", cellWidth: "auto" },
       },
       margin: { left: MARGIN, right: MARGIN },
       didDrawPage: () => { addHeader(); },
     });
     y = (pdf as any).lastAutoTable.finalY + 6;
+
+    // Composição das dívidas + análise da consultoria
+    {
+      const sorted = [...data.debts].sort((a, b) => (b.total_amount || 0) - (a.total_amount || 0));
+      const biggest = sorted[0];
+      const biggestPct = data.totalDebts > 0 ? Math.round(((biggest.total_amount || 0) / data.totalDebts) * 100) : 0;
+      const halfW = (CONTENT_W - 6) / 2;
+      const chartH = 48;
+      ensureSpace(chartH + 10);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...C.text);
+      pdf.text("Composição das dívidas", MARGIN, y);
+      pdf.text("Análise da consultoria", MARGIN + halfW + 6, y);
+      const py = y + 4;
+
+      const debtPie = sorted.slice(0, 6).map((d, i) => ({ label: d.type || "Dívida", value: d.total_amount || 0, color: CP[i % CP.length] }));
+      const dImg = canvasPie(debtPie, 820, Math.round(820 * (chartH / halfW)), {
+        centerTop: `R$ ${_compact(data.totalDebts)}`,
+        centerBottom: "em dívidas",
+        fmtVal: (v) => `R$ ${_compact(v)}`,
+      });
+      pdf.addImage(dImg, "PNG", MARGIN, py, halfW, chartH);
+
+      const ax = MARGIN + halfW + 6;
+      pdf.setFillColor(...C.bgSoft);
+      pdf.roundedRect(ax, py, halfW, chartH, 2, 2, "F");
+      const insights = [
+        `Sua maior dívida é "${biggest.type || "—"}" (${biggestPct}% do saldo total).`,
+        debtCommit > 30
+          ? `As parcelas comprometem ${fmtPct(debtCommit)} da renda — acima do saudável (30%).`
+          : `As parcelas comprometem ${fmtPct(debtCommit)} da renda, dentro do saudável.`,
+        highInterest > 0
+          ? `Há ${highInterest} dívida${highInterest !== 1 ? "s" : ""} com juros altos (> 5% a.m.) — foco de quitação.`
+          : `Quitar primeiro as de maior parcela acelera a liberação da sua renda.`,
+      ];
+      let iy = py + 6;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.8);
+      insights.forEach((t) => {
+        const lines = pdf.splitTextToSize(t, halfW - 12);
+        pdf.setFillColor(...C.accent);
+        pdf.circle(ax + 5, iy - 1.2, 0.8, "F");
+        pdf.setTextColor(...C.muted);
+        pdf.text(lines, ax + 8, iy);
+        iy += lines.length * 3.4 + 2.5;
+      });
+      y = py + chartH + 6;
+    }
   }
 
   // ── 6. Proteção e Seguros
   if (data.insurance.length > 0) {
     sectionHeader("Proteção e Seguros", "Cobertura de riscos e seguros ativos");
+    paragraph(
+      "Seguros protegem seu patrimônio e sua família de imprevistos que poderiam comprometer todo o planejamento. Abaixo, as coberturas ativas que avaliamos no seu diagnóstico.",
+      9,
+      C.muted
+    );
+
+    const totalPremium = data.insurance.reduce((s, i) => s + (i.monthly_premium || 0), 0);
+    const totalCoverage = data.insurance.reduce((s, i) => s + (i.coverage_amount || 0), 0);
+    const lifeRegex = /vida|life|familiar/i;
+    const hasLife = data.insurance.some((i) => lifeRegex.test(i.type || "") && (i.coverage_amount || 0) > 0);
+    drawKpiCards([
+      { label: "Prêmio mensal total", value: fmt(totalPremium), hint: `${data.insurance.length} apólice${data.insurance.length !== 1 ? "s" : ""} ativa${data.insurance.length !== 1 ? "s" : ""}`, tone: "blue" },
+      { label: "Cobertura total", value: fmt(totalCoverage), hint: "Soma das indenizações contratadas", tone: totalCoverage > 0 ? "emerald" : "red" },
+      { label: "Cobertura de vida", value: hasLife ? "Sim" : "Não", hint: hasLife ? "Família protegida" : "Lacuna importante a cobrir", tone: hasLife ? "emerald" : "red" },
+    ]);
+
     autoTable(pdf, {
       startY: y,
       head: [["Tipo", "Seguradora", "Prêmio Mensal", "Cobertura"]],
@@ -1895,7 +2688,32 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       margin: { left: MARGIN, right: MARGIN },
       didDrawPage: () => { addHeader(); },
     });
-    y = (pdf as any).lastAutoTable.finalY + 6;
+    y = (pdf as any).lastAutoTable.finalY + 5;
+
+    // Análise da cobertura
+    const annualIncomeSeg = data.totalIncome * 12;
+    const idealLife = annualIncomeSeg * 5;
+    const segMsg = !hasLife
+      ? `Atenção: você não possui cobertura de vida ativa. Em caso de imprevisto, sua família ficaria desprotegida — é a proteção mais importante a contratar (referência: ~5x a renda anual, cerca de ${fmt(idealLife)}).`
+      : totalCoverage < idealLife
+        ? `Você tem proteção de vida, mas a cobertura (${fmt(totalCoverage)}) está abaixo da referência de ~5x a renda anual (${fmt(idealLife)}). Vale reavaliar o valor segurado.`
+        : `Sua cobertura está adequada ao seu momento de vida. Mantenha as apólices em dia e revise os valores a cada ano.`;
+    // Define a fonte ANTES de medir/quebrar o texto (evita overflow)
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8.2);
+    const segLines = pdf.splitTextToSize(segMsg, CONTENT_W - 12);
+    const segBoxH = segLines.length * 3.8 + 7;
+    ensureSpace(segBoxH + 4);
+    pdf.setFillColor(...(hasLife ? C.bgSoft : ([252, 236, 236] as [number, number, number])));
+    pdf.roundedRect(MARGIN, y, CONTENT_W, segBoxH, 2, 2, "F");
+    pdf.setFillColor(...(hasLife ? C.success : C.danger));
+    pdf.roundedRect(MARGIN, y, 2, segBoxH, 2, 2, "F");
+    pdf.rect(MARGIN + 1, y, 1, segBoxH, "F");
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8.2);
+    pdf.setTextColor(...C.text);
+    pdf.text(segLines, MARGIN + 6, y + 5);
+    y += segBoxH + 6;
   }
 
   // ── 7. Objetivos Financeiros
@@ -1904,6 +2722,67 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       "Objetivos Financeiros",
       `${data.goals.length} objetivo${data.goals.length !== 1 ? "s" : ""} • Progresso: ${data.planPct}%`
     );
+
+    paragraph(
+      "Seus objetivos são o destino do plano financeiro. Acompanhamos cada um por valor-alvo, prazo e progresso, sinalizando o que está no rumo certo e o que merece atenção.",
+      9,
+      C.muted
+    );
+    y += 1;
+
+    // Visão analítica — dois gráficos lado a lado (situação + valor-alvo)
+    {
+      const t0 = new Date();
+      t0.setHours(0, 0, 0, 0);
+      let cConcl = 0, cNoPrazo = 0, cBreve = 0, cVenc = 0, cSem = 0;
+      data.goals.forEach((g) => {
+        const dl = g.deadline ? new Date(g.deadline + "T12:00:00") : null;
+        if (g.pct >= 100) cConcl++;
+        else if (dl && dl < t0) cVenc++;
+        else if (dl) {
+          const days = Math.round((dl.getTime() - t0.getTime()) / 86400000);
+          if (days <= 60) cBreve++; else cNoPrazo++;
+        } else cSem++;
+      });
+      const statusItems = [
+        { label: "Concluído", value: cConcl, color: "#16a34a" },
+        { label: "No prazo", value: cNoPrazo, color: "#2563eb" },
+        { label: "Vence em breve", value: cBreve, color: "#d97706" },
+        { label: "Vencido", value: cVenc, color: "#dc2626" },
+        { label: "Sem prazo", value: cSem, color: "#94a3b8" },
+      ].filter((s) => s.value > 0);
+      const alvoItems = data.goals
+        .filter((g) => (g.target_amount || 0) > 0)
+        .sort((a, b) => (b.target_amount || 0) - (a.target_amount || 0))
+        .slice(0, 7)
+        .map((g, i) => ({ label: g.description, value: g.target_amount || 0, color: CP[i % CP.length] }));
+
+      if (statusItems.length > 0 || alvoItems.length >= 2) {
+        const halfW = (CONTENT_W - 6) / 2;
+        const chartH = 52;
+        ensureSpace(chartH + 12);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9);
+        pdf.setTextColor(...C.text);
+        pdf.text("Situação dos objetivos", MARGIN, y);
+        pdf.text("Onde está concentrado o esforço", MARGIN + halfW + 6, y);
+        const py = y + 4;
+        if (statusItems.length > 0) {
+          const stImg = canvasColoredDonut(statusItems, 720, Math.round(720 * (chartH / halfW)), "objetivos");
+          pdf.addImage(stImg, "PNG", MARGIN, py, halfW, chartH);
+        }
+        if (alvoItems.length >= 2) {
+          const totalAlvo = alvoItems.reduce((s, a) => s + a.value, 0);
+          const avImg = canvasPie(alvoItems, 720, Math.round(720 * (chartH / halfW)), {
+            centerTop: `R$ ${_compact(totalAlvo)}`,
+            centerBottom: "em metas",
+            fmtVal: (v) => `R$ ${_compact(v)}`,
+          });
+          pdf.addImage(avImg, "PNG", MARGIN + halfW + 6, py, halfW, chartH);
+        }
+        y = py + chartH + 7;
+      }
+    }
 
     // Barra geral
     ensureSpace(18);
@@ -1923,59 +2802,94 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     pdf.roundedRect(MARGIN + 4, y + 8, (barW * data.planPct) / 100, 2.5, 1, 1, "F");
     y += 18;
 
+    const today0 = new Date();
+    today0.setHours(0, 0, 0, 0);
+
     data.goals.forEach((g) => {
-      ensureSpace(20);
+      ensureSpace(23);
+      const cardH = 21;
+
+      // Status do objetivo (situação em relação ao prazo)
+      const dl = g.deadline ? new Date(g.deadline + "T12:00:00") : null;
+      let statusLabel = "Sem prazo";
+      let statusColor: [number, number, number] = C.muted;
+      if (g.pct >= 100) {
+        statusLabel = "Concluído"; statusColor = C.success;
+      } else if (dl && dl < today0) {
+        statusLabel = "Vencido"; statusColor = C.danger;
+      } else if (dl) {
+        const days = Math.round((dl.getTime() - today0.getTime()) / 86400000);
+        if (days <= 60) { statusLabel = "Vence em breve"; statusColor = C.warning; }
+        else { statusLabel = "No prazo"; statusColor = [37, 99, 235]; }
+      }
+
       pdf.setDrawColor(...C.border);
       pdf.setFillColor(...C.white);
-      pdf.roundedRect(MARGIN, y, CONTENT_W, 18, 2, 2, "FD");
+      pdf.roundedRect(MARGIN, y, CONTENT_W, cardH, 2, 2, "FD");
+      // Faixa lateral colorida pelo status
+      pdf.setFillColor(...statusColor);
+      pdf.roundedRect(MARGIN, y, 2, cardH, 2, 2, "F");
+      pdf.rect(MARGIN + 1, y, 1, cardH, "F");
 
+      // Título
       pdf.setTextColor(...C.text);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(9.5);
-      const gtitle = pdf.splitTextToSize(g.description, CONTENT_W - 50)[0];
-      pdf.text(gtitle, MARGIN + 4, y + 5.5);
+      const gtitle = pdf.splitTextToSize(g.description, CONTENT_W - 52)[0];
+      pdf.text(gtitle, MARGIN + 6, y + 6);
 
-      // Prioridade
+      // Chip de prioridade
       const prio = (g.priority || "media").toLowerCase();
       const prioColor = prio === "alta" ? C.danger : prio === "baixa" ? [37, 99, 235] as [number, number, number] : C.warning;
       const prioLabel = prio === "alta" ? "Alta" : prio === "baixa" ? "Baixa" : "Média";
       pdf.setFillColor(...prioColor);
       pdf.setGState(pdf.GState({ opacity: 0.12 }));
-      pdf.roundedRect(PAGE_W - MARGIN - 22, y + 2.5, 18, 4.5, 1, 1, "F");
+      pdf.roundedRect(PAGE_W - MARGIN - 22, y + 2.5, 18, 5, 1, 1, "F");
       pdf.setGState(pdf.GState({ opacity: 1 }));
       pdf.setTextColor(...prioColor);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(7);
-      pdf.text(prioLabel, PAGE_W - MARGIN - 13, y + 5.5, { align: "center" });
+      pdf.text(prioLabel, PAGE_W - MARGIN - 13, y + 5.8, { align: "center" });
 
-      // Subline
+      // Linha de informações (valor-alvo · prazo · ações)
       pdf.setTextColor(...C.muted);
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(7.5);
       const meta: string[] = [];
-      if (g.target_amount) meta.push(`Meta: ${fmt(g.target_amount)}`);
-      if (g.deadline) meta.push(`Prazo: ${new Date(g.deadline).toLocaleDateString("pt-BR")}`);
+      if (g.target_amount) meta.push(`Valor-alvo: ${fmt(g.target_amount)}`);
+      if (dl) meta.push(`Prazo: ${dl.toLocaleDateString("pt-BR")}`);
       meta.push(`${g.tasksDone}/${g.tasksTotal} ações`);
-      pdf.text(meta.join("  •  "), MARGIN + 4, y + 10);
+      pdf.text(meta.join("   •   "), MARGIN + 6, y + 11.5);
 
-      // Progress bar
+      // Status (palavra colorida) à esquerda + barra de progresso à direita
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(...statusColor);
+      pdf.text(statusLabel, MARGIN + 6, y + 17);
+
+      const barX = MARGIN + 44;
+      const barW = PAGE_W - MARGIN - 12 - barX;
       pdf.setFillColor(220, 220, 225);
-      pdf.roundedRect(MARGIN + 4, y + 13, CONTENT_W - 30, 1.8, 0.8, 0.8, "F");
+      pdf.roundedRect(barX, y + 15.4, barW, 2, 1, 1, "F");
       pdf.setFillColor(...C.accent);
-      pdf.roundedRect(MARGIN + 4, y + 13, ((CONTENT_W - 30) * g.pct) / 100, 1.8, 0.8, 0.8, "F");
+      pdf.roundedRect(barX, y + 15.4, (barW * g.pct) / 100, 2, 1, 1, "F");
       pdf.setTextColor(...C.text);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(8);
-      pdf.text(`${g.pct}%`, PAGE_W - MARGIN - 4, y + 14.5, { align: "right" });
+      pdf.text(`${g.pct}%`, PAGE_W - MARGIN - 4, y + 17.2, { align: "right" });
 
-      y += 22;
+      y += cardH + 3;
     });
   }
 
   // ── 8. Plano de Ação
   if (data.actionItems.length > 0) {
     sectionHeader("Plano de Ação", `${data.completedActions}/${data.totalActions} ações concluídas`);
-
+    paragraph(
+      "Cada ação foi priorizada pelo seu impacto financeiro e prazo. Juntas, formam o caminho prático para melhorar seus indicadores e acelerar a chegada nas suas metas.",
+      9,
+      C.muted
+    );
     autoTable(pdf, {
       startY: y,
       head: [["Ação", "Prioridade", "Status", "Impacto", "Prazo"]],
@@ -2024,19 +2938,85 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
         color: CP[i % CP.length],
       }));
     if (topActions.length >= 2) {
-      const aChartH = Math.min(topActions.length * 10 + 14, 76);
-      ensureSpace(aChartH + 8);
+      const aChartH = 60;
+      ensureSpace(aChartH + 12);
 
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(9);
       pdf.setTextColor(...C.text);
-      pdf.text("Top ações por impacto financeiro", MARGIN, y);
-      y += 4;
+      pdf.text("Distribuição do impacto financeiro", MARGIN, y);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(...C.muted);
+      pdf.text("Peso de cada ação no ganho mensal estimado", MARGIN, y + 4);
 
-      const img = canvasBarH(topActions, 1100, topActions.length * 38 + 24, fmt);
-      pdf.addImage(img, "PNG", MARGIN, y, CONTENT_W, aChartH);
-      y += aChartH + 4;
+      const img = canvasPie(topActions, 1300, Math.round(1300 * aChartH / CONTENT_W), {
+        centerTop: `R$ ${_compact(data.totalImpact)}`,
+        centerBottom: "por mês",
+        fmtVal: (v) => `R$ ${_compact(v)}`,
+      });
+      pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, aChartH);
+      y += aChartH + 8;
     }
+  }
+
+  // ── Projeção de Ganhos (impacto após implementar o plano)
+  if (data.totalImpact > 0) {
+    sectionHeader("Projeção de Ganhos", "Estimativa de impacto após implementar o plano", 56);
+    paragraph(
+      "Veja o efeito esperado do plano no seu bolso: comparamos a sua situação atual com o cenário após colocar em prática as ações recomendadas.",
+      9,
+      C.muted
+    );
+
+    const colW = (CONTENT_W - 6) / 2;
+    const boxH = 42;
+    ensureSpace(boxH + 4);
+    const novoSaldo = data.netCashFlow + data.totalImpact;
+
+    pdf.setFillColor(...C.bgSoft);
+    pdf.roundedRect(MARGIN, y, colW, boxH, 2, 2, "F");
+    pdf.setFillColor(240, 247, 242);
+    pdf.roundedRect(MARGIN + colW + 6, y, colW, boxH, 2, 2, "F");
+    pdf.setFillColor(...C.success);
+    pdf.roundedRect(MARGIN + colW + 6, y, 2, boxH, 2, 2, "F");
+    pdf.rect(MARGIN + colW + 7, y, 1, boxH, "F");
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8);
+    pdf.setTextColor(...C.muted);
+    pdf.text("SITUAÇÃO ATUAL", MARGIN + 5, y + 7);
+    pdf.setTextColor(...C.success);
+    pdf.text("APÓS IMPLEMENTAÇÃO", MARGIN + colW + 11, y + 7);
+
+    const rowAtual: Array<[string, string]> = [
+      ["Saldo mensal", fmt(data.netCashFlow)],
+      ["Poupança em 12 meses", fmt(Math.max(0, data.netCashFlow * 12))],
+      ["Patrimônio líquido", fmt(data.netWorth)],
+    ];
+    const rowApos: Array<[string, string]> = [
+      ["Ganho mensal estimado", `+ ${fmt(data.totalImpact)}`],
+      ["Novo saldo mensal", fmt(novoSaldo)],
+      ["Poupança em 12 meses", fmt(Math.max(0, novoSaldo * 12))],
+    ];
+
+    let ry = y + 16;
+    rowAtual.forEach(([l, v]) => {
+      pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.3); pdf.setTextColor(...C.muted);
+      pdf.text(l, MARGIN + 5, ry);
+      pdf.setFont("helvetica", "bold"); pdf.setTextColor(...C.text);
+      pdf.text(v, MARGIN + colW - 5, ry, { align: "right" });
+      ry += 8.5;
+    });
+    ry = y + 16;
+    rowApos.forEach(([l, v]) => {
+      pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.3); pdf.setTextColor(...C.muted);
+      pdf.text(l, MARGIN + colW + 11, ry);
+      pdf.setFont("helvetica", "bold"); pdf.setTextColor(...C.success);
+      pdf.text(v, MARGIN + colW * 2 + 1, ry, { align: "right" });
+      ry += 8.5;
+    });
+    y += boxH + 6;
   }
 
   // ── 8.5 Plano de Ação Aplicado (V9)
@@ -2078,7 +3058,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       sectionHeader(
         "Plano de Ação Aplicado",
         data.activePlan.objective
-          ? `Objetivo entrelaçado: ${data.activePlan.objective}`
+          ? `Objetivo traçado: ${data.activePlan.objective}`
           : `Plano ${applied.letter} · ${variantLabel[applied.letter]}`,
       );
 
@@ -2131,7 +3111,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       applied.actions.forEach((a) => {
         const descLines = pdf.splitTextToSize(a.description, CONTENT_W - 14);
         const objLines = a.objective
-          ? pdf.splitTextToSize(`→ ${a.objective}`, CONTENT_W - 14)
+          ? pdf.splitTextToSize(`» ${a.objective}`, CONTENT_W - 14)
           : [];
         const blockH = 5 + descLines.length * 3.5 + objLines.length * 3.2 + 3;
         ensureSpace(blockH);
@@ -2305,34 +3285,113 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     const deltaRate = lastRate - firstRate;
     const avgRate = rVals.reduce((a, b) => a + b, 0) / rVals.length;
 
-    const rateBars = rateSorted.map((s) => {
-      const v = s.savings_rate!;
-      const color = v >= 30 ? "#16a34a" : v >= 10 ? "#2563eb" : v >= 0 ? "#d97706" : "#dc2626";
-      const lbl = new Date(s.snapshot_date).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
-      return { label: lbl, value: Math.max(v, 0.1), color };
-    });
+    const hx = (h: string): [number, number, number] => {
+      const s = h.replace("#", "");
+      return [parseInt(s.slice(0, 2), 16), parseInt(s.slice(2, 4), 16), parseInt(s.slice(4, 6), 16)];
+    };
+    const bandColor = lastRate >= 30 ? "#16a34a" : lastRate >= 10 ? "#2563eb" : lastRate >= 0 ? "#d97706" : "#dc2626";
 
-    const rChartMmH = 70;
-    ensureSpace(rChartMmH + 6);
-    const rImg = canvasBarV(rateBars, Math.max(rateBars.length * 110 + 80, 720), 360, (v) => `${v.toFixed(0)}%`);
-    pdf.addImage(rImg, "PNG", MARGIN, y, CONTENT_W, rChartMmH);
-    y += rChartMmH + 4;
-
-    ensureSpace(14);
-    pdf.setFillColor(...C.bgSoft);
-    pdf.roundedRect(MARGIN, y, CONTENT_W, 12, 2, 2, "F");
-    pdf.setFont("helvetica", "normal"); pdf.setFontSize(8); pdf.setTextColor(...C.muted);
-    pdf.text(
-      `Início: ${firstRate.toFixed(1)}%   ·   Atual: ${lastRate.toFixed(1)}%   ·   Variação: ${deltaRate >= 0 ? "+" : ""}${deltaRate.toFixed(1)} p.p.   ·   Média: ${avgRate.toFixed(1)}%`,
-      MARGIN + 4, y + 7.5
+    // Texto explicativo
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+    pdf.setTextColor(...C.text);
+    const explLines = pdf.splitTextToSize(
+      "A taxa de poupança mostra quanto da sua renda você guarda a cada mês. Quanto maior e mais estável, mais rápido suas metas se realizam.",
+      CONTENT_W
     );
-    y += 18;
+    ensureSpace(explLines.length * 4 + 64);
+    pdf.text(explLines, MARGIN, y);
+    y += explLines.length * 4 + 4;
+
+    // Anel de KPI (taxa atual) à esquerda
+    const panelH = 52;
+    const ringSize = 52;
+    const ringImg = canvasKpiRing(
+      Math.min(lastRate, 100), bandColor, `${lastRate.toFixed(1)}%`, "poupança atual", 520, 520
+    );
+    pdf.addImage(ringImg, "PNG", MARGIN, y, ringSize, ringSize);
+
+    // Cartões de indicadores à direita (2x2)
+    const rX = MARGIN + ringSize + 6;
+    const rW = PAGE_W - MARGIN - rX;
+    const cW = (rW - 4) / 2;
+    const cH = (panelH - 4) / 2;
+    const kpis: Array<{ l: string; v: string; c: [number, number, number] }> = [
+      { l: "INÍCIO", v: `${firstRate.toFixed(1)}%`, c: C.muted },
+      { l: "ATUAL", v: `${lastRate.toFixed(1)}%`, c: hx(bandColor) },
+      { l: "VARIAÇÃO", v: `${deltaRate >= 0 ? "+" : ""}${deltaRate.toFixed(1)} p.p.`, c: deltaRate >= 0 ? C.success : C.danger },
+      { l: "MÉDIA", v: `${avgRate.toFixed(1)}%`, c: C.text },
+    ];
+    kpis.forEach((k, i) => {
+      const col = i % 2, row = Math.floor(i / 2);
+      const kx = rX + col * (cW + 4);
+      const ky = y + row * (cH + 4);
+      pdf.setFillColor(...C.bgSoft);
+      pdf.roundedRect(kx, ky, cW, cH, 2, 2, "F");
+      pdf.setFont("helvetica", "normal"); pdf.setFontSize(6.5); pdf.setTextColor(...C.muted);
+      pdf.text(k.l, kx + 4, ky + 6);
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(13); pdf.setTextColor(...k.c);
+      pdf.text(k.v, kx + 4, ky + cH - 5);
+    });
+    y += panelH + 6;
   }
 
   // ── Acompanhamento de Metas — tabela resumo + cards de histórico por meta
   if (data.parecerMetas && data.parecerMetas.length > 0) {
     ensureSpace(20);
     sectionHeader("Acompanhamento de Metas", `${data.parecerMetas.length} metas definidas`);
+    paragraph(
+      "Aqui transformamos seus objetivos em metas mensuráveis e acompanhamos cada uma ao longo dos meses. A cada fechamento registramos o valor atual e o progresso — é assim que o plano sai do papel e vira resultado.",
+      9,
+      C.muted
+    );
+
+    const metasArr = data.parecerMetas;
+    const totalAlvoM = metasArr.reduce((s, m) => s + (m.metaValor || 0), 0);
+    const emAcomp = metasArr.filter((m) => (m.totalLancamentos ?? 0) > 0).length;
+    const comPct = metasArr.filter((m) => m.progressPct != null);
+    const progMedio = comPct.length > 0 ? Math.round(comPct.reduce((s, m) => s + (m.progressPct || 0), 0) / comPct.length) : null;
+    drawKpiCards([
+      { label: "Metas definidas", value: String(metasArr.length), hint: "objetivos virando metas", tone: "blue" },
+      { label: "Valor-alvo total", value: `R$ ${_compact(totalAlvoM)}`, hint: "soma de todas as metas", tone: "muted" },
+      { label: "Em acompanhamento", value: `${emAcomp}/${metasArr.length}`, hint: emAcomp > 0 ? "com lançamentos" : "aguardando 1º lançamento", tone: emAcomp > 0 ? "emerald" : "amber" },
+      { label: "Progresso médio", value: progMedio != null ? `${progMedio}%` : "—", hint: progMedio != null ? "média de atingimento" : "começa após os lançamentos", tone: progMedio != null ? (progMedio >= 60 ? "emerald" : progMedio >= 30 ? "amber" : "red") : "muted" },
+    ]);
+
+    // Gráfico: valor-alvo por categoria
+    const catLabel2: Record<string, string> = { income: "Renda", expenses: "Despesa", debts: "Dívida", assets: "Patrimônio", insurance: "Seguro" };
+    const catColor2: Record<string, string> = { income: "#16a34a", expenses: "#dc2626", debts: "#ea580c", assets: "#2563eb", insurance: "#7c3aed" };
+    const catMap = new Map<string, number>();
+    metasArr.forEach((m) => { if ((m.metaValor || 0) > 0) catMap.set(m.sourceTable, (catMap.get(m.sourceTable) ?? 0) + (m.metaValor || 0)); });
+    const catPie = Array.from(catMap.entries())
+      .map(([k, v]) => ({ label: catLabel2[k] || k, value: v, color: catColor2[k] || "#64748b" }))
+      .sort((a, b) => b.value - a.value);
+    if (catPie.length >= 2) {
+      const chartH = 50;
+      ensureSpace(chartH + 12);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...C.text);
+      pdf.text("Valor-alvo por categoria", MARGIN, y);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(...C.muted);
+      pdf.text("Onde estão concentradas as suas metas por área financeira", MARGIN, y + 4);
+      const img = canvasPie(catPie, 1300, Math.round(1300 * chartH / CONTENT_W), {
+        centerTop: `R$ ${_compact(totalAlvoM)}`,
+        centerBottom: "em metas",
+        fmtVal: (v) => `R$ ${_compact(v)}`,
+      });
+      pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, chartH);
+      y += chartH + 8;
+    }
+
+    ensureSpace(14);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    pdf.setTextColor(...C.text);
+    pdf.text("Detalhamento das metas", MARGIN, y);
+    y += 5;
 
     ensureSpace(10);
     pdf.setFillColor(...C.primary);
@@ -2404,6 +3463,23 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
 
     // ── Histórico Detalhado por Meta (cards individuais) ──
     const metasComHistorico = data.parecerMetas.filter((m) => m.history && m.history.length > 0);
+    if (metasComHistorico.length === 0) {
+      // Estado inicial — ainda sem lançamentos
+      const noteMsg = "As metas acima foram definidas e o acompanhamento mensal já está ativo. A partir do próximo fechamento, esta seção passará a mostrar o valor atual, a evolução e o progresso de cada meta, mês a mês.";
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8.5);
+      const nLines = pdf.splitTextToSize(noteMsg, CONTENT_W - 12);
+      const nH = nLines.length * 3.8 + 7;
+      ensureSpace(nH + 4);
+      pdf.setFillColor(...C.bgSoft);
+      pdf.roundedRect(MARGIN, y, CONTENT_W, nH, 2, 2, "F");
+      pdf.setFillColor(...C.primaryLight);
+      pdf.roundedRect(MARGIN, y, 2, nH, 2, 2, "F");
+      pdf.rect(MARGIN + 1, y, 1, nH, "F");
+      pdf.setTextColor(...C.text);
+      pdf.text(nLines, MARGIN + 6, y + 5);
+      y += nH + 6;
+    }
     if (metasComHistorico.length > 0) {
       ensureSpace(20);
       pdf.setFont("helvetica", "bold");
@@ -2662,8 +3738,7 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
       lancamentosBuckets.length >= 2;
 
     if (hasAnyChart) {
-      ensureSpace(20);
-      sectionHeader("Análise Visual das Metas", "Distribuição, progresso e evolução das metas em gráficos");
+      sectionHeader("Análise Visual das Metas", "Distribuição, progresso e evolução das metas em gráficos", 64);
 
       // Linha 1: Status (esq) + Categoria (dir)
       if (statusItems.length > 0 || categoryItems.length > 0) {
@@ -2677,7 +3752,8 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
           pdf.setFontSize(9.5);
           pdf.setTextColor(...C.text);
           pdf.text("Status das Metas", MARGIN, y);
-          const img = canvasColoredDonut(statusItems, 640, 360, "metas");
+          // Canvas com a MESMA proporção do espaço (halfW x chartH) → rosca redonda
+          const img = canvasColoredDonut(statusItems, 720, Math.round(720 * (chartH / halfW)), "metas");
           pdf.addImage(img, "PNG", MARGIN, y + 3, halfW, chartH);
         }
         if (categoryItems.length > 0) {
@@ -2685,16 +3761,22 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
           pdf.setFontSize(9.5);
           pdf.setTextColor(...C.text);
           pdf.text("Metas por Categoria", MARGIN + halfW + 6, y);
-          const img = canvasColoredDonut(categoryItems, 640, 360, "categorias");
+          const img = canvasColoredDonut(categoryItems, 720, Math.round(720 * (chartH / halfW)), "categorias");
           pdf.addImage(img, "PNG", MARGIN + halfW + 6, y + 3, halfW, chartH);
         }
         y += chartH + 6;
       }
 
-      // Linha 2: Progresso por Meta (full)
-      if (progressoBars.length > 0) {
-        const chartH = Math.max(40, Math.min(progressoBars.length * 6 + 12, 90));
-        ensureSpace(chartH + 12);
+      // Linha 2: Progresso por Meta (anéis de KPI — "pizza")
+      const ringMetas = progressoMetas.slice(0, 8);
+      if (ringMetas.length > 0) {
+        const perRow = Math.min(4, ringMetas.length);
+        const cellW = CONTENT_W / perRow;
+        const ringD = Math.min(cellW - 10, 30);
+        const rowH = ringD + 11;
+        const rows = Math.ceil(ringMetas.length / perRow);
+        // Reserva título + todos os anéis juntos (evita órfãos)
+        ensureSpace(9 + rows * rowH + 2);
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(9.5);
         pdf.setTextColor(...C.text);
@@ -2703,32 +3785,47 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
         pdf.setFontSize(7.5);
         pdf.setTextColor(...C.muted);
         pdf.text("Percentual de atingimento de cada meta", MARGIN, y + 4);
-        const img = canvasBarHWithTrack(
-          progressoBars,
-          1200, Math.max(360, progressoBars.length * 50 + 60),
-          110,
-          (v) => `${Math.round(v)}%`
-        );
-        pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, chartH);
-        y += chartH + 8;
+        y += 9;
+        const rowStartY = y;
+        ringMetas.forEach((m, i) => {
+          const col = i % perRow;
+          const row = Math.floor(i / perRow);
+          const cellX = MARGIN + col * cellW;
+          const rx = cellX + (cellW - ringD) / 2;
+          const ry = rowStartY + row * rowH;
+          const img = canvasKpiRing(m.value, m.color, `${Math.round(m.value)}%`, "", 360, 360);
+          pdf.addImage(img, "PNG", rx, ry, ringD, ringD);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(7);
+          pdf.setTextColor(...C.muted);
+          const lbl = m.label.length > 20 ? m.label.slice(0, 19) + "…" : m.label;
+          pdf.text(lbl, cellX + cellW / 2, ry + ringD + 4, { align: "center" });
+        });
+        y = rowStartY + rows * rowH + 5;
       }
 
-      // Linha 3: Alvo vs Atual (full)
-      if (alvoVsAtualGroups.length > 0) {
-        const chartH = 70;
+      // Linha 3: Distribuição do valor-alvo entre as metas (rosca)
+      const alvoPie = metasAll
+        .filter((m) => (m.metaValor ?? 0) > 0)
+        .sort((a, b) => (b.metaValor ?? 0) - (a.metaValor ?? 0))
+        .slice(0, 7)
+        .map((m, i) => ({ label: m.sourceLabel, value: m.metaValor ?? 0, color: CP[i % CP.length] }));
+      if (alvoPie.length >= 2) {
+        const chartH = Math.min(72, 40 + alvoPie.length * 6);
         ensureSpace(chartH + 12);
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(9.5);
         pdf.setTextColor(...C.text);
-        pdf.text("Valor Alvo vs Valor Atual (Top 8)", MARGIN, y);
+        pdf.text("Distribuição do Valor-Alvo entre as Metas", MARGIN, y);
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(7.5);
         pdf.setTextColor(...C.muted);
-        pdf.text("Comparação entre objetivo e progresso real por meta", MARGIN, y + 4);
-        const img = canvasBarGrouped(alvoVsAtualGroups, 1300, 540, (v) => {
-          if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-          if (v >= 1_000) return `${(v / 1_000).toFixed(0)}k`;
-          return String(Math.round(v));
+        pdf.text("Onde estão concentrados os seus maiores objetivos", MARGIN, y + 4);
+        const totalAlvo = alvoPie.reduce((s, a) => s + a.value, 0);
+        const img = canvasPie(alvoPie, 1300, Math.round(1300 * chartH / CONTENT_W), {
+          centerTop: `R$ ${_compact(totalAlvo)}`,
+          centerBottom: "em metas",
+          fmtVal: (v) => `R$ ${_compact(v)}`,
         });
         pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, chartH);
         y += chartH + 8;
@@ -2751,77 +3848,194 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
         y += chartH + 8;
       }
 
-      // Linha 5: Lançamentos por Mês (full)
-      if (lancamentosBuckets.length >= 2 && categoriesForStacked.length > 0) {
-        const chartH = 65;
+      // Linha 5: Lançamentos por Categoria (rosca)
+      const lancByCat = new Map<string, number>();
+      metasAll.forEach((m) => {
+        (m.history || []).forEach((h) => {
+          if (h.date) lancByCat.set(m.sourceTable, (lancByCat.get(m.sourceTable) ?? 0) + 1);
+        });
+      });
+      const lancPie = CAT_DEFS
+        .filter((c) => (lancByCat.get(c.key) ?? 0) > 0)
+        .map((c) => ({ label: c.label, value: lancByCat.get(c.key) ?? 0, color: c.color }));
+      const totalLanc = lancPie.reduce((s, a) => s + a.value, 0);
+      if (lancPie.length >= 1 && totalLanc >= 2) {
+        const chartH = 58;
         ensureSpace(chartH + 12);
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(9.5);
         pdf.setTextColor(...C.text);
-        pdf.text("Lançamentos por Mês (por Categoria)", MARGIN, y);
+        pdf.text("Lançamentos por Categoria", MARGIN, y);
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(7.5);
         pdf.setTextColor(...C.muted);
-        pdf.text("Quantidade de registros agrupados por categoria financeira", MARGIN, y + 4);
-        const img = canvasBarStackedSeries(lancamentosBuckets, categoriesForStacked, 1300, 500);
+        pdf.text("Volume de registros de acompanhamento por área financeira", MARGIN, y + 4);
+        const img = canvasPie(lancPie, 1300, Math.round(1300 * chartH / CONTENT_W), {
+          centerTop: String(totalLanc),
+          centerBottom: "lançamentos",
+          fmtVal: (v) => `${v}`,
+        });
         pdf.addImage(img, "PNG", MARGIN, y + 6, CONTENT_W, chartH);
         y += chartH + 8;
       }
     }
   }
 
-  // ── Fechamentos Mensais
+  // ── Fechamentos Mensais (linha do tempo)
   if (data.monthlyClosings && data.monthlyClosings.length > 0) {
-    sectionHeader("Fechamentos Mensais", `${data.monthlyClosings.length} fechamento${data.monthlyClosings.length !== 1 ? "s" : ""} registrado${data.monthlyClosings.length !== 1 ? "s" : ""}`);
+    const closings = data.monthlyClosings; // ordenado asc por data
+    sectionHeader("Fechamentos Mensais", `${closings.length} fechamento${closings.length !== 1 ? "s" : ""} registrado${closings.length !== 1 ? "s" : ""}`, 48);
+    paragraph(
+      "O fechamento mensal é a foto da sua evolução a cada mês: registramos patrimônio, dívidas, taxa de poupança e o progresso de cada meta. É a linha do tempo da sua jornada — e o que nos guia para ajustar a rota.",
+      9,
+      C.muted
+    );
+    y += 1;
 
-    autoTable(pdf, {
-      startY: y,
-      head: [["Período", "Ativos", "Dívidas", "Poupança", "Metas Registradas"]],
-      body: data.monthlyClosings.map((mc) => [
-        new Date(mc.date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }),
-        mc.totalAssets != null ? fmt(mc.totalAssets) : "—",
-        mc.totalDebts != null ? fmt(mc.totalDebts) : "—",
-        mc.savingsRate != null ? fmtPct(mc.savingsRate) : "—",
-        `${mc.metas.length} item${mc.metas.length !== 1 ? "s" : ""}`,
-      ]),
-      theme: "striped",
-      styles: { fontSize: 8.5, cellPadding: 2.5 },
-      headStyles: { fillColor: C.primary, textColor: C.white, fontSize: 8 },
-      alternateRowStyles: { fillColor: C.bgSoft },
-      columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "center" } },
-      margin: { left: MARGIN, right: MARGIN },
-      didDrawPage: () => { addHeader(); },
-    });
-    y = (pdf as any).lastAutoTable.finalY + 6;
+    const netOf = (c: { totalAssets?: number; totalDebts?: number }): number | null =>
+      c.totalAssets != null ? c.totalAssets - (c.totalDebts ?? 0) : null;
+    const first = closings[0], last = closings[closings.length - 1];
+    const firstNet = netOf(first), lastNet = netOf(last);
+    const totalMetas = closings.reduce((s, c) => s + c.metas.length, 0);
 
-    for (const mc of data.monthlyClosings) {
-      if (mc.metas.length === 0) continue;
-      const periodLabel = new Date(mc.date + "T12:00:00").toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-      ensureSpace(14 + mc.metas.length * 7);
+    // Hero — KPIs adaptativos (mostra evolução quando houver dado financeiro)
+    const heroCards: Array<{ label: string; value: string; hint?: string; tone: KpiTone }> = [
+      { label: "Fechamentos", value: String(closings.length), hint: "fotos mensais registradas", tone: "blue" },
+    ];
+    if (firstNet != null && lastNet != null && closings.length >= 2) {
+      const d = lastNet - firstNet;
+      const dpct = firstNet !== 0 ? (d / Math.abs(firstNet)) * 100 : 0;
+      heroCards.push({ label: "Patrimônio líquido", value: `R$ ${_compact(lastNet)}`, hint: `de R$ ${_compact(firstNet)} (${d >= 0 ? "+" : ""}${dpct.toFixed(0)}%)`, tone: d >= 0 ? "emerald" : "red" });
+    } else if (lastNet != null) {
+      heroCards.push({ label: "Patrimônio líquido", value: `R$ ${_compact(lastNet)}`, hint: "último fechamento", tone: "emerald" });
+    }
+    if (first.savingsRate != null && last.savingsRate != null && closings.length >= 2) {
+      heroCards.push({ label: "Taxa de poupança", value: `${last.savingsRate.toFixed(1)}%`, hint: `de ${first.savingsRate.toFixed(1)}%`, tone: last.savingsRate >= first.savingsRate ? "emerald" : "amber" });
+    } else if (last.savingsRate != null) {
+      heroCards.push({ label: "Taxa de poupança", value: `${last.savingsRate.toFixed(1)}%`, hint: "último fechamento", tone: "blue" });
+    }
+    if (heroCards.length < 3) {
+      heroCards.push({ label: "Metas acompanhadas", value: String(totalMetas), hint: "ao longo dos fechamentos", tone: "muted" });
+    }
+    drawKpiCards(heroCards.slice(0, 4));
 
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(8);
-      pdf.setTextColor(...C.text);
-      pdf.text(`Detalhes — ${periodLabel}`, MARGIN, y);
-      y += 4;
+    // Linha do tempo — do mais recente ao mais antigo
+    const chipColor = (estado?: string): { bg: [number, number, number]; tx: [number, number, number] } => {
+      const e = (estado || "").toLowerCase();
+      if (/em dia|conclu|atingid/.test(e)) return { bg: [236, 250, 242], tx: C.success };
+      if (/atras|vencid/.test(e)) return { bg: [252, 236, 236], tx: C.danger };
+      return { bg: [238, 240, 244], tx: [86, 92, 102] };
+    };
+    const contentX = MARGIN + 17;
+    const contentW = PAGE_W - MARGIN - contentX;
+    const ordered = [...closings].reverse();
+    ordered.forEach((mc, idx) => {
+      const dt = new Date(mc.date + "T12:00:00");
+      const day = dt.toLocaleDateString("pt-BR", { day: "2-digit" });
+      const monAbbr = dt.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "").toUpperCase();
+      const fullDate = dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
-      autoTable(pdf, {
-        startY: y,
-        head: [["Meta", "Valor", "Estado", "Progresso"]],
-        body: mc.metas.map((m) => [
-          m.label.length > 40 ? m.label.slice(0, 40) + "…" : m.label,
-          m.valor != null ? fmt(m.valor) : "—",
-          m.estado || "—",
-          m.pct != null ? `${m.pct}%` : "—",
-        ]),
-        theme: "plain",
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: C.bgSoft, textColor: C.muted, fontSize: 7.5, fontStyle: "bold" },
-        columnStyles: { 1: { halign: "right" }, 3: { halign: "right" } },
-        margin: { left: MARGIN + 4, right: MARGIN },
-        didDrawPage: () => { addHeader(); },
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7);
+      const chips = mc.metas.map((m) => {
+        const lbl = m.label.length > 24 ? m.label.slice(0, 23) + "…" : m.label;
+        return { lbl, ...chipColor(m.estado), w: pdf.getTextWidth(lbl) + 6 };
       });
-      y = (pdf as any).lastAutoTable.finalY + 6;
+      const finParts: string[] = [];
+      if (netOf(mc) != null) finParts.push(`Patrimônio R$ ${_compact(netOf(mc)!)}`);
+      if (mc.totalDebts != null) finParts.push(`Dívidas R$ ${_compact(mc.totalDebts)}`);
+      if (mc.savingsRate != null) finParts.push(`Poupança ${mc.savingsRate.toFixed(1)}%`);
+      const hasFin = finParts.length > 0;
+
+      const chipH = 5.4, chipGap = 2, chipsTop = hasFin ? 17 : 13;
+      let measureX = contentX, rows = chips.length > 0 ? 1 : 1;
+      chips.forEach((c) => { if (measureX + c.w > contentX + contentW) { measureX = contentX; rows++; } measureX += c.w + chipGap; });
+      const nodeH = chipsTop + rows * (chipH + chipGap) + 1;
+      ensureSpace(nodeH + 2);
+      const ny = y;
+
+      // Círculo com o dia
+      pdf.setFillColor(...C.primary);
+      pdf.circle(MARGIN + 6, ny + 5.5, 6, "F");
+      pdf.setTextColor(...C.white);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      pdf.text(day, MARGIN + 6, ny + 5.2, { align: "center" });
+      pdf.setFontSize(5.2);
+      pdf.text(monAbbr, MARGIN + 6, ny + 8.8, { align: "center" });
+      // Conector
+      if (idx < ordered.length - 1) {
+        pdf.setDrawColor(...C.border);
+        pdf.setLineWidth(0.4);
+        pdf.line(MARGIN + 6, ny + 12, MARGIN + 6, ny + nodeH + 2);
+      }
+      // Título + contagem
+      pdf.setTextColor(...C.text);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      pdf.text(fullDate, contentX, ny + 4);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8);
+      pdf.setTextColor(...C.muted);
+      pdf.text(`${mc.metas.length} meta${mc.metas.length !== 1 ? "s" : ""} acompanhada${mc.metas.length !== 1 ? "s" : ""}`, contentX, ny + 8.5);
+      if (hasFin) {
+        pdf.setFontSize(8);
+        pdf.setTextColor(...C.text);
+        pdf.text(finParts.join("   ·   "), contentX, ny + 13.5);
+      }
+      // Chips
+      if (chips.length === 0) {
+        pdf.setFont("helvetica", "italic");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text("Sem metas registradas neste fechamento.", contentX, ny + chipsTop + 2);
+      } else {
+        let chx = contentX, chy = ny + chipsTop;
+        chips.forEach((c) => {
+          if (chx + c.w > contentX + contentW) { chx = contentX; chy += chipH + chipGap; }
+          pdf.setFillColor(...c.bg);
+          pdf.roundedRect(chx, chy, c.w, chipH, 1.2, 1.2, "F");
+          pdf.setTextColor(...c.tx);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(7);
+          pdf.text(c.lbl, chx + 3, chy + chipH / 2 + 1.1);
+          chx += c.w + chipGap;
+        });
+      }
+      y = ny + nodeH + 3;
+    });
+  }
+
+  // ── Parecer Técnico (análise escrita do consultor)
+  if (data.parecer && data.parecer.content) {
+    const blocks = htmlToBlocks(data.parecer.content);
+    if (blocks.length > 0) {
+      sectionHeader("Parecer Técnico", "Análise e recomendações do seu consultor", 34);
+      if (data.parecer.title && data.parecer.title.trim()) {
+        ensureSpace(10);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10);
+        pdf.setTextColor(...C.text);
+        pdf.text(pdf.splitTextToSize(data.parecer.title.trim(), CONTENT_W), MARGIN, y);
+        y += 6;
+      }
+      for (const b of blocks) {
+        if (b.bullet) {
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(9);
+          pdf.setTextColor(...C.text);
+          const lines = pdf.splitTextToSize(b.text, CONTENT_W - 8);
+          ensureSpace(lines.length * 4 + 2);
+          pdf.setFillColor(...C.accent);
+          pdf.circle(MARGIN + 2, y - 1.2, 0.9, "F");
+          pdf.text(lines, MARGIN + 6, y);
+          y += lines.length * 4 + 1.5;
+        } else {
+          paragraph(b.text, 9, C.text);
+          y += 1;
+        }
+      }
+      y += 2;
     }
   }
 
@@ -2845,8 +4059,105 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
     }
   }
 
-  // ── Fechamento
-  ensureSpace(30);
+  // ── Glossário Financeiro (educativo)
+  {
+    sectionHeader("Glossário Financeiro", "Os termos deste relatório, explicados de forma simples", 30);
+    const glossary: Array<[string, string]> = [
+      ["Patrimônio líquido", "Tudo o que você tem (ativos) menos tudo o que você deve (dívidas). É o seu valor real."],
+      ["Taxa de poupança", "Percentual da renda que sobra e é guardado a cada mês. Quanto maior, mais rápido você constrói patrimônio."],
+      ["Reserva de emergência", "Dinheiro de fácil acesso para imprevistos. O ideal é ter de 3 a 6 meses das suas despesas guardados."],
+      ["Alavancagem", "Quanto do seu patrimônio está comprometido com dívidas. Abaixo de 30% é considerado saudável."],
+      ["Liquidez do patrimônio", "Proporção do patrimônio que vira dinheiro rapidamente (ao contrário de imóveis, que demoram a vender)."],
+      ["Comprometimento de renda", "Parte da renda mensal usada para pagar parcelas de dívidas. O recomendado é não passar de 30%."],
+      ["Valor-alvo", "O valor que você definiu como meta para um objetivo (ex.: R$ 100 mil para a reserva)."],
+      ["Juros (a.m.)", "Custo da dívida ao mês. Acima de 5% a.m. é considerado caro e deve ser priorizado na quitação."],
+    ];
+    glossary.forEach(([term, def]) => {
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8.5);
+      const defLines = pdf.splitTextToSize(def, CONTENT_W - 5);
+      const blockH = 4.5 + defLines.length * 3.6 + 2.5;
+      ensureSpace(blockH);
+      pdf.setFillColor(...C.accent);
+      pdf.circle(MARGIN + 1.5, y - 1.2, 0.9, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...C.text);
+      pdf.text(term, MARGIN + 5, y);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(...C.muted);
+      pdf.text(defLines, MARGIN + 5, y + 4);
+      y += blockH;
+    });
+    y += 2;
+  }
+
+  // ── Cronograma de Acompanhamento (próximas fases)
+  {
+    sectionHeader("Cronograma de Acompanhamento", "As próximas fases da sua jornada financeira", 52);
+    paragraph(
+      "A consultoria não termina neste relatório. Veja as fases previstas para colocar o plano em prática e manter a evolução constante.",
+      9,
+      C.muted
+    );
+    y += 1;
+    const phases: Array<{ phase: string; title: string; desc: string; color: [number, number, number] }> = [
+      { phase: "Mês 1–2", title: "Implementação das ações prioritárias", desc: "Ajustes de orçamento, renegociação de dívidas e organização da reserva de emergência.", color: C.accent },
+      { phase: "Mês 3–4", title: "Estruturação de investimentos", desc: "Direcionamento da poupança, adequação de portfólio ao seu perfil e diversificação.", color: C.primary },
+      { phase: "Mês 5–6", title: "Consolidação e ajustes finos", desc: "Revisão dos resultados, ajustes tributários e educação financeira continuada.", color: C.success },
+      { phase: "Contínuo", title: "Acompanhamento recorrente", desc: "Registros mensais, evolução de indicadores e realinhamento de metas a cada ciclo.", color: C.muted },
+    ];
+    phases.forEach((p, i) => {
+      const descLines = pdf.splitTextToSize(p.desc, CONTENT_W - 16);
+      const blockH = Math.max(13, 9 + descLines.length * 3.6);
+      ensureSpace(blockH + 2);
+      // Círculo numerado
+      pdf.setFillColor(...p.color);
+      pdf.circle(MARGIN + 4, y + 4, 4, "F");
+      pdf.setTextColor(...C.white);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.text(String(i + 1), MARGIN + 4, y + 5.4, { align: "center" });
+      // Linha conectora
+      if (i < phases.length - 1) {
+        pdf.setDrawColor(...C.border);
+        pdf.setLineWidth(0.4);
+        pdf.line(MARGIN + 4, y + 8.5, MARGIN + 4, y + blockH + 2);
+      }
+      // Fase + título + descrição
+      pdf.setTextColor(...p.color);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(7.5);
+      pdf.text(p.phase.toUpperCase(), MARGIN + 12, y + 2.5);
+      pdf.setTextColor(...C.text);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9.5);
+      pdf.text(p.title, MARGIN + 12, y + 6.5);
+      pdf.setTextColor(...C.muted);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8.5);
+      pdf.text(descLines, MARGIN + 12, y + 10.5);
+      y += blockH + 3;
+    });
+    y += 2;
+  }
+
+  // ── Fechamento + Assinatura dos consultores
+  // O bloco inteiro fica na MESMA página e a assinatura é ancorada ao rodapé,
+  // para nunca ficar sozinha/órfã em uma página quase vazia.
+  const consultants = data.consultants ?? [];
+  ensureSpace(94);
+
+  // Logo Novare (versão escura) centralizado — marca de encerramento do relatório
+  if (logoBlack) {
+    const ratio = logoBlack.w / logoBlack.h;
+    const lh = 13;
+    const lw = lh * ratio;
+    try { pdf.addImage(logoBlack.dataUrl, "PNG", (PAGE_W - lw) / 2, y, lw, lh); } catch { /* ignora */ }
+    y += lh + 7;
+  }
+
   y += 4;
   pdf.setDrawColor(...C.accent);
   pdf.setLineWidth(0.5);
@@ -2858,10 +4169,71 @@ export async function generateReportPdf(data: ReportData): Promise<void> {
   pdf.text("Próximos passos", MARGIN, y);
   y += 6;
   paragraph(
-    "Este relatório consolida o diagnóstico, plano e indicadores do seu acompanhamento financeiro.",
+    "Este relatório consolida seu diagnóstico, plano de ação e indicadores de acompanhamento. O próximo passo é simples: manter os lançamentos em dia e revisar os números na sua próxima reunião. A consultoria Novare segue ao seu lado para ajustar a rota sempre que for preciso.",
     9,
     C.muted
   );
+
+  // Marca de fechamento — ancorada acima do rodapé
+  const brandSepY = PAGE_H - 24;
+  const brandTextY = PAGE_H - 19.5;
+
+  // Assinatura dos consultores — ancorada logo acima da marca
+  if (consultants.length > 0) {
+    const sigLineY = brandSepY - 14;
+    pdf.setTextColor(...C.muted);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8.5);
+    pdf.text("Com você nesta jornada,", MARGIN, sigLineY - 13);
+
+    const n = Math.min(consultants.length, 3);
+    const colW = CONTENT_W / n;
+    const lineW = colW - 12;
+    const maxW = lineW - 2;
+    const baseH = 10;
+    // 1ª passada: gera as imagens e mede; depois usa UMA altura única para todas
+    // (assim o tamanho da letra é idêntico — o nome mais longo é quem define a escala)
+    const sigImgs = consultants.slice(0, n).map((c) => {
+      try { return canvasSignature(c.name); } catch { return null; }
+    });
+    const maxNatW = Math.max(...sigImgs.map((s) => (s ? baseH * s.aspect : 0)), 1);
+    const uniformH = maxNatW > maxW ? baseH * (maxW / maxNatW) : baseH;
+
+    consultants.slice(0, n).forEach((c, i) => {
+      const cx = MARGIN + i * colW;
+      const s = sigImgs[i];
+      if (s) {
+        const w = uniformH * s.aspect;
+        try { pdf.addImage(s.dataUrl, "PNG", cx + 2, sigLineY - uniformH - 1.5, w, uniformH); } catch { /* ignora */ }
+      }
+      pdf.setDrawColor(...C.text);
+      pdf.setLineWidth(0.3);
+      pdf.line(cx, sigLineY, cx + lineW, sigLineY);
+      pdf.setTextColor(...C.text);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9.5);
+      pdf.text(c.name, cx, sigLineY + 4.5);
+      const sub = [c.role, c.certs].filter(Boolean).join(" · ");
+      if (sub) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C.muted);
+        pdf.text(pdf.splitTextToSize(sub, colW - 6)[0], cx, sigLineY + 8.8);
+      }
+    });
+  }
+
+  pdf.setDrawColor(...C.border);
+  pdf.setLineWidth(0.2);
+  pdf.line(MARGIN, brandSepY, PAGE_W - MARGIN, brandSepY);
+  pdf.setTextColor(...C.primary);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(8.5);
+  pdf.text("Método Novare · Consultoria Financeira", MARGIN, brandTextY);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7.5);
+  pdf.setTextColor(...C.muted);
+  pdf.text("Documento confidencial · para uso exclusivo do cliente", PAGE_W - MARGIN, brandTextY, { align: "right" });
 
   // Footer última página
   addFooter();
