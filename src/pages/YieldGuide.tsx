@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, ChevronDown, Check, TrendingUp, Shield, Target,
@@ -24,6 +24,7 @@ import newsletterHero from "@/assets/newsletter-hero.jpg";
 import { SEO } from "@/components/SEO";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateRendimentoPDF } from "@/lib/generateRendimentoPDF";
+import { useMarketRates } from "@/hooks/useMarketRates";
 import { PdfEmailDialog } from "@/components/PdfEmailDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -370,6 +371,37 @@ const YieldGuide = () => {
   const [newsletterLoading, setNewsletterLoading] = useState(false);
   const [newsletterDone, setNewsletterDone] = useState(false);
 
+  /* ── Taxas de mercado ao vivo (Selic / IPCA / Juro real) ─────── */
+  const { data: rates } = useMarketRates();
+  const pct = (n: number, d = 2) =>
+    `${n.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d })}%`;
+
+  // KPIs do topo com Selic, Rendimento/mês e Juro real automáticos (FGC é fixo).
+  const liveStats = useMemo(
+    () =>
+      bentoStats.map((s) => {
+        if (s.label === "Taxa Selic") return { ...s, value: pct(rates.selic) };
+        if (s.label === "Juros Real") return { ...s, value: pct(rates.jurosReal) };
+        if (s.label === "Rendimento/mês") return { ...s, value: `~${pct(rates.rendimentoMes)}` };
+        return s;
+      }),
+    [rates],
+  );
+
+  // FAQ da Selic com o valor atual.
+  const liveFaqs = useMemo(
+    () =>
+      faqs.map((f) =>
+        f.q.startsWith("O que é a taxa Selic")
+          ? {
+              ...f,
+              a: `A Selic é a taxa básica de juros do Brasil. Quando sobe, investimentos em Renda Fixa se tornam mais atrativos. Atualmente está em ${pct(rates.selic)} ao ano.`,
+            }
+          : f,
+      ),
+    [rates],
+  );
+
   const handleNewsletterSubmit = async () => {
     const schema = z.object({
       email: z.string().trim().email("E-mail inválido").max(255),
@@ -696,7 +728,7 @@ const YieldGuide = () => {
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
             className="grid grid-cols-2 md:grid-cols-4 gap-2.5"
           >
-            {bentoStats.map((s, i) => (
+            {liveStats.map((s, i) => (
               <motion.div key={s.label} variants={fadeUp} custom={i}>
                 <Card className="rounded-xl border-border/40 shadow-subtle hover:shadow-soft transition-shadow h-full">
                   <CardContent className="p-3 flex items-center gap-3 h-full">
@@ -727,7 +759,7 @@ const YieldGuide = () => {
                   <span className="text-accent">juros real</span> do mundo.
                 </h2>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Em março de 2026, o Banco Central reduziu a Selic para <strong className="text-foreground">14,75% a.a.</strong> — ainda assim, a Renda Fixa brasileira segue entre as mais rentáveis do planeta, com juros reais de 9,51%.
+                  A Selic está atualmente em <strong className="text-foreground">{pct(rates.selic)} a.a.</strong> — ainda assim, a Renda Fixa brasileira segue entre as mais rentáveis do planeta, com juros reais de {pct(rates.jurosReal)} a.a.
                 </p>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   Neste conteúdo, mostramos quanto rendem diferentes estratégias com valores reais, para que você tome decisões com base em dados e não em achismos.
@@ -1237,7 +1269,7 @@ const YieldGuide = () => {
                         {rentPeriodo === "mensal"
                           ? `≈ ${rentAnual.toFixed(2)}% ao ano`
                           : `≈ ${((Math.pow(1 + sim.rentabilidade / 100, 1 / 12) - 1) * 100).toFixed(2)}% ao mês`}
-                        {" · "}Selic atual ~14,75% a.a.
+                        {" · "}Selic atual ~{pct(rates.selic)} a.a.
                       </p>
                     </div>
                   </div>
@@ -1864,7 +1896,7 @@ const YieldGuide = () => {
 
             <motion.div variants={fadeUp} custom={1}>
               <Accordion type="single" collapsible className="space-y-3">
-                {faqs.map((f, i) => (
+                {liveFaqs.map((f, i) => (
                   <AccordionItem key={i} value={`faq-${i}`} className="border border-border/40 rounded-2xl px-6 bg-card data-[state=open]:shadow-soft transition-shadow">
                     <AccordionTrigger className="text-left text-base font-semibold text-foreground py-5 hover:no-underline">
                       {f.q}
