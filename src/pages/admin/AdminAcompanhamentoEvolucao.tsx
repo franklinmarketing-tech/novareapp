@@ -150,7 +150,19 @@ const AdminAcompanhamentoEvolucao = () => {
         .select("*")
         .eq("client_id", clientId)
         .order("created_at");
-      return (data || []) as Goal[];
+      const rows = (data || []) as Goal[];
+      // Os objetivos são clonados a cada fechamento mensal (vários month_ref),
+      // então a mesma meta apareceria repetida aqui. Deduplica pelo nome,
+      // mantendo a versão mais recente (último created_at).
+      const byKey = new Map<string, Goal>();
+      for (const g of rows) {
+        const key = (g.description || "").trim().toLowerCase();
+        const prev = byKey.get(key);
+        if (!prev || new Date(g.created_at).getTime() >= new Date(prev.created_at).getTime()) {
+          byKey.set(key, g);
+        }
+      }
+      return Array.from(byKey.values());
     },
     enabled: !!clientId,
   });
@@ -242,7 +254,8 @@ const AdminAcompanhamentoEvolucao = () => {
     if (!closings.length) return null;
     const series = closings.map((c) => {
       const income = Number(c.total_income ?? 0);
-      const expense = Number(c.total_expenses ?? 0);
+      // Saídas totais = despesas + parcelas das dívidas (cashflow real do mês)
+      const expense = Number(c.total_expenses ?? 0) + Number(c.monthly_debt_payments ?? 0);
       return {
         month: c.month_ref.slice(0, 7),
         monthLabel: monthLabel(c.month_ref.slice(0, 7)),
@@ -729,7 +742,7 @@ const AdminAcompanhamentoEvolucao = () => {
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                         <Receipt className="w-3 h-3 text-rose-600" />
-                        Despesas
+                        Saídas
                       </p>
                       <p className="text-base font-bold tabular-nums mt-0.5">{fmtBRL(cashflow.last.expense)}</p>
                     </div>
