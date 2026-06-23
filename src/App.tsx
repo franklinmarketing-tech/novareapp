@@ -53,6 +53,8 @@ const ActionPlan = lazy(() => import("@/pages/cliente/ActionPlan"));
 const ClientLancamentoMes = lazy(() => import("@/pages/cliente/ClientLancamentoMes"));
 const ClientSettings = lazy(() => import("@/pages/cliente/ClientSettings"));
 const YieldGuide = lazy(() => import("@/pages/YieldGuide"));
+const ObjetivosDeVida = lazy(() => import("@/pages/ObjetivosDeVida"));
+const AdminObjetivosVida = lazy(() => import("@/pages/admin/AdminObjetivosVida"));
 const ReportPreview = lazy(() => import("@/pages/dev/ReportPreview"));
 const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/SuperAdminDashboard"));
 const SuperAdminAdmins = lazy(() => import("@/pages/super-admin/SuperAdminAdmins"));
@@ -104,6 +106,7 @@ const App = () => (
                 <Route path="/termos" element={<Termos />} />
                 <Route path="/privacidade" element={<Privacidade />} />
                 <Route path="/ferramentas/calculadora-de-investimentos" element={<YieldGuide />} />
+                <Route path="/objetivos-de-vida" element={<ObjetivosDeVida />} />
                 <Route path="/dev/report-preview" element={<ReportPreview />} />
 
                 {/* Super Admin routes */}
@@ -131,6 +134,7 @@ const App = () => (
                 <Route path="/admin/leads" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminLeads /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/leads-newsletter" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminLeadsNewsletter /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/leads-pdf" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminLeadsPdf /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/projetos/objetivos-de-vida" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminObjetivosVida /></AdminLayout></ProtectedRoute>} />
 
                 {/* Admin client routes with tabs */}
                 <Route path="/admin/cliente/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminClientLayout /></AdminLayout></ProtectedRoute>}>

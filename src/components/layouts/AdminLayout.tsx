@@ -15,6 +15,7 @@ import {
   ChevronDown,
   FolderKanban,
   Gem,
+  Target,
   User as UserIcon,
   Image as ImageIcon,
   Bell,
@@ -83,6 +84,8 @@ const staticSegments: Record<string, string> = {
   evolucao: "Acompanhamento",
   relatorio: "Relatório",
   workspace: "Workspace",
+  projetos: "Projetos",
+  "objetivos-de-vida": "Objetivos de Vida",
   ajuda: "Ajuda & Manual",
   leads: "Leads",
   "leads-newsletter": "Leads Newsletter",
@@ -111,7 +114,9 @@ export const AdminLayout = ({ children }: Props) => {
   const [clientNames, setClientNames] = useState<Record<string, string>>({});
   const settingsCompletion = useSettingsCompletion();
   const isOnSettings = location.pathname.startsWith("/admin/configuracoes");
+  const isOnProjetos = location.pathname.startsWith("/admin/projetos") || location.pathname === "/admin/workspace";
   const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
+  const [projetosOpen, setProjetosOpen] = useState(isOnProjetos);
   useEffect(() => {
     if (isOnSettings) setSettingsOpen(true);
   }, [isOnSettings]);
@@ -331,30 +336,79 @@ export const AdminLayout = ({ children }: Props) => {
         </div>
       )}
 
-      {/* Workspace */}
+      {/* Projetos (expansível) */}
       <div className={cn("mt-2 shrink-0", collapsed ? "px-2" : "px-3")}>
-        <NavLink
-          to="/admin/workspace"
-          onClick={() => setMobileOpen(false)}
-          title={collapsed ? "Projetos" : undefined}
-          className={({ isActive }) =>
-            cn(
-              "relative flex items-center rounded-xl text-[0.8125rem] font-medium transition-colors duration-200",
-              collapsed ? "justify-center h-10 w-10 mx-auto" : "gap-3 px-4 py-2.5",
-              isActive
-                ? "bg-sidebar-accent text-sidebar-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-sidebar-ring"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground"
-            )
-          }
-        >
-          <Gem className="h-[18px] w-[18px] shrink-0" />
-          {!collapsed && (
-            <>
-              <span className="flex-1 truncate">Projetos</span>
-              <ChevronRight className="h-3.5 w-3.5 opacity-50" />
-            </>
-          )}
-        </NavLink>
+        {collapsed ? (
+          <NavLink
+            to="/admin/workspace"
+            onClick={() => setMobileOpen(false)}
+            title="Projetos"
+            className={({ isActive }) =>
+              cn(
+                "relative flex items-center justify-center h-10 w-10 mx-auto rounded-xl text-[0.8125rem] font-medium transition-colors duration-200",
+                isActive || isOnProjetos
+                  ? "bg-sidebar-accent text-sidebar-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-sidebar-ring"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground"
+              )
+            }
+          >
+            <Gem className="h-[18px] w-[18px] shrink-0" />
+          </NavLink>
+        ) : (
+          <div>
+            {/* Cabeçalho do grupo Projetos */}
+            <button
+              onClick={() => setProjetosOpen((v) => !v)}
+              className={cn(
+                "relative flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-[0.8125rem] font-medium transition-colors duration-200",
+                isOnProjetos
+                  ? "bg-sidebar-accent text-sidebar-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground",
+              )}
+            >
+              <Gem className="h-[18px] w-[18px] shrink-0" />
+              <span className="flex-1 text-left truncate">Projetos</span>
+              {projetosOpen
+                ? <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+                : <ChevronRight className="h-3.5 w-3.5 opacity-50" />}
+            </button>
+            {/* Sub-itens */}
+            {projetosOpen && (
+              <div className="mt-0.5 ml-3 pl-3 border-l border-sidebar-border/30 space-y-0.5">
+                <NavLink
+                  to="/admin/workspace"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                      isActive
+                        ? "text-sidebar-foreground bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/25",
+                    )
+                  }
+                >
+                  <FolderKanban className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Workspace</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/projetos/objetivos-de-vida"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                      isActive
+                        ? "text-sidebar-foreground bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/25",
+                    )
+                  }
+                >
+                  <Target className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Objetivos de Vida</span>
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="mt-auto border-t border-sidebar-border/30 shrink-0">
