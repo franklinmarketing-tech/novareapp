@@ -299,7 +299,7 @@ const MONTH_NAMES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
-const AdminReport = () => {
+const AdminReport = ({ clientView = false }: { clientView?: boolean } = {}) => {
   const { clientId } = useClientId();
   const { selectedMonth, setSelectedMonth } = useSelectedMonth();
   const [loading, setLoading] = useState(true);
@@ -741,7 +741,7 @@ const AdminReport = () => {
       {/* Screen-only header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8 print:hidden">
         <div className="min-w-0">
-          <h1 className="text-lg font-semibold text-foreground tracking-tight">Relatório Final</h1>
+          <h1 className="text-lg font-semibold text-foreground tracking-tight">{clientView ? "Meu Relatório" : "Relatório Final"}</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Documento consolidado · Período: <span className="font-semibold capitalize">{periodLabel}</span>
           </p>
@@ -769,13 +769,17 @@ const AdminReport = () => {
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
-          <Button onClick={handleDownloadPDF} disabled={generating || aiLoading} className="gap-2 flex-1 sm:flex-none">
-            {generating || aiLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
-            {generating ? "Gerando PDF..." : aiLoading ? "Analisando..." : "Baixar PDF"}
-          </Button>
-          <Button onClick={handlePrint} variant="outline" className="gap-2 flex-1 sm:flex-none">
-            <Printer className="h-5 w-5" /> Imprimir
-          </Button>
+          {!clientView && (
+            <>
+              <Button onClick={handleDownloadPDF} disabled={generating || aiLoading} className="gap-2 flex-1 sm:flex-none">
+                {generating || aiLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+                {generating ? "Gerando PDF..." : aiLoading ? "Analisando..." : "Baixar PDF"}
+              </Button>
+              <Button onClick={handlePrint} variant="outline" className="gap-2 flex-1 sm:flex-none">
+                <Printer className="h-5 w-5" /> Imprimir
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -3468,13 +3472,15 @@ const AdminReport = () => {
         </div>
       </div>
 
-      {/* V9: marcador de jornada concluida (etapa 6, final) */}
-      <div className="mt-6 print:hidden">
-        <JourneyFooterNav
-          current="relatorio"
-          message="Jornada de análise concluída — o cliente recebe o relatório final."
-        />
-      </div>
+      {/* V9: marcador de jornada concluida (etapa 6, final) — só no painel do consultor */}
+      {!clientView && (
+        <div className="mt-6 print:hidden">
+          <JourneyFooterNav
+            current="relatorio"
+            message="Jornada de análise concluída — o cliente recebe o relatório final."
+          />
+        </div>
+      )}
     </div>
   );
 };

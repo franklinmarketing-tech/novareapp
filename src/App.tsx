@@ -48,6 +48,7 @@ const AdminLeads = lazy(() => import("@/pages/admin/AdminLeads"));
 const ClientDashboard = lazy(() => import("@/pages/cliente/ClientDashboard"));
 const ClientOnboardingPage = lazy(() => import("@/pages/cliente/ClientOnboarding"));
 const MyData = lazy(() => import("@/pages/cliente/MyData"));
+const ClientReports = lazy(() => import("@/pages/cliente/ClientReports"));
 const ActionPlan = lazy(() => import("@/pages/cliente/ActionPlan"));
 const ClientLancamentoMes = lazy(() => import("@/pages/cliente/ClientLancamentoMes"));
 const ClientSettings = lazy(() => import("@/pages/cliente/ClientSettings"));
@@ -150,6 +151,7 @@ const App = () => (
                   <Route path="meus-dados" element={<MyData />} />
                   <Route path="plano-acao" element={<ActionPlan />} />
                   <Route path="lancamento-mes" element={<ClientLancamentoMes />} />
+                  <Route path="relatorios" element={<ClientReports />} />
                   <Route path="configuracoes" element={<ClientSettings />} />
                 </Route>
 
@@ -160,6 +162,7 @@ const App = () => (
                 <Route path="/cliente/meus-dados" element={<ProtectedRoute requiredRole="client"><ClientLayout><MyData /></ClientLayout></ProtectedRoute>} />
                 <Route path="/cliente/plano-acao" element={<ProtectedRoute requiredRole="client"><ClientLayout><ActionPlan /></ClientLayout></ProtectedRoute>} />
                 <Route path="/cliente/lancamento-mes" element={<ProtectedRoute requiredRole="client"><ClientLayout><ClientLancamentoMes /></ClientLayout></ProtectedRoute>} />
+                <Route path="/cliente/relatorios" element={<ProtectedRoute requiredRole="client"><ClientLayout><ClientReports /></ClientLayout></ProtectedRoute>} />
                 <Route path="/cliente/configuracoes" element={<ProtectedRoute requiredRole="client"><ClientLayout><ClientSettings /></ClientLayout></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />

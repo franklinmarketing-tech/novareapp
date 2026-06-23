@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useParams } from "react-router-dom";
-import { LayoutDashboard, User, ClipboardList, CalendarDays } from "lucide-react";
+import { LayoutDashboard, User, ClipboardList, CalendarDays, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -15,6 +15,7 @@ const buildItems = (basePath: string) => [
   { to: `${basePath}/meus-dados`, icon: User, label: "Meus dados", key: "meus-dados" },
   { to: `${basePath}/plano-acao`, icon: ClipboardList, label: "Plano" },
   { to: `${basePath}/lancamento-mes`, icon: CalendarDays, label: "Lançamento" },
+  { to: `${basePath}/relatorios`, icon: FileText, label: "Relatórios" },
 ];
 
 /**

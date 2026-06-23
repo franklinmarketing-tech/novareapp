@@ -7,6 +7,7 @@ import {
   User,
   ClipboardList,
   CalendarDays,
+  FileText,
   LogOut,
   Menu,
   X,
@@ -32,6 +33,7 @@ const buildNavItems = (basePath: string) => [
   { to: `${basePath}/meus-dados`, icon: User, label: "Meus Dados", badgeKey: "meus-dados" },
   { to: `${basePath}/plano-acao`, icon: ClipboardList, label: "Plano de Ação" },
   { to: `${basePath}/lancamento-mes`, icon: CalendarDays, label: "Lançamento do mês" },
+  { to: `${basePath}/relatorios`, icon: FileText, label: "Relatórios" },
 ];
 
 interface Props {
