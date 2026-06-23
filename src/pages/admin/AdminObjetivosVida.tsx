@@ -129,7 +129,7 @@ export default function AdminObjetivosVida() {
 
     if (!leadsData) { setLoading(false); return; }
 
-    const ids = (leadsData as Lead[]).map((l) => l.id);
+    const ids = (leadsData as unknown as Lead[]).map((l) => l.id);
 
     const [{ data: goalsData }, { data: updatesData }] = await Promise.all([
       supabase.from("life_lead_goals" as any).select("*").in("lead_id", ids),
