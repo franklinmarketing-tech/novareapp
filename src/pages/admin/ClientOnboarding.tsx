@@ -20,6 +20,7 @@ import { StepIdentificacao } from "@/components/onboarding/StepIdentificacao";
 import { computeProfile, PROFILE_INFO } from "@/components/onboarding/StepComportamental";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ClientFinancialSidebar, type ClientFinancials } from "@/components/parecer/ClientFinancialSidebar";
@@ -29,7 +30,7 @@ import {
   Pencil, Save, X,
   User, Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain,
   TrendingUp, TrendingDown, Landmark, type LucideIcon,
-  PiggyBank, CalendarDays, Lock, Flag, ChevronLeft, ChevronRight,
+  PiggyBank, CalendarDays, Lock, Unlock, Flag, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -216,8 +217,31 @@ const ClientOnboarding = () => {
   const { selectedMonth, setSelectedMonth } = useSelectedMonth();
   const [availableMonths, setAvailableMonths] = useState<string[]>([]);
   const [closedMonths, setClosedMonths] = useState<Set<string>>(new Set());
+  // Map month_ref → { id, status } para permitir reabrir direto desta aba
+  const [closingsByMonth, setClosingsByMonth] = useState<Map<string, { id: string; status: string }>>(new Map());
+  const [confirmReopen, setConfirmReopen] = useState(false);
+  const [reopening, setReopening] = useState(false);
   const baselineMonth = availableMonths.length > 0 ? availableMonths[0] : null;
   const isLocked = selectedMonth ? closedMonths.has(selectedMonth) : false;
+
+  const handleReopen = async () => {
+    if (!selectedMonth) return;
+    const closing = closingsByMonth.get(selectedMonth);
+    if (!closing) return;
+    setReopening(true);
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("monthly_closings")
+      .update({ status: "reaberto", reopened_at: new Date().toISOString(), reopened_by: authUser?.id })
+      .eq("id", closing.id);
+    setReopening(false);
+    setConfirmReopen(false);
+    if (error) { toast({ title: "Erro", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Mês reaberto", description: `${monthRefLabel(selectedMonth)} liberado para edição.` });
+    // Atualiza estado local sem recarregar tudo
+    setClosingsByMonth((prev) => { const m = new Map(prev); m.set(selectedMonth, { ...closing, status: "reaberto" }); return m; });
+    setClosedMonths((prev) => { const s = new Set(prev); s.delete(selectedMonth); return s; });
+  };
 
   // Carrega a lista de meses disponíveis (todas as tabelas com month_ref) + meses fechados
   useEffect(() => {
@@ -230,7 +254,7 @@ const ClientOnboarding = () => {
         supabase.from("assets").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
         supabase.from("insurance").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
         supabase.from("goals").select("month_ref").eq("client_id", clientId).not("month_ref", "is", null),
-        supabase.from("monthly_closings").select("month_ref").eq("client_id", clientId),
+        supabase.from("monthly_closings").select("id, month_ref, status").eq("client_id", clientId),
       ]);
       const set = new Set<string>();
       [...(inc.data || []), ...(exp.data || []), ...(debt.data || []), ...(asst.data || []), ...(ins.data || []), ...(gls.data || [])]
@@ -239,16 +263,20 @@ const ClientOnboarding = () => {
       set.add(currentMonthRef());
       // Inclui meses fechados (mesmo se não houver registros editáveis)
       const closedSet = new Set<string>();
+      const byMonthMap = new Map<string, { id: string; status: string }>();
       (closings.data || []).forEach((c: any) => {
         if (c.month_ref) {
           const ref = String(c.month_ref).slice(0, 10);
           set.add(ref);
-          closedSet.add(ref);
+          byMonthMap.set(ref, { id: c.id, status: c.status });
+          // Só trava se realmente fechado — meses "reabertos" ficam editáveis
+          if (c.status !== "reaberto") closedSet.add(ref);
         }
       });
       const sorted = Array.from(set).sort();
       setAvailableMonths(sorted);
       setClosedMonths(closedSet);
+      setClosingsByMonth(byMonthMap);
       // Default: mais recente não fechado, fallback mais recente
       if (!selectedMonth) {
         const firstUnclosed = [...sorted].reverse().find((m) => !closedSet.has(m));
@@ -720,12 +748,41 @@ const ClientOnboarding = () => {
           </div>
 
           {isLocked && (
-            <p className="text-xs text-amber-800/80 dark:text-amber-300/80 mt-3 pl-15 leading-snug">
-              Este mês já foi fechado. Reabra em <strong>Lançamento do mês</strong> antes de editar.
-            </p>
+            <div className="flex items-center gap-3 mt-3 pl-[60px] flex-wrap">
+              <p className="text-xs text-amber-800/80 dark:text-amber-300/80 leading-snug">
+                Este mês está fechado. Reabra para liberar a edição dos dados.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 border-amber-400 text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:border-amber-600 dark:hover:bg-amber-950/40 h-7 text-xs"
+                onClick={() => setConfirmReopen(true)}
+              >
+                <Unlock className="h-3.5 w-3.5" />
+                Reabrir mês
+              </Button>
+            </div>
           )}
         </div>
       )}
+
+      {/* Confirmar reabrir */}
+      <AlertDialog open={confirmReopen} onOpenChange={(o) => !o && setConfirmReopen(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reabrir fechamento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O fechamento de <strong>{selectedMonth ? monthRefLabel(selectedMonth) : ""}</strong> ficará marcado como reaberto. Os números registrados continuam preservados e o cliente poderá corrigir os dados novamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={reopening}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReopen} disabled={reopening}>
+              {reopening ? "Reabrindo..." : "Reabrir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Main content */}
       <div>
