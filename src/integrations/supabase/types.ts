@@ -1367,6 +1367,173 @@ export type Database = {
         }
         Relationships: []
       }
+      life_lead_goals: {
+        Row: {
+          created_at: string
+          current_value: number | null
+          deadline_years: number | null
+          goal_type: string
+          id: string
+          lead_id: string
+          notes: string | null
+          priority: string | null
+          target_value: number | null
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number | null
+          deadline_years?: number | null
+          goal_type: string
+          id?: string
+          lead_id: string
+          notes?: string | null
+          priority?: string | null
+          target_value?: number | null
+        }
+        Update: {
+          created_at?: string
+          current_value?: number | null
+          deadline_years?: number | null
+          goal_type?: string
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          priority?: string | null
+          target_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "life_lead_goals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "life_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      life_lead_updates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          current_value: number | null
+          goal_id: string | null
+          id: string
+          lead_id: string
+          note: string
+          progress_pct: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          goal_id?: string | null
+          id?: string
+          lead_id: string
+          note: string
+          progress_pct?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          goal_id?: string | null
+          id?: string
+          lead_id?: string
+          note?: string
+          progress_pct?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "life_lead_updates_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "life_lead_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "life_lead_updates_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "life_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      life_leads: {
+        Row: {
+          birth_date: string | null
+          created_at: string
+          dependents: string | null
+          email: string | null
+          final_notes: string | null
+          financial_feelings: string | null
+          has_debts: string | null
+          id: string
+          invested_amount_range: string | null
+          investment_types: string[] | null
+          loss_reaction: string | null
+          loss_tolerance_pct: number | null
+          main_motivation: string[] | null
+          marital_status: string | null
+          monthly_income_range: string | null
+          monthly_savings_range: string | null
+          name: string
+          past_attempts: string | null
+          profession: string | null
+          source: string | null
+          status: string
+          whatsapp: string | null
+        }
+        Insert: {
+          birth_date?: string | null
+          created_at?: string
+          dependents?: string | null
+          email?: string | null
+          final_notes?: string | null
+          financial_feelings?: string | null
+          has_debts?: string | null
+          id?: string
+          invested_amount_range?: string | null
+          investment_types?: string[] | null
+          loss_reaction?: string | null
+          loss_tolerance_pct?: number | null
+          main_motivation?: string[] | null
+          marital_status?: string | null
+          monthly_income_range?: string | null
+          monthly_savings_range?: string | null
+          name: string
+          past_attempts?: string | null
+          profession?: string | null
+          source?: string | null
+          status?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          birth_date?: string | null
+          created_at?: string
+          dependents?: string | null
+          email?: string | null
+          final_notes?: string | null
+          financial_feelings?: string | null
+          has_debts?: string | null
+          id?: string
+          invested_amount_range?: string | null
+          investment_types?: string[] | null
+          loss_reaction?: string | null
+          loss_tolerance_pct?: number | null
+          main_motivation?: string[] | null
+          marital_status?: string | null
+          monthly_income_range?: string | null
+          monthly_savings_range?: string | null
+          name?: string
+          past_attempts?: string | null
+          profession?: string | null
+          source?: string | null
+          status?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       monitoring_snapshots: {
         Row: {
           client_id: string
