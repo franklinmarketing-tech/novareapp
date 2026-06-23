@@ -23,7 +23,7 @@ import {
   Pencil, Save, X, User, Loader2,
   Wallet, Receipt, CreditCard, Building2, Shield, Target, Brain,
   type LucideIcon,
-  CheckCircle2, AlertTriangle, Heart, Flame, Sparkles, RefreshCw, Lock,
+  CheckCircle2, AlertTriangle, Heart, Flame, Sparkles, RefreshCw, Lock, Unlock,
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
@@ -137,7 +137,10 @@ const MyData = () => {
   // ele perde a permissão de alterar os dados do onboarding (Renda, Despesas,
   // Dívidas, etc.). Só o consultor passa a editar a partir daí.
   const [firstClosingDate, setFirstClosingDate] = useState<string | null>(null);
-  const isLocked = !!firstClosingDate;
+  // Se o consultor reabriu algum mês ("reaberto"), o cliente volta a poder
+  // corrigir os dados — mesmo já tendo havido fechamento.
+  const [editUnlocked, setEditUnlocked] = useState(false);
+  const isLocked = !!firstClosingDate && !editUnlocked;
   const [confirmingData, setConfirmingData] = useState(false);
   const [highlightActive, setHighlightActive] = useState(false);
   const [highlightedOnce, setHighlightedOnce] = useState(false);
@@ -222,16 +225,18 @@ const MyData = () => {
       const { data: conf } = await supabase.from("data_confirmations").select("confirmed_at").eq("client_id", clientData.id).eq("month_ref", getMonthRef()).maybeSingle();
       if (conf) setMonthlyConfirmed(new Date(conf.confirmed_at));
 
-      // Verifica se ja existe pelo menos um fechamento mensal — se sim,
-      // a edicao dos dados do onboarding fica travada para o cliente.
-      const { data: firstClosing } = await supabase
+      // Verifica os fechamentos mensais: havendo qualquer um, a edicao trava
+      // para o cliente — EXCETO se algum mes estiver "reaberto", caso em que o
+      // consultor liberou a correcao dos dados.
+      const { data: closings } = await supabase
         .from("monthly_closings")
-        .select("month_ref")
+        .select("month_ref, status")
         .eq("client_id", clientData.id)
-        .order("month_ref", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (firstClosing) setFirstClosingDate(firstClosing.month_ref);
+        .order("month_ref", { ascending: true });
+      if (closings && closings.length) {
+        setFirstClosingDate(closings[0].month_ref);
+        setEditUnlocked(closings.some((c) => c.status === "reaberto"));
+      }
 
       const c = clientData;
       setIdentificacao({ full_name: profileData?.full_name ?? "", cpf: c.cpf ?? "", date_of_birth: c.date_of_birth ?? "", marital_status: c.marital_status ?? "", property_regime: c.property_regime ?? "", profession: c.profession ?? "", company: c.company ?? "", years_in_profession: c.years_in_profession?.toString() ?? "", dependents_count: c.dependents_count?.toString() ?? "", dependents_ages: c.dependents_ages ?? "", city: c.city ?? "", state: c.state ?? "" });
@@ -610,6 +615,28 @@ const MyData = () => {
               </p>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                 Após o consultor concluir seu primeiro fechamento{firstClosingDate ? ` em ${new Date(firstClosingDate + "T00:00:00").toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}` : ""}, esta tela ficou em modo visualização. Se algo precisar mudar, fale com seu consultor — ele ajusta pra você.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ━━━ MES REABERTO PELO CONSULTOR → CLIENTE PODE CORRIGIR ━━━ */}
+      {!isLocked && firstClosingDate && editUnlocked && (
+        <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={1.5}>
+          <div className="rounded-2xl border-2 border-emerald-400/50 bg-gradient-to-br from-emerald-50 via-emerald-100/40 to-transparent dark:from-emerald-950/30 dark:via-emerald-900/10 px-5 py-4 flex items-start gap-4">
+            <div className="h-10 w-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-md">
+              <Unlock className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">
+                Edição liberada
+              </p>
+              <p className="text-sm font-bold text-foreground leading-tight mt-0.5">
+                Seu consultor reabriu um fechamento para ajustes
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Você pode corrigir seus dados agora. Quando o consultor fechar o mês novamente, esta tela volta ao modo visualização.
               </p>
             </div>
           </div>

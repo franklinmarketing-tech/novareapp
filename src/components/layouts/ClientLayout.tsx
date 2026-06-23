@@ -64,12 +64,15 @@ export const ClientLayout = ({ children }: Props) => {
       if (p) setProfile(p);
       if (!client) return;
       const monthRef = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-01`;
-      const [{ data: conf }, { data: firstClosing }] = await Promise.all([
+      const [{ data: conf }, { data: closings }] = await Promise.all([
         supabase.from("data_confirmations").select("id").eq("client_id", client.id).eq("month_ref", monthRef).maybeSingle(),
-        supabase.from("monthly_closings").select("id").eq("client_id", client.id).limit(1).maybeSingle(),
+        supabase.from("monthly_closings").select("status").eq("client_id", client.id),
       ]);
       setDataPending(!conf);
-      setHasClosedMonth(!!firstClosing);
+      // "Meus Dados" some após o 1º fechamento — mas reaparece se o consultor
+      // reabrir um mês ("reaberto") para o cliente corrigir os dados.
+      const rows = closings ?? [];
+      setHasClosedMonth(rows.length > 0 && !rows.some((c) => c.status === "reaberto"));
     };
     check();
   }, [user]);
