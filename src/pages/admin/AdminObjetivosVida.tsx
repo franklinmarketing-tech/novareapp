@@ -129,7 +129,7 @@ export default function AdminObjetivosVida() {
 
     if (!leadsData) { setLoading(false); return; }
 
-    const ids = (leadsData as Lead[]).map((l) => l.id);
+    const ids = (leadsData as unknown as Lead[]).map((l) => l.id);
 
     const [{ data: goalsData }, { data: updatesData }] = await Promise.all([
       supabase.from("life_lead_goals" as any).select("*").in("lead_id", ids),
@@ -137,18 +137,18 @@ export default function AdminObjetivosVida() {
     ]);
 
     const goalsByLead: Record<string, Goal[]> = {};
-    (goalsData as Goal[] || []).forEach((g) => {
+    (goalsData as unknown as Goal[] || []).forEach((g) => {
       if (!goalsByLead[g.lead_id]) goalsByLead[g.lead_id] = [];
       goalsByLead[g.lead_id].push(g);
     });
 
     const updatesByLead: Record<string, Update[]> = {};
-    (updatesData as Update[] || []).forEach((u) => {
+    (updatesData as unknown as Update[] || []).forEach((u) => {
       if (!updatesByLead[u.lead_id]) updatesByLead[u.lead_id] = [];
       updatesByLead[u.lead_id].push(u);
     });
 
-    setLeads((leadsData as Lead[]).map((l) => ({
+    setLeads((leadsData as unknown as Lead[]).map((l) => ({
       ...l,
       goals: goalsByLead[l.id] || [],
       updates: updatesByLead[l.id] || [],
