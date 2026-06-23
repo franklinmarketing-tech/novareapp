@@ -1788,9 +1788,9 @@ export type Database = {
           message_count?: number
           name?: string | null
           notes?: string | null
-          phone?: string | null
           pdf_filename?: string | null
           pdf_url?: string | null
+          phone?: string | null
           reply_count?: number
           simulation_snapshot?: Json | null
           source?: string
