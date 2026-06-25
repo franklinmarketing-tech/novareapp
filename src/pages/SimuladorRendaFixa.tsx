@@ -11,8 +11,10 @@ import {
 import { SEO } from "@/components/SEO";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { TrendingUp, ShieldCheck, ArrowRight, Lock, MessageCircle, Trophy } from "lucide-react";
+import { TrendingUp, ShieldCheck, ArrowRight, Lock, MessageCircle, Trophy, Mail, Phone, Globe } from "lucide-react";
 import logoPreta from "@/assets/logo-preta.png";
+import logoBranca from "@/assets/logo-branca.png";
+import simuladorBanner from "@/assets/simulador-banner.webp";
 
 // ── Produtos de renda fixa (isencao de IR + taxa de referencia em % do CDI) ──
 
@@ -407,7 +409,7 @@ export default function SimuladorRendaFixa() {
                       <p className="text-white/85 text-sm mt-0.5">Um consultor Novare monta uma carteira sob medida para os seus objetivos.</p>
                     </div>
                     <Button asChild variant="secondary" className="bg-white text-novare-terracotta hover:bg-white/90 font-bold gap-2">
-                      <a href="https://wa.me/5519981829686?text=Quero%20uma%20an%C3%A1lise%20da%20Novare" target="_blank" rel="noopener noreferrer">
+                      <a href="https://wa.me/5519983402827?text=Quero%20uma%20an%C3%A1lise%20da%20Novare" target="_blank" rel="noopener noreferrer">
                         <MessageCircle className="h-4 w-4" /> Falar com a Novare
                       </a>
                     </Button>
@@ -437,11 +439,78 @@ export default function SimuladorRendaFixa() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-400">
-        <p className="flex items-center justify-center gap-1.5">
-          <ShieldCheck className="h-3.5 w-3.5" /> Simulação educacional · Novare Consultoria de Investimentos © {new Date().getFullYear()}
-        </p>
+      {/* Banner CTA com imagem */}
+      <section className="max-w-5xl mx-auto px-4 pb-16">
+        <div className="relative overflow-hidden rounded-3xl min-h-[300px] flex items-center shadow-sm">
+          <img src={simuladorBanner} alt="Consultoria de investimentos Novare" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+          <div className="absolute inset-0 bg-gradient-to-r from-novare-blue via-novare-blue/90 to-novare-blue/10" />
+          <div className="relative p-8 sm:p-12 max-w-lg">
+            <p className="text-white/70 text-[11px] font-bold uppercase tracking-[0.2em] mb-2">Consultoria Novare</p>
+            <h2 className="text-2xl sm:text-[2rem] font-display font-bold text-white leading-tight">
+              Seu patrimônio merece uma estratégia sob medida
+            </h2>
+            <p className="text-white/85 mt-3 text-sm sm:text-base leading-relaxed">
+              Simular é só o primeiro passo. Um consultor Novare analisa seu perfil e seus objetivos e monta uma carteira pensada para a sua vida — com acompanhamento de verdade, mês a mês.
+            </p>
+            <Button asChild className="mt-6 bg-white text-novare-blue hover:bg-white/90 font-bold gap-2 h-12 px-7">
+              <a href="https://wa.me/5519983402827?text=Quero%20uma%20an%C3%A1lise%20da%20Novare" target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-4 w-4" /> Falar com um consultor
+              </a>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer profissional */}
+      <footer className="bg-novare-blue text-white">
+        <div className="max-w-5xl mx-auto px-4 py-12">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Marca */}
+            <div>
+              <img src={logoBranca} alt="Novare" className="h-8 w-auto" />
+              <p className="text-sm text-white/60 mt-4 leading-relaxed">
+                Consultoria de investimentos independente. Planejamento financeiro, alocação e acompanhamento contínuo para os seus objetivos de vida.
+              </p>
+            </div>
+
+            {/* Ferramentas */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white/50 mb-3">Ferramentas</h4>
+              <ul className="space-y-2 text-sm text-white/75">
+                <li><a href="/ferramentas/simulador-de-renda-fixa" className="hover:text-white transition-colors">Simulador de Renda Fixa</a></li>
+                <li><a href="/ferramentas/calculadora-de-investimentos" className="hover:text-white transition-colors">Calculadora de Investimentos</a></li>
+                <li><a href="/objetivos-de-vida" className="hover:text-white transition-colors">Objetivos de Vida</a></li>
+              </ul>
+            </div>
+
+            {/* Institucional */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white/50 mb-3">Institucional</h4>
+              <ul className="space-y-2 text-sm text-white/75">
+                <li><a href="/termos" className="hover:text-white transition-colors">Termos de Uso</a></li>
+                <li><a href="/privacidade" className="hover:text-white transition-colors">Política de Privacidade</a></li>
+              </ul>
+            </div>
+
+            {/* Contato */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white/50 mb-3">Fale com a gente</h4>
+              <ul className="space-y-2.5 text-sm text-white/75">
+                <li><a href="https://wa.me/5519983402827" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors"><Phone className="h-4 w-4 shrink-0" /> (19) 98340-2827</a></li>
+                <li><a href="mailto:contato@novareapp.com.br" className="flex items-center gap-2 hover:text-white transition-colors"><Mail className="h-4 w-4 shrink-0" /> contato@novareapp.com.br</a></li>
+                <li><a href="https://novareapp.com.br" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors"><Globe className="h-4 w-4 shrink-0" /> novareapp.com.br</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <p className="text-xs text-white/50">© {new Date().getFullYear()} Novare Consultoria de Investimentos. Todos os direitos reservados.</p>
+            <p className="text-[11px] text-white/45 flex items-start gap-1.5 max-w-md sm:text-right leading-relaxed">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0 mt-px" />
+              Conteúdo educacional. Não constitui recomendação ou oferta de investimento. Rentabilidade passada não garante resultados futuros.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );
