@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useClientId } from "@/contexts/ClientContext";
 import { supabase } from "@/integrations/supabase/client";
+import { computeMonthlyTotals } from "@/lib/finance";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -173,11 +174,12 @@ const AdminAcompanhamentoEvolucao = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("monthly_closings")
-        .select("month_ref, total_income, total_expenses, total_assets, total_debts, monthly_debt_payments, net_worth, savings_rate, emergency_reserve_months")
+        .select("month_ref, status, total_income, total_expenses, total_assets, total_debts, monthly_debt_payments, net_worth, savings_rate, emergency_reserve_months")
         .eq("client_id", clientId)
         .order("month_ref", { ascending: true });
       return (data || []) as Array<{
         month_ref: string;
+        status: string | null;
         total_income: number | null;
         total_expenses: number | null;
         total_assets: number | null;
@@ -190,6 +192,37 @@ const AdminAcompanhamentoEvolucao = () => {
     },
     enabled: !!clientId,
   });
+
+  // Dados ao vivo (onboarding) — usados para recalcular meses REABERTOS, cujo
+  // snapshot do fechamento está desatualizado. Mantém o Acompanhamento fiel ao
+  // que o consultor editou, sem precisar re-fechar o mês.
+  const { data: liveData } = useQuery({
+    queryKey: ["evolucao_live_data", clientId],
+    queryFn: async () => {
+      const [inc, exp, deb, ast] = await Promise.all([
+        supabase.from("income").select("amount, frequency, month_ref").eq("client_id", clientId),
+        supabase.from("expenses").select("amount, month_ref").eq("client_id", clientId),
+        supabase.from("debts").select("monthly_payment, total_amount, month_ref").eq("client_id", clientId),
+        supabase.from("assets").select("estimated_value, type, description, month_ref").eq("client_id", clientId),
+      ]);
+      return {
+        income: inc.data || [],
+        expenses: exp.data || [],
+        debts: deb.data || [],
+        assets: ast.data || [],
+      };
+    },
+    enabled: !!clientId,
+  });
+
+  // Closings "efetivos": meses reabertos recalculados com dados ao vivo.
+  const effectiveClosings = useMemo(() => {
+    return closings.map((c) => {
+      if (c.status !== "reaberto" || !liveData) return c;
+      const t = computeMonthlyTotals(c.month_ref.slice(0, 10), liveData);
+      return { ...c, ...t };
+    });
+  }, [closings, liveData]);
 
   // ── Resumo geral ──
   const summary = useMemo(() => {
@@ -251,8 +284,8 @@ const AdminAcompanhamentoEvolucao = () => {
 
   // ── Cashflow (renda − despesas) e tendência ──
   const cashflow = useMemo(() => {
-    if (!closings.length) return null;
-    const series = closings.map((c) => {
+    if (!effectiveClosings.length) return null;
+    const series = effectiveClosings.map((c) => {
       const income = Number(c.total_income ?? 0);
       // Saídas totais = despesas + parcelas das dívidas (cashflow real do mês)
       const expense = Number(c.total_expenses ?? 0) + Number(c.monthly_debt_payments ?? 0);
@@ -273,7 +306,7 @@ const AdminAcompanhamentoEvolucao = () => {
     const deltaPct = prev && prev.net !== 0 ? (delta! / Math.abs(prev.net)) * 100 : null;
     const avg6 = series.slice(-6).reduce((s, p) => s + p.net, 0) / Math.min(series.length, 6);
     return { series: series.slice(-6), last, prev, delta, deltaPct, avg6 };
-  }, [closings]);
+  }, [effectiveClosings]);
 
   // ── Forecast: projeta quando cada meta deve ser atingida no ritmo atual ──
   type ForecastStatus = "achieved" | "ahead" | "on_track" | "delayed" | "stalled" | "no_data";

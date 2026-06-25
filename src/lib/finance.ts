@@ -52,3 +52,63 @@ export const savingsRatePct = (
   totalIncome > 0
     ? (netMonthlyCashFlow(totalIncome, totalExpenses, monthlyDebtPayments) / totalIncome) * 100
     : 0;
+
+// ── Recalculo de totais mensais a partir dos dados ao vivo ──────────────────
+// Usado para meses "reabertos" (snapshot do fechamento desatualizado): recalcula
+// com a MESMA lógica do fechamento, garantindo consistência com o relatório.
+
+const dateOnly = (v?: string | null) => v?.slice(0, 10) ?? null;
+
+/**
+ * Seleciona as linhas pertinentes a um mês: prioriza as do mês exato; se não
+ * houver nenhuma, usa as linhas sem mês (baseline do onboarding).
+ */
+export const preferMonthRows = <T extends { month_ref?: string | null }>(
+  rows: T[],
+  monthRef: string,
+): T[] => {
+  const exact = rows.filter((r) => dateOnly(r.month_ref) === monthRef);
+  return exact.length > 0 ? exact : rows.filter((r) => !r.month_ref);
+};
+
+export interface MonthlyTotals {
+  total_income: number;
+  total_expenses: number;
+  monthly_debt_payments: number;
+  total_debts: number;
+  total_assets: number;
+  net_worth: number;
+  savings_rate: number;
+  emergency_reserve_months: number;
+}
+
+/** Recalcula os totais financeiros de um mês a partir dos dados ao vivo. */
+export const computeMonthlyTotals = (
+  monthRef: string,
+  data: { income?: any[]; expenses?: any[]; debts?: any[]; assets?: any[] },
+): MonthlyTotals => {
+  const income = preferMonthRows(data.income || [], monthRef);
+  const expenses = preferMonthRows(data.expenses || [], monthRef);
+  const debts = preferMonthRows(data.debts || [], monthRef);
+  const assets = preferMonthRows(data.assets || [], monthRef);
+
+  const total_income = income.reduce(
+    (s, r: any) => s + (r.frequency === "anual" ? Number(r.amount) / 12 : Number(r.amount) || 0),
+    0,
+  );
+  const total_expenses = expenses.reduce((s, r: any) => s + (Number(r.amount) || 0), 0);
+  const monthly_debt_payments = debts.reduce((s, r: any) => s + (Number(r.monthly_payment) || 0), 0);
+  const total_debts = debts.reduce((s, r: any) => s + (Number(r.total_amount) || 0), 0);
+  const total_assets = assets.reduce((s, r: any) => s + (Number(r.estimated_value) || 0), 0);
+
+  return {
+    total_income,
+    total_expenses,
+    monthly_debt_payments,
+    total_debts,
+    total_assets,
+    net_worth: total_assets - total_debts,
+    savings_rate: savingsRatePct(total_income, total_expenses, monthly_debt_payments),
+    emergency_reserve_months: emergencyReserveMonths(assets as AssetLike[], total_expenses),
+  };
+};
