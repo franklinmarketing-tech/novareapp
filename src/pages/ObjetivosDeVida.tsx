@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
-import logoBranca from "@/assets/logo-branca.png";
+import logoPreta from "@/assets/logo-preta.png";
 
 // ── Dados estáticos ──────────────────────────────────────────────────────────
 
@@ -70,13 +70,13 @@ const TOLERANCE_LABELS: Record<number, string> = { 0:"Nada", 5:"Até 5%", 15:"At
 
 interface LifeGoal { type: string; active: boolean; targetValue: string; deadlineYears: string }
 
-// ── Estilos compartilhados ───────────────────────────────────────────────────
+// ── Estilos compartilhados (paleta Novare · tema claro) ───────────────────────
 
-const FIELD = "bg-[#111827] border-white/10 text-white placeholder:text-white/30 focus-visible:ring-[#3b82f6]/30 focus-visible:border-[#3b82f6]";
-const LABEL = "block text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 mb-1.5";
+const FIELD = "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-novare-blue/25 focus-visible:border-novare-blue";
+const LABEL = "block text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-1.5";
 const chip = (active: boolean) => cn(
   "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wider cursor-pointer select-none transition-all",
-  active ? "bg-[#1d4ed8] border-[#3b82f6] text-white" : "border-white/20 text-white/55 hover:border-white/40 hover:text-white/80",
+  active ? "bg-novare-blue border-novare-blue text-white" : "border-slate-200 text-slate-600 hover:border-novare-blue/40 hover:text-slate-900",
 );
 
 // ── Componente ───────────────────────────────────────────────────────────────
@@ -184,16 +184,16 @@ export default function ObjetivosDeVida() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#070d1a] flex flex-col items-center justify-center text-center px-4 gap-6">
-        <img src={logoBranca} alt="Novare" className="h-11 w-auto" />
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col items-center justify-center text-center px-4 gap-6">
+        <img src={logoPreta} alt="Novare" className="h-11 w-auto" />
         <div className="text-6xl">✅</div>
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Recebemos seu formulário!</h2>
-          <p className="text-white/50 text-sm max-w-sm leading-relaxed">
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Recebemos seu formulário!</h2>
+          <p className="text-slate-500 text-sm max-w-sm leading-relaxed">
             Nossa equipe entrará em contato em breve para dar o próximo passo rumo aos seus objetivos de vida.
           </p>
         </div>
-        <p className="text-white/25 text-xs">Novare Consultoria de Investimentos</p>
+        <p className="text-slate-400 text-xs">Novare Consultoria de Investimentos</p>
       </div>
     );
   }
@@ -201,10 +201,10 @@ export default function ObjetivosDeVida() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#070d1a] text-white pb-28">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900 pb-28">
       {/* Logo */}
       <div className="flex justify-center pt-7 pb-2">
-        <img src={logoBranca} alt="Novare" className="h-9 w-auto" />
+        <img src={logoPreta} alt="Novare" className="h-9 w-auto" />
       </div>
 
       {/* Step indicator */}
@@ -219,20 +219,20 @@ export default function ObjetivosDeVida() {
                 {i > 0 && (
                   <div className={cn(
                     "absolute top-[13px] right-1/2 w-full h-[2px]",
-                    done || active ? "bg-[#3b82f6]" : "bg-white/12",
+                    done || active ? "bg-novare-blue" : "bg-slate-200",
                   )} />
                 )}
                 <div className={cn(
                   "relative z-10 h-7 w-7 rounded-full border-2 flex items-center justify-center text-[11px] font-bold transition-all",
-                  active ? "bg-[#3b82f6] border-[#3b82f6] text-white" :
-                  done   ? "bg-[#3b82f6] border-[#3b82f6] text-white" :
-                           "bg-[#0d1524] border-white/18 text-white/30",
+                  active ? "bg-novare-blue border-novare-blue text-white" :
+                  done   ? "bg-novare-blue border-novare-blue text-white" :
+                           "bg-white border-slate-300 text-slate-400",
                 )}>
                   {done ? <Check className="h-3.5 w-3.5" /> : n}
                 </div>
                 <span className={cn(
                   "text-[9px] font-bold uppercase tracking-wider mt-1.5",
-                  active ? "text-[#3b82f6]" : done ? "text-[#3b82f6]/70" : "text-white/25",
+                  active ? "text-novare-blue" : done ? "text-novare-blue/70" : "text-slate-400",
                 )}>
                   {label}
                 </span>
@@ -246,8 +246,8 @@ export default function ObjetivosDeVida() {
       {step === 1 && (
         <div className="max-w-xl mx-auto px-4 space-y-5">
           <div>
-            <h1 className="text-[1.6rem] font-bold text-white">Vamos nos conhecer 👋</h1>
-            <p className="text-white/45 text-sm mt-1">Estas informações são confidenciais e usadas exclusivamente para personalizar a sua consultoria.</p>
+            <h1 className="text-[1.6rem] font-display font-bold text-slate-900">Vamos nos conhecer 👋</h1>
+            <p className="text-slate-500 text-sm mt-1">Estas informações são confidenciais e usadas exclusivamente para personalizar a sua consultoria.</p>
           </div>
 
           <div>
@@ -325,8 +325,8 @@ export default function ObjetivosDeVida() {
       {step === 2 && (
         <div className="max-w-xl mx-auto px-4 space-y-5">
           <div>
-            <h1 className="text-[1.6rem] font-bold text-white">Sua situação financeira hoje</h1>
-            <p className="text-white/45 text-sm mt-1">Não existe resposta certa ou errada. Quanto mais honesto você for, melhor será nosso diagnóstico.</p>
+            <h1 className="text-[1.6rem] font-display font-bold text-slate-900">Sua situação financeira hoje</h1>
+            <p className="text-slate-500 text-sm mt-1">Não existe resposta certa ou errada. Quanto mais honesto você for, melhor será nosso diagnóstico.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -406,8 +406,8 @@ export default function ObjetivosDeVida() {
       {step === 3 && (
         <div className="max-w-xl mx-auto px-4 space-y-5">
           <div>
-            <h1 className="text-[1.6rem] font-bold text-[#c9924a]">Seus objetivos de vida</h1>
-            <p className="text-white/45 text-sm mt-1">Ative os objetivos que fazem parte dos seus planos e informe o valor e o prazo para cada um. Isso transforma sonhos em metas concretas.</p>
+            <h1 className="text-[1.6rem] font-display font-bold text-novare-terracotta">Seus objetivos de vida</h1>
+            <p className="text-slate-500 text-sm mt-1">Ative os objetivos que fazem parte dos seus planos e informe o valor e o prazo para cada um. Isso transforma sonhos em metas concretas.</p>
           </div>
 
           <div className="space-y-2">
@@ -416,30 +416,30 @@ export default function ObjetivosDeVida() {
               return (
                 <div key={g.type} className={cn(
                   "rounded-xl border transition-all duration-200",
-                  goal.active ? "border-[#3b82f6]/35 bg-[#0e1a2e]" : "border-white/7 bg-[#0d1524]",
+                  goal.active ? "border-novare-blue/30 bg-novare-blue-light/60 shadow-sm" : "border-slate-200 bg-white",
                 )}>
                   <div className="flex items-center gap-3 p-4 cursor-pointer select-none"
                     onClick={() => toggleGoal(i)}>
                     <div className={cn(
                       "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all",
-                      goal.active ? "bg-[#3b82f6] border-[#3b82f6]" : "border-white/22",
+                      goal.active ? "bg-novare-blue border-novare-blue" : "border-slate-300",
                     )}>
                       {goal.active && <Check className="h-3 w-3 text-white" />}
                     </div>
                     <span className="text-xl shrink-0">{g.emoji}</span>
-                    <span className="font-semibold text-white text-sm flex-1">{g.label}</span>
-                    <span className="text-white/20 text-lg">—</span>
+                    <span className="font-semibold text-slate-900 text-sm flex-1">{g.label}</span>
+                    <span className="text-slate-300 text-lg">—</span>
                   </div>
                   {goal.active && (
-                    <div className="grid grid-cols-2 gap-3 px-4 pb-4 border-t border-white/5 pt-3"
+                    <div className="grid grid-cols-2 gap-3 px-4 pb-4 border-t border-slate-100 pt-3"
                       onClick={(e) => e.stopPropagation()}>
                       <div>
-                        <label className={cn(LABEL, "text-white/35")}>Valor alvo (R$)</label>
+                        <label className={cn(LABEL, "text-slate-400")}>Valor alvo (R$)</label>
                         <Input className={cn(FIELD, "h-8 text-sm")} placeholder="Ex: 500.000"
                           value={goal.targetValue} onChange={(e) => updateGoal(i, "targetValue", e.target.value)} />
                       </div>
                       <div>
-                        <label className={cn(LABEL, "text-white/35")}>Prazo (anos)</label>
+                        <label className={cn(LABEL, "text-slate-400")}>Prazo (anos)</label>
                         <Input type="number" min={1} className={cn(FIELD, "h-8 text-sm")} placeholder="Ex: 10"
                           value={goal.deadlineYears} onChange={(e) => updateGoal(i, "deadlineYears", e.target.value)} />
                       </div>
@@ -463,8 +463,8 @@ export default function ObjetivosDeVida() {
       {step === 4 && (
         <div className="max-w-xl mx-auto px-4 space-y-6">
           <div>
-            <h1 className="text-[1.6rem] font-bold text-white">Seu perfil de investidor</h1>
-            <p className="text-white/45 text-sm mt-1">Estas perguntas nos ajudam a entender como você reage a riscos e volatilidade — essencial para montarmos uma carteira ideal para você.</p>
+            <h1 className="text-[1.6rem] font-display font-bold text-slate-900">Seu perfil de investidor</h1>
+            <p className="text-slate-500 text-sm mt-1">Estas perguntas nos ajudam a entender como você reage a riscos e volatilidade — essencial para montarmos uma carteira ideal para você.</p>
           </div>
 
           <div>
@@ -476,8 +476,8 @@ export default function ObjetivosDeVida() {
                   className={cn(
                     "flex items-center gap-2 px-3 py-3 rounded-xl border text-xs font-bold uppercase tracking-wider text-left transition-all",
                     perfil.lossReaction === o.id
-                      ? "bg-[#1d4ed8] border-[#3b82f6] text-white"
-                      : "border-white/12 text-white/55 hover:border-white/30",
+                      ? "bg-novare-blue border-novare-blue text-white"
+                      : "border-slate-200 text-slate-600 hover:border-novare-blue/40",
                   )}>
                   <span className="text-base">{o.emoji}</span> {o.label}
                 </button>
@@ -491,13 +491,13 @@ export default function ObjetivosDeVida() {
               <input type="range" min={0} max={50} step={5}
                 value={perfil.lossTolerancePct}
                 onChange={(e) => setPerfil((p) => ({ ...p, lossTolerancePct: parseInt(e.target.value) }))}
-                className="w-full accent-[#3b82f6] cursor-pointer" />
-              <div className="flex justify-between text-[9px] text-white/25 mt-1 select-none">
+                className="w-full accent-novare-blue cursor-pointer" />
+              <div className="flex justify-between text-[9px] text-slate-400 mt-1 select-none">
                 {["Nada","Até 5%","Até 15%","Até 30%","Mais de 30%"].map((l) => (
                   <span key={l}>{l}</span>
                 ))}
               </div>
-              <p className="text-center text-[#3b82f6] font-semibold text-sm mt-2">
+              <p className="text-center text-novare-blue font-semibold text-sm mt-2">
                 {toleranceLabel(perfil.lossTolerancePct)} de perda tolerada
               </p>
             </div>
@@ -530,47 +530,47 @@ export default function ObjetivosDeVida() {
       {step === 5 && (
         <div className="max-w-xl mx-auto px-4 space-y-5">
           <div>
-            <h1 className="text-[1.6rem] font-bold text-[#c9924a]">Revise antes de enviar</h1>
-            <p className="text-white/45 text-sm mt-1">Confira um resumo das suas respostas. Você pode voltar e editar qualquer campo antes de finalizar.</p>
+            <h1 className="text-[1.6rem] font-display font-bold text-novare-terracotta">Revise antes de enviar</h1>
+            <p className="text-slate-500 text-sm mt-1">Confira um resumo das suas respostas. Você pode voltar e editar qualquer campo antes de finalizar.</p>
           </div>
 
-          <div className="bg-[#0d1524] rounded-xl border border-white/8 p-5 space-y-3 text-sm leading-relaxed">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 text-sm leading-relaxed">
             <div className="space-y-1">
-              <p><span className="text-white/50 font-medium">Nome:</span> <span className="text-white">{voce.name || "—"}</span></p>
-              <p><span className="text-white/50 font-medium">Profissão:</span> <span className="text-white">{voce.profession || "—"}</span></p>
+              <p><span className="text-slate-500 font-medium">Nome:</span> <span className="text-slate-900">{voce.name || "—"}</span></p>
+              <p><span className="text-slate-500 font-medium">Profissão:</span> <span className="text-slate-900">{voce.profession || "—"}</span></p>
               <p>
-                <span className="text-white/50 font-medium">E-mail:</span> <span className="text-white">{voce.email || "—"}</span>
+                <span className="text-slate-500 font-medium">E-mail:</span> <span className="text-slate-900">{voce.email || "—"}</span>
                 &nbsp;|&nbsp;
-                <span className="text-white/50 font-medium">WhatsApp:</span> <span className="text-white">{voce.whatsapp || "—"}</span>
+                <span className="text-slate-500 font-medium">WhatsApp:</span> <span className="text-slate-900">{voce.whatsapp || "—"}</span>
               </p>
-              {voce.source && <p><span className="text-white/50 font-medium">Como chegou:</span> <span className="text-white">{SOURCES.find((s) => s.id === voce.source)?.label}</span></p>}
+              {voce.source && <p><span className="text-slate-500 font-medium">Como chegou:</span> <span className="text-slate-900">{SOURCES.find((s) => s.id === voce.source)?.label}</span></p>}
             </div>
-            <hr className="border-white/6" />
+            <hr className="border-slate-100" />
             <div className="space-y-1">
               <p>
-                <span className="text-white/50 font-medium">Renda:</span> <span className="text-white">{voce.maritalStatus || "—"}</span>
+                <span className="text-slate-500 font-medium">Estado civil:</span> <span className="text-slate-900">{voce.maritalStatus || "—"}</span>
                 &nbsp;|&nbsp;
-                <span className="text-white/50 font-medium">Patrimônio:</span> <span className="text-white">{financas.investedAmountRange || "—"}</span>
+                <span className="text-slate-500 font-medium">Patrimônio:</span> <span className="text-slate-900">{financas.investedAmountRange || "—"}</span>
               </p>
               <p>
-                <span className="text-white/50 font-medium">Aporte mensal:</span> <span className="text-white">{financas.monthlySavingsRange || "—"}</span>
+                <span className="text-slate-500 font-medium">Aporte mensal:</span> <span className="text-slate-900">{financas.monthlySavingsRange || "—"}</span>
                 &nbsp;|&nbsp;
-                <span className="text-white/50 font-medium">Dívidas:</span> <span className="text-white">{financas.hasDebts || "—"}</span>
+                <span className="text-slate-500 font-medium">Dívidas:</span> <span className="text-slate-900">{financas.hasDebts || "—"}</span>
               </p>
               {financas.investmentTypes.length > 0 && (
-                <p><span className="text-white/50 font-medium">Investe em:</span> <span className="text-white">{financas.investmentTypes.join(", ")}</span></p>
+                <p><span className="text-slate-500 font-medium">Investe em:</span> <span className="text-slate-900">{financas.investmentTypes.join(", ")}</span></p>
               )}
             </div>
-            <hr className="border-white/6" />
+            <hr className="border-slate-100" />
             <div>
-              <p className="text-white/50 font-medium mb-1">🎯 Objetivos ativados:</p>
+              <p className="text-slate-500 font-medium mb-1">🎯 Objetivos ativados:</p>
               {goals.filter((g) => g.active).length === 0 ? (
-                <p className="text-white/30 text-xs">— Nenhum objetivo ativado</p>
+                <p className="text-slate-400 text-xs">— Nenhum objetivo ativado</p>
               ) : (
                 goals.filter((g) => g.active).map((g) => {
                   const meta = LIFE_GOALS.find((l) => l.type === g.type)!;
                   return (
-                    <p key={g.type} className="text-white text-xs">
+                    <p key={g.type} className="text-slate-900 text-xs">
                       {meta.emoji} {meta.label}
                       {g.targetValue && ` · R$ ${g.targetValue}`}
                       {g.deadlineYears && ` · ${g.deadlineYears} anos`}
@@ -579,12 +579,12 @@ export default function ObjetivosDeVida() {
                 })
               )}
             </div>
-            <hr className="border-white/6" />
+            <hr className="border-slate-100" />
             <div className="space-y-1">
-              <p><span className="text-white/50 font-medium">Reação a quedas:</span> <span className="text-white">{LOSS_OPTIONS.find((o) => o.id === perfil.lossReaction)?.label || "—"}</span></p>
-              <p><span className="text-white/50 font-medium">Tolerância a perdas:</span> <span className="text-[#3b82f6] font-semibold">{toleranceLabel(perfil.lossTolerancePct)}</span></p>
+              <p><span className="text-slate-500 font-medium">Reação a quedas:</span> <span className="text-slate-900">{LOSS_OPTIONS.find((o) => o.id === perfil.lossReaction)?.label || "—"}</span></p>
+              <p><span className="text-slate-500 font-medium">Tolerância a perdas:</span> <span className="text-novare-blue font-semibold">{toleranceLabel(perfil.lossTolerancePct)}</span></p>
               {perfil.mainMotivation.length > 0 && (
-                <p><span className="text-white/50 font-medium">Motivação:</span> <span className="text-white">{perfil.mainMotivation.map((id) => MOTIVATIONS.find((m) => m.id === id)?.label).join(", ")}</span></p>
+                <p><span className="text-slate-500 font-medium">Motivação:</span> <span className="text-slate-900">{perfil.mainMotivation.map((id) => MOTIVATIONS.find((m) => m.id === id)?.label).join(", ")}</span></p>
               )}
             </div>
           </div>
@@ -599,10 +599,10 @@ export default function ObjetivosDeVida() {
       )}
 
       {/* ── Navegação (fixed bottom) ── */}
-      <div className="fixed bottom-0 inset-x-0 bg-[#070d1a]/95 backdrop-blur-md border-t border-white/7 px-4 py-4">
+      <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-4">
         <div className="max-w-xl mx-auto flex items-center justify-between">
           {step > 1 ? (
-            <Button variant="ghost" className="text-white/40 hover:text-white hover:bg-white/5"
+            <Button variant="ghost" className="text-slate-500 hover:text-slate-900 hover:bg-slate-100"
               onClick={() => setStep((s) => s - 1)}>
               ← Voltar
             </Button>
@@ -610,14 +610,14 @@ export default function ObjetivosDeVida() {
 
           {step < 5 ? (
             <Button
-              className="bg-[#1d4ed8] hover:bg-[#2563eb] text-white font-bold tracking-wider px-8"
+              className="bg-novare-blue hover:bg-novare-blue/90 text-white font-bold tracking-wider px-8"
               disabled={step === 1 && !voce.name.trim()}
               onClick={() => setStep((s) => s + 1)}>
               Continuar →
             </Button>
           ) : (
             <Button
-              className="bg-[#1d4ed8] hover:bg-[#2563eb] text-white font-bold tracking-wider px-8"
+              className="bg-novare-blue hover:bg-novare-blue/90 text-white font-bold tracking-wider px-8"
               onClick={handleSubmit} disabled={submitting}>
               {submitting ? "Enviando..." : "Enviar ✓"}
             </Button>
