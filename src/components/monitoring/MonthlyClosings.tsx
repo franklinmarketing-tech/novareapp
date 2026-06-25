@@ -416,6 +416,8 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
                       <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">Patrimônio</th>
                       <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">Renda</th>
                       <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">Despesas</th>
+                      <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">Parcelas</th>
+                      <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">Saídas</th>
                       <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">Poupança</th>
                       <th className="text-right py-1.5 pl-2 font-medium text-muted-foreground">% Metas</th>
                     </tr>
@@ -443,6 +445,14 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
                           <td className="py-2 px-2 text-right tabular-nums">
                             <div>{fmtBRL(c.total_expenses)}</div>
                             {prev && <Delta curr={c.total_expenses} prev={prev.total_expenses} />}
+                          </td>
+                          <td className="py-2 px-2 text-right tabular-nums">
+                            <div>{fmtBRL(c.monthly_debt_payments)}</div>
+                            {prev && <Delta curr={c.monthly_debt_payments} prev={prev.monthly_debt_payments} />}
+                          </td>
+                          <td className="py-2 px-2 text-right tabular-nums font-medium">
+                            <div>{fmtBRL((Number(c.total_expenses) || 0) + (Number(c.monthly_debt_payments) || 0))}</div>
+                            {prev && <Delta curr={(Number(c.total_expenses) || 0) + (Number(c.monthly_debt_payments) || 0)} prev={(Number(prev.total_expenses) || 0) + (Number(prev.monthly_debt_payments) || 0)} />}
                           </td>
                           <td className="py-2 px-2 text-right tabular-nums">
                             <div>{fmtPct(c.savings_rate)}</div>
@@ -518,7 +528,7 @@ export function MonthlyClosings({ clientId, clientName = "Cliente", isAdmin = tr
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                         <div className="p-4 border-t border-border/40 space-y-4">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            {[["Renda", fmtBRL(c.total_income)], ["Despesas", fmtBRL(c.total_expenses)], ["Ativos", fmtBRL(c.total_assets)], ["Dívidas", fmtBRL(c.total_debts)], ["Patrimônio", fmtBRL(c.net_worth)], ["Poupança", fmtPct(c.savings_rate)], ["Reserva", `${(Number(c.emergency_reserve_months) || 0).toFixed(1)} m`], ["% Metas", metasPct != null ? `${metasPct}%` : "—"]].map(([label, value]) => (
+                            {[["Renda", fmtBRL(c.total_income)], ["Despesas", fmtBRL(c.total_expenses)], ["Parcelas dívidas", fmtBRL(c.monthly_debt_payments)], ["Saídas totais", fmtBRL((Number(c.total_expenses) || 0) + (Number(c.monthly_debt_payments) || 0))], ["Ativos", fmtBRL(c.total_assets)], ["Dívidas", fmtBRL(c.total_debts)], ["Patrimônio", fmtBRL(c.net_worth)], ["Poupança", fmtPct(c.savings_rate)], ["Reserva", `${(Number(c.emergency_reserve_months) || 0).toFixed(1)} m`], ["% Metas", metasPct != null ? `${metasPct}%` : "—"]].map(([label, value]) => (
                               <div key={label} className="rounded-lg bg-muted/40 p-2">
                                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
                                 <p className="text-sm font-bold tabular-nums">{value}</p>
