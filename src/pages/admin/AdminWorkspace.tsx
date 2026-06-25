@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Sparkles, BookOpen, LucideIcon, Users, Rocket, Tag, Target } from "lucide-react";
+import { ArrowUpRight, Sparkles, BookOpen, LucideIcon, Users, Rocket, Tag, Target, Calculator } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
 import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
@@ -44,6 +44,15 @@ const projects: Project[] = [
     tags: ["Leads", "Metas", "Onboarding"],
     accent: "from-amber-500 via-orange-600 to-rose-500",
     glow: "rgba(245,158,11,0.35)",
+  },
+  {
+    name: "Simulador de Renda Fixa",
+    description: "Simulador público que compara CDB, Tesouro, LCI/LCA e Poupança com IR e CDI ao vivo — captura e-mail antes de liberar o resultado.",
+    url: "/admin/projetos/simulador-renda-fixa",
+    icon: Calculator,
+    tags: ["Simulador", "Leads", "Renda Fixa"],
+    accent: "from-violet-500 via-purple-600 to-fuchsia-500",
+    glow: "rgba(139,92,246,0.35)",
   },
 ];
 

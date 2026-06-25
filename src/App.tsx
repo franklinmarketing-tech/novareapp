@@ -55,6 +55,8 @@ const ClientSettings = lazy(() => import("@/pages/cliente/ClientSettings"));
 const YieldGuide = lazy(() => import("@/pages/YieldGuide"));
 const ObjetivosDeVida = lazy(() => import("@/pages/ObjetivosDeVida"));
 const AdminObjetivosVida = lazy(() => import("@/pages/admin/AdminObjetivosVida"));
+const SimuladorRendaFixa = lazy(() => import("@/pages/SimuladorRendaFixa"));
+const AdminSimuladorLeads = lazy(() => import("@/pages/admin/AdminSimuladorLeads"));
 const ReportPreview = lazy(() => import("@/pages/dev/ReportPreview"));
 const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/SuperAdminDashboard"));
 const SuperAdminAdmins = lazy(() => import("@/pages/super-admin/SuperAdminAdmins"));
@@ -107,6 +109,7 @@ const App = () => (
                 <Route path="/privacidade" element={<Privacidade />} />
                 <Route path="/ferramentas/calculadora-de-investimentos" element={<YieldGuide />} />
                 <Route path="/objetivos-de-vida" element={<ObjetivosDeVida />} />
+                <Route path="/ferramentas/simulador-de-renda-fixa" element={<SimuladorRendaFixa />} />
                 <Route path="/dev/report-preview" element={<ReportPreview />} />
 
                 {/* Super Admin routes */}
@@ -135,6 +138,7 @@ const App = () => (
                 <Route path="/admin/leads-newsletter" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminLeadsNewsletter /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/leads-pdf" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminLeadsPdf /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/projetos/objetivos-de-vida" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminObjetivosVida /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/projetos/simulador-renda-fixa" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSimuladorLeads /></AdminLayout></ProtectedRoute>} />
 
                 {/* Admin client routes with tabs */}
                 <Route path="/admin/cliente/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminClientLayout /></AdminLayout></ProtectedRoute>}>

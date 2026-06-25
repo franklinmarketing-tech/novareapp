@@ -16,6 +16,7 @@ import {
   FolderKanban,
   Gem,
   Target,
+  Calculator,
   User as UserIcon,
   Image as ImageIcon,
   Bell,
@@ -86,6 +87,7 @@ const staticSegments: Record<string, string> = {
   workspace: "Workspace",
   projetos: "Projetos",
   "objetivos-de-vida": "Objetivos de Vida",
+  "simulador-renda-fixa": "Simulador Renda Fixa",
   ajuda: "Ajuda & Manual",
   leads: "Leads",
   "leads-newsletter": "Leads Newsletter",
@@ -404,6 +406,21 @@ export const AdminLayout = ({ children }: Props) => {
                 >
                   <Target className="h-4 w-4 shrink-0" />
                   <span className="truncate">Objetivos de Vida</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/projetos/simulador-renda-fixa"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                      isActive
+                        ? "text-sidebar-foreground bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/25",
+                    )
+                  }
+                >
+                  <Calculator className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Simulador Renda Fixa</span>
                 </NavLink>
               </div>
             )}
