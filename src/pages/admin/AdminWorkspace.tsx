@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Sparkles, BookOpen, LucideIcon, Users, Rocket, Tag } from "lucide-react";
+import { ArrowUpRight, Sparkles, BookOpen, LucideIcon, Users, Rocket, Tag, Target } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
 import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
@@ -35,6 +35,15 @@ const projects: Project[] = [
     tags: ["Renda Fixa", "Simulador", "Conteúdo"],
     accent: "from-emerald-500 via-teal-600 to-cyan-500",
     glow: "rgba(16,185,129,0.35)",
+  },
+  {
+    name: "Objetivos de Vida",
+    description: "Formulário público de captação de leads + painel para gerenciar metas e acompanhar o progresso de cada cliente.",
+    url: "/admin/projetos/objetivos-de-vida",
+    icon: Target,
+    tags: ["Leads", "Metas", "Onboarding"],
+    accent: "from-amber-500 via-orange-600 to-rose-500",
+    glow: "rgba(245,158,11,0.35)",
   },
 ];
 
