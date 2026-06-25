@@ -2082,6 +2082,51 @@ export type Database = {
         }
         Relationships: []
       }
+      simulator_leads: {
+        Row: {
+          aporte_mensal: number | null
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          pct_cdi: number | null
+          prazo_meses: number | null
+          resultado_liquido: number | null
+          status: string
+          tipo_principal: string | null
+          valor_inicial: number | null
+          whatsapp: string | null
+        }
+        Insert: {
+          aporte_mensal?: number | null
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          pct_cdi?: number | null
+          prazo_meses?: number | null
+          resultado_liquido?: number | null
+          status?: string
+          tipo_principal?: string | null
+          valor_inicial?: number | null
+          whatsapp?: string | null
+        }
+        Update: {
+          aporte_mensal?: number | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          pct_cdi?: number | null
+          prazo_meses?: number | null
+          resultado_liquido?: number | null
+          status?: string
+          tipo_principal?: string | null
+          valor_inicial?: number | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       super_admin_actions: {
         Row: {
           action: string
