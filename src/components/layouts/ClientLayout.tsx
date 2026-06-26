@@ -101,7 +101,7 @@ export const ClientLayout = ({ children }: Props) => {
       {/* Logo */}
       <div className="px-6 pt-6 pb-4 shrink-0 flex items-center gap-2">
         <img src={logoBranca} alt="Novare" className="h-8 w-auto" />
-        <span className="text-xs text-white font-mono font-semibold">v6.1</span>
+        <span className="text-xs text-white font-mono font-semibold">v6.7</span>
       </div>
 
       {/* Profile — TOP (with dropdown) */}
@@ -240,7 +240,7 @@ export const ClientLayout = ({ children }: Props) => {
         </Button>
         <div className="flex items-center ml-2">
           <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
-          <span className="text-xs text-white font-mono font-semibold ml-1.5">v6.1</span>
+          <span className="text-xs text-white font-mono font-semibold ml-1.5">v6.7</span>
         </div>
         <div className="ml-auto">
           <ThemeToggle className="!text-sidebar-foreground hover:!text-sidebar-foreground hover:!bg-sidebar-accent/40" />
