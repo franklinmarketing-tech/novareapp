@@ -6,6 +6,7 @@ import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import cardSimulador from "@/assets/card-simulador.webp";
+import cardAposentadoria from "@/assets/card-aposentadoria.webp";
 import cardCalculadora from "@/assets/card-calculadora.webp";
 import cardObjetivos from "@/assets/card-objetivos.webp";
 import cardLeadsSimulador from "@/assets/card-leads-simulador.webp";
@@ -46,6 +47,16 @@ const groups: Group[] = [
         tags: ["Renda Fixa", "Simulador", "Leads"],
         accent: "from-violet-500 via-purple-600 to-fuchsia-500",
         glow: "rgba(139,92,246,0.35)",
+      },
+      {
+        name: "Calculadora de Aposentadoria",
+        description: "Descubra quanto juntar para viver de renda e em que idade alcança a independência financeira (regra dos 4%).",
+        href: "/ferramentas/calculadora-de-aposentadoria",
+        shareUrl: `${SITE}/ferramentas/calculadora-de-aposentadoria`,
+        icon: cardAposentadoria,
+        tags: ["Aposentadoria", "FIRE", "Captação"],
+        accent: "from-teal-500 via-emerald-600 to-green-500",
+        glow: "rgba(16,185,129,0.35)",
       },
       {
         name: "Calculadora de Investimentos",
@@ -90,6 +101,15 @@ const groups: Group[] = [
         tags: ["Leads", "Metas"],
         accent: "from-amber-500 via-orange-600 to-rose-500",
         glow: "rgba(245,158,11,0.35)",
+      },
+      {
+        name: "Leads · Aposentadoria",
+        description: "Leads da Calculadora de Aposentadoria, com idade, patrimônio, aporte e o número da independência financeira de cada um.",
+        href: "/admin/projetos/aposentadoria",
+        icon: cardAposentadoria,
+        tags: ["Leads", "Aposentadoria"],
+        accent: "from-teal-500 via-emerald-600 to-green-500",
+        glow: "rgba(16,185,129,0.35)",
       },
     ],
   },

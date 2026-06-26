@@ -17,6 +17,7 @@ import {
   Gem,
   Target,
   Calculator,
+  PiggyBank,
   User as UserIcon,
   Image as ImageIcon,
   Bell,
@@ -88,6 +89,7 @@ const staticSegments: Record<string, string> = {
   projetos: "Projetos",
   "objetivos-de-vida": "Objetivos de Vida",
   "simulador-renda-fixa": "Simulador Renda Fixa",
+  aposentadoria: "Aposentadoria",
   ajuda: "Ajuda & Manual",
   leads: "Leads",
   "leads-newsletter": "Leads Newsletter",
@@ -421,6 +423,21 @@ export const AdminLayout = ({ children }: Props) => {
                 >
                   <Calculator className="h-4 w-4 shrink-0" />
                   <span className="truncate">Simulador Renda Fixa</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/projetos/aposentadoria"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                      isActive
+                        ? "text-sidebar-foreground bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/25",
+                    )
+                  }
+                >
+                  <PiggyBank className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Aposentadoria</span>
                 </NavLink>
               </div>
             )}

@@ -57,6 +57,8 @@ const ObjetivosDeVida = lazy(() => import("@/pages/ObjetivosDeVida"));
 const AdminObjetivosVida = lazy(() => import("@/pages/admin/AdminObjetivosVida"));
 const SimuladorRendaFixa = lazy(() => import("@/pages/SimuladorRendaFixa"));
 const AdminSimuladorLeads = lazy(() => import("@/pages/admin/AdminSimuladorLeads"));
+const CalculadoraAposentadoria = lazy(() => import("@/pages/CalculadoraAposentadoria"));
+const AdminAposentadoriaLeads = lazy(() => import("@/pages/admin/AdminAposentadoriaLeads"));
 const ReportPreview = lazy(() => import("@/pages/dev/ReportPreview"));
 const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/SuperAdminDashboard"));
 const SuperAdminAdmins = lazy(() => import("@/pages/super-admin/SuperAdminAdmins"));
@@ -110,6 +112,7 @@ const App = () => (
                 <Route path="/ferramentas/calculadora-de-investimentos" element={<YieldGuide />} />
                 <Route path="/objetivos-de-vida" element={<ObjetivosDeVida />} />
                 <Route path="/ferramentas/simulador-de-renda-fixa" element={<SimuladorRendaFixa />} />
+                <Route path="/ferramentas/calculadora-de-aposentadoria" element={<CalculadoraAposentadoria />} />
                 <Route path="/dev/report-preview" element={<ReportPreview />} />
 
                 {/* Super Admin routes */}
@@ -140,6 +143,7 @@ const App = () => (
                 <Route path="/admin/projetos/objetivos-de-vida" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminObjetivosVida /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/projetos/objetivos-de-vida/*" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminObjetivosVida /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/projetos/simulador-renda-fixa" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSimuladorLeads /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/projetos/aposentadoria" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminAposentadoriaLeads /></AdminLayout></ProtectedRoute>} />
 
                 {/* Admin client routes with tabs */}
                 <Route path="/admin/cliente/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminClientLayout /></AdminLayout></ProtectedRoute>}>
