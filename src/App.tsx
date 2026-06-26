@@ -61,6 +61,8 @@ const CalculadoraAposentadoria = lazy(() => import("@/pages/CalculadoraAposentad
 const AdminAposentadoriaLeads = lazy(() => import("@/pages/admin/AdminAposentadoriaLeads"));
 const SaiaDoVermelho = lazy(() => import("@/pages/SaiaDoVermelho"));
 const AdminDividasLeads = lazy(() => import("@/pages/admin/AdminDividasLeads"));
+const ComparadorInvestimentos = lazy(() => import("@/pages/ComparadorInvestimentos"));
+const AdminComparadorLeads = lazy(() => import("@/pages/admin/AdminComparadorLeads"));
 const ReportPreview = lazy(() => import("@/pages/dev/ReportPreview"));
 const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/SuperAdminDashboard"));
 const SuperAdminAdmins = lazy(() => import("@/pages/super-admin/SuperAdminAdmins"));
@@ -116,6 +118,7 @@ const App = () => (
                 <Route path="/ferramentas/simulador-de-renda-fixa" element={<SimuladorRendaFixa />} />
                 <Route path="/ferramentas/calculadora-de-aposentadoria" element={<CalculadoraAposentadoria />} />
                 <Route path="/ferramentas/saia-do-vermelho" element={<SaiaDoVermelho />} />
+                <Route path="/ferramentas/comparador-de-investimentos" element={<ComparadorInvestimentos />} />
                 <Route path="/dev/report-preview" element={<ReportPreview />} />
 
                 {/* Super Admin routes */}
@@ -148,6 +151,7 @@ const App = () => (
                 <Route path="/admin/projetos/simulador-renda-fixa" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSimuladorLeads /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/projetos/aposentadoria" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminAposentadoriaLeads /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/projetos/dividas" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminDividasLeads /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/projetos/comparador" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminComparadorLeads /></AdminLayout></ProtectedRoute>} />
 
                 {/* Admin client routes with tabs */}
                 <Route path="/admin/cliente/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminClientLayout /></AdminLayout></ProtectedRoute>}>

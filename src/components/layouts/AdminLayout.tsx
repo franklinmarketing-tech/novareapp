@@ -19,6 +19,7 @@ import {
   Calculator,
   PiggyBank,
   TrendingDown,
+  Scale,
   User as UserIcon,
   Image as ImageIcon,
   Bell,
@@ -92,6 +93,7 @@ const staticSegments: Record<string, string> = {
   "simulador-renda-fixa": "Simulador Renda Fixa",
   aposentadoria: "Aposentadoria",
   dividas: "Saia do Vermelho",
+  comparador: "Comparador",
   ajuda: "Ajuda & Manual",
   leads: "Leads",
   "leads-newsletter": "Leads Newsletter",
@@ -455,6 +457,21 @@ export const AdminLayout = ({ children }: Props) => {
                 >
                   <TrendingDown className="h-4 w-4 shrink-0" />
                   <span className="truncate">Saia do Vermelho</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/projetos/comparador"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                      isActive
+                        ? "text-sidebar-foreground bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/25",
+                    )
+                  }
+                >
+                  <Scale className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Comparador</span>
                 </NavLink>
               </div>
             )}

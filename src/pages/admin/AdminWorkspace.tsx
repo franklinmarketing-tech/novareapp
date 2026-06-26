@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import cardSimulador from "@/assets/card-simulador.webp";
 import cardAposentadoria from "@/assets/card-aposentadoria.webp";
 import cardDividas from "@/assets/card-dividas.webp";
+import cardComparador from "@/assets/card-comparador.webp";
 import cardCalculadora from "@/assets/card-calculadora.webp";
 import cardObjetivos from "@/assets/card-objetivos.webp";
 import cardLeadsSimulador from "@/assets/card-leads-simulador.webp";
@@ -70,6 +71,16 @@ const groups: Group[] = [
         glow: "rgba(244,63,94,0.35)",
       },
       {
+        name: "Comparador de Investimentos",
+        description: "Compara CDB, LCI, Tesouro, Debêntures e FIIs pela rentabilidade líquida (com IR e isenções). Mostra o melhor do bolso.",
+        href: "/ferramentas/comparador-de-investimentos",
+        shareUrl: `${SITE}/ferramentas/comparador-de-investimentos`,
+        icon: cardComparador,
+        tags: ["Renda Fixa", "Comparador", "Captação"],
+        accent: "from-blue-500 via-indigo-600 to-violet-500",
+        glow: "rgba(99,102,241,0.35)",
+      },
+      {
         name: "Calculadora de Investimentos",
         description: "Landing educacional sobre rendimentos em Renda Fixa com simulador de aposentadoria.",
         href: "/ferramentas/calculadora-de-investimentos",
@@ -130,6 +141,15 @@ const groups: Group[] = [
         tags: ["Leads", "Dívidas"],
         accent: "from-rose-500 via-red-600 to-orange-500",
         glow: "rgba(244,63,94,0.35)",
+      },
+      {
+        name: "Leads · Comparador",
+        description: "Leads do Comparador de Investimentos, com valor, prazo e a melhor opção apontada para cada um.",
+        href: "/admin/projetos/comparador",
+        icon: cardComparador,
+        tags: ["Leads", "Comparador"],
+        accent: "from-blue-500 via-indigo-600 to-violet-500",
+        glow: "rgba(99,102,241,0.35)",
       },
     ],
   },
