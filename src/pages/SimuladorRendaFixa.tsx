@@ -14,7 +14,8 @@ import { toast } from "sonner";
 import { TrendingUp, ShieldCheck, ArrowRight, Lock, MessageCircle, Trophy, Mail, Phone, Globe } from "lucide-react";
 import logoPreta from "@/assets/logo-preta.png";
 import logoBranca from "@/assets/logo-branca.png";
-import simuladorBanner from "@/assets/simulador-banner.webp";
+import jeffersonImg from "@/assets/jefferson.png";
+import leonardoImg from "@/assets/leonardo.png";
 
 // ── Produtos de renda fixa (isencao de IR + taxa de referencia em % do CDI) ──
 
@@ -439,24 +440,48 @@ export default function SimuladorRendaFixa() {
         </div>
       </section>
 
-      {/* Banner CTA com imagem */}
+      {/* Banner CTA — sócios-fundadores da Novare */}
       <section className="max-w-5xl mx-auto px-4 pb-16">
-        <div className="relative overflow-hidden rounded-3xl min-h-[300px] flex items-center shadow-sm">
-          <img src={simuladorBanner} alt="Consultoria de investimentos Novare" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-r from-novare-blue via-novare-blue/90 to-novare-blue/10" />
-          <div className="relative p-8 sm:p-12 max-w-lg">
-            <p className="text-white/70 text-[11px] font-bold uppercase tracking-[0.2em] mb-2">Consultoria Novare</p>
-            <h2 className="text-2xl sm:text-[2rem] font-display font-bold text-white leading-tight">
-              Seu patrimônio merece uma estratégia sob medida
-            </h2>
-            <p className="text-white/85 mt-3 text-sm sm:text-base leading-relaxed">
-              Simular é só o primeiro passo. Um consultor Novare analisa seu perfil e seus objetivos e monta uma carteira pensada para a sua vida — com acompanhamento de verdade, mês a mês.
-            </p>
-            <Button asChild className="mt-6 bg-white text-novare-blue hover:bg-white/90 font-bold gap-2 h-12 px-7">
-              <a href="https://wa.me/5519983402827?text=Quero%20uma%20an%C3%A1lise%20da%20Novare" target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="h-4 w-4" /> Falar com um consultor
-              </a>
-            </Button>
+        <div className="relative overflow-hidden rounded-3xl bg-novare-blue shadow-sm">
+          {/* brilho sutil */}
+          <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-novare-blue-bright/20 blur-3xl pointer-events-none" />
+          <div className="relative grid md:grid-cols-2 gap-8 items-center p-8 sm:p-10">
+            {/* Texto */}
+            <div>
+              <p className="text-novare-blue-bright text-[11px] font-bold uppercase tracking-[0.2em] mb-2">Novare Wealth · Consultoria de Investimentos</p>
+              <h2 className="text-2xl sm:text-[2rem] font-display font-bold text-white leading-tight">
+                Construindo seu futuro financeiro com clareza e propósito
+              </h2>
+              <p className="text-white/80 mt-3 text-sm sm:text-base leading-relaxed">
+                Simular é só o primeiro passo. Fale diretamente com os sócios-fundadores e receba uma análise personalizada para os seus objetivos de vida.
+              </p>
+              <Button asChild className="mt-6 bg-white text-novare-blue hover:bg-white/90 font-bold gap-2 h-12 px-7">
+                <a href="https://wa.me/5519983402827?text=Quero%20uma%20an%C3%A1lise%20da%20Novare" target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-4 w-4" /> Falar com a Novare
+                </a>
+              </Button>
+            </div>
+
+            {/* Fotos dos fundadores */}
+            <div className="flex items-end justify-center md:justify-end gap-5 sm:gap-6">
+              {[
+                { img: jeffersonImg, name: "Jefferson Freitas", role: "Sócio-fundador · CEA" },
+                { img: leonardoImg, name: "Leonardo Oliveira", role: "Sócio-fundador · CEA" },
+              ].map((f) => (
+                <figure key={f.name} className="text-center">
+                  <img
+                    src={f.img}
+                    alt={f.name}
+                    className="h-28 w-28 sm:h-32 sm:w-32 rounded-2xl object-cover ring-2 ring-white/25 shadow-lg"
+                    loading="lazy"
+                  />
+                  <figcaption className="mt-2.5">
+                    <p className="text-white font-bold text-[13px] leading-tight">{f.name}</p>
+                    <p className="text-white/55 text-[10px] uppercase tracking-wide mt-0.5">{f.role}</p>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </div>
         </div>
       </section>
