@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import {
-  ArrowUpRight, Sparkles, BookOpen, LucideIcon, Users, Rocket, Tag, Target,
-  Calculator, Copy, Check, Link2, ExternalLink,
-} from "lucide-react";
+import { ArrowUpRight, LucideIcon, Users, Rocket, Tag, Copy, Check, Link2, ExternalLink } from "lucide-react";
 import PageBanner from "@/components/PageBanner";
 import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import iconGrowth from "@/assets/icon-growth-3d.png";
+import iconVault from "@/assets/icon-vault-3d.png";
+import iconPremium from "@/assets/icon-premium-3d.png";
+import iconPipeline from "@/assets/icon-pipeline-3d.png";
+import iconPerson from "@/assets/icon-identificacao.png";
 
 const APP_VERSION = "1.4.0";
 const SITE = "https://novareapp.com.br";
@@ -17,7 +19,7 @@ interface AppCard {
   description: string;
   href: string;          // destino ao abrir (rota interna ou URL externa)
   shareUrl?: string;     // URL pública para copiar/compartilhar (só ferramentas públicas)
-  icon: LucideIcon;
+  icon: string;          // ícone 3D (imagem)
   tags: string[];
   accent: string;
   glow: string;
@@ -39,7 +41,7 @@ const groups: Group[] = [
         description: "Compara CDB, Tesouro, LCI/LCA e Poupança com IR e CDI ao vivo. Captura o e-mail antes de liberar a comparação.",
         href: "/ferramentas/simulador-de-renda-fixa",
         shareUrl: `${SITE}/ferramentas/simulador-de-renda-fixa`,
-        icon: Calculator,
+        icon: iconGrowth,
         tags: ["Renda Fixa", "Simulador", "Leads"],
         accent: "from-violet-500 via-purple-600 to-fuchsia-500",
         glow: "rgba(139,92,246,0.35)",
@@ -49,7 +51,7 @@ const groups: Group[] = [
         description: "Landing educacional sobre rendimentos em Renda Fixa com simulador de aposentadoria.",
         href: "/ferramentas/calculadora-de-investimentos",
         shareUrl: `${SITE}/ferramentas/calculadora-de-investimentos`,
-        icon: BookOpen,
+        icon: iconVault,
         tags: ["Renda Fixa", "Conteúdo"],
         accent: "from-emerald-500 via-teal-600 to-cyan-500",
         glow: "rgba(16,185,129,0.35)",
@@ -59,7 +61,7 @@ const groups: Group[] = [
         description: "Formulário público em 5 etapas para captar leads e mapear objetivos, finanças e perfil de investidor.",
         href: "/objetivos-de-vida",
         shareUrl: `${SITE}/objetivos-de-vida`,
-        icon: Target,
+        icon: iconPerson,
         tags: ["Captação", "Onboarding"],
         accent: "from-amber-500 via-orange-600 to-rose-500",
         glow: "rgba(245,158,11,0.35)",
@@ -74,7 +76,7 @@ const groups: Group[] = [
         name: "Leads · Simulador",
         description: "E-mails capturados pelo Simulador de Renda Fixa, com os parâmetros de cada simulação e o status do contato.",
         href: "/admin/projetos/simulador-renda-fixa",
-        icon: Calculator,
+        icon: iconPipeline,
         tags: ["Leads", "Renda Fixa"],
         accent: "from-indigo-500 via-blue-600 to-sky-500",
         glow: "rgba(99,102,241,0.35)",
@@ -83,7 +85,7 @@ const groups: Group[] = [
         name: "Leads · Objetivos de Vida",
         description: "Leads do formulário de Objetivos de Vida, com metas, finanças e perfil — e acompanhamento do progresso.",
         href: "/admin/projetos/objetivos-de-vida",
-        icon: Target,
+        icon: iconPipeline,
         tags: ["Leads", "Metas"],
         accent: "from-amber-500 via-orange-600 to-rose-500",
         glow: "rgba(245,158,11,0.35)",
@@ -99,7 +101,7 @@ const groups: Group[] = [
         description: "Plataforma de consultoria financeira personalizada para planejadores e seus clientes.",
         href: SITE,
         shareUrl: SITE,
-        icon: Sparkles,
+        icon: iconPremium,
         tags: ["Plataforma", "SaaS"],
         accent: "from-indigo-500 via-blue-600 to-sky-500",
         glow: "rgba(59,130,246,0.35)",
@@ -121,10 +123,9 @@ interface Metric {
 
 // ── Card de acesso ────────────────────────────────────────────────────────────
 const AccessCard = ({ item, copied, onCopy }: { item: AppCard; copied: boolean; onCopy: (url: string) => void }) => {
-  const Icon = item.icon;
   return (
     <div
-      className="group relative bg-card border border-border/50 rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:border-border flex flex-col"
+      className="group relative bg-card border border-border/50 rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-1.5 hover:border-border hover:shadow-elevated flex flex-col"
       style={{ boxShadow: "0 1px 2px hsl(var(--foreground) / 0.04), 0 8px 24px -12px hsl(var(--foreground) / 0.08)" }}
     >
       {/* Glow */}
@@ -133,23 +134,23 @@ const AccessCard = ({ item, copied, onCopy }: { item: AppCard; copied: boolean; 
         style={{ background: `radial-gradient(circle, ${item.glow} 0%, transparent 70%)` }}
       />
 
-      {/* Header gradiente — clicável */}
+      {/* Header gradiente — clicável, com ícone 3D em badge */}
       <a
         href={item.href}
         target="_blank"
         rel="noopener noreferrer"
-        className={`relative block bg-gradient-to-br ${item.accent} p-6 overflow-hidden`}
+        className={`relative block bg-gradient-to-br ${item.accent} px-6 pt-7 pb-8 overflow-hidden`}
       >
         <div
           className="absolute inset-0 opacity-30 mix-blend-overlay"
-          style={{ backgroundImage: `radial-gradient(circle at 20% 50%, rgba(255,255,255,0.4) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.3) 0%, transparent 50%)` }}
+          style={{ backgroundImage: `radial-gradient(circle at 20% 30%, rgba(255,255,255,0.45) 0%, transparent 50%), radial-gradient(circle at 85% 85%, rgba(255,255,255,0.3) 0%, transparent 55%)` }}
         />
-        <div className="relative flex items-center justify-between">
-          <div className="p-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
-            <Icon className="h-6 w-6 text-white drop-shadow" strokeWidth={2} />
-          </div>
-          <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/15 group-hover:bg-white/25 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300">
-            <ArrowUpRight className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <div className="absolute top-4 right-4 p-2 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 group-hover:bg-white/30 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300">
+          <ArrowUpRight className="h-4 w-4 text-white" strokeWidth={2.5} />
+        </div>
+        <div className="relative flex justify-center">
+          <div className="h-[88px] w-[88px] rounded-[1.4rem] bg-white/95 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.3)] ring-1 ring-white/40 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
+            <img src={item.icon} alt="" className="h-[60px] w-[60px] object-contain drop-shadow" loading="lazy" />
           </div>
         </div>
       </a>
@@ -157,12 +158,12 @@ const AccessCard = ({ item, copied, onCopy }: { item: AppCard; copied: boolean; 
       {/* Conteúdo */}
       <div className="p-5 space-y-3 flex-1 flex flex-col">
         <a href={item.href} target="_blank" rel="noopener noreferrer" className="block">
-          <h3 className="text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+          <h3 className="text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors text-center">
             {item.name}
           </h3>
         </a>
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 flex-1">{item.description}</p>
-        <div className="flex flex-wrap gap-1.5">
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 flex-1 text-center">{item.description}</p>
+        <div className="flex flex-wrap gap-1.5 justify-center">
           {item.tags.map((tag) => (
             <span key={tag} className="text-[0.6875rem] font-medium px-2.5 py-1 rounded-full bg-muted/70 border border-border/40 text-muted-foreground">
               {tag}
@@ -170,35 +171,39 @@ const AccessCard = ({ item, copied, onCopy }: { item: AppCard; copied: boolean; 
           ))}
         </div>
 
-        {/* Rodapé do card: link público + copiar (ou apenas Abrir) */}
-        <div className="pt-3 border-t border-border/40 flex items-center gap-2">
-          {item.shareUrl ? (
-            <>
-              <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate flex-1 min-w-0">
-                <Link2 className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{prettyUrl(item.shareUrl)}</span>
-              </span>
-              <button
-                onClick={() => onCopy(item.shareUrl!)}
-                className={cn(
-                  "shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition-colors",
-                  copied
-                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
-                    : "bg-muted/50 text-foreground/70 border-border/50 hover:bg-muted",
-                )}
-              >
-                {copied ? <><Check className="h-3.5 w-3.5" /> Copiado</> : <><Copy className="h-3.5 w-3.5" /> Copiar</>}
-              </button>
-            </>
-          ) : (
-            <a
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:underline"
+        {/* Link público (só ferramentas públicas) */}
+        {item.shareUrl && (
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground justify-center pt-1">
+            <Link2 className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{prettyUrl(item.shareUrl)}</span>
+          </div>
+        )}
+
+        {/* Ações: Acessar + Copiar */}
+        <div className="flex gap-2 pt-1">
+          <a
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+          >
+            {item.shareUrl ? "Acessar" : "Abrir painel"}
+            {item.shareUrl ? <ArrowUpRight className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+          </a>
+          {item.shareUrl && (
+            <button
+              onClick={() => onCopy(item.shareUrl!)}
+              title="Copiar link para compartilhar"
+              className={cn(
+                "shrink-0 inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl border text-sm font-semibold transition-colors",
+                copied
+                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                  : "bg-muted/40 text-foreground/70 border-border/50 hover:bg-muted",
+              )}
             >
-              <ExternalLink className="h-3.5 w-3.5" /> Abrir painel
-            </a>
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              <span className="hidden sm:inline">{copied ? "Copiado" : "Copiar"}</span>
+            </button>
           )}
         </div>
       </div>
