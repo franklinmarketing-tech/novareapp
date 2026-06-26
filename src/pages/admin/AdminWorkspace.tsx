@@ -9,6 +9,8 @@ import cardSimulador from "@/assets/card-simulador.webp";
 import cardAposentadoria from "@/assets/card-aposentadoria.webp";
 import cardDividas from "@/assets/card-dividas.webp";
 import cardComparador from "@/assets/card-comparador.webp";
+import cardPerfil from "@/assets/card-perfil.webp";
+import cardScore from "@/assets/card-score.webp";
 import cardCalculadora from "@/assets/card-calculadora.webp";
 import cardObjetivos from "@/assets/card-objetivos.webp";
 import cardLeadsSimulador from "@/assets/card-leads-simulador.webp";
@@ -81,6 +83,26 @@ const groups: Group[] = [
         glow: "rgba(99,102,241,0.35)",
       },
       {
+        name: "Teste de Perfil de Investidor",
+        description: "Quiz de suitability em 6 perguntas → Conservador, Moderado, Arrojado ou Agressivo, com a carteira ideal.",
+        href: "/ferramentas/teste-de-perfil",
+        shareUrl: `${SITE}/ferramentas/teste-de-perfil`,
+        icon: cardPerfil,
+        tags: ["Suitability", "Captação"],
+        accent: "from-sky-500 via-blue-600 to-indigo-500",
+        glow: "rgba(56,189,248,0.35)",
+      },
+      {
+        name: "Score de Saúde Financeira",
+        description: "Diagnóstico nota 0–100 com os 4 pilares (sobra, dívidas, reserva, investimento) + agendamento de reunião.",
+        href: "/ferramentas/score-de-saude-financeira",
+        shareUrl: `${SITE}/ferramentas/score-de-saude-financeira`,
+        icon: cardScore,
+        tags: ["Diagnóstico", "Conversão"],
+        accent: "from-teal-500 via-emerald-600 to-green-500",
+        glow: "rgba(16,185,129,0.35)",
+      },
+      {
         name: "Calculadora de Investimentos",
         description: "Landing educacional sobre rendimentos em Renda Fixa com simulador de aposentadoria.",
         href: "/ferramentas/calculadora-de-investimentos",
@@ -150,6 +172,24 @@ const groups: Group[] = [
         tags: ["Leads", "Comparador"],
         accent: "from-blue-500 via-indigo-600 to-violet-500",
         glow: "rgba(99,102,241,0.35)",
+      },
+      {
+        name: "Leads · Perfil de Investidor",
+        description: "Leads do teste de suitability, com o perfil (Conservador a Agressivo) e a pontuação de cada um.",
+        href: "/admin/projetos/perfil-investidor",
+        icon: cardPerfil,
+        tags: ["Leads", "Perfil"],
+        accent: "from-sky-500 via-blue-600 to-indigo-500",
+        glow: "rgba(56,189,248,0.35)",
+      },
+      {
+        name: "Leads · Saúde Financeira",
+        description: "Leads do Score de Saúde Financeira, com a nota (0–100), o grau e a renda de cada um.",
+        href: "/admin/projetos/saude-financeira",
+        icon: cardScore,
+        tags: ["Leads", "Score"],
+        accent: "from-teal-500 via-emerald-600 to-green-500",
+        glow: "rgba(16,185,129,0.35)",
       },
     ],
   },

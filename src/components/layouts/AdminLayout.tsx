@@ -20,6 +20,8 @@ import {
   PiggyBank,
   TrendingDown,
   Scale,
+  UserCog,
+  Activity,
   User as UserIcon,
   Image as ImageIcon,
   Bell,
@@ -94,6 +96,8 @@ const staticSegments: Record<string, string> = {
   aposentadoria: "Aposentadoria",
   dividas: "Saia do Vermelho",
   comparador: "Comparador",
+  "perfil-investidor": "Perfil de Investidor",
+  "saude-financeira": "Saúde Financeira",
   ajuda: "Ajuda & Manual",
   leads: "Leads",
   "leads-newsletter": "Leads Newsletter",
@@ -472,6 +476,36 @@ export const AdminLayout = ({ children }: Props) => {
                 >
                   <Scale className="h-4 w-4 shrink-0" />
                   <span className="truncate">Comparador</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/projetos/perfil-investidor"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                      isActive
+                        ? "text-sidebar-foreground bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/25",
+                    )
+                  }
+                >
+                  <UserCog className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Perfil de Investidor</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/projetos/saude-financeira"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                      isActive
+                        ? "text-sidebar-foreground bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/25",
+                    )
+                  }
+                >
+                  <Activity className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Saúde Financeira</span>
                 </NavLink>
               </div>
             )}

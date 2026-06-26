@@ -63,6 +63,10 @@ const SaiaDoVermelho = lazy(() => import("@/pages/SaiaDoVermelho"));
 const AdminDividasLeads = lazy(() => import("@/pages/admin/AdminDividasLeads"));
 const ComparadorInvestimentos = lazy(() => import("@/pages/ComparadorInvestimentos"));
 const AdminComparadorLeads = lazy(() => import("@/pages/admin/AdminComparadorLeads"));
+const TesteDePerfil = lazy(() => import("@/pages/TesteDePerfil"));
+const AdminPerfilLeads = lazy(() => import("@/pages/admin/AdminPerfilLeads"));
+const ScoreSaudeFinanceira = lazy(() => import("@/pages/ScoreSaudeFinanceira"));
+const AdminScoreLeads = lazy(() => import("@/pages/admin/AdminScoreLeads"));
 const ReportPreview = lazy(() => import("@/pages/dev/ReportPreview"));
 const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/SuperAdminDashboard"));
 const SuperAdminAdmins = lazy(() => import("@/pages/super-admin/SuperAdminAdmins"));
@@ -119,6 +123,8 @@ const App = () => (
                 <Route path="/ferramentas/calculadora-de-aposentadoria" element={<CalculadoraAposentadoria />} />
                 <Route path="/ferramentas/saia-do-vermelho" element={<SaiaDoVermelho />} />
                 <Route path="/ferramentas/comparador-de-investimentos" element={<ComparadorInvestimentos />} />
+                <Route path="/ferramentas/teste-de-perfil" element={<TesteDePerfil />} />
+                <Route path="/ferramentas/score-de-saude-financeira" element={<ScoreSaudeFinanceira />} />
                 <Route path="/dev/report-preview" element={<ReportPreview />} />
 
                 {/* Super Admin routes */}
@@ -152,6 +158,8 @@ const App = () => (
                 <Route path="/admin/projetos/aposentadoria" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminAposentadoriaLeads /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/projetos/dividas" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminDividasLeads /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/projetos/comparador" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminComparadorLeads /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/projetos/perfil-investidor" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminPerfilLeads /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/projetos/saude-financeira" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminScoreLeads /></AdminLayout></ProtectedRoute>} />
 
                 {/* Admin client routes with tabs */}
                 <Route path="/admin/cliente/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminClientLayout /></AdminLayout></ProtectedRoute>}>
