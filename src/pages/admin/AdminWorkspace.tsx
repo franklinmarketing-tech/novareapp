@@ -5,11 +5,12 @@ import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import iconGrowth from "@/assets/icon-growth-3d.png";
-import iconVault from "@/assets/icon-vault-3d.png";
-import iconPremium from "@/assets/icon-premium-3d.png";
-import iconPipeline from "@/assets/icon-pipeline-3d.png";
-import iconPerson from "@/assets/icon-identificacao.png";
+import cardSimulador from "@/assets/card-simulador.webp";
+import cardCalculadora from "@/assets/card-calculadora.webp";
+import cardObjetivos from "@/assets/card-objetivos.webp";
+import cardLeadsSimulador from "@/assets/card-leads-simulador.webp";
+import cardLeadsObjetivos from "@/assets/card-leads-objetivos.webp";
+import cardNovare from "@/assets/card-novare.webp";
 
 const APP_VERSION = "1.4.0";
 const SITE = "https://novareapp.com.br";
@@ -19,7 +20,7 @@ interface AppCard {
   description: string;
   href: string;          // destino ao abrir (rota interna ou URL externa)
   shareUrl?: string;     // URL pública para copiar/compartilhar (só ferramentas públicas)
-  icon: string;          // ícone 3D (imagem)
+  icon: string;          // imagem de capa (full-bleed)
   tags: string[];
   accent: string;
   glow: string;
@@ -41,7 +42,7 @@ const groups: Group[] = [
         description: "Compara CDB, Tesouro, LCI/LCA e Poupança com IR e CDI ao vivo. Captura o e-mail antes de liberar a comparação.",
         href: "/ferramentas/simulador-de-renda-fixa",
         shareUrl: `${SITE}/ferramentas/simulador-de-renda-fixa`,
-        icon: iconGrowth,
+        icon: cardSimulador,
         tags: ["Renda Fixa", "Simulador", "Leads"],
         accent: "from-violet-500 via-purple-600 to-fuchsia-500",
         glow: "rgba(139,92,246,0.35)",
@@ -51,7 +52,7 @@ const groups: Group[] = [
         description: "Landing educacional sobre rendimentos em Renda Fixa com simulador de aposentadoria.",
         href: "/ferramentas/calculadora-de-investimentos",
         shareUrl: `${SITE}/ferramentas/calculadora-de-investimentos`,
-        icon: iconVault,
+        icon: cardCalculadora,
         tags: ["Renda Fixa", "Conteúdo"],
         accent: "from-emerald-500 via-teal-600 to-cyan-500",
         glow: "rgba(16,185,129,0.35)",
@@ -61,7 +62,7 @@ const groups: Group[] = [
         description: "Formulário público em 5 etapas para captar leads e mapear objetivos, finanças e perfil de investidor.",
         href: "/objetivos-de-vida",
         shareUrl: `${SITE}/objetivos-de-vida`,
-        icon: iconPerson,
+        icon: cardObjetivos,
         tags: ["Captação", "Onboarding"],
         accent: "from-amber-500 via-orange-600 to-rose-500",
         glow: "rgba(245,158,11,0.35)",
@@ -76,7 +77,7 @@ const groups: Group[] = [
         name: "Leads · Simulador",
         description: "E-mails capturados pelo Simulador de Renda Fixa, com os parâmetros de cada simulação e o status do contato.",
         href: "/admin/projetos/simulador-renda-fixa",
-        icon: iconPipeline,
+        icon: cardLeadsSimulador,
         tags: ["Leads", "Renda Fixa"],
         accent: "from-indigo-500 via-blue-600 to-sky-500",
         glow: "rgba(99,102,241,0.35)",
@@ -85,7 +86,7 @@ const groups: Group[] = [
         name: "Leads · Objetivos de Vida",
         description: "Leads do formulário de Objetivos de Vida, com metas, finanças e perfil — e acompanhamento do progresso.",
         href: "/admin/projetos/objetivos-de-vida",
-        icon: iconPipeline,
+        icon: cardLeadsObjetivos,
         tags: ["Leads", "Metas"],
         accent: "from-amber-500 via-orange-600 to-rose-500",
         glow: "rgba(245,158,11,0.35)",
@@ -101,7 +102,7 @@ const groups: Group[] = [
         description: "Plataforma de consultoria financeira personalizada para planejadores e seus clientes.",
         href: SITE,
         shareUrl: SITE,
-        icon: iconPremium,
+        icon: cardNovare,
         tags: ["Plataforma", "SaaS"],
         accent: "from-indigo-500 via-blue-600 to-sky-500",
         glow: "rgba(59,130,246,0.35)",
@@ -134,26 +135,27 @@ const AccessCard = ({ item, copied, onCopy }: { item: AppCard; copied: boolean; 
         style={{ background: `radial-gradient(circle, ${item.glow} 0%, transparent 70%)` }}
       />
 
-      {/* Header gradiente — clicável, com ícone 3D em badge */}
+      {/* Header — imagem de capa full-bleed, clicável */}
       <a
         href={item.href}
         target="_blank"
         rel="noopener noreferrer"
-        className={`relative block bg-gradient-to-br ${item.accent} px-6 pt-7 pb-8 overflow-hidden`}
+        className="relative block h-40 overflow-hidden"
       >
-        <div
-          className="absolute inset-0 opacity-30 mix-blend-overlay"
-          style={{ backgroundImage: `radial-gradient(circle at 20% 30%, rgba(255,255,255,0.45) 0%, transparent 50%), radial-gradient(circle at 85% 85%, rgba(255,255,255,0.3) 0%, transparent 55%)` }}
+        <img
+          src={item.icon}
+          alt={item.name}
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700"
+          loading="lazy"
         />
-        <div className="absolute top-4 right-4 p-2 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 group-hover:bg-white/30 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300">
-          <ArrowUpRight className="h-4 w-4 text-white" strokeWidth={2.5} />
-        </div>
-        <div className="relative flex justify-center">
-          <div className="h-[88px] w-[88px] rounded-[1.4rem] bg-white/95 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.3)] ring-1 ring-white/40 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
-            <img src={item.icon} alt="" className="h-[60px] w-[60px] object-contain drop-shadow" loading="lazy" />
-          </div>
+        {/* leve gradiente no topo para contraste do botão */}
+        <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/25 to-transparent" />
+        <div className="absolute top-3 right-3 p-2 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 group-hover:bg-white/40 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300">
+          <ArrowUpRight className="h-4 w-4 text-white drop-shadow" strokeWidth={2.5} />
         </div>
       </a>
+      {/* linha de acento da cor do card */}
+      <div className={`h-1 bg-gradient-to-r ${item.accent}`} />
 
       {/* Conteúdo */}
       <div className="p-5 space-y-3 flex-1 flex flex-col">
