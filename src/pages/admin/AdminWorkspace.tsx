@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import cardSimulador from "@/assets/card-simulador.webp";
 import cardAposentadoria from "@/assets/card-aposentadoria.webp";
+import cardDividas from "@/assets/card-dividas.webp";
 import cardCalculadora from "@/assets/card-calculadora.webp";
 import cardObjetivos from "@/assets/card-objetivos.webp";
 import cardLeadsSimulador from "@/assets/card-leads-simulador.webp";
@@ -57,6 +58,16 @@ const groups: Group[] = [
         tags: ["Aposentadoria", "FIRE", "Captação"],
         accent: "from-teal-500 via-emerald-600 to-green-500",
         glow: "rgba(16,185,129,0.35)",
+      },
+      {
+        name: "Saia do Vermelho",
+        description: "Calculadora de quitação de dívidas (Avalanche × Bola de Neve): tempo para quitar e economia de juros.",
+        href: "/ferramentas/saia-do-vermelho",
+        shareUrl: `${SITE}/ferramentas/saia-do-vermelho`,
+        icon: cardDividas,
+        tags: ["Dívidas", "Captação"],
+        accent: "from-rose-500 via-red-600 to-orange-500",
+        glow: "rgba(244,63,94,0.35)",
       },
       {
         name: "Calculadora de Investimentos",
@@ -110,6 +121,15 @@ const groups: Group[] = [
         tags: ["Leads", "Aposentadoria"],
         accent: "from-teal-500 via-emerald-600 to-green-500",
         glow: "rgba(16,185,129,0.35)",
+      },
+      {
+        name: "Leads · Saia do Vermelho",
+        description: "Leads da calculadora de dívidas, com dívida total, aporte extra e o tempo de quitação de cada um.",
+        href: "/admin/projetos/dividas",
+        icon: cardDividas,
+        tags: ["Leads", "Dívidas"],
+        accent: "from-rose-500 via-red-600 to-orange-500",
+        glow: "rgba(244,63,94,0.35)",
       },
     ],
   },
