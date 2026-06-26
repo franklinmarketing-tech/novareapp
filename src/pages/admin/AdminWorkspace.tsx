@@ -1,60 +1,115 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Sparkles, BookOpen, LucideIcon, Users, Rocket, Tag, Target, Calculator } from "lucide-react";
+import {
+  ArrowUpRight, Sparkles, BookOpen, LucideIcon, Users, Rocket, Tag, Target,
+  Calculator, Copy, Check, Link2, ExternalLink,
+} from "lucide-react";
 import PageBanner from "@/components/PageBanner";
 import PageTransition from "@/components/PageTransition";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 const APP_VERSION = "1.4.0";
+const SITE = "https://novareapp.com.br";
 
-interface Project {
+interface AppCard {
   name: string;
   description: string;
-  url: string;
+  href: string;          // destino ao abrir (rota interna ou URL externa)
+  shareUrl?: string;     // URL pública para copiar/compartilhar (só ferramentas públicas)
   icon: LucideIcon;
   tags: string[];
   accent: string;
   glow: string;
 }
 
-const projects: Project[] = [
+interface Group {
+  label: string;
+  hint: string;
+  items: AppCard[];
+}
+
+const groups: Group[] = [
   {
-    name: "Novare Consultoria Financeira",
-    description: "Plataforma de consultoria financeira personalizada para planejadores e seus clientes.",
-    url: "https://novareapp.com.br",
-    icon: Sparkles,
-    tags: ["Planejamento", "Investimentos", "Acompanhamento"],
-    accent: "from-indigo-500 via-blue-600 to-sky-500",
-    glow: "rgba(59,130,246,0.35)",
+    label: "Ferramentas Públicas",
+    hint: "Links para compartilhar com leads e clientes",
+    items: [
+      {
+        name: "Simulador de Renda Fixa",
+        description: "Compara CDB, Tesouro, LCI/LCA e Poupança com IR e CDI ao vivo. Captura o e-mail antes de liberar a comparação.",
+        href: "/ferramentas/simulador-de-renda-fixa",
+        shareUrl: `${SITE}/ferramentas/simulador-de-renda-fixa`,
+        icon: Calculator,
+        tags: ["Renda Fixa", "Simulador", "Leads"],
+        accent: "from-violet-500 via-purple-600 to-fuchsia-500",
+        glow: "rgba(139,92,246,0.35)",
+      },
+      {
+        name: "Calculadora de Investimentos",
+        description: "Landing educacional sobre rendimentos em Renda Fixa com simulador de aposentadoria.",
+        href: "/ferramentas/calculadora-de-investimentos",
+        shareUrl: `${SITE}/ferramentas/calculadora-de-investimentos`,
+        icon: BookOpen,
+        tags: ["Renda Fixa", "Conteúdo"],
+        accent: "from-emerald-500 via-teal-600 to-cyan-500",
+        glow: "rgba(16,185,129,0.35)",
+      },
+      {
+        name: "Objetivos de Vida",
+        description: "Formulário público em 5 etapas para captar leads e mapear objetivos, finanças e perfil de investidor.",
+        href: "/objetivos-de-vida",
+        shareUrl: `${SITE}/objetivos-de-vida`,
+        icon: Target,
+        tags: ["Captação", "Onboarding"],
+        accent: "from-amber-500 via-orange-600 to-rose-500",
+        glow: "rgba(245,158,11,0.35)",
+      },
+    ],
   },
   {
-    name: "Calculadora de Investimentos",
-    description: "Landing page educacional sobre rendimentos em Renda Fixa com simulador de aposentadoria.",
-    url: "/ferramentas/calculadora-de-investimentos",
-    icon: BookOpen,
-    tags: ["Renda Fixa", "Simulador", "Conteúdo"],
-    accent: "from-emerald-500 via-teal-600 to-cyan-500",
-    glow: "rgba(16,185,129,0.35)",
+    label: "Captação & Leads",
+    hint: "Painéis internos para gerenciar os leads capturados",
+    items: [
+      {
+        name: "Leads · Simulador",
+        description: "E-mails capturados pelo Simulador de Renda Fixa, com os parâmetros de cada simulação e o status do contato.",
+        href: "/admin/projetos/simulador-renda-fixa",
+        icon: Calculator,
+        tags: ["Leads", "Renda Fixa"],
+        accent: "from-indigo-500 via-blue-600 to-sky-500",
+        glow: "rgba(99,102,241,0.35)",
+      },
+      {
+        name: "Leads · Objetivos de Vida",
+        description: "Leads do formulário de Objetivos de Vida, com metas, finanças e perfil — e acompanhamento do progresso.",
+        href: "/admin/projetos/objetivos-de-vida",
+        icon: Target,
+        tags: ["Leads", "Metas"],
+        accent: "from-amber-500 via-orange-600 to-rose-500",
+        glow: "rgba(245,158,11,0.35)",
+      },
+    ],
   },
   {
-    name: "Objetivos de Vida",
-    description: "Formulário público de captação de leads + painel para gerenciar metas e acompanhar o progresso de cada cliente.",
-    url: "/admin/projetos/objetivos-de-vida",
-    icon: Target,
-    tags: ["Leads", "Metas", "Onboarding"],
-    accent: "from-amber-500 via-orange-600 to-rose-500",
-    glow: "rgba(245,158,11,0.35)",
-  },
-  {
-    name: "Simulador de Renda Fixa",
-    description: "Simulador público que compara CDB, Tesouro, LCI/LCA e Poupança com IR e CDI ao vivo — captura e-mail antes de liberar o resultado.",
-    url: "/admin/projetos/simulador-renda-fixa",
-    icon: Calculator,
-    tags: ["Simulador", "Leads", "Renda Fixa"],
-    accent: "from-violet-500 via-purple-600 to-fuchsia-500",
-    glow: "rgba(139,92,246,0.35)",
+    label: "Plataforma",
+    hint: "Acesso ao site e ao painel principal",
+    items: [
+      {
+        name: "Novare Consultoria Financeira",
+        description: "Plataforma de consultoria financeira personalizada para planejadores e seus clientes.",
+        href: SITE,
+        shareUrl: SITE,
+        icon: Sparkles,
+        tags: ["Plataforma", "SaaS"],
+        accent: "from-indigo-500 via-blue-600 to-sky-500",
+        glow: "rgba(59,130,246,0.35)",
+      },
+    ],
   },
 ];
+
+const totalApps = groups.reduce((s, g) => s + g.items.length, 0);
+const prettyUrl = (url: string) => url.replace(/^https?:\/\//, "");
 
 interface Metric {
   label: string;
@@ -64,8 +119,96 @@ interface Metric {
   accent: string;
 }
 
+// ── Card de acesso ────────────────────────────────────────────────────────────
+const AccessCard = ({ item, copied, onCopy }: { item: AppCard; copied: boolean; onCopy: (url: string) => void }) => {
+  const Icon = item.icon;
+  return (
+    <div
+      className="group relative bg-card border border-border/50 rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:border-border flex flex-col"
+      style={{ boxShadow: "0 1px 2px hsl(var(--foreground) / 0.04), 0 8px 24px -12px hsl(var(--foreground) / 0.08)" }}
+    >
+      {/* Glow */}
+      <div
+        className="absolute -top-24 -right-24 w-64 h-64 rounded-full opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700 pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${item.glow} 0%, transparent 70%)` }}
+      />
+
+      {/* Header gradiente — clicável */}
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`relative block bg-gradient-to-br ${item.accent} p-6 overflow-hidden`}
+      >
+        <div
+          className="absolute inset-0 opacity-30 mix-blend-overlay"
+          style={{ backgroundImage: `radial-gradient(circle at 20% 50%, rgba(255,255,255,0.4) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.3) 0%, transparent 50%)` }}
+        />
+        <div className="relative flex items-center justify-between">
+          <div className="p-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+            <Icon className="h-6 w-6 text-white drop-shadow" strokeWidth={2} />
+          </div>
+          <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/15 group-hover:bg-white/25 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300">
+            <ArrowUpRight className="h-4 w-4 text-white" strokeWidth={2.5} />
+          </div>
+        </div>
+      </a>
+
+      {/* Conteúdo */}
+      <div className="p-5 space-y-3 flex-1 flex flex-col">
+        <a href={item.href} target="_blank" rel="noopener noreferrer" className="block">
+          <h3 className="text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+            {item.name}
+          </h3>
+        </a>
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 flex-1">{item.description}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {item.tags.map((tag) => (
+            <span key={tag} className="text-[0.6875rem] font-medium px-2.5 py-1 rounded-full bg-muted/70 border border-border/40 text-muted-foreground">
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Rodapé do card: link público + copiar (ou apenas Abrir) */}
+        <div className="pt-3 border-t border-border/40 flex items-center gap-2">
+          {item.shareUrl ? (
+            <>
+              <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate flex-1 min-w-0">
+                <Link2 className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{prettyUrl(item.shareUrl)}</span>
+              </span>
+              <button
+                onClick={() => onCopy(item.shareUrl!)}
+                className={cn(
+                  "shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition-colors",
+                  copied
+                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                    : "bg-muted/50 text-foreground/70 border-border/50 hover:bg-muted",
+                )}
+              >
+                {copied ? <><Check className="h-3.5 w-3.5" /> Copiado</> : <><Copy className="h-3.5 w-3.5" /> Copiar</>}
+              </button>
+            </>
+          ) : (
+            <a
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:underline"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Abrir painel
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AdminWorkspace = () => {
   const [activeClients, setActiveClients] = useState<number | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -76,10 +219,18 @@ const AdminWorkspace = () => {
         .in("status", ["em_diagnostico", "em_acompanhamento"]);
       if (mounted) setActiveClients(count ?? 0);
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
+
+  const copy = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedUrl(url);
+      setTimeout(() => setCopiedUrl((c) => (c === url ? null : c)), 1800);
+    } catch {
+      /* clipboard indisponível */
+    }
+  };
 
   const metrics: Metric[] = [
     {
@@ -90,9 +241,9 @@ const AdminWorkspace = () => {
       accent: "from-blue-500/20 to-sky-500/5",
     },
     {
-      label: "Projetos publicados",
-      value: String(projects.length),
-      hint: "Produtos no ar",
+      label: "Apps & ferramentas",
+      value: String(totalApps),
+      hint: "Aplicativos disponíveis",
       icon: Rocket,
       accent: "from-emerald-500/20 to-teal-500/5",
     },
@@ -107,10 +258,10 @@ const AdminWorkspace = () => {
 
   return (
     <PageTransition>
-      <SEO title="Workspace" description="Projetos e produtos desenvolvidos pela Novare." index={false} />
+      <SEO title="Projetos" description="Aplicativos, ferramentas e painéis da Novare." index={false} />
       <PageBanner
-        title="Workspace"
-        description="Projetos e produtos desenvolvidos pela Novare"
+        title="Projetos"
+        description="Aplicativos, ferramentas e painéis da Novare — acesse e compartilhe"
       />
 
       {/* Métricas */}
@@ -125,12 +276,8 @@ const AdminWorkspace = () => {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    {m.label}
-                  </p>
-                  <p className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
-                    {m.value}
-                  </p>
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{m.label}</p>
+                  <p className="text-3xl font-bold tracking-tight text-foreground tabular-nums">{m.value}</p>
                   <p className="text-xs text-muted-foreground">{m.hint}</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-background/60 backdrop-blur-sm border border-border/40">
@@ -142,81 +289,27 @@ const AdminWorkspace = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        {projects.map((project) => {
-          const isExternal = project.url.startsWith("http");
-          const Icon = project.icon;
-          return (
-            <a
-              key={project.name}
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative bg-card border border-border/50 rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:border-border"
-              style={{
-                boxShadow: "0 1px 2px hsl(var(--foreground) / 0.04), 0 8px 24px -12px hsl(var(--foreground) / 0.08)",
-              }}
-            >
-              {/* Animated glow */}
-              <div
-                className="absolute -top-24 -right-24 w-64 h-64 rounded-full opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700 pointer-events-none"
-                style={{ background: `radial-gradient(circle, ${project.glow} 0%, transparent 70%)` }}
-              />
-
-              {/* Gradient header */}
-              <div className={`relative bg-gradient-to-br ${project.accent} p-6 overflow-hidden`}>
-                {/* Mesh pattern overlay */}
-                <div
-                  className="absolute inset-0 opacity-30 mix-blend-overlay"
-                  style={{
-                    backgroundImage: `radial-gradient(circle at 20% 50%, rgba(255,255,255,0.4) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.3) 0%, transparent 50%)`,
-                  }}
+      {/* Grupos de apps */}
+      <div className="mt-8 space-y-8">
+        {groups.map((group) => (
+          <section key={group.label}>
+            <div className="flex items-baseline gap-3 mb-4">
+              <h2 className="text-base font-bold tracking-tight text-foreground">{group.label}</h2>
+              <span className="text-xs text-muted-foreground">{group.hint}</span>
+              <div className="flex-1 h-px bg-border/50" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {group.items.map((item) => (
+                <AccessCard
+                  key={item.name}
+                  item={item}
+                  copied={!!item.shareUrl && copiedUrl === item.shareUrl}
+                  onCopy={copy}
                 />
-                {/* Grain noise */}
-                <div
-                  className="absolute inset-0 opacity-[0.08] mix-blend-overlay"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-                  }}
-                />
-
-                <div className="relative flex items-center justify-between">
-                  <div className="p-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
-                    <Icon className="h-6 w-6 text-white drop-shadow" strokeWidth={2} />
-                  </div>
-                  <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/15 group-hover:bg-white/25 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300">
-                    <ArrowUpRight className="h-4 w-4 text-white" strokeWidth={2.5} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <h3 className="text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
-                    {project.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                    {project.description}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[0.6875rem] font-medium px-2.5 py-1 rounded-full bg-muted/70 border border-border/40 text-muted-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-colors duration-300"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bottom accent line */}
-              <div className={`h-0.5 bg-gradient-to-r ${project.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-            </a>
-          );
-        })}
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
     </PageTransition>
   );
