@@ -616,6 +616,48 @@ export type Database = {
         }
         Relationships: []
       }
+      comparator_leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          melhor_liquido_aa: number | null
+          melhor_tipo: string | null
+          name: string | null
+          num_opcoes: number | null
+          prazo_meses: number | null
+          status: string
+          valor: number | null
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          melhor_liquido_aa?: number | null
+          melhor_tipo?: string | null
+          name?: string | null
+          num_opcoes?: number | null
+          prazo_meses?: number | null
+          status?: string
+          valor?: number | null
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          melhor_liquido_aa?: number | null
+          melhor_tipo?: string | null
+          name?: string | null
+          num_opcoes?: number | null
+          prazo_meses?: number | null
+          status?: string
+          valor?: number | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       consultant_notes: {
         Row: {
           client_id: string
@@ -747,6 +789,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      debt_leads: {
+        Row: {
+          created_at: string
+          email: string
+          extra_mensal: number | null
+          id: string
+          juros_avalanche: number | null
+          juros_snowball: number | null
+          meses_avalanche: number | null
+          meses_snowball: number | null
+          name: string | null
+          num_dividas: number | null
+          status: string
+          total_divida: number | null
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          extra_mensal?: number | null
+          id?: string
+          juros_avalanche?: number | null
+          juros_snowball?: number | null
+          meses_avalanche?: number | null
+          meses_snowball?: number | null
+          name?: string | null
+          num_dividas?: number | null
+          status?: string
+          total_divida?: number | null
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          extra_mensal?: number | null
+          id?: string
+          juros_avalanche?: number | null
+          juros_snowball?: number | null
+          meses_avalanche?: number | null
+          meses_snowball?: number | null
+          name?: string | null
+          num_dividas?: number | null
+          status?: string
+          total_divida?: number | null
+          whatsapp?: string | null
+        }
+        Relationships: []
       }
       debts: {
         Row: {
@@ -1142,6 +1232,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      health_score_leads: {
+        Row: {
+          created_at: string
+          dividas: number | null
+          email: string
+          gastos: number | null
+          grade: string | null
+          id: string
+          investe: number | null
+          name: string | null
+          renda: number | null
+          reserva: number | null
+          score: number | null
+          status: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          dividas?: number | null
+          email: string
+          gastos?: number | null
+          grade?: string | null
+          id?: string
+          investe?: number | null
+          name?: string | null
+          renda?: number | null
+          reserva?: number | null
+          score?: number | null
+          status?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          dividas?: number | null
+          email?: string
+          gastos?: number | null
+          grade?: string | null
+          id?: string
+          investe?: number | null
+          name?: string | null
+          renda?: number | null
+          reserva?: number | null
+          score?: number | null
+          status?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
       }
       implementation_sessions: {
         Row: {
@@ -1989,6 +2127,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          perfil: string | null
+          score: number | null
+          status: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          perfil?: string | null
+          score?: number | null
+          status?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          perfil?: string | null
+          score?: number | null
+          status?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2028,6 +2199,60 @@ export type Database = {
           terms_version?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      retirement_leads: {
+        Row: {
+          aporte_mensal: number | null
+          created_at: string
+          email: string
+          fire_number: number | null
+          id: string
+          idade_aposentadoria: number | null
+          idade_atual: number | null
+          idade_independencia: number | null
+          name: string | null
+          patrimonio_atual: number | null
+          patrimonio_projetado: number | null
+          renda_desejada: number | null
+          rentabilidade_real: number | null
+          status: string
+          whatsapp: string | null
+        }
+        Insert: {
+          aporte_mensal?: number | null
+          created_at?: string
+          email: string
+          fire_number?: number | null
+          id?: string
+          idade_aposentadoria?: number | null
+          idade_atual?: number | null
+          idade_independencia?: number | null
+          name?: string | null
+          patrimonio_atual?: number | null
+          patrimonio_projetado?: number | null
+          renda_desejada?: number | null
+          rentabilidade_real?: number | null
+          status?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          aporte_mensal?: number | null
+          created_at?: string
+          email?: string
+          fire_number?: number | null
+          id?: string
+          idade_aposentadoria?: number | null
+          idade_atual?: number | null
+          idade_independencia?: number | null
+          name?: string | null
+          patrimonio_atual?: number | null
+          patrimonio_projetado?: number | null
+          renda_desejada?: number | null
+          rentabilidade_real?: number | null
+          status?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
