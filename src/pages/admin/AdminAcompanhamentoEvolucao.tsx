@@ -215,11 +215,17 @@ const AdminAcompanhamentoEvolucao = () => {
     enabled: !!clientId,
   });
 
-  // Closings "efetivos": meses reabertos recalculados com dados ao vivo.
+  // Closings "efetivos": SEMPRE recalculados com os dados ao vivo do onboarding
+  // (por mês, via preferMonthRows). Assim o Acompanhamento reflete qualquer
+  // correção do consultor imediatamente — sem precisar re-fechar o mês.
+  // Mantém o snapshot apenas como fallback enquanto os dados ao vivo carregam.
   const effectiveClosings = useMemo(() => {
+    if (!liveData) return closings;
     return closings.map((c) => {
-      if (c.status !== "reaberto" || !liveData) return c;
       const t = computeMonthlyTotals(c.month_ref.slice(0, 10), liveData);
+      // Se o recálculo não encontrou renda (mês sem dados ao vivo), preserva o
+      // snapshot do fechamento para não zerar o histórico.
+      if (t.total_income <= 0 && Number(c.total_income ?? 0) > 0) return c;
       return { ...c, ...t };
     });
   }, [closings, liveData]);
