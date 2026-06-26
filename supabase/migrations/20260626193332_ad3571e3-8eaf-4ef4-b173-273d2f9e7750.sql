@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Admins can insert roles" ON public.user_roles;
