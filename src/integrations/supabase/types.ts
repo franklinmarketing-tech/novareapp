@@ -1672,6 +1672,57 @@ export type Database = {
         }
         Relationships: []
       }
+      lifeplan_leads: {
+        Row: {
+          capital_de_vida: number | null
+          created_at: string
+          email: string
+          id: string
+          idade_aposentadoria: number | null
+          idade_atual: number | null
+          name: string | null
+          patrimonio_atual: number | null
+          patrimonio_projetado: number | null
+          pct_atingido: number | null
+          renda_mensal: number | null
+          status: string
+          viavel: boolean | null
+          whatsapp: string | null
+        }
+        Insert: {
+          capital_de_vida?: number | null
+          created_at?: string
+          email: string
+          id?: string
+          idade_aposentadoria?: number | null
+          idade_atual?: number | null
+          name?: string | null
+          patrimonio_atual?: number | null
+          patrimonio_projetado?: number | null
+          pct_atingido?: number | null
+          renda_mensal?: number | null
+          status?: string
+          viavel?: boolean | null
+          whatsapp?: string | null
+        }
+        Update: {
+          capital_de_vida?: number | null
+          created_at?: string
+          email?: string
+          id?: string
+          idade_aposentadoria?: number | null
+          idade_atual?: number | null
+          name?: string | null
+          patrimonio_atual?: number | null
+          patrimonio_projetado?: number | null
+          pct_atingido?: number | null
+          renda_mensal?: number | null
+          status?: string
+          viavel?: boolean | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       monitoring_snapshots: {
         Row: {
           client_id: string
