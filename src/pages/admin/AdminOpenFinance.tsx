@@ -16,9 +16,13 @@ const TIPO_LABEL: Record<string, string> = {
   COE: "COE", SECURITY: "Títulos", OTHER: "Outros",
 };
 
+// Slug da Edge Function publicada no Supabase (o painel nomeou como "rapid-responder").
+// Se um dia recriar a função com o nome "openfinance", basta trocar aqui.
+const OPENFINANCE_FN = "rapid-responder";
+
 // Chama a Edge Function que faz o proxy seguro para o Banco MCP
 async function call(endpoint: string, body: Record<string, unknown> = {}) {
-  const { data, error } = await supabase.functions.invoke("openfinance", { body: { endpoint, body } });
+  const { data, error } = await supabase.functions.invoke(OPENFINANCE_FN, { body: { endpoint, body } });
   if (error) throw new Error(error.message || "Falha na chamada");
   if (data?.error) throw new Error(data.error);
   return data?.result ?? data;
