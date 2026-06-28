@@ -22,8 +22,17 @@ const OPENFINANCE_FN = "rapid-responder";
 
 // Chama a Edge Function que faz o proxy seguro para o Banco MCP
 async function call(endpoint: string, body: Record<string, unknown> = {}) {
-  const { data, error } = await supabase.functions.invoke(OPENFINANCE_FN, { body: { endpoint, body } });
-  if (error) throw new Error(error.message || "Falha na chamada");
+  const { data: { session } } = await supabase.auth.getSession();
+  const { data, error } = await supabase.functions.invoke(OPENFINANCE_FN, {
+    body: { endpoint, body },
+    headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+  });
+  if (error) {
+    // tenta extrair a mensagem real retornada pela função (em vez do erro genérico)
+    let msg = error.message || "Falha na chamada";
+    try { const j = await (error as any).context?.json?.(); if (j?.error) msg = j.error; } catch { /* ignore */ }
+    throw new Error(msg);
+  }
   if (data?.error) throw new Error(data.error);
   return data?.result ?? data;
 }

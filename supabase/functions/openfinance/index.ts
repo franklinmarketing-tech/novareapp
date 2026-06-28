@@ -47,11 +47,10 @@ Deno.serve(async (req) => {
     const callerClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: claimsData, error: claimsError } = await callerClient.auth.getClaims(
-      authHeader.replace("Bearer ", ""),
-    );
-    if (claimsError || !claimsData?.claims?.sub) return json({ error: "Token inválido" }, 401);
-    const userId = claimsData.claims.sub as string;
+    // getUser valida o token no servidor de auth (robusto p/ qualquer chave de assinatura)
+    const { data: userData, error: userError } = await callerClient.auth.getUser();
+    if (userError || !userData?.user) return json({ error: "Token inválido (auth)" }, 401);
+    const userId = userData.user.id;
 
     // Exige papel admin/super_admin (a conexão é da conta Novare)
     const admin = createClient(supabaseUrl, serviceKey);
