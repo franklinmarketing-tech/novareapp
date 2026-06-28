@@ -295,7 +295,7 @@ export default function CalculadoraAposentadoria() {
                     <div className="grid sm:grid-cols-3 gap-3 text-sm">
                       <div className="rounded-xl bg-slate-50 p-3">
                         <p className="text-[11px] text-slate-500">Seu aporte atual</p>
-                        <p className="font-bold text-slate-900 tabular-nums">{brl(sim.pm)}/mês</p>
+                        <p className="font-bold text-slate-900 tabular-nums">{brl(sim.pmt)}/mês</p>
                       </div>
                       <div className="rounded-xl bg-slate-50 p-3">
                         <p className="text-[11px] text-slate-500">Aporte ideal p/ meta no prazo</p>
