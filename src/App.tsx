@@ -69,6 +69,7 @@ const ScoreSaudeFinanceira = lazy(() => import("@/pages/ScoreSaudeFinanceira"));
 const AdminScoreLeads = lazy(() => import("@/pages/admin/AdminScoreLeads"));
 const ProjetoDeVida = lazy(() => import("@/pages/ProjetoDeVida"));
 const AdminLifePlanLeads = lazy(() => import("@/pages/admin/AdminLifePlanLeads"));
+const AdminOpenFinance = lazy(() => import("@/pages/admin/AdminOpenFinance"));
 const ReportPreview = lazy(() => import("@/pages/dev/ReportPreview"));
 const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/SuperAdminDashboard"));
 const SuperAdminAdmins = lazy(() => import("@/pages/super-admin/SuperAdminAdmins"));
@@ -164,6 +165,7 @@ const App = () => (
                 <Route path="/admin/projetos/perfil-investidor" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminPerfilLeads /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/projetos/saude-financeira" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminScoreLeads /></AdminLayout></ProtectedRoute>} />
                 <Route path="/admin/projetos/projeto-de-vida" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminLifePlanLeads /></AdminLayout></ProtectedRoute>} />
+                <Route path="/admin/projetos/open-finance" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminOpenFinance /></AdminLayout></ProtectedRoute>} />
 
                 {/* Admin client routes with tabs */}
                 <Route path="/admin/cliente/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminClientLayout /></AdminLayout></ProtectedRoute>}>

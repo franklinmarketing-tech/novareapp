@@ -12,6 +12,7 @@ import cardComparador from "@/assets/card-comparador.webp";
 import cardPerfil from "@/assets/card-perfil.webp";
 import cardScore from "@/assets/card-score.webp";
 import cardProjetoVida from "@/assets/card-projeto-vida.webp";
+import cardOpenFinance from "@/assets/card-openfinance.webp";
 import cardCalculadora from "@/assets/card-calculadora.webp";
 import cardObjetivos from "@/assets/card-objetivos.webp";
 import cardLeadsSimulador from "@/assets/card-leads-simulador.webp";
@@ -217,6 +218,15 @@ const groups: Group[] = [
     label: "Plataforma",
     hint: "Acesso ao site e ao painel principal",
     items: [
+      {
+        name: "Open Finance",
+        description: "Consolidação de contas e investimentos via Banco MCP (Pluggy). Conecte bancos e veja a carteira agregada. [beta]",
+        href: "/admin/projetos/open-finance",
+        icon: cardOpenFinance,
+        tags: ["Open Finance", "Pluggy", "Beta"],
+        accent: "from-cyan-500 via-blue-600 to-novare-blue",
+        glow: "rgba(34,211,238,0.35)",
+      },
       {
         name: "Novare Consultoria Financeira",
         description: "Plataforma de consultoria financeira personalizada para planejadores e seus clientes.",

@@ -23,6 +23,7 @@ import {
   UserCog,
   Activity,
   Compass,
+  Landmark,
   User as UserIcon,
   Image as ImageIcon,
   Bell,
@@ -100,6 +101,7 @@ const staticSegments: Record<string, string> = {
   "perfil-investidor": "Perfil de Investidor",
   "saude-financeira": "Saúde Financeira",
   "projeto-de-vida": "Projeto de Vida",
+  "open-finance": "Open Finance",
   ajuda: "Ajuda & Manual",
   leads: "Leads",
   "leads-newsletter": "Leads Newsletter",
@@ -403,6 +405,21 @@ export const AdminLayout = ({ children }: Props) => {
                 >
                   <Compass className="h-4 w-4 shrink-0" />
                   <span className="truncate">Projeto de Vida</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/projetos/open-finance"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                      isActive
+                        ? "text-sidebar-foreground bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/25",
+                    )
+                  }
+                >
+                  <Landmark className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Open Finance</span>
                 </NavLink>
                 <NavLink
                   to="/admin/workspace"
