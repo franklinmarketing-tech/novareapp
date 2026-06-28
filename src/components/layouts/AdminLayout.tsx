@@ -22,6 +22,7 @@ import {
   Scale,
   UserCog,
   Activity,
+  Compass,
   User as UserIcon,
   Image as ImageIcon,
   Bell,
@@ -98,6 +99,7 @@ const staticSegments: Record<string, string> = {
   comparador: "Comparador",
   "perfil-investidor": "Perfil de Investidor",
   "saude-financeira": "Saúde Financeira",
+  "projeto-de-vida": "Projeto de Vida",
   ajuda: "Ajuda & Manual",
   leads: "Leads",
   "leads-newsletter": "Leads Newsletter",
@@ -387,6 +389,21 @@ export const AdminLayout = ({ children }: Props) => {
             {/* Sub-itens */}
             {projetosOpen && (
               <div className="mt-0.5 ml-3 pl-3 border-l border-sidebar-border/30 space-y-0.5">
+                <NavLink
+                  to="/admin/projetos/projeto-de-vida"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                      isActive
+                        ? "text-sidebar-foreground bg-sidebar-accent/50"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/25",
+                    )
+                  }
+                >
+                  <Compass className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Projeto de Vida</span>
+                </NavLink>
                 <NavLink
                   to="/admin/workspace"
                   onClick={() => setMobileOpen(false)}

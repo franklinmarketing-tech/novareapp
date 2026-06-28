@@ -11,6 +11,7 @@ import cardDividas from "@/assets/card-dividas.webp";
 import cardComparador from "@/assets/card-comparador.webp";
 import cardPerfil from "@/assets/card-perfil.webp";
 import cardScore from "@/assets/card-score.webp";
+import cardProjetoVida from "@/assets/card-projeto-vida.webp";
 import cardCalculadora from "@/assets/card-calculadora.webp";
 import cardObjetivos from "@/assets/card-objetivos.webp";
 import cardLeadsSimulador from "@/assets/card-leads-simulador.webp";
@@ -42,6 +43,16 @@ const groups: Group[] = [
     label: "Ferramentas Públicas",
     hint: "Links para compartilhar com leads e clientes",
     items: [
+      {
+        name: "Projeto de Vida Novare",
+        description: "O flagship: soma todos os sonhos + aposentadoria no 'Capital de Vida' e mostra se o projeto é viável (Método Horizonte).",
+        href: "/ferramentas/projeto-de-vida",
+        shareUrl: `${SITE}/ferramentas/projeto-de-vida`,
+        icon: cardProjetoVida,
+        tags: ["Flagship", "Planejamento", "Captação"],
+        accent: "from-novare-blue via-indigo-700 to-novare-terracotta",
+        glow: "rgba(194,96,47,0.35)",
+      },
       {
         name: "Simulador de Renda Fixa",
         description: "Compara CDB, Tesouro, LCI/LCA e Poupança com IR e CDI ao vivo. Captura o e-mail antes de liberar a comparação.",
@@ -128,6 +139,15 @@ const groups: Group[] = [
     label: "Captação & Leads",
     hint: "Painéis internos para gerenciar os leads capturados",
     items: [
+      {
+        name: "Leads · Projeto de Vida",
+        description: "Leads do Projeto de Vida Novare, com o Capital de Vida e a viabilidade do projeto de cada um.",
+        href: "/admin/projetos/projeto-de-vida",
+        icon: cardProjetoVida,
+        tags: ["Leads", "Flagship"],
+        accent: "from-novare-blue via-indigo-700 to-novare-terracotta",
+        glow: "rgba(194,96,47,0.35)",
+      },
       {
         name: "Leads · Simulador",
         description: "E-mails capturados pelo Simulador de Renda Fixa, com os parâmetros de cada simulação e o status do contato.",
