@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { VIDAPLAN } from "../lib/brand";
 import { VPCard, VPProgress, VPStat } from "../components/ui";
-import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank } from "lucide-react";
+import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank, LineChart, ClipboardList, Activity } from "lucide-react";
 
 const Painel = () => {
   const { plan, input, setField } = useVidaPlan();
@@ -80,11 +80,14 @@ const Painel = () => {
         </div>
       )}
 
-      {/* Atalhos */}
-      <div className="grid sm:grid-cols-3 gap-3">
+      {/* Atalhos (hub) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <Shortcut to="/vidaplan/app/sonhos" icon={Sparkles} title="Meus Sonhos" desc={`${input.goals.length} objetivo(s)`} />
         <Shortcut to="/vidaplan/app/independencia" icon={Sunrise} title="Independência" desc={`aos ${input.idadeAposentadoria} anos`} />
-        <Shortcut to="/vidaplan/app/realidade" icon={Wallet} title="Minha Realidade" desc="renda e custos hoje" />
+        <Shortcut to="/vidaplan/app/realidade" icon={Wallet} title="Minha Realidade" desc="renda, custos e dívidas" />
+        <Shortcut to="/vidaplan/app/projecao" icon={LineChart} title="Projeção" desc="fluxo e metas" />
+        <Shortcut to="/vidaplan/app/plano" icon={ClipboardList} title="Plano de Ação" desc="carteira e proteção" />
+        <Shortcut to="/vidaplan/app/progresso" icon={Activity} title="Meu Progresso" desc="aportes vs meta" />
       </div>
 
       <VPStat label="Renda desejada na independência" value={`${brl0(input.rendaAposDesejada)}/mês`} accent="navy" />

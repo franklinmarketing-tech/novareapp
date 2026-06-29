@@ -2,7 +2,7 @@
 // Linguagem 100% própria (sem "número da Vida", sem mascote, sem metáfora espacial).
 // O número-âncora do app é o "Marco Horizonte".
 
-import { Compass, Sparkles, Sunrise, Wallet, Landmark, LineChart, ClipboardList, type LucideIcon } from "lucide-react";
+import { Compass, Sparkles, Sunrise, Wallet, Landmark, LineChart, ClipboardList, Activity, type LucideIcon } from "lucide-react";
 
 export const VIDAPLAN = {
   name: "Novare Vida Plan",
@@ -28,4 +28,14 @@ export const VIDAPLAN_NAV: VidaPlanNavItem[] = [
   { to: "/vidaplan/app/carteira", label: "Carteira", icon: Landmark, short: "Carteira" },
   { to: "/vidaplan/app/projecao", label: "Projeção", icon: LineChart, short: "Projeção" },
   { to: "/vidaplan/app/plano", label: "Plano de Ação", icon: ClipboardList, short: "Plano" },
+  { to: "/vidaplan/app/progresso", label: "Meu Progresso", icon: Activity, short: "Progresso" },
+];
+
+// Mobile: barra inferior enxuta (5 áreas). O resto é alcançado pelos atalhos do Painel.
+export const VIDAPLAN_NAV_MOBILE: VidaPlanNavItem[] = [
+  VIDAPLAN_NAV[0], // Painel
+  VIDAPLAN_NAV[1], // Sonhos
+  VIDAPLAN_NAV[3], // Realidade
+  VIDAPLAN_NAV[4], // Carteira
+  VIDAPLAN_NAV[7], // Progresso
 ];

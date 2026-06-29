@@ -11,6 +11,7 @@ import Realidade from "./pages/Realidade";
 import Carteira from "./pages/Carteira";
 import Projecao from "./pages/Projecao";
 import Plano from "./pages/Plano";
+import Progresso from "./pages/Progresso";
 
 const VidaPlanApp = () => (
   <VidaPlanProvider>
@@ -25,6 +26,7 @@ const VidaPlanApp = () => (
         <Route path="carteira" element={<Carteira />} />
         <Route path="projecao" element={<Projecao />} />
         <Route path="plano" element={<Plano />} />
+        <Route path="progresso" element={<Progresso />} />
       </Route>
       <Route path="*" element={<Navigate to="/vidaplan/app" replace />} />
     </Routes>

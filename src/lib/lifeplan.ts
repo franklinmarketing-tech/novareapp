@@ -19,6 +19,29 @@ export interface Goal {
 
 export interface CustoCategoria { nome: string; valor: number }
 
+// Dívida em aberto (financiamento, empréstimo, cartão parcelado…)
+export interface Debt {
+  id: number;
+  nome?: string;
+  saldo: number;     // saldo devedor hoje
+  parcelas: number;  // nº de parcelas restantes (meses)
+  jurosAa: number;   // % a.a. nominal
+}
+
+// Mudança de renda no futuro (aumento + / redução -) a partir de um ano
+export interface RendaEvento {
+  id: number;
+  ano: number;
+  delta: number;     // variação mensal (R$) aplicada a partir de `ano`
+}
+
+// Aporte realizado (acompanhamento de "Meu Progresso")
+export interface Aporte {
+  id: number;
+  mesAno: string;    // "YYYY-MM"
+  valor: number;
+}
+
 export interface LifePlanInput {
   anoAtual: number;
   idadeAtual: number;
@@ -32,7 +55,28 @@ export interface LifePlanInput {
   rendaINSS: number;         // mensal já garantido (INSS/previdência)
   goals: Goal[];
   custoCategorias?: CustoCategoria[]; // detalhamento do custo fixo mensal (opcional)
+  dividas?: Debt[];          // dívidas em aberto (parcela mensal vira saída)
+  rendaEventos?: RendaEvento[]; // aumentos/reduções de renda no tempo
+  aportes?: Aporte[];        // acompanhamento de aportes realizados (não afeta a projeção)
 }
+
+// Parcela mensal da dívida (sistema Price)
+const parcelaMensalDivida = (d: Debt): number => {
+  const i = (d.jurosAa || 0) / 100 / 12, n = d.parcelas;
+  if (d.saldo <= 0 || n <= 0) return 0;
+  return i === 0 ? d.saldo / n : (d.saldo * i) / (1 - Math.pow(1 + i, -n));
+};
+// Saída anual da dívida num ano (considera os meses restantes naquele ano)
+const dividaAnualNoAno = (d: Debt, ano: number, anoAtual: number): number => {
+  const pmt = parcelaMensalDivida(d);
+  if (pmt <= 0) return 0;
+  const restantesNoInicio = d.parcelas - (ano - anoAtual) * 12;
+  if (restantesNoInicio <= 0) return 0;
+  return pmt * Math.min(12, restantesNoInicio);
+};
+// Renda mensal de trabalho num ano (base + aumentos/reduções acumulados)
+const rendaMensalNoAno = (inp: LifePlanInput, ano: number): number =>
+  inp.rendaMensal + (inp.rendaEventos ?? []).reduce((s, e) => s + (ano >= e.ano ? e.delta : 0), 0);
 
 const pricePmtAnnual = (principal: number, jurosAa: number, prazoAnos: number) => {
   const i = jurosAa / 100 / 12, n = prazoAnos * 12;
@@ -87,20 +131,19 @@ function simulate(inp: LifePlanInput, opts: { extraMensal?: number; rate?: numbe
   const ultimoAno = inp.anoAtual + (inp.idadeFim - inp.idadeAtual);
   for (let ano = inp.anoAtual; ano <= ultimoAno; ano++) {
     const idade = inp.idadeAtual + (ano - inp.anoAtual);
+    const dividaAno = (inp.dividas ?? []).reduce((s, d) => s + dividaAnualNoAno(d, ano, inp.anoAtual), 0);
     let renda = 0, saidas = 0, objetivos = 0, sobra = 0;
     if (idade < idadeApos) {
-      renda = inp.rendaMensal * 12;
-      saidas = inp.custoFixoMensal * 12;
+      renda = rendaMensalNoAno(inp, ano) * 12;
+      saidas = inp.custoFixoMensal * 12 + dividaAno;
       for (const g of inp.goals) { saidas += parcelaAnualNoAno(g, ano); objetivos += outflowsNoAno(g, ano, inp.anoAtual, inp.idadeAtual, idadeApos); }
       sobra = renda - saidas - objetivos + extra;
-      patr = patr * (1 + i) + sobra;
     } else {
-      const saque = Math.max(0, inp.rendaAposDesejada - inp.rendaINSS) * 12;
       renda = inp.rendaINSS * 12;
-      saidas = inp.rendaAposDesejada * 12;
-      sobra = -saque;
-      patr = patr * (1 + i) - saque;
+      saidas = inp.rendaAposDesejada * 12 + dividaAno;
+      sobra = renda - saidas;
     }
+    patr = patr * (1 + i) + sobra;
     if (idade === idadeApos) patrimonioNaApos = patr;
     serie.push({ idade, ano, renda: Math.round(renda), saidas: Math.round(saidas), objetivos: Math.round(objetivos), sobra: Math.round(sobra), patrimonio: Math.round(patr) });
   }

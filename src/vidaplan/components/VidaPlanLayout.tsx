@@ -4,7 +4,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { VIDAPLAN, VIDAPLAN_NAV } from "../lib/brand";
+import { VIDAPLAN, VIDAPLAN_NAV, VIDAPLAN_NAV_MOBILE } from "../lib/brand";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { LogOut, Check, Loader2 } from "lucide-react";
 
@@ -92,7 +92,7 @@ const VidaPlanLayout = () => {
       {/* Navegação inferior mobile */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-black/5 pb-[env(safe-area-inset-bottom)]">
         <ul className="flex items-stretch justify-around h-[62px]">
-          {VIDAPLAN_NAV.map((item) => (
+          {VIDAPLAN_NAV_MOBILE.map((item) => (
             <li key={item.to} className="flex-1">
               <NavLink
                 to={item.to}

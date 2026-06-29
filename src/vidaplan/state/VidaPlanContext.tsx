@@ -35,6 +35,9 @@ const DEFAULT_INPUT: LifePlanInput = {
     { nome: "Lazer", valor: 281 },
     { nome: "Outros", valor: 566 },
   ],
+  dividas: [],
+  rendaEventos: [],
+  aportes: [],
   goals: [
     { id: 1, tipo: "viagens", nome: "Viagens e lazer", valor: 8496, ano: new Date().getFullYear() },
     { id: 2, tipo: "imovel", nome: "Casa própria", valor: 600000, ano: new Date().getFullYear() + 9, financiar: true, entradaPct: 50, prazoAnos: 25, jurosAa: 9 },

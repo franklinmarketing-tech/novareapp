@@ -1,11 +1,11 @@
 // Minha Realidade: renda, patrimônio, custo por categoria e rentabilidade.
 import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
-import { computeLifePlan } from "@/lib/lifeplan";
+import { computeLifePlan, type Debt, type RendaEvento } from "@/lib/lifeplan";
 import { VPCard, VPTitle, VPField } from "../components/ui";
 import { cn } from "@/lib/utils";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, CreditCard, TrendingUp } from "lucide-react";
 
 const CORES = ["#16314f", "#C8643F", "#2F8F6B", "#E2A03F", "#5B8DB8", "#8E6BC8", "#C84F6B", "#3FA0A0", "#A0843F", "#6B7280"];
 const CENARIOS = [2, 3, 4, 5, 6, 7];
@@ -25,6 +25,17 @@ const Realidade = () => {
     setCategorias(cats.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
   const add = () => setCategorias([...cats, { nome: "Nova categoria", valor: 0 }]);
   const del = (i: number) => setCategorias(cats.filter((_, idx) => idx !== i));
+
+  // Dívidas
+  const dividas = input.dividas ?? [];
+  const setDiv = (list: Debt[]) => setField("dividas", list);
+  const updDiv = (id: number, patch: Partial<Debt>) => setDiv(dividas.map((d) => (d.id === id ? { ...d, ...patch } : d)));
+  const totalDividas = dividas.reduce((s, d) => s + (Number(d.saldo) || 0), 0);
+
+  // Renda futura
+  const eventos = input.rendaEventos ?? [];
+  const setEv = (list: RendaEvento[]) => setField("rendaEventos", list);
+  const updEv = (id: number, patch: Partial<RendaEvento>) => setEv(eventos.map((e) => (e.id === id ? { ...e, ...patch } : e)));
 
   return (
     <div className="space-y-6">
@@ -101,8 +112,69 @@ const Realidade = () => {
           })}
         </div>
       </VPCard>
+
+      {/* Dívidas */}
+      <VPCard className="p-5">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-[#C8643F]" />
+            <p className="font-display text-lg font-bold text-[#16314f]">Dívidas</p>
+          </div>
+          {totalDividas > 0 && <span className="text-sm font-semibold text-[#C8643F] tabular-nums">{brl0(totalDividas)}</span>}
+        </div>
+        <p className="text-sm text-[#1b2a3d]/60 mb-3">Financiamentos e empréstimos em aberto — a parcela mensal entra como saída até quitar.</p>
+        <div className="space-y-2">
+          {dividas.map((d) => (
+            <div key={d.id} className="rounded-xl border border-black/[0.07] p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <input value={d.nome ?? ""} placeholder="Ex.: financiamento do carro" onChange={(e) => updDiv(d.id, { nome: e.target.value })}
+                  className="flex-1 min-w-0 bg-transparent font-semibold text-[#16314f] outline-none border-b border-transparent focus:border-[#C8643F]/40 pb-0.5" />
+                <button onClick={() => setDiv(dividas.filter((x) => x.id !== d.id))} className="text-[#1b2a3d]/30 hover:text-[#C8643F]"><Trash2 className="h-4 w-4" /></button>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Mini label="Saldo (R$)"><input type="number" value={d.saldo} onChange={(e) => updDiv(d.id, { saldo: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+                <Mini label="Parcelas"><input type="number" value={d.parcelas} onChange={(e) => updDiv(d.id, { parcelas: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+                <Mini label="Juros % a.a."><input type="number" value={d.jurosAa} onChange={(e) => updDiv(d.id, { jurosAa: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => setDiv([...dividas, { id: Date.now(), nome: "", saldo: 0, parcelas: 12, jurosAa: 18 }])}
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#16314f] hover:text-[#C8643F] transition-colors">
+          <Plus className="h-4 w-4" /> Adicionar dívida
+        </button>
+      </VPCard>
+
+      {/* Renda futura */}
+      <VPCard className="p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <TrendingUp className="h-5 w-5 text-[#2F8F6B]" />
+          <p className="font-display text-lg font-bold text-[#16314f]">Renda futura</p>
+        </div>
+        <p className="text-sm text-[#1b2a3d]/60 mb-3">Aumentos (ou reduções) de renda previstos. Use valor negativo para queda de renda.</p>
+        <div className="space-y-2">
+          {eventos.map((ev) => (
+            <div key={ev.id} className="flex items-center gap-2">
+              <Mini label="A partir do ano"><input type="number" value={ev.ano} onChange={(e) => updEv(ev.id, { ano: parseFloat(e.target.value) || input.anoAtual })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <Mini label="Variação mensal (R$)"><input type="number" value={ev.delta} onChange={(e) => updEv(ev.id, { delta: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <button onClick={() => setEv(eventos.filter((x) => x.id !== ev.id))} className="text-[#1b2a3d]/30 hover:text-[#C8643F] shrink-0"><Trash2 className="h-4 w-4" /></button>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => setEv([...eventos, { id: Date.now(), ano: input.anoAtual + 3, delta: 1500 }])}
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#16314f] hover:text-[#C8643F] transition-colors">
+          <Plus className="h-4 w-4" /> Adicionar mudança de renda
+        </button>
+      </VPCard>
     </div>
   );
 };
+
+const Mini = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div className="rounded-lg border border-black/[0.07] px-2.5 py-1.5">
+    <p className="text-[9px] uppercase tracking-wider text-[#1b2a3d]/40">{label}</p>
+    {children}
+  </div>
+);
 
 export default Realidade;
