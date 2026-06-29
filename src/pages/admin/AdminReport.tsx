@@ -25,6 +25,7 @@ import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { ScrollableTable } from "@/components/ui/scrollable-table";
 import { JourneyFooterNav } from "@/components/admin/JourneyFooterNav";
 import { planCompletion } from "@/lib/actionPlan";
+import { emergencyReserveBase } from "@/lib/finance";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
