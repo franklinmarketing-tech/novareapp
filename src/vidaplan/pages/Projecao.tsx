@@ -19,7 +19,7 @@ const Projecao = () => {
 
   return (
     <div className="space-y-6">
-      <VPTitle hint="Tudo em poder de compra de hoje. A linha marca o início da sua independência.">Projeção</VPTitle>
+      <VPTitle hint="Tudo em poder de compra de hoje. A linha marca o início da sua independência.">📈 Projeção</VPTitle>
 
       <VPCard className="p-4 pt-5">
         <div className="h-64">

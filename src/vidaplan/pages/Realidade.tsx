@@ -49,7 +49,7 @@ const Realidade = () => {
 
   return (
     <div className="space-y-6">
-      <VPTitle hint="Sua fotografia financeira atual. É a base de toda a projeção.">Minha Realidade</VPTitle>
+      <VPTitle hint="Sua fotografia financeira atual. É a base de toda a projeção.">💰 Minha Realidade</VPTitle>
 
       <VPCard className="p-5 space-y-4">
         <div className="grid sm:grid-cols-3 gap-4">

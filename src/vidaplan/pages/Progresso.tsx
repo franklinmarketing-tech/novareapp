@@ -28,7 +28,7 @@ const Progresso = () => {
 
   return (
     <div className="space-y-6">
-      <VPTitle hint="Acompanhe se seus aportes estão no ritmo do plano.">Meu Progresso</VPTitle>
+      <VPTitle hint="Acompanhe se seus aportes estão no ritmo do plano.">📊 Meu Progresso</VPTitle>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <VPStat label="Meta mensal" value={`${brl0(metaMensal)}`} accent="navy" />

@@ -2,15 +2,15 @@
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { VPCard, VPTitle } from "../components/ui";
 import type { GoalType } from "@/lib/lifeplan";
-import { Plus, Trash2, Plane, Gift, Home, Car, GraduationCap, Star } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
-const TIPOS: { tipo: GoalType; label: string; icon: typeof Plane; anual?: boolean }[] = [
-  { tipo: "viagens", label: "Viagens e lazer", icon: Plane, anual: true },
-  { tipo: "festas", label: "Festas e presentes", icon: Gift, anual: true },
-  { tipo: "imovel", label: "Imóvel", icon: Home },
-  { tipo: "carro", label: "Veículo", icon: Car },
-  { tipo: "educacao", label: "Educação", icon: GraduationCap },
-  { tipo: "outro", label: "Outro objetivo", icon: Star },
+const TIPOS: { tipo: GoalType; label: string; emoji: string; cor: string; anual?: boolean }[] = [
+  { tipo: "viagens", label: "Viagens e lazer", emoji: "✈️", cor: "#5B8DB8", anual: true },
+  { tipo: "festas", label: "Festas e presentes", emoji: "🎁", cor: "#C84F6B", anual: true },
+  { tipo: "imovel", label: "Imóvel", emoji: "🏠", cor: "#2F8F6B" },
+  { tipo: "carro", label: "Veículo", emoji: "🚗", cor: "#16314f" },
+  { tipo: "educacao", label: "Educação", emoji: "🎓", cor: "#8E6BC8" },
+  { tipo: "outro", label: "Outro objetivo", emoji: "⭐", cor: "#E2A03F" },
 ];
 const meta = (t: GoalType) => TIPOS.find((x) => x.tipo === t) || TIPOS[5];
 
@@ -22,7 +22,7 @@ const Sonhos = () => {
 
   return (
     <div className="space-y-6">
-      <VPTitle hint="Sonhar é o primeiro passo. Tudo aqui entra no seu Marco Horizonte.">Meus Sonhos</VPTitle>
+      <VPTitle hint="Sonhar é o primeiro passo. Tudo aqui entra no seu Marco Horizonte.">✨ Meus Sonhos</VPTitle>
 
       <VPCard className="p-4 flex items-center justify-between">
         <div>
@@ -37,8 +37,8 @@ const Sonhos = () => {
           return (
             <VPCard key={g.id} className="p-4">
               <div className="flex items-start gap-3">
-                <div className="h-9 w-9 rounded-lg bg-[#16314f]/[0.06] flex items-center justify-center shrink-0">
-                  <m.icon className="h-4 w-4 text-[#16314f]" />
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 text-lg" style={{ backgroundColor: `${m.cor}1a` }}>
+                  {m.emoji}
                 </div>
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-2">
@@ -60,7 +60,7 @@ const Sonhos = () => {
                         onChange={(e) => updateGoal(g.id, { tipo: e.target.value as GoalType })}
                         className="w-full bg-transparent text-sm text-[#16314f] outline-none"
                       >
-                        {TIPOS.map((t) => <option key={t.tipo} value={t.tipo}>{t.label}</option>)}
+                        {TIPOS.map((t) => <option key={t.tipo} value={t.tipo}>{t.emoji} {t.label}</option>)}
                       </select>
                     </Mini>
                     <Mini label={m.anual ? "Valor por ano" : "Valor"}>

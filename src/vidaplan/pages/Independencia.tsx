@@ -7,7 +7,7 @@ const Independencia = () => {
 
   return (
     <div className="space-y-6">
-      <VPTitle hint="O ponto em que sua renda passiva sustenta seu padrão de vida — sem depender do trabalho.">Independência</VPTitle>
+      <VPTitle hint="O ponto em que sua renda passiva sustenta seu padrão de vida — sem depender do trabalho.">🌅 Independência</VPTitle>
 
       <VPCard className="p-5 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">
