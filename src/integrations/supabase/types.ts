@@ -540,6 +540,47 @@ export type Database = {
         }
         Relationships: []
       }
+      client_connections: {
+        Row: {
+          client_id: string
+          connector_name: string | null
+          created_at: string
+          external_user_id: string | null
+          id: string
+          item_id: string
+          provider: string
+          status: string | null
+        }
+        Insert: {
+          client_id: string
+          connector_name?: string | null
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          item_id: string
+          provider?: string
+          status?: string | null
+        }
+        Update: {
+          client_id?: string
+          connector_name?: string | null
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          item_id?: string
+          provider?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_connections_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           assigned_consultant: string | null
@@ -2528,6 +2569,48 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vidaplan_plans: {
+        Row: {
+          data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vidaplan_subscriptions: {
+        Row: {
+          plano: string
+          status: string
+          trial_until: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          plano?: string
+          status?: string
+          trial_until?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          plano?: string
+          status?: string
+          trial_until?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
