@@ -25,6 +25,7 @@ const FALLBACK = TIPOS[TIPOS.length - 1];
 const meta = (t: GoalType) => TIPOS.find((x) => x.tipo === t) || FALLBACK;
 
 const num = (v: string) => parseFloat(v) || 0;
+const selAll = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
 
 const Sonhos = () => {
   const { input, addGoal, updateGoal, removeGoal, plan } = useVidaPlan();
@@ -92,18 +93,18 @@ const Sonhos = () => {
                       </select>
                     </Mini>
                     <Mini label={recorrente ? "Valor por ano" : "Valor"}>
-                      <input type="number" value={g.valor} onChange={(e) => updateGoal(g.id, { valor: num(e.target.value) })}
+                      <input type="number" value={g.valor} onFocus={selAll} onChange={(e) => updateGoal(g.id, { valor: num(e.target.value) })}
                         className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" />
                     </Mini>
                     {!recorrente && (
                       <Mini label={isCarro ? "1ª compra (ano)" : "Ano"}>
-                        <input type="number" value={g.ano ?? anoBase} onChange={(e) => updateGoal(g.id, { ano: num(e.target.value) })}
+                        <input type="number" value={g.ano ?? anoBase} onFocus={selAll} onChange={(e) => updateGoal(g.id, { ano: num(e.target.value) })}
                           className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" />
                       </Mini>
                     )}
                     {isCarro && (
                       <Mini label="Troca a cada (anos)">
-                        <input type="number" value={g.intervaloAnos ?? 5} onChange={(e) => updateGoal(g.id, { intervaloAnos: num(e.target.value) })}
+                        <input type="number" value={g.intervaloAnos ?? 5} onFocus={selAll} onChange={(e) => updateGoal(g.id, { intervaloAnos: num(e.target.value) })}
                           className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" />
                       </Mini>
                     )}
@@ -181,7 +182,7 @@ const Mini = ({ label, children }: { label: string; children: React.ReactNode })
 
 const InlineNum = ({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) => (
   <span className="inline-flex items-center gap-1">
-    <input type="number" value={value} onChange={(e) => onChange(num(e.target.value))}
+    <input type="number" value={value} onFocus={selAll} onChange={(e) => onChange(num(e.target.value))}
       className="w-12 bg-white border border-black/10 rounded px-1 py-0.5 text-[#16314f] tabular-nums" />
     {label}
   </span>

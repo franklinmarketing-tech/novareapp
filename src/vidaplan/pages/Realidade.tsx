@@ -9,6 +9,7 @@ import { Plus, Trash2, CreditCard, TrendingUp, TrendingDown, Shield } from "luci
 
 const CORES = ["#16314f", "#C8643F", "#2F8F6B", "#E2A03F", "#5B8DB8", "#8E6BC8", "#C84F6B", "#3FA0A0", "#A0843F", "#6B7280"];
 const CENARIOS = [2, 3, 4, 5, 6, 7];
+const selAll = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
 
 const Realidade = () => {
   const { input, setField, setCategorias } = useVidaPlan();
@@ -100,7 +101,7 @@ const Realidade = () => {
                 className="flex-1 min-w-0 bg-transparent text-sm text-[#16314f] outline-none border-b border-transparent focus:border-[#C8643F]/40 py-0.5" />
               <div className="flex items-center rounded-lg border border-black/10 px-2">
                 <span className="text-[11px] text-[#1b2a3d]/40">R$</span>
-                <input type="number" value={c.valor} onChange={(e) => upd(i, { valor: parseFloat(e.target.value) || 0 })}
+                <input type="number" value={c.valor} onFocus={selAll} onChange={(e) => upd(i, { valor: parseFloat(e.target.value) || 0 })}
                   className="w-20 bg-transparent py-1.5 pl-1 text-sm text-right text-[#16314f] outline-none tabular-nums" />
               </div>
               <button onClick={() => del(i)} className="text-[#1b2a3d]/30 hover:text-[#C8643F] transition-colors shrink-0"><Trash2 className="h-4 w-4" /></button>
@@ -150,9 +151,9 @@ const Realidade = () => {
                 <button onClick={() => setDiv(dividas.filter((x) => x.id !== d.id))} className="text-[#1b2a3d]/30 hover:text-[#C8643F]"><Trash2 className="h-4 w-4" /></button>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <Mini label="Saldo (R$)"><input type="number" value={d.saldo} onChange={(e) => updDiv(d.id, { saldo: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
-                <Mini label="Parcelas"><input type="number" value={d.parcelas} onChange={(e) => updDiv(d.id, { parcelas: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
-                <Mini label="Juros % a.a."><input type="number" value={d.jurosAa} onChange={(e) => updDiv(d.id, { jurosAa: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+                <Mini label="Saldo (R$)"><input type="number" value={d.saldo} onFocus={selAll} onChange={(e) => updDiv(d.id, { saldo: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+                <Mini label="Parcelas"><input type="number" value={d.parcelas} onFocus={selAll} onChange={(e) => updDiv(d.id, { parcelas: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+                <Mini label="Juros % a.a."><input type="number" value={d.jurosAa} onFocus={selAll} onChange={(e) => updDiv(d.id, { jurosAa: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
               </div>
             </div>
           ))}
@@ -173,8 +174,8 @@ const Realidade = () => {
         <div className="space-y-2">
           {eventos.map((ev) => (
             <div key={ev.id} className="flex items-center gap-2">
-              <Mini label="A partir do ano"><input type="number" value={ev.ano} onChange={(e) => updEv(ev.id, { ano: parseFloat(e.target.value) || input.anoAtual })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
-              <Mini label="Variação mensal (R$)"><input type="number" value={ev.delta} onChange={(e) => updEv(ev.id, { delta: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <Mini label="A partir do ano"><input type="number" value={ev.ano} onFocus={selAll} onChange={(e) => updEv(ev.id, { ano: parseFloat(e.target.value) || input.anoAtual })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <Mini label="Variação mensal (R$)"><input type="number" value={ev.delta} onFocus={selAll} onChange={(e) => updEv(ev.id, { delta: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
               <button onClick={() => setEv(eventos.filter((x) => x.id !== ev.id))} className="text-[#1b2a3d]/30 hover:text-[#C8643F] shrink-0"><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
@@ -195,8 +196,8 @@ const Realidade = () => {
         <div className="space-y-2">
           {custoEv.map((ev) => (
             <div key={ev.id} className="flex items-center gap-2">
-              <Mini label="A partir do ano"><input type="number" value={ev.ano} onChange={(e) => updCev(ev.id, { ano: parseFloat(e.target.value) || input.anoAtual })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
-              <Mini label="Variação mensal (R$)"><input type="number" value={ev.delta} onChange={(e) => updCev(ev.id, { delta: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <Mini label="A partir do ano"><input type="number" value={ev.ano} onFocus={selAll} onChange={(e) => updCev(ev.id, { ano: parseFloat(e.target.value) || input.anoAtual })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <Mini label="Variação mensal (R$)"><input type="number" value={ev.delta} onFocus={selAll} onChange={(e) => updCev(ev.id, { delta: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
               <button onClick={() => setCev(custoEv.filter((x) => x.id !== ev.id))} className="text-[#1b2a3d]/30 hover:text-[#C8643F] shrink-0"><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
@@ -219,7 +220,7 @@ const Realidade = () => {
             <div key={s.id} className="flex items-center gap-2">
               <input value={s.nome ?? ""} placeholder="Ex.: seguro de vida" onChange={(e) => updSeg(s.id, { nome: e.target.value })}
                 className="flex-1 min-w-0 bg-transparent text-sm font-medium text-[#16314f] outline-none border-b border-transparent focus:border-[#C8643F]/40 py-1" />
-              <Mini label="Valor (R$)"><input type="number" value={s.valor} onChange={(e) => updSeg(s.id, { valor: parseFloat(e.target.value) || 0 })} className="w-20 bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <Mini label="Valor (R$)"><input type="number" value={s.valor} onFocus={selAll} onChange={(e) => updSeg(s.id, { valor: parseFloat(e.target.value) || 0 })} className="w-20 bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
               <Mini label="Período">
                 <select value={s.periodicidade} onChange={(e) => updSeg(s.id, { periodicidade: e.target.value as "mensal" | "anual" })} className="bg-transparent text-sm text-[#16314f] outline-none">
                   <option value="mensal">Mensal</option><option value="anual">Anual</option>

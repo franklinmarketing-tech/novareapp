@@ -16,7 +16,9 @@ const Independencia = () => {
           <VPField label="Expectativa de vida" value={input.idadeFim} onChange={(v) => setField("idadeFim", v)} />
           <VPField label="Renda mensal desejada" suffix="R$/mês (hoje)" value={input.rendaAposDesejada} step={100} onChange={(v) => setField("rendaAposDesejada", v)} />
           <VPField label="Renda já garantida (INSS/previdência)" suffix="R$/mês" value={input.rendaINSS} step={100} onChange={(v) => setField("rendaINSS", v)} />
+          <VPField label="Patrimônio investido hoje" suffix="R$" value={input.patrimonioAtual} step={1000} onChange={(v) => setField("patrimonioAtual", v)} />
         </div>
+        <p className="text-xs text-[#1b2a3d]/45">Todos os campos são editáveis — corrija à vontade. O patrimônio também aparece em <strong className="font-semibold text-[#1b2a3d]/60">Minha Realidade</strong> e fica sincronizado.</p>
       </VPCard>
 
       <VPCard className="p-5">
