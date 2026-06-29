@@ -1,8 +1,9 @@
 // Meus Sonhos: os objetivos de vida que compõem o Marco Horizonte.
+import { useEffect, useRef, useState } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { VPCard, VPTitle } from "../components/ui";
 import type { GoalType } from "@/lib/lifeplan";
-import { Plus, Trash2, StickyNote } from "lucide-react";
+import { Plus, Trash2, StickyNote, Pencil } from "lucide-react";
 
 type TipoMeta = { tipo: GoalType; label: string; emoji: string; cor: string; recorrentePadrao?: boolean; desc: string };
 const TIPOS: TipoMeta[] = [
@@ -29,6 +30,13 @@ const Sonhos = () => {
   const { input, addGoal, updateGoal, removeGoal, plan } = useVidaPlan();
   const anoBase = input.anoAtual;
 
+  // Foca o campo de nome assim que o cliente cria um objetivo novo.
+  const lastNameRef = useRef<HTMLInputElement>(null);
+  const [focusNew, setFocusNew] = useState(false);
+  useEffect(() => {
+    if (focusNew) { lastNameRef.current?.focus(); setFocusNew(false); }
+  }, [focusNew]);
+
   return (
     <div className="space-y-6">
       <VPTitle hint="Sonhar é o primeiro passo. Tudo aqui entra no seu Marco Horizonte.">✨ Meus Sonhos</VPTitle>
@@ -41,13 +49,15 @@ const Sonhos = () => {
       </VPCard>
 
       <div className="space-y-3">
-        {input.goals.map((g) => {
+        {input.goals.map((g, i) => {
           const m = meta(g.tipo);
           const isImovel = g.tipo === "imovel";
           const isCarro = g.tipo === "carro";
+          const isOutro = g.tipo === "outro";
           const podeRecorrer = !isImovel && !isCarro;
           const recorrente = podeRecorrer ? (g.recorrente ?? !!m.recorrentePadrao) : false;
           const notasAberta = g.obs !== undefined;
+          const isLast = i === input.goals.length - 1;
           return (
             <VPCard key={g.id} className="p-4">
               <div className="flex items-start gap-3">
@@ -56,13 +66,17 @@ const Sonhos = () => {
                 </div>
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-2">
-                    <input
-                      value={g.nome ?? ""}
-                      placeholder={m.label}
-                      onChange={(e) => updateGoal(g.id, { nome: e.target.value })}
-                      className="flex-1 bg-transparent font-semibold text-[#16314f] outline-none border-b border-transparent focus:border-[#C8643F]/40 pb-0.5"
-                    />
-                    <button onClick={() => removeGoal(g.id)} className="text-[#1b2a3d]/30 hover:text-[#C8643F] transition-colors" title="Remover objetivo">
+                    <div className="relative flex-1">
+                      <input
+                        ref={isLast ? lastNameRef : undefined}
+                        value={g.nome ?? ""}
+                        placeholder={isOutro ? "Dê um nome ao seu objetivo…" : m.label}
+                        onChange={(e) => updateGoal(g.id, { nome: e.target.value })}
+                        className="w-full bg-transparent font-semibold text-[#16314f] placeholder:text-[#1b2a3d]/35 placeholder:font-normal outline-none border-b border-[#16314f]/15 focus:border-[#C8643F] pb-0.5 pr-6"
+                      />
+                      <Pencil className="h-3.5 w-3.5 text-[#1b2a3d]/25 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                    <button onClick={() => removeGoal(g.id)} className="text-[#1b2a3d]/30 hover:text-[#C8643F] transition-colors shrink-0" title="Remover objetivo">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -146,7 +160,7 @@ const Sonhos = () => {
       </div>
 
       <button
-        onClick={() => addGoal({ tipo: "outro", nome: "", valor: 30000, ano: anoBase + 3 })}
+        onClick={() => { addGoal({ tipo: "outro", nome: "", valor: 30000, ano: anoBase + 3 }); setFocusNew(true); }}
         className="w-full flex items-center justify-center gap-2 rounded-2xl border border-dashed border-[#16314f]/25 py-3 text-sm font-semibold text-[#16314f] hover:bg-[#16314f]/[0.03] transition-colors"
       >
         <Plus className="h-4 w-4" /> Adicionar objetivo
