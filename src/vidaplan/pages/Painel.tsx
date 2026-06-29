@@ -32,6 +32,10 @@ const Painel = () => {
             <p className="font-display text-lg font-bold text-white tabular-nums">{brl0(plan.totalObjetivos)}</p>
           </div>
         </div>
+        <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-sm">
+          <span className="text-white/55">Rentabilidade do projeto</span>
+          <span className="font-semibold text-[#7FE3C0] tabular-nums">IPCA + {input.rentRealPct.toFixed(2)}%</span>
+        </div>
       </div>
 
       <OnboardingGuide />

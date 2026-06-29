@@ -189,6 +189,38 @@ function simulate(inp: LifePlanInput, opts: { extraMensal?: number; rate?: numbe
 const annuityPV = (pmtAnnual: number, n: number, i: number) =>
   n <= 0 ? 0 : (i === 0 ? pmtAnnual * n : pmtAnnual * (1 - Math.pow(1 + i, -n)) / i);
 
+// Projeção de um objetivo até a independência: quanto ele custa no total e em que período.
+export function projecaoObjetivo(g: Goal, anoAtual: number, idadeAtual: number, idadeApos: number) {
+  const anoApos = anoAtual + (idadeApos - idadeAtual);
+  let total = 0, anos = 0;
+  let anoInicio: number | null = null, anoFim: number | null = null;
+  for (let ano = anoAtual; ano < anoApos; ano++) {
+    const v = outflowsNoAno(g, ano, anoAtual, idadeAtual, idadeApos) + parcelaAnualNoAno(g, ano);
+    if (v > 0.5) {
+      total += v;
+      anos++;
+      if (anoInicio == null) anoInicio = ano;
+      anoFim = ano;
+    }
+  }
+  return { total: Math.round(total), anos, anoInicio, anoFim };
+}
+
+// Sugestão de imóvel a partir das finanças (regra clássica: parcela ≤ 30% da renda).
+export function sugestaoImovel(rendaMensal: number, patrimonioDisponivel: number, jurosAa = 10, prazoAnos = 30) {
+  const i = jurosAa / 100 / 12, n = prazoAnos * 12;
+  const parcelaMax = 0.3 * Math.max(0, rendaMensal);
+  const financiavel = i === 0 ? parcelaMax * n : parcelaMax * (1 - Math.pow(1 + i, -n)) / i;
+  const entrada = Math.max(0, patrimonioDisponivel);
+  return {
+    aVista: Math.round(entrada),
+    financiado: Math.round(entrada + financiavel),
+    entrada: Math.round(entrada),
+    financiamento: Math.round(financiavel),
+    parcela: Math.round(parcelaMax),
+  };
+}
+
 export interface LifePlan {
   capitalDeVida: number;
   totalObjetivos: number;

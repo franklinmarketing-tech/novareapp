@@ -1,9 +1,9 @@
 // Meus Sonhos: os objetivos de vida que compõem o Marco Horizonte.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { VPCard, VPTitle } from "../components/ui";
-import type { GoalType } from "@/lib/lifeplan";
-import { Plus, Trash2, StickyNote, Pencil } from "lucide-react";
+import { projecaoObjetivo, sugestaoImovel, type GoalType } from "@/lib/lifeplan";
+import { Plus, Trash2, StickyNote, Pencil, Lightbulb } from "lucide-react";
 
 type TipoMeta = { tipo: GoalType; label: string; emoji: string; cor: string; recorrentePadrao?: boolean; desc: string };
 const TIPOS: TipoMeta[] = [
@@ -38,15 +38,46 @@ const Sonhos = () => {
     if (focusNew) { lastNameRef.current?.focus(); setFocusNew(false); }
   }, [focusNew]);
 
+  // Resumo por categoria: soma a projeção de cada objetivo até a independência.
+  const resumo = useMemo(() => {
+    const mapa = new Map<GoalType, { total: number; count: number }>();
+    for (const g of input.goals) {
+      const p = projecaoObjetivo(g, input.anoAtual, input.idadeAtual, input.idadeAposentadoria);
+      const cur = mapa.get(g.tipo) ?? { total: 0, count: 0 };
+      mapa.set(g.tipo, { total: cur.total + p.total, count: cur.count + 1 });
+    }
+    return [...mapa.entries()].map(([tipo, v]) => ({ tipo, ...v })).sort((a, b) => b.total - a.total);
+  }, [input.goals, input.anoAtual, input.idadeAtual, input.idadeAposentadoria]);
+
   return (
     <div className="space-y-6">
       <VPTitle hint="Sonhar é o primeiro passo. Tudo aqui entra no seu Marco Horizonte.">✨ Meus Sonhos</VPTitle>
 
-      <VPCard className="p-4 flex items-center justify-between">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Total dos sonhos até a independência</p>
-          <p className="font-display text-2xl font-bold text-[#C8643F] tabular-nums">{brl0(plan.totalObjetivos)}</p>
+      <VPCard className="p-5">
+        <div className="flex items-end justify-between mb-3">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Total dos sonhos até a independência</p>
+            <p className="font-display text-2xl font-bold text-[#C8643F] tabular-nums">{brl0(plan.totalObjetivos)}</p>
+          </div>
+          <p className="text-xs text-[#1b2a3d]/45">{input.goals.length} objetivo{input.goals.length === 1 ? "" : "s"}</p>
         </div>
+        {resumo.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {resumo.map((r) => {
+              const m = meta(r.tipo);
+              return (
+                <div key={r.tipo} className="rounded-xl border border-black/[0.06] p-3" style={{ borderLeft: `3px solid ${m.cor}` }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg leading-none">{m.emoji}</span>
+                    <span className="text-[10px] text-[#1b2a3d]/40">{r.count}×</span>
+                  </div>
+                  <p className="font-display text-base font-bold text-[#16314f] tabular-nums mt-1.5">{brl0(r.total)}</p>
+                  <p className="text-[11px] text-[#1b2a3d]/55 truncate">{m.label}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </VPCard>
 
       <div className="space-y-3">
@@ -59,6 +90,8 @@ const Sonhos = () => {
           const recorrente = podeRecorrer ? (g.recorrente ?? !!m.recorrentePadrao) : false;
           const notasAberta = g.obs !== undefined;
           const isLast = i === input.goals.length - 1;
+          const proj = projecaoObjetivo(g, input.anoAtual, input.idadeAtual, input.idadeAposentadoria);
+          const sug = isImovel ? sugestaoImovel(input.rendaMensal, input.patrimonioAtual) : null;
           return (
             <VPCard key={g.id} className="p-4">
               <div className="flex items-start gap-3">
@@ -122,17 +155,49 @@ const Sonhos = () => {
                   )}
 
                   {isImovel && (
-                    <label className="flex items-center gap-2 text-xs text-[#1b2a3d]/70 flex-wrap">
-                      <input type="checkbox" checked={!!g.financiar} onChange={(e) => updateGoal(g.id, { financiar: e.target.checked })} />
-                      Financiado
-                      {g.financiar && (
-                        <span className="flex flex-wrap gap-2 ml-1">
-                          <InlineNum label="entrada %" value={g.entradaPct ?? 20} onChange={(v) => updateGoal(g.id, { entradaPct: v })} />
-                          <InlineNum label="prazo anos" value={g.prazoAnos ?? 25} onChange={(v) => updateGoal(g.id, { prazoAnos: v })} />
-                          <InlineNum label="juros % a.a." value={g.jurosAa ?? 10} onChange={(v) => updateGoal(g.id, { jurosAa: v })} />
-                        </span>
+                    <>
+                      <label className="flex items-center gap-2 text-xs text-[#1b2a3d]/70 flex-wrap">
+                        <input type="checkbox" checked={!!g.financiar} onChange={(e) => updateGoal(g.id, { financiar: e.target.checked })} />
+                        Financiado
+                        {g.financiar && (
+                          <span className="flex flex-wrap gap-2 ml-1">
+                            <InlineNum label="entrada %" value={g.entradaPct ?? 20} onChange={(v) => updateGoal(g.id, { entradaPct: v })} />
+                            <InlineNum label="prazo anos" value={g.prazoAnos ?? 25} onChange={(v) => updateGoal(g.id, { prazoAnos: v })} />
+                            <InlineNum label="juros % a.a." value={g.jurosAa ?? 10} onChange={(v) => updateGoal(g.id, { jurosAa: v })} />
+                          </span>
+                        )}
+                      </label>
+                      {sug && (
+                        <div className="rounded-xl border border-[#E2A03F]/30 bg-[#E2A03F]/[0.07] p-3">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <Lightbulb className="h-4 w-4 text-[#C8643F]" />
+                            <p className="text-xs font-bold text-[#16314f]">Sugestão Novare</p>
+                          </div>
+                          <p className="text-[11px] text-[#1b2a3d]/55 mb-2">Com base na sua renda e patrimônio (parcela ≤ 30% da renda):</p>
+                          <div className="space-y-1.5 text-xs">
+                            <SugRow label="À vista (com seu patrimônio)" value={sug.aVista}
+                              onUse={() => updateGoal(g.id, { valor: sug.aVista, financiar: false })} />
+                            <SugRow label="Financiado (entrada + crédito)" value={sug.financiado}
+                              onUse={() => updateGoal(g.id, { valor: sug.financiado, financiar: true, entradaPct: sug.financiado > 0 ? Math.round((sug.entrada / sug.financiado) * 100) : 20 })} />
+                            <div className="flex justify-between text-[#1b2a3d]/50 pt-0.5"><span>Entrada possível</span><span className="tabular-nums">{brl0(sug.entrada)}</span></div>
+                            <div className="flex justify-between text-[#1b2a3d]/50"><span>Crédito (~{brl0(sug.parcela)}/mês)</span><span className="tabular-nums">{brl0(sug.financiamento)}</span></div>
+                          </div>
+                        </div>
                       )}
-                    </label>
+                    </>
+                  )}
+
+                  {/* Projeção do objetivo até a independência */}
+                  {proj.total > 0 && (
+                    <div className="flex items-center justify-between rounded-lg bg-[#2F8F6B]/[0.07] px-3 py-2 text-xs">
+                      <span className="text-[#1b2a3d]/60">{recorrente ? "Custo até a independência" : "Impacto no plano"}</span>
+                      <span className="font-semibold text-[#16314f] tabular-nums">
+                        {brl0(proj.total)}
+                        {proj.anoInicio != null && (
+                          <span className="text-[#1b2a3d]/45 font-normal"> · {proj.anos > 1 ? `${proj.anoInicio}–${proj.anoFim}` : proj.anoInicio}</span>
+                        )}
+                      </span>
+                    </div>
                   )}
 
                   {/* Observação livre + dica do tipo */}
@@ -186,6 +251,16 @@ const InlineNum = ({ label, value, onChange }: { label: string; value: number; o
       className="w-12 bg-white border border-black/10 rounded px-1 py-0.5 text-[#16314f] tabular-nums" />
     {label}
   </span>
+);
+
+const SugRow = ({ label, value, onUse }: { label: string; value: number; onUse: () => void }) => (
+  <div className="flex items-center justify-between gap-2">
+    <span className="text-[#1b2a3d]/70">{label}</span>
+    <span className="flex items-center gap-2 shrink-0">
+      <span className="font-semibold text-[#16314f] tabular-nums">{brl0(value)}</span>
+      <button onClick={onUse} className="rounded-md bg-[#16314f] px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-[#1d3e63] transition-colors">Usar</button>
+    </span>
+  </div>
 );
 
 const Toggle = ({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) => (
