@@ -10,6 +10,7 @@ import Independencia from "./pages/Independencia";
 import Realidade from "./pages/Realidade";
 import Carteira from "./pages/Carteira";
 import Projecao from "./pages/Projecao";
+import Plano from "./pages/Plano";
 
 const VidaPlanApp = () => (
   <VidaPlanProvider>
@@ -23,6 +24,7 @@ const VidaPlanApp = () => (
         <Route path="realidade" element={<Realidade />} />
         <Route path="carteira" element={<Carteira />} />
         <Route path="projecao" element={<Projecao />} />
+        <Route path="plano" element={<Plano />} />
       </Route>
       <Route path="*" element={<Navigate to="/vidaplan/app" replace />} />
     </Routes>
