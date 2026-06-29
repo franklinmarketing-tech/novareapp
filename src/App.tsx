@@ -48,6 +48,7 @@ const AdminLeads = lazy(() => import("@/pages/admin/AdminLeads"));
 const ClientDashboard = lazy(() => import("@/pages/cliente/ClientDashboard"));
 const ClientOnboardingPage = lazy(() => import("@/pages/cliente/ClientOnboarding"));
 const MyData = lazy(() => import("@/pages/cliente/MyData"));
+const MinhaCarteira = lazy(() => import("@/pages/cliente/MinhaCarteira"));
 const ClientReports = lazy(() => import("@/pages/cliente/ClientReports"));
 const ActionPlan = lazy(() => import("@/pages/cliente/ActionPlan"));
 const ClientLancamentoMes = lazy(() => import("@/pages/cliente/ClientLancamentoMes"));
@@ -184,6 +185,7 @@ const App = () => (
                 <Route path="/admin/preview/:clientSlug" element={<ProtectedRoute requiredRole="admin"><AdminClientPreview /></ProtectedRoute>}>
                   <Route index element={<ClientDashboard />} />
                   <Route path="meus-dados" element={<MyData />} />
+                  <Route path="minha-carteira" element={<MinhaCarteira />} />
                   <Route path="plano-acao" element={<ActionPlan />} />
                   <Route path="lancamento-mes" element={<ClientLancamentoMes />} />
                   <Route path="relatorios" element={<ClientReports />} />
@@ -195,6 +197,7 @@ const App = () => (
                 <Route path="/cliente/onboarding" element={<ProtectedRoute requiredRole="client"><ClientOnboardingPage /></ProtectedRoute>} />
                 
                 <Route path="/cliente/meus-dados" element={<ProtectedRoute requiredRole="client"><ClientLayout><MyData /></ClientLayout></ProtectedRoute>} />
+                <Route path="/cliente/minha-carteira" element={<ProtectedRoute requiredRole="client"><ClientLayout><MinhaCarteira /></ClientLayout></ProtectedRoute>} />
                 <Route path="/cliente/plano-acao" element={<ProtectedRoute requiredRole="client"><ClientLayout><ActionPlan /></ClientLayout></ProtectedRoute>} />
                 <Route path="/cliente/lancamento-mes" element={<ProtectedRoute requiredRole="client"><ClientLayout><ClientLancamentoMes /></ClientLayout></ProtectedRoute>} />
                 <Route path="/cliente/relatorios" element={<ProtectedRoute requiredRole="client"><ClientLayout><ClientReports /></ClientLayout></ProtectedRoute>} />

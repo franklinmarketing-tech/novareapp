@@ -1,7 +1,8 @@
-// Proxy seguro para a API REST do Banco MCP (Open Finance Brasil).
-// A chave sk_live_ fica como secret (BANCO_MCP_KEY) e NUNCA vai ao frontend.
-// Apenas admins autenticados podem chamar. Encaminha para
-// https://api.mcp.ai/api/openfinance/<endpoint> com Authorization: Bearer.
+// Proxy seguro do Banco MCP (Open Finance) — multi-tenant.
+// - Admin: acesso total à conta Novare (todos os endpoints).
+// - Cliente: vê SÓ os bancos ligados a ele (escopado via tabela client_connections).
+// - Ação "claim": liga ao cliente o banco que ele acabou de conectar.
+// A chave sk_live_ fica na secret BANCO_MCP_KEY (nunca no frontend).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -11,31 +12,36 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Allowlist de endpoints de LEITURA (e o connect via search). Nada destrutivo
-// exposto além do mínimo necessário.
 const ALLOWED = new Set([
-  "connectors/search",
-  "connections/list",
-  "connections/status",
-  "connections/sync",
-  "accounts/list",
-  "accounts/detail",
-  "accounts/balance",
-  "transactions/list",
-  "credit-card-bills/list",
-  "credit-card-bills/detail",
-  "investments/list",
-  "investments/transactions/list",
-  "loans/list",
-  "categories/list",
+  "connectors/search","connections/list","connections/status","connections/sync",
+  "accounts/list","accounts/detail","accounts/balance","transactions/list",
+  "credit-card-bills/list","credit-card-bills/detail","investments/list",
+  "investments/transactions/list","loans/list","categories/list",
 ]);
+// Endpoints liberados para CLIENTE (escopados ao banco dele)
+const CLIENT_ALLOWED = new Set(["connectors/search","connections/list","accounts/list","investments/list"]);
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+let MCP_KEY = "";
+async function mcp(endpoint: string, body: Record<string, unknown>) {
+  const res = await fetch(`https://api.mcp.ai/api/openfinance/${endpoint}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${MCP_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body || {}),
+  });
+  const payload = await res.json().catch(() => ({ error: "resposta inválida do Banco MCP" }));
+  return { status: res.status, payload };
+}
+const arr = (x: any, ...keys: string[]): any[] => {
+  if (Array.isArray(x)) return x;
+  for (const k of keys) if (Array.isArray(x?.[k])) return x[k];
+  return [];
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
@@ -44,35 +50,75 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const callerClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    // getUser valida o token no servidor de auth (robusto p/ qualquer chave de assinatura)
+    const callerClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
     const { data: userData, error: userError } = await callerClient.auth.getUser();
     if (userError || !userData?.user) return json({ error: "Token inválido (auth)" }, 401);
     const userId = userData.user.id;
 
-    // Exige papel admin/super_admin (a conexão é da conta Novare)
     const admin = createClient(supabaseUrl, serviceKey);
-    const { data: roles } = await admin.from("user_roles").select("role").eq("user_id", userId);
+    const [{ data: roles }, { data: clientRow }] = await Promise.all([
+      admin.from("user_roles").select("role").eq("user_id", userId),
+      admin.from("clients").select("id").eq("user_id", userId).maybeSingle(),
+    ]);
     const isAdmin = (roles || []).some((r: { role: string }) => r.role === "admin" || r.role === "super_admin");
-    if (!isAdmin) return json({ error: "Acesso restrito a administradores" }, 403);
+    const clientId = clientRow?.id as string | undefined;
+    if (!isAdmin && !clientId) return json({ error: "Acesso restrito" }, 403);
 
-    const key = Deno.env.get("BANCO_MCP_KEY");
-    if (!key) return json({ error: "BANCO_MCP_KEY não configurada nas secrets do Supabase" }, 500);
+    MCP_KEY = Deno.env.get("BANCO_MCP_KEY") || "";
+    if (!MCP_KEY) return json({ error: "BANCO_MCP_KEY não configurada nas secrets do Supabase" }, 500);
 
     const { endpoint, body } = await req.json().catch(() => ({}));
-    if (typeof endpoint !== "string" || !ALLOWED.has(endpoint)) {
-      return json({ error: `Endpoint não permitido: ${endpoint}` }, 400);
+
+    // ── Ação custom: cliente reivindica o banco recém-conectado ──
+    if (endpoint === "claim") {
+      if (!clientId) return json({ error: "Apenas clientes" }, 403);
+      const { payload } = await mcp("connections/list", {});
+      const conns = arr(payload, "connections");
+      const { data: claimedRows } = await admin.from("client_connections").select("item_id");
+      const claimed = new Set((claimedRows || []).map((r: { item_id: string }) => r.item_id));
+      const novas = conns.filter((c: any) => c.item_id && !claimed.has(c.item_id));
+      if (!novas.length) return json({ result: { claimed: false, message: "Nenhuma conexão nova encontrada. Conecte um banco primeiro." } });
+      for (const c of novas) {
+        await admin.from("client_connections").insert({
+          client_id: clientId, item_id: c.item_id,
+          connector_name: c.connector_name || c.connector_id || null, status: c.status || null,
+        });
+      }
+      return json({ result: { claimed: true, count: novas.length } });
     }
 
-    const res = await fetch(`https://api.mcp.ai/api/openfinance/${endpoint}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body || {}),
-    });
-    const payload = await res.json().catch(() => ({ error: "resposta inválida do Banco MCP" }));
-    return json(payload, res.status);
+    if (typeof endpoint !== "string" || !ALLOWED.has(endpoint)) return json({ error: `Endpoint não permitido: ${endpoint}` }, 400);
+
+    // ── ADMIN: acesso total (conta Novare) ──
+    if (isAdmin) {
+      const { status, payload } = await mcp(endpoint, body || {});
+      return json(payload, status);
+    }
+
+    // ── CLIENTE: escopado aos próprios bancos ──
+    if (!CLIENT_ALLOWED.has(endpoint)) return json({ error: "Endpoint não disponível para clientes" }, 403);
+
+    if (endpoint === "connectors/search") {
+      const { status, payload } = await mcp(endpoint, body || {});
+      return json(payload, status);
+    }
+
+    const { data: myConns } = await admin.from("client_connections").select("item_id, connector_name, status").eq("client_id", clientId!);
+    const myItems = (myConns || []).map((c: { item_id: string }) => c.item_id);
+
+    if (endpoint === "connections/list") {
+      // devolve só as conexões do cliente (a partir do mapeamento local)
+      return json({ result: { connections: (myConns || []).map((c: any) => ({ item_id: c.item_id, connector_name: c.connector_name, status: c.status })), count: myItems.length } });
+    }
+
+    // accounts/list e investments/list: chama por item do cliente e mescla
+    if (!myItems.length) return json({ result: { results: [] } });
+    const merged: any[] = [];
+    for (const item of myItems) {
+      const { payload } = await mcp(endpoint, { ...(body || {}), item });
+      arr(payload, "accounts", "investments", "results").forEach((x: any) => merged.push(x));
+    }
+    return json({ result: { results: merged } });
   } catch (e) {
     console.error("openfinance proxy error:", e);
     return json({ error: "Erro interno" }, 500);

@@ -8,6 +8,7 @@ import {
   ClipboardList,
   CalendarDays,
   FileText,
+  Landmark,
   LogOut,
   Menu,
   X,
@@ -31,6 +32,7 @@ import { MobileBottomNav } from "@/components/layouts/MobileBottomNav";
 const buildNavItems = (basePath: string) => [
   { to: basePath || "/cliente", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: `${basePath}/meus-dados`, icon: User, label: "Meus Dados", badgeKey: "meus-dados" },
+  { to: `${basePath}/minha-carteira`, icon: Landmark, label: "Minha Carteira" },
   { to: `${basePath}/plano-acao`, icon: ClipboardList, label: "Plano de Ação" },
   { to: `${basePath}/lancamento-mes`, icon: CalendarDays, label: "Lançamento do mês" },
   { to: `${basePath}/relatorios`, icon: FileText, label: "Relatórios" },
