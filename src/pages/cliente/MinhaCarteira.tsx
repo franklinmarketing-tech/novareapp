@@ -174,7 +174,7 @@ const MinhaCarteira = () => {
             <Card className="border-border/50"><CardContent className="p-5">
               <p className="text-sm font-bold text-foreground mb-3">Sua carteira consolidada</p>
               <div className="space-y-2">
-                {Object.entries(porTipo).sort((a, b) => b[1] - a[1]).map(([t, v]) => {
+                {(Object.entries(porTipo) as [string, number][]).sort((a, b) => b[1] - a[1]).map(([t, v]) => {
                   const pct = totalInvest > 0 ? (v / totalInvest) * 100 : 0;
                   return (
                     <div key={t}>
