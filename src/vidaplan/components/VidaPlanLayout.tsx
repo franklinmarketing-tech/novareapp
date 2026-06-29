@@ -3,6 +3,7 @@
 
 import { NavLink, Link, Outlet, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import logoBranca from "@/assets/logo-branca.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { VIDAPLAN, VIDAPLAN_NAV, VIDAPLAN_NAV_MOBILE } from "../lib/brand";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
@@ -35,9 +36,9 @@ const VidaPlanLayout = () => {
       {/* Sidebar desktop */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-[#16314f] px-4 py-6">
         <div className="px-2">
-          <p className="font-display text-xl font-bold text-white leading-tight">Novare</p>
-          <p className="font-display text-xl font-bold text-[#E29578] leading-tight -mt-1">Vida Plan</p>
-          <p className="text-[11px] text-white/50 mt-2">{VIDAPLAN.method}</p>
+          <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
+          <p className="font-display text-base font-bold text-[#E29578] leading-tight mt-2">Vida Plan</p>
+          <p className="text-[11px] text-white/40 mt-1">{VIDAPLAN.method}</p>
         </div>
 
         <div className="mt-6 rounded-2xl bg-white/10 px-4 py-3">
@@ -72,8 +73,8 @@ const VidaPlanLayout = () => {
 
       {/* Topbar mobile */}
       <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-[#16314f] px-4 py-3">
-        <div className="leading-tight">
-          <span className="font-display text-base font-bold text-white">Novare </span>
+        <div className="flex items-center gap-2">
+          <img src={logoBranca} alt="Novare" className="h-5 w-auto" />
           <span className="font-display text-base font-bold text-[#E29578]">Vida Plan</span>
         </div>
         <div className="flex items-center gap-3">

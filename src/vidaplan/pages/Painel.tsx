@@ -101,7 +101,7 @@ const Painel = () => {
         <Shortcut to="/vidaplan/app/projecao" icon={LineChart} title="Projeção" desc="fluxo e metas" />
         <Shortcut to="/vidaplan/app/plano" icon={ClipboardList} title="Plano de Ação" desc="carteira e proteção" />
         <Shortcut to="/vidaplan/app/progresso" icon={Activity} title="Meu Progresso" desc="aportes vs meta" />
-        <Shortcut to="/vidaplan/app/assistente" icon={Bot} title="Assistente" desc="tire dúvidas com a IA" />
+        <Shortcut to="/vidaplan/app/assistente" icon={Bot} title="IA Novare" desc="tire dúvidas com a IA" />
       </div>
 
       <VPStat label="Renda desejada na independência" value={`${brl0(input.rendaAposDesejada)}/mês`} accent="navy" />

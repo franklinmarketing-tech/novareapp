@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import logoBranca from "@/assets/logo-branca.png";
+import logoPreta from "@/assets/logo-preta.png";
 import { VIDAPLAN } from "../lib/brand";
 import { Loader2, LogIn } from "lucide-react";
 
@@ -34,8 +36,8 @@ const Login = () => {
       {/* Lado da marca */}
       <div className="hidden lg:flex flex-col justify-between bg-[#16314f] p-12 text-white">
         <div>
-          <p className="font-display text-3xl font-bold">Novare</p>
-          <p className="font-display text-3xl font-bold text-[#E29578] -mt-1">Vida Plan</p>
+          <img src={logoBranca} alt="Novare" className="h-10 w-auto" />
+          <p className="font-display text-2xl font-bold text-[#E29578] mt-2">Vida Plan</p>
         </div>
         <div>
           <p className="font-display text-2xl font-semibold leading-snug max-w-sm">{VIDAPLAN.tagline}</p>
@@ -47,9 +49,9 @@ const Login = () => {
       {/* Formulário */}
       <div className="flex items-center justify-center p-6">
         <form onSubmit={onSubmit} className="w-full max-w-sm">
-          <div className="lg:hidden mb-8 text-center">
-            <span className="font-display text-2xl font-bold text-[#16314f]">Novare </span>
-            <span className="font-display text-2xl font-bold text-[#C8643F]">Vida Plan</span>
+          <div className="lg:hidden mb-8 flex flex-col items-center">
+            <img src={logoPreta} alt="Novare" className="h-9 w-auto" />
+            <span className="font-display text-lg font-bold text-[#C8643F] mt-1">Vida Plan</span>
           </div>
           <h1 className="font-display text-2xl font-bold text-[#16314f]">Entrar</h1>
           <p className="text-sm text-[#1b2a3d]/60 mt-1 mb-6">Acesse seu projeto de vida.</p>

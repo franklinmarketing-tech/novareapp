@@ -1,11 +1,12 @@
 // Assistente IA do Novare Vida Plan — conversa sobre o projeto de vida do usuário (premium).
 import { useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { computeActionPlan } from "../lib/actionplan";
 import { VPTitle } from "../components/ui";
 import PremiumGate from "../components/PremiumGate";
-import { Sparkles, Send, Loader2 } from "lucide-react";
+import { Sparkles, Send, Loader2, Bot } from "lucide-react";
 
 const SUGESTOES = [
   "Por onde eu começo?",
@@ -61,8 +62,13 @@ const Chat = () => {
     <div className="flex flex-col">
       {msgs.length === 0 ? (
         <div className="rounded-2xl bg-[#16314f] p-5 text-white">
-          <p className="font-display text-lg font-bold flex items-center gap-2"><Sparkles className="h-5 w-5 text-[#E29578]" /> Pergunte sobre o seu plano</p>
-          <p className="text-white/60 text-sm mt-1">Eu enxergo todos os seus números e respondo com base neles.</p>
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-[#E29578] to-[#C8643F] flex items-center justify-center shrink-0"><Sparkles className="h-5 w-5 text-white" /></div>
+            <div>
+              <p className="font-display text-lg font-bold leading-tight">IA Novare</p>
+              <p className="text-white/55 text-xs">Enxergo todos os seus números e respondo com base neles.</p>
+            </div>
+          </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {SUGESTOES.map((s) => (
               <button key={s} onClick={() => enviar(s)} className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white/90 hover:bg-white/20 transition-colors">{s}</button>
@@ -72,11 +78,17 @@ const Chat = () => {
       ) : (
         <div className="space-y-3">
           {msgs.map((m, i) => (
-            <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-[#16314f] text-white" : "bg-white border border-black/5 text-[#1b2a3d]"}`}>{m.content}</div>
+            <div key={i} className={cn("flex gap-2", m.role === "user" ? "justify-end" : "justify-start")}>
+              {m.role === "assistant" && <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#E29578] to-[#C8643F] flex items-center justify-center shrink-0 mt-0.5"><Bot className="h-4 w-4 text-white" /></div>}
+              <div className={cn("max-w-[82%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap", m.role === "user" ? "bg-[#16314f] text-white" : "bg-white border border-black/5 text-[#1b2a3d]")}>{m.content}</div>
             </div>
           ))}
-          {loading && <div className="flex justify-start"><div className="rounded-2xl bg-white border border-black/5 px-4 py-2.5 text-sm text-[#1b2a3d]/50 flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> pensando…</div></div>}
+          {loading && (
+            <div className="flex gap-2 justify-start">
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#E29578] to-[#C8643F] flex items-center justify-center shrink-0"><Bot className="h-4 w-4 text-white" /></div>
+              <div className="rounded-2xl bg-white border border-black/5 px-4 py-2.5 text-sm text-[#1b2a3d]/50 flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> pensando…</div>
+            </div>
+          )}
           <div ref={fim} />
         </div>
       )}
@@ -96,8 +108,8 @@ const Chat = () => {
 
 const Assistente = () => (
   <div className="space-y-6">
-    <VPTitle hint="Seu assistente financeiro, 24/7, com base no seu projeto de vida.">Assistente</VPTitle>
-    <PremiumGate titulo="Assistente de IA" descricao="Converse com a IA da Novare sobre o seu plano: por onde começar, como ficar viável, onde cortar custos.">
+    <VPTitle hint="Seu consultor financeiro com IA, 24/7, com base no seu projeto de vida.">IA Novare</VPTitle>
+    <PremiumGate titulo="IA Novare" descricao="Converse com a inteligência da Novare sobre o seu plano: por onde começar, como ficar viável, onde cortar custos.">
       <Chat />
     </PremiumGate>
   </div>
