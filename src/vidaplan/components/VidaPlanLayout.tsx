@@ -31,6 +31,10 @@ const VidaPlanLayout = () => {
   const sair = async () => { await signOut(); navigate("/vidaplan/login", { replace: true }); };
   const goldLabel = !isPremium ? "Seja GOLD" : status === "trial" ? `GOLD · ${daysLeft}d` : "GOLD ativo";
 
+  const meta = (user as { user_metadata?: { full_name?: string; name?: string } } | null)?.user_metadata;
+  const nome = meta?.full_name || meta?.name || user?.email?.split("@")[0] || "Minha conta";
+  const inicial = (nome.trim()[0] || "N").toUpperCase();
+
   return (
     <div className="min-h-screen bg-[#F4F1EA] text-[#1b2a3d]">
       <style>{`
@@ -61,7 +65,7 @@ const VidaPlanLayout = () => {
           <p className="font-display text-2xl font-bold text-white tabular-nums">{brl0(plan.capitalDeVida)}</p>
         </div>
 
-        <nav className="mt-6 flex-1 space-y-1">
+        <nav className="mt-6 flex-1 min-h-0 overflow-y-auto space-y-1 -mr-2 pr-2">
           {VIDAPLAN_NAV.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === "/vidaplan/app"}
               className={(s) => cn(navLinkClass(s), item.to === "/vidaplan/app/assistente" && "vp-led")}>
@@ -71,15 +75,22 @@ const VidaPlanLayout = () => {
         </nav>
 
         <Link to="/vidaplan/app/assinar"
-          className={cn("mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors",
+          className={cn("shrink-0 mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors",
             isPremium ? "bg-[#E2A03F]/15 text-[#E2A03F]" : "bg-[#E29578] text-[#16314f] hover:bg-[#eaa98e]")}>
           <Sparkles className="h-4 w-4" /> {goldLabel}
         </Link>
 
-        <div className="mt-3 border-t border-white/10 pt-3">
-          {user?.email && <p className="px-3 text-[11px] text-white/40 truncate mb-1">{user.email}</p>}
-          <button onClick={sair} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium text-white/60 hover:bg-white/10 hover:text-white transition-colors">
-            <LogOut className="h-4 w-4" /> Sair
+        {/* Perfil + sair (sempre visível) */}
+        <div className="shrink-0 mt-3 border-t border-white/10 pt-3">
+          <div className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 mb-1">
+            <div className="h-9 w-9 rounded-full bg-[#E29578] text-[#16314f] flex items-center justify-center text-sm font-bold shrink-0">{inicial}</div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate capitalize leading-tight">{nome}</p>
+              {user?.email && <p className="text-[11px] text-white/40 truncate">{user.email}</p>}
+            </div>
+          </div>
+          <button onClick={sair} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+            <LogOut className="h-4 w-4" /> Sair da conta
           </button>
         </div>
       </aside>
@@ -95,7 +106,8 @@ const VidaPlanLayout = () => {
             <p className="text-[9px] uppercase tracking-wider text-white/60">{VIDAPLAN.anchorLabel}</p>
             <p className="text-sm font-bold text-white tabular-nums leading-none">{brl0(plan.capitalDeVida)}</p>
           </div>
-          <button onClick={sair} aria-label="Sair" className="text-white/60 hover:text-white"><LogOut className="h-4 w-4" /></button>
+          <div className="h-7 w-7 rounded-full bg-[#E29578] text-[#16314f] flex items-center justify-center text-xs font-bold shrink-0" title={user?.email ?? "Perfil"}>{inicial}</div>
+          <button onClick={sair} aria-label="Sair da conta" className="text-white/60 hover:text-white"><LogOut className="h-[18px] w-[18px]" /></button>
         </div>
       </header>
 
