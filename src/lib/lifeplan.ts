@@ -58,6 +58,7 @@ export interface LifePlanInput {
   dividas?: Debt[];          // dívidas em aberto (parcela mensal vira saída)
   rendaEventos?: RendaEvento[]; // aumentos/reduções de renda no tempo
   aportes?: Aporte[];        // acompanhamento de aportes realizados (não afeta a projeção)
+  ativosImobilizados?: number; // patrimônio não-investido (imóveis próprios etc.) — informativo
 }
 
 // Parcela mensal da dívida (sistema Price)

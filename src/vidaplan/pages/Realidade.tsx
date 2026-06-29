@@ -42,13 +42,20 @@ const Realidade = () => {
       <VPTitle hint="Sua fotografia financeira atual. É a base de toda a projeção.">Minha Realidade</VPTitle>
 
       <VPCard className="p-5 space-y-4">
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-3 gap-4">
           <VPField label="Renda mensal líquida" suffix="R$/mês" value={input.rendaMensal} step={100} onChange={(v) => setField("rendaMensal", v)} />
           <VPField label="Patrimônio investido hoje" suffix="R$" value={input.patrimonioAtual} step={1000} onChange={(v) => setField("patrimonioAtual", v)} />
+          <VPField label="Ativos imobilizados" suffix="R$ (imóvel próprio etc.)" value={input.ativosImobilizados ?? 0} step={1000} onChange={(v) => setField("ativosImobilizados", v)} />
         </div>
-        <div className="flex items-center justify-between rounded-xl bg-[#16314f]/[0.04] px-4 py-3">
-          <span className="text-sm text-[#1b2a3d]/60">Sobra mensal estimada</span>
-          <span className={cn("font-display text-lg font-bold tabular-nums", sobra >= 0 ? "text-[#2F8F6B]" : "text-[#C8643F]")}>{brl0(sobra)}</span>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex items-center justify-between rounded-xl bg-[#16314f]/[0.04] px-4 py-3">
+            <span className="text-sm text-[#1b2a3d]/60">Sobra mensal</span>
+            <span className={cn("font-display text-base font-bold tabular-nums", sobra >= 0 ? "text-[#2F8F6B]" : "text-[#C8643F]")}>{brl0(sobra)}</span>
+          </div>
+          <div className="flex items-center justify-between rounded-xl bg-[#16314f]/[0.04] px-4 py-3">
+            <span className="text-sm text-[#1b2a3d]/60">Patrimônio total</span>
+            <span className="font-display text-base font-bold tabular-nums text-[#16314f]">{brl0(input.patrimonioAtual + (input.ativosImobilizados ?? 0))}</span>
+          </div>
         </div>
       </VPCard>
 

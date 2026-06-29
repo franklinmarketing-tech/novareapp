@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { VIDAPLAN } from "../lib/brand";
 import { VPCard, VPProgress, VPStat } from "../components/ui";
+import OnboardingGuide from "../components/OnboardingGuide";
+import AdvisorCard from "../components/AdvisorCard";
 import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank, LineChart, ClipboardList, Activity } from "lucide-react";
 
 const Painel = () => {
@@ -27,6 +29,8 @@ const Painel = () => {
           </div>
         </div>
       </div>
+
+      <OnboardingGuide />
 
       {/* Viabilidade */}
       <VPCard className="p-5">
@@ -91,6 +95,8 @@ const Painel = () => {
       </div>
 
       <VPStat label="Renda desejada na independência" value={`${brl0(input.rendaAposDesejada)}/mês`} accent="navy" />
+
+      <AdvisorCard />
     </div>
   );
 };
