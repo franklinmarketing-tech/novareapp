@@ -1,8 +1,9 @@
 // Projeção: trajetória do patrimônio + fluxo completo ano a ano + metas de poupança.
 import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
+import { destinoDaRenda, composicaoPatrimonio } from "../lib/insights";
 import { VPCard, VPTitle } from "../components/ui";
-import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
 
 const n = (v: number) => Math.round(v).toLocaleString("pt-BR");
 
@@ -13,6 +14,8 @@ const Projecao = () => {
     () => plan.serie.filter((p) => p.idade < input.idadeAposentadoria && p.sobra > 0).slice(0, 6),
     [plan.serie, input.idadeAposentadoria],
   );
+  const destino = useMemo(() => destinoDaRenda(input, plan), [input, plan]);
+  const composicao = useMemo(() => composicaoPatrimonio(input, plan), [input, plan]);
 
   return (
     <div className="space-y-6">
@@ -47,6 +50,59 @@ const Projecao = () => {
         <VPCard className="p-4"><p className="text-[10px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Pico de patrimônio</p><p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{brl0(pico)}</p></VPCard>
         <VPCard className="p-4"><p className="text-[10px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Aos {input.idadeAposentadoria} anos</p><p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{brl0(plan.patrimonioNaApos)}</p></VPCard>
         <VPCard className="p-4"><p className="text-[10px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Aos {input.idadeFim} anos</p><p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{brl0(plan.serie[plan.serie.length - 1]?.patrimonio ?? 0)}</p></VPCard>
+      </div>
+
+      {/* Destino da renda + Composição do patrimônio */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <VPCard className="p-5">
+          <p className="font-display text-base font-bold text-[#16314f] mb-3">Para onde vai sua renda</p>
+          <div className="space-y-2.5">
+            {destino.fatias.map((f) => {
+              const pct = destino.total > 0 ? (f.valor / destino.total) * 100 : 0;
+              return (
+                <div key={f.nome}>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="flex items-center gap-2 text-[#16314f]"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: f.cor }} />{f.nome}</span>
+                    <span className="tabular-nums text-[#1b2a3d]/60">{brl0(f.valor)} · {pct.toFixed(0)}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-black/[0.06] overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: f.cor }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </VPCard>
+
+        <VPCard className="p-5">
+          <p className="font-display text-base font-bold text-[#16314f] mb-1">Como seu patrimônio se forma</p>
+          <p className="text-sm text-[#1b2a3d]/60 mb-2">Aos {input.idadeAposentadoria} anos: {brl0(composicao.total)}</p>
+          <div className="grid grid-cols-2 gap-3 items-center">
+            <div className="h-36">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={composicao.fatias} dataKey="valor" nameKey="nome" innerRadius={38} outerRadius={62} paddingAngle={1}>
+                    {composicao.fatias.map((f, i) => <Cell key={i} fill={f.cor} />)}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="space-y-2">
+              {composicao.fatias.map((f) => {
+                const pct = composicao.total > 0 ? (f.valor / composicao.total) * 100 : 0;
+                return (
+                  <div key={f.nome}>
+                    <p className="text-xs text-[#1b2a3d]/60 flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: f.cor }} />{f.nome}</p>
+                    <p className="text-sm font-bold text-[#16314f] tabular-nums">{brl0(f.valor)} <span className="text-[#1b2a3d]/45 font-normal">· {pct.toFixed(0)}%</span></p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          {composicao.fatias.length > 1 && (
+            <p className="text-[11px] text-[#1b2a3d]/50 mt-2">O juro trabalhou por você: {((composicao.fatias[1]?.valor ?? 0) / (composicao.total || 1) * 100).toFixed(0)}% do patrimônio veio de rendimento.</p>
+          )}
+        </VPCard>
       </div>
 
       {/* Metas de Poupança */}

@@ -84,10 +84,10 @@ export interface LifePlanInput {
 }
 
 // Custo fixo mensal num ano (base + eventos de aumento/redução acumulados)
-const custoMensalNoAno = (inp: LifePlanInput, ano: number): number =>
+export const custoMensalNoAno = (inp: LifePlanInput, ano: number): number =>
   Math.max(0, inp.custoFixoMensal + (inp.custoEventos ?? []).reduce((s, e) => s + (ano >= e.ano ? e.delta : 0), 0));
 // Saída anual com seguros (mensal × 12 + anual)
-const segurosAnualSaida = (inp: LifePlanInput): number =>
+export const segurosAnualSaida = (inp: LifePlanInput): number =>
   (inp.seguros ?? []).reduce((s, seg) => s + (seg.periodicidade === "mensal" ? seg.valor * 12 : seg.valor), 0);
 
 // Parcela mensal da dívida (sistema Price)
@@ -97,7 +97,7 @@ const parcelaMensalDivida = (d: Debt): number => {
   return i === 0 ? d.saldo / n : (d.saldo * i) / (1 - Math.pow(1 + i, -n));
 };
 // Saída anual da dívida num ano (considera os meses restantes naquele ano)
-const dividaAnualNoAno = (d: Debt, ano: number, anoAtual: number): number => {
+export const dividaAnualNoAno = (d: Debt, ano: number, anoAtual: number): number => {
   const pmt = parcelaMensalDivida(d);
   if (pmt <= 0) return 0;
   const restantesNoInicio = d.parcelas - (ano - anoAtual) * 12;
@@ -115,7 +115,7 @@ const pricePmtAnnual = (principal: number, jurosAa: number, prazoAnos: number) =
   return pmt * 12;
 };
 
-function outflowsNoAno(g: Goal, ano: number, anoAtual: number, idadeAtual: number, idadeApos: number): number {
+export function outflowsNoAno(g: Goal, ano: number, anoAtual: number, idadeAtual: number, idadeApos: number): number {
   const idade = idadeAtual + (ano - anoAtual);
   switch (g.tipo) {
     case "viagens":
@@ -137,7 +137,7 @@ function outflowsNoAno(g: Goal, ano: number, anoAtual: number, idadeAtual: numbe
   }
 }
 
-function parcelaAnualNoAno(g: Goal, ano: number): number {
+export function parcelaAnualNoAno(g: Goal, ano: number): number {
   if (g.tipo !== "imovel" || !g.financiar || g.ano == null) return 0;
   const prazo = g.prazoAnos ?? 25;
   if (ano < g.ano || ano >= g.ano + prazo) return 0;

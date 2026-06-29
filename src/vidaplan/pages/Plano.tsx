@@ -30,7 +30,7 @@ const Plano = () => {
           Plano de Ação
         </VPTitle>
         {isPremium ? (
-          <button onClick={() => exportVidaPlanPDF(input, plan, user?.email ?? undefined)}
+          <button onClick={() => { exportVidaPlanPDF(input, plan, user?.email ?? undefined).catch(() => {}); }}
             className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-[#16314f] px-3 py-2 text-xs font-semibold text-white hover:bg-[#1d3e63] transition-colors">
             <FileDown className="h-4 w-4" /> Exportar PDF
           </button>

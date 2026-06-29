@@ -1,51 +1,64 @@
-// Relatório PDF do Projeto de Vida (Novare Vida Plan).
+// Relatório PDF do Projeto de Vida (Novare Vida Plan) — com logo e gráficos.
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { LifePlanInput, LifePlan } from "@/lib/lifeplan";
 import { computeActionPlan } from "./actionplan";
+import { destinoDaRenda, composicaoPatrimonio } from "./insights";
+import logoBranca from "@/assets/logo-branca.png";
 
 const NAVY: [number, number, number] = [22, 49, 79];
 const TERRA: [number, number, number] = [200, 100, 63];
 const GREEN: [number, number, number] = [47, 143, 107];
 const fmt = (v: number) => "R$ " + Math.round(Number(v) || 0).toLocaleString("pt-BR");
-
 const TIPO: Record<string, string> = { viagens: "Viagens", festas: "Festas", imovel: "Imóvel", carro: "Veículo", educacao: "Educação", outro: "Outro" };
 
-export function exportVidaPlanPDF(input: LifePlanInput, plan: LifePlan, nome?: string) {
+// Carrega uma imagem (bundled, same-origin) como dataURL para o jsPDF.
+async function toDataURL(url: string): Promise<{ data: string; ratio: number } | null> {
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d"); if (!ctx) return null;
+    ctx.drawImage(img, 0, 0);
+    return { data: canvas.toDataURL("image/png"), ratio: img.naturalWidth / img.naturalHeight };
+  } catch { return null; }
+}
+
+export async function exportVidaPlanPDF(input: LifePlanInput, plan: LifePlan, nome?: string) {
   const ap = computeActionPlan(input, plan);
   const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
   const W = pdf.internal.pageSize.getWidth();
-  let y = 0;
+  const logo = await toDataURL(logoBranca);
 
-  // Cabeçalho
-  pdf.setFillColor(...NAVY); pdf.rect(0, 0, W, 32, "F");
-  pdf.setTextColor(255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(18);
-  pdf.text("Novare Vida Plan", 14, 15);
-  pdf.setTextColor(...TERRA); pdf.setFontSize(11);
-  pdf.text("Projeto de Vida — Método Horizonte", 14, 23);
-  pdf.setTextColor(255); pdf.setFontSize(9); pdf.setFont("helvetica", "normal");
-  if (nome) pdf.text(nome, W - 14, 15, { align: "right" });
+  const header = (titulo: string) => {
+    pdf.setFillColor(...NAVY); pdf.rect(0, 0, W, 30, "F");
+    if (logo) { const h = 8; pdf.addImage(logo.data, "PNG", 14, 9, h * logo.ratio, h); }
+    pdf.setTextColor(255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(13);
+    pdf.text(titulo, W - 14, 14, { align: "right" });
+    pdf.setTextColor(226, 149, 120); pdf.setFont("helvetica", "normal"); pdf.setFontSize(9);
+    pdf.text("Novare Vida Plan · Método Horizonte", W - 14, 21, { align: "right" });
+  };
 
-  // Marco Horizonte
-  y = 44;
+  // ── Página 1 ──
+  header("Projeto de Vida");
+  let y = 42;
   pdf.setTextColor(120); pdf.setFontSize(9); pdf.text("MARCO HORIZONTE", 14, y);
   pdf.setTextColor(...NAVY); pdf.setFont("helvetica", "bold"); pdf.setFontSize(26);
   pdf.text(fmt(plan.capitalDeVida), 14, y + 11);
   pdf.setFont("helvetica", "normal"); pdf.setFontSize(9); pdf.setTextColor(120);
-  pdf.text(`Independência ${fmt(plan.alvoAposentadoria)}  ·  Sonhos ${fmt(plan.totalObjetivos)}`, 14, y + 18);
+  pdf.text(`Independência ${fmt(plan.alvoAposentadoria)}   ·   Sonhos ${fmt(plan.totalObjetivos)}`, 14, y + 18);
+  if (nome) pdf.text(nome, W - 14, y, { align: "right" });
 
-  // Viabilidade
   y += 26;
-  const viavel = plan.viavel;
-  pdf.setFillColor(...(viavel ? GREEN : TERRA)); pdf.rect(14, y, W - 28, 14, "F");
+  pdf.setFillColor(...(plan.viavel ? GREEN : TERRA)); pdf.rect(14, y, W - 28, 14, "F");
   pdf.setTextColor(255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(11);
-  pdf.text(viavel ? "Independência no rumo certo" : "Independência exige ajustes", 18, y + 9);
+  pdf.text(plan.viavel ? "Independência no rumo certo" : "Independência exige ajustes", 18, y + 9);
   pdf.text(`${Math.round(plan.pctAtingido)}%`, W - 18, y + 9, { align: "right" });
 
-  // Independência (resumo)
-  y += 22;
   autoTable(pdf, {
-    startY: y,
+    startY: y + 22,
     head: [["Independência", ""]],
     body: [
       ["Idade", `${input.idadeAposentadoria} anos`],
@@ -57,7 +70,6 @@ export function exportVidaPlanPDF(input: LifePlanInput, plan: LifePlan, nome?: s
     theme: "grid", headStyles: { fillColor: NAVY, fontSize: 10 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 },
   });
 
-  // Realidade
   const sobra = input.rendaMensal - input.custoFixoMensal;
   autoTable(pdf, {
     startY: (pdf as any).lastAutoTable.finalY + 6,
@@ -73,7 +85,6 @@ export function exportVidaPlanPDF(input: LifePlanInput, plan: LifePlan, nome?: s
     theme: "grid", headStyles: { fillColor: NAVY, fontSize: 10 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 },
   });
 
-  // Sonhos
   if (input.goals.length) {
     autoTable(pdf, {
       startY: (pdf as any).lastAutoTable.finalY + 6,
@@ -83,33 +94,78 @@ export function exportVidaPlanPDF(input: LifePlanInput, plan: LifePlan, nome?: s
     });
   }
 
+  // ── Página 2: gráficos ──
+  pdf.addPage();
+  header("Para onde vai sua renda");
+  y = 42;
+
+  // Destino da renda (barras horizontais)
+  const dest = destinoDaRenda(input, plan);
+  pdf.setTextColor(...NAVY); pdf.setFont("helvetica", "bold"); pdf.setFontSize(12);
+  pdf.text("Destino da renda até a independência", 14, y);
+  y += 8;
+  const maxV = Math.max(1, ...dest.fatias.map((f) => f.valor));
+  const barX = 14, barMaxW = W - 28 - 50;
+  pdf.setFontSize(9); pdf.setFont("helvetica", "normal");
+  for (const f of dest.fatias) {
+    const w = (f.valor / maxV) * barMaxW;
+    pdf.setFillColor(...(hexToRgb(f.cor))); pdf.rect(barX, y, w, 6, "F");
+    pdf.setTextColor(60); pdf.text(f.nome, barX, y - 1);
+    const pct = dest.total > 0 ? (f.valor / dest.total) * 100 : 0;
+    pdf.setTextColor(...NAVY); pdf.text(`${fmt(f.valor)} (${pct.toFixed(0)}%)`, W - 14, y + 5, { align: "right" });
+    y += 13;
+  }
+
+  // Composição do patrimônio
+  y += 6;
+  const comp = composicaoPatrimonio(input, plan);
+  pdf.setTextColor(...NAVY); pdf.setFont("helvetica", "bold"); pdf.setFontSize(12);
+  pdf.text("Como seu patrimônio se forma", 14, y);
+  y += 8;
+  pdf.setFontSize(9); pdf.setFont("helvetica", "normal");
+  for (const f of comp.fatias) {
+    const w = comp.total > 0 ? (f.valor / comp.total) * barMaxW : 0;
+    pdf.setFillColor(...(hexToRgb(f.cor))); pdf.rect(barX, y, w, 6, "F");
+    pdf.setTextColor(60); pdf.text(f.nome, barX, y - 1);
+    const pct = comp.total > 0 ? (f.valor / comp.total) * 100 : 0;
+    pdf.setTextColor(...NAVY); pdf.text(`${fmt(f.valor)} (${pct.toFixed(0)}%)`, W - 14, y + 5, { align: "right" });
+    y += 13;
+  }
+
   // Plano de ação
   autoTable(pdf, {
-    startY: (pdf as any).lastAutoTable.finalY + 6,
+    startY: y + 4,
     head: [["Plano de ação", ""]],
     body: [
       ["Aporte mensal recomendado", `${fmt(ap.aporteRecomendadoMes)}/mês`],
       ["Reserva de emergência", fmt(ap.reservaEmergencia)],
       ["Carteira sugerida", `${ap.horizonte} · IPCA + ${ap.rentEsperadaPct.toFixed(1)}%`],
+      ["Previdência (VGBL/PGBL)", `${fmt(ap.vgblMes)} / ${fmt(ap.pgblMes)} por mês`],
       ["Proteção da família (seguro)", fmt(ap.protecaoFamilia)],
-      ["Previdência sugerida", `${fmt(ap.previdenciaMes)}/mês`],
     ],
     theme: "grid", headStyles: { fillColor: NAVY, fontSize: 10 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 },
   });
-
-  // Carteira sugerida (alocação)
   autoTable(pdf, {
     startY: (pdf as any).lastAutoTable.finalY + 6,
-    head: [["Classe", "Alocação"]],
+    head: [["Carteira sugerida", "Alocação"]],
     body: ap.carteira.map((a) => [a.classe, `${a.pct}%`]),
     theme: "striped", headStyles: { fillColor: TERRA, fontSize: 10 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 },
   });
 
-  // Rodapé
+  // Rodapé em todas as páginas
   const ph = pdf.internal.pageSize.getHeight();
-  pdf.setFontSize(7.5); pdf.setTextColor(150);
-  pdf.text("Simulação educacional — a recomendação personalizada é feita pela Novare Consultoria de Investimentos.", 14, ph - 8);
-  pdf.text("Novare Vida Plan", W - 14, ph - 8, { align: "right" });
+  const pages = pdf.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    pdf.setPage(p);
+    pdf.setFontSize(7.5); pdf.setTextColor(150);
+    pdf.text("Simulação educacional — recomendação personalizada feita pela Novare Consultoria de Investimentos.", 14, ph - 8);
+    pdf.text(`Novare Vida Plan · ${p}/${pages}`, W - 14, ph - 8, { align: "right" });
+  }
 
   pdf.save("novare-vida-plan.pdf");
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 }
