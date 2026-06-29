@@ -17,18 +17,21 @@ export interface Goal {
   jurosAa?: number;       // imovel (% a.a. nominal)
 }
 
+export interface CustoCategoria { nome: string; valor: number }
+
 export interface LifePlanInput {
   anoAtual: number;
   idadeAtual: number;
   idadeAposentadoria: number;
   idadeFim: number;          // ex.: 85
   rendaMensal: number;
-  custoFixoMensal: number;
+  custoFixoMensal: number;   // soma das categorias (custoCategorias), quando houver
   patrimonioAtual: number;
   rentRealPct: number;       // % a.a. real (acima da inflação)
   rendaAposDesejada: number; // mensal, em valores de hoje
   rendaINSS: number;         // mensal já garantido (INSS/previdência)
   goals: Goal[];
+  custoCategorias?: CustoCategoria[]; // detalhamento do custo fixo mensal (opcional)
 }
 
 const pricePmtAnnual = (principal: number, jurosAa: number, prazoAnos: number) => {
@@ -68,7 +71,11 @@ function parcelaAnualNoAno(g: Goal, ano: number): number {
   return pricePmtAnnual(financiado, g.jurosAa ?? 10, prazo);
 }
 
-interface SimResult { serie: { idade: number; ano: number; patrimonio: number }[]; patrimonioNaApos: number }
+export interface YearPoint {
+  idade: number; ano: number;
+  renda: number; saidas: number; objetivos: number; sobra: number; patrimonio: number;
+}
+interface SimResult { serie: YearPoint[]; patrimonioNaApos: number }
 
 function simulate(inp: LifePlanInput, opts: { extraMensal?: number; rate?: number; idadeApos?: number } = {}): SimResult {
   const i = opts.rate ?? inp.rentRealPct / 100;
@@ -80,18 +87,22 @@ function simulate(inp: LifePlanInput, opts: { extraMensal?: number; rate?: numbe
   const ultimoAno = inp.anoAtual + (inp.idadeFim - inp.idadeAtual);
   for (let ano = inp.anoAtual; ano <= ultimoAno; ano++) {
     const idade = inp.idadeAtual + (ano - inp.anoAtual);
+    let renda = 0, saidas = 0, objetivos = 0, sobra = 0;
     if (idade < idadeApos) {
-      const renda = inp.rendaMensal * 12;
-      let custo = inp.custoFixoMensal * 12;
-      let obj = 0;
-      for (const g of inp.goals) { custo += parcelaAnualNoAno(g, ano); obj += outflowsNoAno(g, ano, inp.anoAtual, inp.idadeAtual, idadeApos); }
-      patr = patr * (1 + i) + (renda - custo - obj + extra);
+      renda = inp.rendaMensal * 12;
+      saidas = inp.custoFixoMensal * 12;
+      for (const g of inp.goals) { saidas += parcelaAnualNoAno(g, ano); objetivos += outflowsNoAno(g, ano, inp.anoAtual, inp.idadeAtual, idadeApos); }
+      sobra = renda - saidas - objetivos + extra;
+      patr = patr * (1 + i) + sobra;
     } else {
       const saque = Math.max(0, inp.rendaAposDesejada - inp.rendaINSS) * 12;
+      renda = inp.rendaINSS * 12;
+      saidas = inp.rendaAposDesejada * 12;
+      sobra = -saque;
       patr = patr * (1 + i) - saque;
     }
     if (idade === idadeApos) patrimonioNaApos = patr;
-    serie.push({ idade, ano, patrimonio: Math.round(patr) });
+    serie.push({ idade, ano, renda: Math.round(renda), saidas: Math.round(saidas), objetivos: Math.round(objetivos), sobra: Math.round(sobra), patrimonio: Math.round(patr) });
   }
   return { serie, patrimonioNaApos };
 }

@@ -6,7 +6,7 @@ import { VPCard, VPProgress, VPStat } from "../components/ui";
 import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank } from "lucide-react";
 
 const Painel = () => {
-  const { plan, input } = useVidaPlan();
+  const { plan, input, setField } = useVidaPlan();
   const pct = Math.min(100, plan.pctAtingido);
 
   return (
@@ -56,14 +56,26 @@ const Painel = () => {
         </div>
       </VPCard>
 
-      {/* 3 alavancas (só quando não é viável) */}
+      {/* Alavancas aplicáveis (só quando não é viável) */}
       {!plan.viavel && (
         <div>
-          <p className="font-display text-base font-bold text-[#16314f] mb-3">Como tornar viável</p>
+          <p className="font-display text-base font-bold text-[#16314f] mb-1">Como tornar viável</p>
+          <p className="text-sm text-[#1b2a3d]/55 mb-3">Toque em uma opção para aplicá-la ao seu plano.</p>
           <div className="grid sm:grid-cols-3 gap-3">
-            <Lever icon={Clock} label="Adiar a independência" value={plan.esperarAnos != null ? `+${plan.esperarAnos} ano${plan.esperarAnos > 1 ? "s" : ""}` : "—"} note="trabalhar um pouco mais" />
-            <Lever icon={TrendingUp} label="Rentabilidade necessária" value={plan.rentNecessariaPct != null ? `IPCA + ${plan.rentNecessariaPct.toFixed(1)}%` : "—"} note="ganho real ao ano" />
-            <Lever icon={PiggyBank} label="Poupar a mais" value={plan.pouparMaisMes != null ? `${brl0(plan.pouparMaisMes)}/mês` : "—"} note="aporte mensal extra" />
+            <Lever
+              icon={Clock} label="Adiar a independência" note="trabalhar um pouco mais"
+              value={plan.esperarAnos != null ? `+${plan.esperarAnos} ano${plan.esperarAnos > 1 ? "s" : ""}` : "—"}
+              onApply={plan.esperarAnos != null ? () => setField("idadeAposentadoria", input.idadeAposentadoria + plan.esperarAnos!) : undefined}
+            />
+            <Lever
+              icon={TrendingUp} label="Buscar mais rentabilidade" note="ganho real ao ano"
+              value={plan.rentNecessariaPct != null ? `IPCA + ${plan.rentNecessariaPct.toFixed(1)}%` : "—"}
+              onApply={plan.rentNecessariaPct != null ? () => setField("rentRealPct", Number(plan.rentNecessariaPct!.toFixed(1))) : undefined}
+            />
+            <Lever
+              icon={PiggyBank} label="Poupar a mais" note="aporte mensal extra"
+              value={plan.pouparMaisMes != null ? `${brl0(plan.pouparMaisMes)}/mês` : "—"}
+            />
           </div>
         </div>
       )}
@@ -80,12 +92,19 @@ const Painel = () => {
   );
 };
 
-const Lever = ({ icon: Icon, label, value, note }: { icon: typeof Clock; label: string; value: string; note: string }) => (
-  <VPCard className="p-4">
+const Lever = ({ icon: Icon, label, value, note, onApply }: { icon: typeof Clock; label: string; value: string; note: string; onApply?: () => void }) => (
+  <VPCard className="p-4 flex flex-col">
     <Icon className="h-4 w-4 text-[#C8643F]" />
     <p className="text-[11px] font-semibold text-[#1b2a3d]/60 mt-2">{label}</p>
     <p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{value}</p>
-    <p className="text-[11px] text-[#1b2a3d]/45">{note}</p>
+    <p className="text-[11px] text-[#1b2a3d]/45 mb-2">{note}</p>
+    {onApply ? (
+      <button onClick={onApply} className="mt-auto inline-flex items-center justify-center gap-1 rounded-lg bg-[#16314f] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1d3e63] transition-colors">
+        Aplicar
+      </button>
+    ) : (
+      <span className="mt-auto text-[10px] text-[#1b2a3d]/40">ajuste em Realidade</span>
+    )}
   </VPCard>
 );
 

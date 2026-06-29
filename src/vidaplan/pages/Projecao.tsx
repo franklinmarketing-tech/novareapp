@@ -1,11 +1,18 @@
-// Projeção: trajetória do patrimônio (valores de hoje) até a expectativa de vida.
+// Projeção: trajetória do patrimônio + fluxo completo ano a ano + metas de poupança.
+import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { VPCard, VPTitle } from "../components/ui";
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+const n = (v: number) => Math.round(v).toLocaleString("pt-BR");
+
 const Projecao = () => {
   const { plan, input } = useVidaPlan();
   const pico = plan.serie.reduce((m, p) => Math.max(m, p.patrimonio), 0);
+  const metas = useMemo(
+    () => plan.serie.filter((p) => p.idade < input.idadeAposentadoria && p.sobra > 0).slice(0, 6),
+    [plan.serie, input.idadeAposentadoria],
+  );
 
   return (
     <div className="space-y-6">
@@ -37,37 +44,64 @@ const Projecao = () => {
       </VPCard>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <VPCard className="p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Pico de patrimônio</p>
-          <p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{brl0(pico)}</p>
-        </VPCard>
-        <VPCard className="p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Aos {input.idadeAposentadoria} anos</p>
-          <p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{brl0(plan.patrimonioNaApos)}</p>
-        </VPCard>
-        <VPCard className="p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Aos {input.idadeFim} anos</p>
-          <p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{brl0(plan.serie[plan.serie.length - 1]?.patrimonio ?? 0)}</p>
-        </VPCard>
+        <VPCard className="p-4"><p className="text-[10px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Pico de patrimônio</p><p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{brl0(pico)}</p></VPCard>
+        <VPCard className="p-4"><p className="text-[10px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Aos {input.idadeAposentadoria} anos</p><p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{brl0(plan.patrimonioNaApos)}</p></VPCard>
+        <VPCard className="p-4"><p className="text-[10px] font-bold uppercase tracking-wider text-[#1b2a3d]/50">Aos {input.idadeFim} anos</p><p className="font-display text-lg font-bold text-[#16314f] tabular-nums">{brl0(plan.serie[plan.serie.length - 1]?.patrimonio ?? 0)}</p></VPCard>
       </div>
 
+      {/* Metas de Poupança */}
+      {metas.length > 0 && (
+        <VPCard className="p-5">
+          <p className="font-display text-base font-bold text-[#16314f] mb-1">Metas de poupança</p>
+          <p className="text-sm text-[#1b2a3d]/60 mb-3">Quanto investir por ano para o projeto se sustentar.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead><tr className="text-[11px] uppercase tracking-wider text-[#1b2a3d]/50 border-b border-black/[0.06]">
+                <th className="text-left font-semibold py-2 pr-3">Ano</th>
+                <th className="text-right font-semibold py-2 px-3">Mensal</th>
+                <th className="text-right font-semibold py-2 pl-3">Anual</th>
+              </tr></thead>
+              <tbody>
+                {metas.map((m) => (
+                  <tr key={m.ano} className="border-b border-black/[0.04] last:border-0">
+                    <td className="py-2 pr-3 text-[#16314f] font-medium">{m.ano}</td>
+                    <td className="py-2 px-3 text-right tabular-nums text-[#2F8F6B] font-semibold">{brl0(m.sobra / 12)}</td>
+                    <td className="py-2 pl-3 text-right tabular-nums text-[#16314f]">{brl0(m.sobra)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </VPCard>
+      )}
+
+      {/* Fluxo completo */}
       <VPCard className="overflow-hidden">
-        <p className="font-display text-base font-bold text-[#16314f] px-5 pt-5">Patrimônio ano a ano</p>
-        <div className="mt-3 max-h-80 overflow-y-auto">
-          <table className="w-full text-sm">
+        <div className="px-5 pt-5">
+          <p className="font-display text-base font-bold text-[#16314f]">Fluxo financeiro completo</p>
+          <p className="text-sm text-[#1b2a3d]/60">Renda, saídas, objetivos e sobras a cada ano (valores de hoje).</p>
+        </div>
+        <div className="mt-3 max-h-96 overflow-auto">
+          <table className="w-full text-[13px]">
             <thead className="sticky top-0 bg-white">
-              <tr className="text-[11px] uppercase tracking-wider text-[#1b2a3d]/50 border-b border-black/[0.06]">
-                <th className="text-left font-semibold px-5 py-2">Idade</th>
-                <th className="text-left font-semibold px-3 py-2">Ano</th>
-                <th className="text-right font-semibold px-5 py-2">Patrimônio</th>
+              <tr className="text-[10px] uppercase tracking-wider text-[#1b2a3d]/50 border-b border-black/[0.06]">
+                <th className="text-left font-semibold px-4 py-2">Ano</th>
+                <th className="text-right font-semibold px-3 py-2">Renda</th>
+                <th className="text-right font-semibold px-3 py-2">Saídas</th>
+                <th className="text-right font-semibold px-3 py-2">Objetivos</th>
+                <th className="text-right font-semibold px-3 py-2">Sobras</th>
+                <th className="text-right font-semibold px-4 py-2">Patrimônio</th>
               </tr>
             </thead>
             <tbody>
               {plan.serie.map((p) => (
-                <tr key={p.ano} className={`border-b border-black/[0.04] last:border-0 ${p.idade === input.idadeAposentadoria ? "bg-[#16314f]/[0.04]" : ""}`}>
-                  <td className="px-5 py-2 text-[#16314f] font-medium">{p.idade}</td>
-                  <td className="px-3 py-2 text-[#1b2a3d]/60">{p.ano}</td>
-                  <td className={`px-5 py-2 text-right tabular-nums ${p.patrimonio < 0 ? "text-[#C8643F]" : "text-[#16314f]"}`}>{brl0(p.patrimonio)}</td>
+                <tr key={p.ano} className={`border-b border-black/[0.04] last:border-0 ${p.idade === input.idadeAposentadoria ? "bg-[#16314f]/[0.05]" : ""}`}>
+                  <td className="px-4 py-1.5 text-[#16314f] font-medium">{p.ano}<span className="text-[#1b2a3d]/40"> · {p.idade}</span></td>
+                  <td className="px-3 py-1.5 text-right tabular-nums text-[#1b2a3d]/70">{n(p.renda)}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums text-[#C8643F]">{n(p.saidas)}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums text-[#C8643F]">{p.objetivos ? n(p.objetivos) : "—"}</td>
+                  <td className={`px-3 py-1.5 text-right tabular-nums font-medium ${p.sobra < 0 ? "text-[#C8643F]" : "text-[#2F8F6B]"}`}>{n(p.sobra)}</td>
+                  <td className="px-4 py-1.5 text-right tabular-nums font-semibold text-[#16314f]">{n(p.patrimonio)}</td>
                 </tr>
               ))}
             </tbody>

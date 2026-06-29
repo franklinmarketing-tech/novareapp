@@ -2,7 +2,7 @@
 // com auto-save (debounce). Cache local em localStorage para abrir rápido e offline.
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { computeLifePlan, type LifePlanInput, type Goal, type LifePlan } from "@/lib/lifeplan";
+import { computeLifePlan, type LifePlanInput, type Goal, type LifePlan, type CustoCategoria } from "@/lib/lifeplan";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -23,6 +23,18 @@ const DEFAULT_INPUT: LifePlanInput = {
   rentRealPct: 4,
   rendaAposDesejada: 10500,
   rendaINSS: 0,
+  custoCategorias: [
+    { nome: "Habitação", valor: 3626 },
+    { nome: "Supermercado", valor: 1208 },
+    { nome: "Educação", valor: 819 },
+    { nome: "Veículo", valor: 791 },
+    { nome: "Saúde", valor: 783 },
+    { nome: "Contas de casa", valor: 725 },
+    { nome: "Restaurantes", valor: 564 },
+    { nome: "Cuidados pessoais", valor: 422 },
+    { nome: "Lazer", valor: 281 },
+    { nome: "Outros", valor: 566 },
+  ],
   goals: [
     { id: 1, tipo: "viagens", nome: "Viagens e lazer", valor: 8496, ano: new Date().getFullYear() },
     { id: 2, tipo: "imovel", nome: "Casa própria", valor: 600000, ano: new Date().getFullYear() + 9, financiar: true, entradaPct: 50, prazoAnos: 25, jurosAa: 9 },
@@ -48,6 +60,7 @@ interface VidaPlanCtx {
   hydrated: boolean;       // já carregou do servidor (ou decidiu modo local)
   saveState: SaveState;
   setField: <K extends keyof LifePlanInput>(key: K, value: LifePlanInput[K]) => void;
+  setCategorias: (cats: CustoCategoria[]) => void;
   addGoal: (g: Omit<Goal, "id">) => void;
   updateGoal: (id: number, patch: Partial<Goal>) => void;
   removeGoal: (id: number) => void;
@@ -111,6 +124,7 @@ export const VidaPlanProvider = ({ children }: { children: ReactNode }) => {
     hydrated,
     saveState,
     setField: (key, val) => setInput((p) => ({ ...p, [key]: val })),
+    setCategorias: (cats) => setInput((p) => ({ ...p, custoCategorias: cats, custoFixoMensal: cats.reduce((s, c) => s + (Number(c.valor) || 0), 0) })),
     addGoal: (g) => setInput((p) => ({ ...p, goals: [...p.goals, { ...g, id: Date.now() }] })),
     updateGoal: (id, patch) => setInput((p) => ({ ...p, goals: p.goals.map((x) => (x.id === id ? { ...x, ...patch } : x)) })),
     removeGoal: (id) => setInput((p) => ({ ...p, goals: p.goals.filter((x) => x.id !== id) })),
