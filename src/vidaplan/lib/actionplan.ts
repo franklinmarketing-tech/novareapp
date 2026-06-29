@@ -14,8 +14,12 @@ export interface ActionPlan {
   carteira: AssetSlice[];
   rentEsperadaPct: number;     // rentabilidade real esperada da carteira sugerida (IPCA + X%)
   protecaoFamilia: number;     // capital de seguro de vida sugerido
-  previdenciaMes: number;      // aporte mensal sugerido em previdência
+  anosProtecaoFamilia: number; // anos de custo cobertos
+  previdenciaMes: number;      // aporte mensal sugerido em previdência (total)
+  vgblMes: number;             // parte sugerida em VGBL
+  pgblMes: number;             // parte sugerida em PGBL (até 12% da renda tributável)
   custoSucessaoEstimado: number;
+  sucessaoPct: number;         // % total de custos de sucessão
 }
 
 // Carteiras-modelo por horizonte. % de alocação + retorno real anual estimado por classe.
@@ -65,18 +69,23 @@ export function computeActionPlan(inp: LifePlanInput, plan: LifePlan): ActionPla
   const carteira = CARTEIRAS[horizonte];
   const rentEsperadaPct = carteira.reduce((s, a) => s + (a.pct / 100) * a.rentReal, 0);
 
+  const cfg = inp.planoConfig ?? {};
   const reservaEmergencia = inp.custoFixoMensal * 6;
   const sobra = Math.max(0, inp.rendaMensal - inp.custoFixoMensal);
   const aporteRecomendadoMes = plan.viavel ? sobra : sobra + (plan.pouparMaisMes ?? 0);
 
-  // Proteção: cobrir 5 anos do custo da família + quitar financiamentos pendentes.
-  const protecaoFamilia = inp.custoFixoMensal * 12 * 5 + dividasFinanciadas(inp);
+  // Proteção: cobrir N anos do custo da família + quitar financiamentos pendentes.
+  const anosProtecaoFamilia = cfg.anosProtecaoFamilia ?? 5;
+  const protecaoFamilia = inp.custoFixoMensal * 12 * anosProtecaoFamilia + dividasFinanciadas(inp);
 
-  // Previdência sugerida: até ~30% do aporte, limitado a 12% da renda (faixa PGBL/declaração completa).
-  const previdenciaMes = Math.min(aporteRecomendadoMes * 0.3, inp.rendaMensal * 0.12);
+  // Previdência sugerida: ~30% do aporte. PGBL até 12% da renda tributável (declaração completa); resto VGBL.
+  const previdenciaMes = aporteRecomendadoMes * 0.3;
+  const pgblMes = cfg.rendaTributavelAnual ? Math.min(previdenciaMes, (cfg.rendaTributavelAnual * 0.12) / 12) : 0;
+  const vgblMes = Math.max(0, previdenciaMes - pgblMes);
 
-  // Sucessão: estimativa de custos (ITCMD + inventário/cartório) ~10% sobre o patrimônio.
-  const custoSucessaoEstimado = Math.max(0, plan.patrimonioNaApos) * 0.10;
+  // Sucessão: ITCMD + advogado + cartório (editáveis) sobre o patrimônio projetado.
+  const sucessaoPct = (cfg.itcmdPct ?? 6) + (cfg.advogadoPct ?? 4) + (cfg.cartorioPct ?? 2);
+  const custoSucessaoEstimado = Math.max(0, plan.patrimonioNaApos) * (sucessaoPct / 100);
 
   return {
     horizonte,
@@ -86,7 +95,11 @@ export function computeActionPlan(inp: LifePlanInput, plan: LifePlan): ActionPla
     carteira,
     rentEsperadaPct,
     protecaoFamilia,
+    anosProtecaoFamilia,
     previdenciaMes,
+    vgblMes,
+    pgblMes,
     custoSucessaoEstimado,
+    sucessaoPct,
   };
 }

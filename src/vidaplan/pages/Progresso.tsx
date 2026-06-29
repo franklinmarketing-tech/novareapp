@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import type { Aporte } from "@/lib/lifeplan";
 import { VPCard, VPTitle, VPProgress, VPStat } from "../components/ui";
-import { Plus, Trash2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Plus, Minus, Trash2, CheckCircle2, AlertTriangle } from "lucide-react";
 
 const hoje = () => { const d = new Date(); return { ano: d.getFullYear(), mes: d.getMonth() + 1, mesAno: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}` }; };
 
@@ -55,12 +55,19 @@ const Progresso = () => {
       {/* Lançamentos */}
       <VPCard className="p-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="font-display text-base font-bold text-[#16314f]">Aportes realizados</p>
-          <button
-            onClick={() => set([{ id: Date.now(), mesAno: hoje().mesAno, valor: Math.round(metaMensal) }, ...aportes])}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#16314f] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1d3e63] transition-colors">
-            <Plus className="h-3.5 w-3.5" /> Lançar aporte
-          </button>
+          <p className="font-display text-base font-bold text-[#16314f]">Aportes e resgates</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => set([{ id: Date.now(), mesAno: hoje().mesAno, valor: Math.round(metaMensal) }, ...aportes])}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#16314f] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1d3e63] transition-colors">
+              <Plus className="h-3.5 w-3.5" /> Aporte
+            </button>
+            <button
+              onClick={() => set([{ id: Date.now(), mesAno: hoje().mesAno, valor: -Math.round(metaMensal) }, ...aportes])}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#C8643F]/40 px-3 py-1.5 text-xs font-semibold text-[#C8643F] hover:bg-[#C8643F]/[0.06] transition-colors">
+              <Minus className="h-3.5 w-3.5" /> Resgate
+            </button>
+          </div>
         </div>
         {aportes.length === 0 ? (
           <p className="text-sm text-[#1b2a3d]/50">Nenhum aporte lançado ainda. Registre o quanto você já investiu.</p>

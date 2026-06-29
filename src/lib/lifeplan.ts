@@ -42,6 +42,23 @@ export interface Aporte {
   valor: number;
 }
 
+// Seguro contratado (proteção)
+export interface Seguro {
+  id: number;
+  nome?: string;
+  valor: number;                       // prêmio
+  periodicidade: "mensal" | "anual";   // mensal sai das sobras; anual sai do patrimônio
+}
+
+// Personalização do Plano de Ação
+export interface PlanoConfig {
+  rendaTributavelAnual?: number; // base p/ sugestão PGBL (declaração completa)
+  anosProtecaoFamilia?: number;  // anos de custo a deixar p/ a família (seguro)
+  itcmdPct?: number;             // % sucessão
+  advogadoPct?: number;
+  cartorioPct?: number;
+}
+
 export interface LifePlanInput {
   anoAtual: number;
   idadeAtual: number;
@@ -61,7 +78,17 @@ export interface LifePlanInput {
   ativosImobilizados?: number; // patrimônio não-investido (imóveis próprios etc.) — informativo
   consorcio?: number;        // carta de crédito / patrimônio previsto via consórcio — informativo
   advisorCodigo?: string;    // código do consultor vinculado (parceria/indicação)
+  custoEventos?: RendaEvento[]; // aumentos/reduções de custo fixo no tempo
+  seguros?: Seguro[];        // seguros contratados
+  planoConfig?: PlanoConfig; // personalização do plano de ação
 }
+
+// Custo fixo mensal num ano (base + eventos de aumento/redução acumulados)
+const custoMensalNoAno = (inp: LifePlanInput, ano: number): number =>
+  Math.max(0, inp.custoFixoMensal + (inp.custoEventos ?? []).reduce((s, e) => s + (ano >= e.ano ? e.delta : 0), 0));
+// Saída anual com seguros (mensal × 12 + anual)
+const segurosAnualSaida = (inp: LifePlanInput): number =>
+  (inp.seguros ?? []).reduce((s, seg) => s + (seg.periodicidade === "mensal" ? seg.valor * 12 : seg.valor), 0);
 
 // Parcela mensal da dívida (sistema Price)
 const parcelaMensalDivida = (d: Debt): number => {
@@ -135,15 +162,16 @@ function simulate(inp: LifePlanInput, opts: { extraMensal?: number; rate?: numbe
   for (let ano = inp.anoAtual; ano <= ultimoAno; ano++) {
     const idade = inp.idadeAtual + (ano - inp.anoAtual);
     const dividaAno = (inp.dividas ?? []).reduce((s, d) => s + dividaAnualNoAno(d, ano, inp.anoAtual), 0);
+    const segurosAno = segurosAnualSaida(inp);
     let renda = 0, saidas = 0, objetivos = 0, sobra = 0;
     if (idade < idadeApos) {
       renda = rendaMensalNoAno(inp, ano) * 12;
-      saidas = inp.custoFixoMensal * 12 + dividaAno;
+      saidas = custoMensalNoAno(inp, ano) * 12 + dividaAno + segurosAno;
       for (const g of inp.goals) { saidas += parcelaAnualNoAno(g, ano); objetivos += outflowsNoAno(g, ano, inp.anoAtual, inp.idadeAtual, idadeApos); }
       sobra = renda - saidas - objetivos + extra;
     } else {
       renda = inp.rendaINSS * 12;
-      saidas = inp.rendaAposDesejada * 12 + dividaAno;
+      saidas = inp.rendaAposDesejada * 12 + dividaAno + segurosAno;
       sobra = renda - saidas;
     }
     patr = patr * (1 + i) + sobra;

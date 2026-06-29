@@ -5,11 +5,15 @@ import { VIDAPLAN } from "../lib/brand";
 import { VPCard, VPProgress, VPStat } from "../components/ui";
 import OnboardingGuide from "../components/OnboardingGuide";
 import AdvisorCard from "../components/AdvisorCard";
-import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank, LineChart, ClipboardList, Activity } from "lucide-react";
+import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank, LineChart, ClipboardList, Activity, Target, Bot } from "lucide-react";
 
 const Painel = () => {
   const { plan, input, setField } = useVidaPlan();
   const pct = Math.min(100, plan.pctAtingido);
+  // Meta de renda que tornaria o projeto viável (alvo ∝ renda desejada acima do INSS).
+  const rendaReduzida = !plan.viavel && plan.alvoAposentadoria > 0
+    ? input.rendaINSS + (input.rendaAposDesejada - input.rendaINSS) * (plan.patrimonioNaApos / plan.alvoAposentadoria)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -65,7 +69,7 @@ const Painel = () => {
         <div>
           <p className="font-display text-base font-bold text-[#16314f] mb-1">Como tornar viável</p>
           <p className="text-sm text-[#1b2a3d]/55 mb-3">Toque em uma opção para aplicá-la ao seu plano.</p>
-          <div className="grid sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <Lever
               icon={Clock} label="Adiar a independência" note="trabalhar um pouco mais"
               value={plan.esperarAnos != null ? `+${plan.esperarAnos} ano${plan.esperarAnos > 1 ? "s" : ""}` : "—"}
@@ -80,6 +84,11 @@ const Painel = () => {
               icon={PiggyBank} label="Poupar a mais" note="aporte mensal extra"
               value={plan.pouparMaisMes != null ? `${brl0(plan.pouparMaisMes)}/mês` : "—"}
             />
+            <Lever
+              icon={Target} label="Reduzir a meta" note="renda na independência"
+              value={rendaReduzida != null ? `${brl0(rendaReduzida)}/mês` : "—"}
+              onApply={rendaReduzida != null ? () => setField("rendaAposDesejada", Math.round(rendaReduzida)) : undefined}
+            />
           </div>
         </div>
       )}
@@ -92,6 +101,7 @@ const Painel = () => {
         <Shortcut to="/vidaplan/app/projecao" icon={LineChart} title="Projeção" desc="fluxo e metas" />
         <Shortcut to="/vidaplan/app/plano" icon={ClipboardList} title="Plano de Ação" desc="carteira e proteção" />
         <Shortcut to="/vidaplan/app/progresso" icon={Activity} title="Meu Progresso" desc="aportes vs meta" />
+        <Shortcut to="/vidaplan/app/assistente" icon={Bot} title="Assistente" desc="tire dúvidas com a IA" />
       </div>
 
       <VPStat label="Renda desejada na independência" value={`${brl0(input.rendaAposDesejada)}/mês`} accent="navy" />

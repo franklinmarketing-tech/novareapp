@@ -47,13 +47,16 @@ const GastosInvisiveis = () => {
     })();
   }, []);
 
-  const { cats, total } = useMemo(() => {
+  const { cats, total, topGastos, temTx } = useMemo(() => {
     const gastos = txs.filter((t) => amount(t) < 0);
     const freq: Record<string, number> = {};
     gastos.forEach((t) => { const k = norm(desc(t)); if (k) freq[k] = (freq[k] || 0) + 1; });
     let assin = 0, juros = 0, taxa = 0;
+    const porLoja: Record<string, number> = {};
     for (const t of gastos) {
       const d = desc(t); const v = Math.abs(amount(t));
+      const k = norm(d) || "outros";
+      porLoja[k] = (porLoja[k] || 0) + v;
       if (RX_JUROS.test(d)) juros += v;
       else if (RX_TAXA.test(d)) taxa += v;
       else if (RX_ASSIN.test(d) || freq[norm(d)] >= 2) assin += v;
@@ -63,45 +66,65 @@ const GastosInvisiveis = () => {
       { nome: "Juros, IOF e multa", valor: juros, cor: "#16314f" },
       { nome: "Taxas bancárias", valor: taxa, cor: "#C8643F" },
     ].filter((c) => c.valor > 0);
-    return { cats, total: assin + juros + taxa };
+    const topGastos = Object.entries(porLoja).sort((a, b) => b[1] - a[1]).slice(0, 6)
+      .map(([nome, valor]) => ({ nome: nome.charAt(0).toUpperCase() + nome.slice(1), valor }));
+    return { cats, total: assin + juros + taxa, topGastos, temTx: gastos.length > 0 };
   }, [txs]);
 
   if (loading) {
     return <VPCard className="p-5 flex items-center gap-2 text-[#1b2a3d]/50 text-sm"><Loader2 className="h-4 w-4 animate-spin" /> Analisando gastos invisíveis…</VPCard>;
   }
-  if (erro || total === 0) {
+  if (erro || !temTx) {
     return (
       <VPCard className="p-5">
         <div className="flex items-center gap-2 mb-1"><EyeOff className="h-5 w-5 text-[#16314f]" /><p className="font-display text-lg font-bold text-[#16314f]">Gastos invisíveis</p></div>
-        <p className="text-sm text-[#1b2a3d]/55">Conecte um banco acima para revelarmos assinaturas esquecidas, juros e taxas dos últimos 90 dias.</p>
+        <p className="text-sm text-[#1b2a3d]/55">Conecte um banco acima para revelarmos seus maiores gastos, assinaturas esquecidas, juros e taxas dos últimos 90 dias.</p>
       </VPCard>
     );
   }
 
   return (
-    <VPCard className="p-5">
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2"><EyeOff className="h-5 w-5 text-[#C8643F]" /><p className="font-display text-lg font-bold text-[#16314f]">Gastos invisíveis</p></div>
-        <div className="text-right"><p className="text-[10px] uppercase tracking-wider text-[#1b2a3d]/50">Total / 90 dias</p><p className="font-display text-lg font-bold text-[#C8643F] tabular-nums">{brl0(total)}</p></div>
-      </div>
-      <div className="grid sm:grid-cols-2 gap-4 items-center mt-3">
-        <div className="h-40">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart><Pie data={cats} dataKey="valor" nameKey="nome" innerRadius={40} outerRadius={68} paddingAngle={1}>
-              {cats.map((c, i) => <Cell key={i} fill={c.cor} />)}
-            </Pie></PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="space-y-2">
-          {cats.map((c) => (
-            <div key={c.nome} className="flex items-center justify-between text-sm">
-              <span className="flex items-center gap-2 text-[#16314f]"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.cor }} />{c.nome}</span>
-              <span className="tabular-nums font-semibold text-[#16314f]">{brl0(c.valor)}</span>
+    <>
+      {topGastos.length > 0 && (
+        <VPCard className="p-5">
+          <p className="font-display text-lg font-bold text-[#16314f] mb-3">Maiores gastos · 90 dias</p>
+          <div className="space-y-2">
+            {topGastos.map((g) => (
+              <div key={g.nome} className="flex items-center justify-between text-sm">
+                <span className="text-[#16314f] truncate pr-2">{g.nome}</span>
+                <span className="tabular-nums font-semibold text-[#16314f] shrink-0">{brl0(g.valor)}</span>
+              </div>
+            ))}
+          </div>
+        </VPCard>
+      )}
+
+      {total > 0 && (
+        <VPCard className="p-5">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2"><EyeOff className="h-5 w-5 text-[#C8643F]" /><p className="font-display text-lg font-bold text-[#16314f]">Gastos invisíveis</p></div>
+            <div className="text-right"><p className="text-[10px] uppercase tracking-wider text-[#1b2a3d]/50">Total / 90 dias</p><p className="font-display text-lg font-bold text-[#C8643F] tabular-nums">{brl0(total)}</p></div>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4 items-center mt-3">
+            <div className="h-40">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart><Pie data={cats} dataKey="valor" nameKey="nome" innerRadius={40} outerRadius={68} paddingAngle={1}>
+                  {cats.map((c, i) => <Cell key={i} fill={c.cor} />)}
+                </Pie></PieChart>
+              </ResponsiveContainer>
             </div>
-          ))}
-        </div>
-      </div>
-    </VPCard>
+            <div className="space-y-2">
+              {cats.map((c) => (
+                <div key={c.nome} className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2 text-[#16314f]"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.cor }} />{c.nome}</span>
+                  <span className="tabular-nums font-semibold text-[#16314f]">{brl0(c.valor)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </VPCard>
+      )}
+    </>
   );
 };
 

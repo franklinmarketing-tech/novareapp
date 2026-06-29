@@ -1,11 +1,11 @@
 // Minha Realidade: renda, patrimônio, custo por categoria e rentabilidade.
 import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
-import { computeLifePlan, type Debt, type RendaEvento } from "@/lib/lifeplan";
+import { computeLifePlan, type Debt, type RendaEvento, type Seguro } from "@/lib/lifeplan";
 import { VPCard, VPTitle, VPField } from "../components/ui";
 import { cn } from "@/lib/utils";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { Plus, Trash2, CreditCard, TrendingUp } from "lucide-react";
+import { Plus, Trash2, CreditCard, TrendingUp, TrendingDown, Shield } from "lucide-react";
 
 const CORES = ["#16314f", "#C8643F", "#2F8F6B", "#E2A03F", "#5B8DB8", "#8E6BC8", "#C84F6B", "#3FA0A0", "#A0843F", "#6B7280"];
 const CENARIOS = [2, 3, 4, 5, 6, 7];
@@ -36,6 +36,16 @@ const Realidade = () => {
   const eventos = input.rendaEventos ?? [];
   const setEv = (list: RendaEvento[]) => setField("rendaEventos", list);
   const updEv = (id: number, patch: Partial<RendaEvento>) => setEv(eventos.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+
+  // Custo futuro
+  const custoEv = input.custoEventos ?? [];
+  const setCev = (list: RendaEvento[]) => setField("custoEventos", list);
+  const updCev = (id: number, patch: Partial<RendaEvento>) => setCev(custoEv.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+
+  // Seguros
+  const seguros = input.seguros ?? [];
+  const setSeg = (list: Seguro[]) => setField("seguros", list);
+  const updSeg = (id: number, patch: Partial<Seguro>) => setSeg(seguros.map((s) => (s.id === id ? { ...s, ...patch } : s)));
 
   return (
     <div className="space-y-6">
@@ -172,6 +182,56 @@ const Realidade = () => {
         <button onClick={() => setEv([...eventos, { id: Date.now(), ano: input.anoAtual + 3, delta: 1500 }])}
           className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#16314f] hover:text-[#C8643F] transition-colors">
           <Plus className="h-4 w-4" /> Adicionar mudança de renda
+        </button>
+      </VPCard>
+
+      {/* Custo futuro */}
+      <VPCard className="p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <TrendingDown className="h-5 w-5 text-[#C8643F]" />
+          <p className="font-display text-lg font-bold text-[#16314f]">Custo futuro</p>
+        </div>
+        <p className="text-sm text-[#1b2a3d]/60 mb-3">Mudanças de custo previstas — ex.: parar de pagar aluguel ao comprar a casa (valor negativo) ou um filho a caminho (positivo).</p>
+        <div className="space-y-2">
+          {custoEv.map((ev) => (
+            <div key={ev.id} className="flex items-center gap-2">
+              <Mini label="A partir do ano"><input type="number" value={ev.ano} onChange={(e) => updCev(ev.id, { ano: parseFloat(e.target.value) || input.anoAtual })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <Mini label="Variação mensal (R$)"><input type="number" value={ev.delta} onChange={(e) => updCev(ev.id, { delta: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <button onClick={() => setCev(custoEv.filter((x) => x.id !== ev.id))} className="text-[#1b2a3d]/30 hover:text-[#C8643F] shrink-0"><Trash2 className="h-4 w-4" /></button>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => setCev([...custoEv, { id: Date.now(), ano: input.anoAtual + 5, delta: -1000 }])}
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#16314f] hover:text-[#C8643F] transition-colors">
+          <Plus className="h-4 w-4" /> Adicionar mudança de custo
+        </button>
+      </VPCard>
+
+      {/* Seguros */}
+      <VPCard className="p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <Shield className="h-5 w-5 text-[#16314f]" />
+          <p className="font-display text-lg font-bold text-[#16314f]">Seguros</p>
+        </div>
+        <p className="text-sm text-[#1b2a3d]/60 mb-3">Prêmios que você paga. Mensal entra no custo; anual sai do patrimônio uma vez por ano.</p>
+        <div className="space-y-2">
+          {seguros.map((s) => (
+            <div key={s.id} className="flex items-center gap-2">
+              <input value={s.nome ?? ""} placeholder="Ex.: seguro de vida" onChange={(e) => updSeg(s.id, { nome: e.target.value })}
+                className="flex-1 min-w-0 bg-transparent text-sm font-medium text-[#16314f] outline-none border-b border-transparent focus:border-[#C8643F]/40 py-1" />
+              <Mini label="Valor (R$)"><input type="number" value={s.valor} onChange={(e) => updSeg(s.id, { valor: parseFloat(e.target.value) || 0 })} className="w-20 bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <Mini label="Período">
+                <select value={s.periodicidade} onChange={(e) => updSeg(s.id, { periodicidade: e.target.value as "mensal" | "anual" })} className="bg-transparent text-sm text-[#16314f] outline-none">
+                  <option value="mensal">Mensal</option><option value="anual">Anual</option>
+                </select>
+              </Mini>
+              <button onClick={() => setSeg(seguros.filter((x) => x.id !== s.id))} className="text-[#1b2a3d]/30 hover:text-[#C8643F] shrink-0"><Trash2 className="h-4 w-4" /></button>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => setSeg([...seguros, { id: Date.now(), nome: "", valor: 0, periodicidade: "mensal" }])}
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#16314f] hover:text-[#C8643F] transition-colors">
+          <Plus className="h-4 w-4" /> Adicionar seguro
         </button>
       </VPCard>
     </div>
