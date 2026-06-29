@@ -2,14 +2,19 @@
 // Projeção macro DEFLACIONADA (valores de hoje) do presente até a aposentadoria
 // e além, consolidando todos os sonhos + aposentadoria no "Capital de Vida".
 
-export type GoalType = "viagens" | "festas" | "imovel" | "carro" | "educacao" | "outro";
+export type GoalType =
+  | "viagens" | "festas" | "imovel" | "carro" | "educacao"
+  | "saude" | "casamento" | "reforma" | "filhos" | "intercambio" | "negocio" | "doacao"
+  | "outro";
 
 export interface Goal {
   id: number;
   tipo: GoalType;
   nome?: string;
-  valor: number;          // valor principal (anual p/ viagens/festas; evento p/ os demais)
-  ano?: number;           // ano do evento (imovel/educacao/outro) ou 1º ano (carro)
+  valor: number;          // valor principal (anual se recorrente; evento se único)
+  ano?: number;           // ano do evento (eventos únicos) ou 1º ano (carro)
+  recorrente?: boolean;   // sobrepõe o padrão do tipo: true = todo ano, false = num ano só
+  obs?: string;           // observação livre do cliente
   intervaloAnos?: number; // carro: troca a cada X anos
   financiar?: boolean;    // imovel
   entradaPct?: number;    // imovel
@@ -115,26 +120,26 @@ const pricePmtAnnual = (principal: number, jurosAa: number, prazoAnos: number) =
   return pmt * 12;
 };
 
+// Recorrência padrão de cada tipo quando o cliente não escolheu explicitamente.
+const recorrentePorPadrao = (tipo: GoalType) => tipo === "viagens" || tipo === "festas" || tipo === "doacao";
+
 export function outflowsNoAno(g: Goal, ano: number, anoAtual: number, idadeAtual: number, idadeApos: number): number {
   const idade = idadeAtual + (ano - anoAtual);
-  switch (g.tipo) {
-    case "viagens":
-    case "festas":
-      return idade < idadeApos ? g.valor : 0;
-    case "carro": {
-      if (g.ano == null || idade >= idadeApos || ano < g.ano) return 0;
-      const intr = Math.max(1, g.intervaloAnos || 999);
-      return (ano - g.ano) % intr === 0 ? g.valor : 0;
-    }
-    case "imovel":
-      if (g.ano !== ano) return 0;
-      return g.financiar ? g.valor * (g.entradaPct ?? 20) / 100 : g.valor;
-    case "educacao":
-    case "outro":
-      return g.ano === ano ? g.valor : 0;
-    default:
-      return 0;
+  // Imóvel: entrada (financiado) ou valor à vista, no ano marcado.
+  if (g.tipo === "imovel") {
+    if (g.ano !== ano) return 0;
+    return g.financiar ? g.valor * (g.entradaPct ?? 20) / 100 : g.valor;
   }
+  // Veículo: compra e troca periódica a cada intervaloAnos, a partir de g.ano.
+  if (g.tipo === "carro") {
+    if (g.ano == null || idade >= idadeApos || ano < g.ano) return 0;
+    const intr = Math.max(1, g.intervaloAnos || 999);
+    return (ano - g.ano) % intr === 0 ? g.valor : 0;
+  }
+  // Demais: recorrente (todo ano até a independência) ou evento único (no ano marcado).
+  const recorrente = g.recorrente ?? recorrentePorPadrao(g.tipo);
+  if (recorrente) return idade < idadeApos ? g.valor : 0;
+  return g.ano === ano ? g.valor : 0;
 }
 
 export function parcelaAnualNoAno(g: Goal, ano: number): number {

@@ -10,7 +10,7 @@ const NAVY: [number, number, number] = [22, 49, 79];
 const TERRA: [number, number, number] = [200, 100, 63];
 const GREEN: [number, number, number] = [47, 143, 107];
 const fmt = (v: number) => "R$ " + Math.round(Number(v) || 0).toLocaleString("pt-BR");
-const TIPO: Record<string, string> = { viagens: "Viagens", festas: "Festas", imovel: "Imóvel", carro: "Veículo", educacao: "Educação", outro: "Outro" };
+const TIPO: Record<string, string> = { viagens: "Viagens", festas: "Festas", imovel: "Imóvel", carro: "Veículo", educacao: "Educação", saude: "Saúde", casamento: "Casamento", reforma: "Reforma", filhos: "Filhos", intercambio: "Intercâmbio", negocio: "Negócio", doacao: "Doação", outro: "Outro" };
 
 // Carrega uma imagem (bundled, same-origin) como dataURL para o jsPDF.
 async function toDataURL(url: string): Promise<{ data: string; ratio: number } | null> {
