@@ -25,7 +25,7 @@ export const VIDAPLAN_NAV: VidaPlanNavItem[] = [
   { to: "/vidaplan/app/sonhos", label: "Meus Sonhos", icon: Sparkles, short: "Sonhos" },
   { to: "/vidaplan/app/independencia", label: "Independência", icon: Sunrise, short: "Indep." },
   { to: "/vidaplan/app/realidade", label: "Minha Realidade", icon: Wallet, short: "Realidade" },
-  { to: "/vidaplan/app/carteira", label: "Carteira", icon: Landmark, short: "Carteira" },
+  { to: "/vidaplan/app/carteira", label: "Conectar Banco", icon: Landmark, short: "Banco" },
   { to: "/vidaplan/app/projecao", label: "Projeção", icon: LineChart, short: "Projeção" },
   { to: "/vidaplan/app/plano", label: "Plano de Ação", icon: ClipboardList, short: "Plano" },
   { to: "/vidaplan/app/progresso", label: "Meu Progresso", icon: Activity, short: "Progresso" },

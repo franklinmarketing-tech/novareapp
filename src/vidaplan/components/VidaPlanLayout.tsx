@@ -33,6 +33,18 @@ const VidaPlanLayout = () => {
 
   return (
     <div className="min-h-screen bg-[#F4F1EA] text-[#1b2a3d]">
+      <style>{`
+        @property --vpled { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+        .vp-led { position: relative; }
+        .vp-led::before {
+          content: ""; position: absolute; inset: 0; border-radius: 0.75rem; padding: 2px;
+          background: conic-gradient(from var(--vpled), transparent 0 74%, #E2A03F 84%, #FCE3B5 90%, #E2A03F 96%, transparent 100%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+          pointer-events: none; animation: vpLedRun 2.4s linear infinite;
+        }
+        @keyframes vpLedRun { to { --vpled: 360deg; } }
+      `}</style>
       {/* Sidebar desktop */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-[#16314f] px-4 py-6">
         <div className="px-2">
@@ -51,7 +63,8 @@ const VidaPlanLayout = () => {
 
         <nav className="mt-6 flex-1 space-y-1">
           {VIDAPLAN_NAV.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.to === "/vidaplan/app"} className={navLinkClass}>
+            <NavLink key={item.to} to={item.to} end={item.to === "/vidaplan/app"}
+              className={(s) => cn(navLinkClass(s), item.to === "/vidaplan/app/assistente" && "vp-led")}>
               <item.icon className="h-[18px] w-[18px]" /> {item.label}
             </NavLink>
           ))}
