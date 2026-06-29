@@ -59,6 +59,8 @@ export interface LifePlanInput {
   rendaEventos?: RendaEvento[]; // aumentos/reduções de renda no tempo
   aportes?: Aporte[];        // acompanhamento de aportes realizados (não afeta a projeção)
   ativosImobilizados?: number; // patrimônio não-investido (imóveis próprios etc.) — informativo
+  consorcio?: number;        // carta de crédito / patrimônio previsto via consórcio — informativo
+  advisorCodigo?: string;    // código do consultor vinculado (parceria/indicação)
 }
 
 // Parcela mensal da dívida (sistema Price)

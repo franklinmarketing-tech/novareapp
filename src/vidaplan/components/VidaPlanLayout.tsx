@@ -1,12 +1,13 @@
 // Casca do Novare Vida Plan: sidebar (desktop) + navegação inferior (mobile).
 // Identidade própria: navy de marca + área de trabalho clara (creme), tipografia Playfair.
 
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Link, Outlet, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { VIDAPLAN, VIDAPLAN_NAV, VIDAPLAN_NAV_MOBILE } from "../lib/brand";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
-import { LogOut, Check, Loader2 } from "lucide-react";
+import { useSubscription } from "../state/useSubscription";
+import { LogOut, Check, Loader2, Sparkles } from "lucide-react";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -23,9 +24,11 @@ const SaveBadge = ({ state }: { state: "idle" | "saving" | "saved" }) => {
 const VidaPlanLayout = () => {
   const { plan, hydrated, saveState } = useVidaPlan();
   const { user, signOut } = useAuth();
+  const { isPremium, status, daysLeft } = useSubscription();
   const navigate = useNavigate();
 
   const sair = async () => { await signOut(); navigate("/vidaplan/login", { replace: true }); };
+  const goldLabel = !isPremium ? "Seja GOLD" : status === "trial" ? `GOLD · ${daysLeft}d` : "GOLD ativo";
 
   return (
     <div className="min-h-screen bg-[#F4F1EA] text-[#1b2a3d]">
@@ -53,7 +56,13 @@ const VidaPlanLayout = () => {
           ))}
         </nav>
 
-        <div className="mt-4 border-t border-white/10 pt-3">
+        <Link to="/vidaplan/app/assinar"
+          className={cn("mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors",
+            isPremium ? "bg-[#E2A03F]/15 text-[#E2A03F]" : "bg-[#E29578] text-[#16314f] hover:bg-[#eaa98e]")}>
+          <Sparkles className="h-4 w-4" /> {goldLabel}
+        </Link>
+
+        <div className="mt-3 border-t border-white/10 pt-3">
           {user?.email && <p className="px-3 text-[11px] text-white/40 truncate mb-1">{user.email}</p>}
           <button onClick={sair} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium text-white/60 hover:bg-white/10 hover:text-white transition-colors">
             <LogOut className="h-4 w-4" /> Sair

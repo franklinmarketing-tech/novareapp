@@ -46,6 +46,7 @@ const Realidade = () => {
           <VPField label="Renda mensal líquida" suffix="R$/mês" value={input.rendaMensal} step={100} onChange={(v) => setField("rendaMensal", v)} />
           <VPField label="Patrimônio investido hoje" suffix="R$" value={input.patrimonioAtual} step={1000} onChange={(v) => setField("patrimonioAtual", v)} />
           <VPField label="Ativos imobilizados" suffix="R$ (imóvel próprio etc.)" value={input.ativosImobilizados ?? 0} step={1000} onChange={(v) => setField("ativosImobilizados", v)} />
+          <VPField label="Consórcio / patrimônio previsto" suffix="R$ (carta de crédito)" value={input.consorcio ?? 0} step={1000} onChange={(v) => setField("consorcio", v)} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center justify-between rounded-xl bg-[#16314f]/[0.04] px-4 py-3">

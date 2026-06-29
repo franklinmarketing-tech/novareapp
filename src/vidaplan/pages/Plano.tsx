@@ -1,9 +1,12 @@
 // Plano de Ação: caminho prático pra concretizar o projeto de vida.
 import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription } from "../state/useSubscription";
 import { computeActionPlan } from "../lib/actionplan";
 import { exportVidaPlanPDF } from "../lib/pdf";
+import { GoldBadge } from "../components/PremiumGate";
 import { VPCard, VPTitle } from "../components/ui";
 import { PiggyBank, ShieldCheck, LineChart, Landmark, Scale, Info, FileDown } from "lucide-react";
 
@@ -15,6 +18,7 @@ const CORES = ["#16314f", "#2F8F6B", "#C8643F", "#E2A03F", "#5B8DB8"];
 const Plano = () => {
   const { input, plan } = useVidaPlan();
   const { user } = useAuth();
+  const { isPremium } = useSubscription();
   const ap = useMemo(() => computeActionPlan(input, plan), [input, plan]);
 
   return (
@@ -23,10 +27,16 @@ const Plano = () => {
         <VPTitle hint="O caminho prático pra concretizar seu projeto de vida. Simulação educacional — sua Novare personaliza com você.">
           Plano de Ação
         </VPTitle>
-        <button onClick={() => exportVidaPlanPDF(input, plan, user?.email ?? undefined)}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-[#16314f] px-3 py-2 text-xs font-semibold text-white hover:bg-[#1d3e63] transition-colors">
-          <FileDown className="h-4 w-4" /> Exportar PDF
-        </button>
+        {isPremium ? (
+          <button onClick={() => exportVidaPlanPDF(input, plan, user?.email ?? undefined)}
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-[#16314f] px-3 py-2 text-xs font-semibold text-white hover:bg-[#1d3e63] transition-colors">
+            <FileDown className="h-4 w-4" /> Exportar PDF
+          </button>
+        ) : (
+          <Link to="/vidaplan/app/assinar" className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-[#E2A03F]/50 bg-[#E2A03F]/[0.08] px-3 py-2 text-xs font-semibold text-[#b07d1e] hover:bg-[#E2A03F]/15 transition-colors">
+            <FileDown className="h-4 w-4" /> Exportar PDF <GoldBadge />
+          </Link>
+        )}
       </div>
 
       {/* Aporte + Reserva */}
