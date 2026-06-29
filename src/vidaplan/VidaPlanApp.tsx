@@ -1,7 +1,9 @@
 // App "Novare Vida Plan" — montado em /vidaplan/* (e na raiz quando o host é o subdomínio).
 import { Navigate, Route, Routes } from "react-router-dom";
 import { VidaPlanProvider } from "./state/VidaPlanContext";
+import VidaPlanGuard from "./components/VidaPlanGuard";
 import VidaPlanLayout from "./components/VidaPlanLayout";
+import Login from "./pages/Login";
 import Painel from "./pages/Painel";
 import Sonhos from "./pages/Sonhos";
 import Independencia from "./pages/Independencia";
@@ -13,7 +15,8 @@ const VidaPlanApp = () => (
   <VidaPlanProvider>
     <Routes>
       <Route index element={<Navigate to="/vidaplan/app" replace />} />
-      <Route path="app" element={<VidaPlanLayout />}>
+      <Route path="login" element={<Login />} />
+      <Route path="app" element={<VidaPlanGuard><VidaPlanLayout /></VidaPlanGuard>}>
         <Route index element={<Painel />} />
         <Route path="sonhos" element={<Sonhos />} />
         <Route path="independencia" element={<Independencia />} />

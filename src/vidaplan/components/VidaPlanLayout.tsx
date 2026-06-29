@@ -3,9 +3,10 @@
 
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import { VIDAPLAN, VIDAPLAN_NAV } from "../lib/brand";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
-import { ArrowLeft } from "lucide-react";
+import { LogOut, Check, Loader2 } from "lucide-react";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -13,9 +14,18 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white",
   );
 
+const SaveBadge = ({ state }: { state: "idle" | "saving" | "saved" }) => {
+  if (state === "saving") return <span className="inline-flex items-center gap-1 text-[11px] text-white/60"><Loader2 className="h-3 w-3 animate-spin" /> salvando</span>;
+  if (state === "saved") return <span className="inline-flex items-center gap-1 text-[11px] text-emerald-300"><Check className="h-3 w-3" /> salvo</span>;
+  return null;
+};
+
 const VidaPlanLayout = () => {
-  const { plan } = useVidaPlan();
+  const { plan, hydrated, saveState } = useVidaPlan();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const sair = async () => { await signOut(); navigate("/vidaplan/login", { replace: true }); };
 
   return (
     <div className="min-h-screen bg-[#F4F1EA] text-[#1b2a3d]">
@@ -28,7 +38,10 @@ const VidaPlanLayout = () => {
         </div>
 
         <div className="mt-6 rounded-2xl bg-white/10 px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-white/60">{VIDAPLAN.anchorLabel}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] uppercase tracking-wider text-white/60">{VIDAPLAN.anchorLabel}</p>
+            <SaveBadge state={saveState} />
+          </div>
           <p className="font-display text-2xl font-bold text-white tabular-nums">{brl0(plan.capitalDeVida)}</p>
         </div>
 
@@ -40,12 +53,12 @@ const VidaPlanLayout = () => {
           ))}
         </nav>
 
-        <button
-          onClick={() => navigate("/cliente")}
-          className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium text-white/60 hover:bg-white/10 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" /> Voltar ao painel Novare
-        </button>
+        <div className="mt-4 border-t border-white/10 pt-3">
+          {user?.email && <p className="px-3 text-[11px] text-white/40 truncate mb-1">{user.email}</p>}
+          <button onClick={sair} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium text-white/60 hover:bg-white/10 hover:text-white transition-colors">
+            <LogOut className="h-4 w-4" /> Sair
+          </button>
+        </div>
       </aside>
 
       {/* Topbar mobile */}
@@ -54,16 +67,25 @@ const VidaPlanLayout = () => {
           <span className="font-display text-base font-bold text-white">Novare </span>
           <span className="font-display text-base font-bold text-[#E29578]">Vida Plan</span>
         </div>
-        <div className="text-right">
-          <p className="text-[9px] uppercase tracking-wider text-white/60">{VIDAPLAN.anchorLabel}</p>
-          <p className="text-sm font-bold text-white tabular-nums leading-none">{brl0(plan.capitalDeVida)}</p>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-[9px] uppercase tracking-wider text-white/60">{VIDAPLAN.anchorLabel}</p>
+            <p className="text-sm font-bold text-white tabular-nums leading-none">{brl0(plan.capitalDeVida)}</p>
+          </div>
+          <button onClick={sair} aria-label="Sair" className="text-white/60 hover:text-white"><LogOut className="h-4 w-4" /></button>
         </div>
       </header>
 
       {/* Conteúdo */}
       <main className="lg:pl-64 pb-24 lg:pb-10">
         <div className="mx-auto max-w-4xl px-4 py-6 lg:px-8 lg:py-8">
-          <Outlet />
+          {hydrated ? (
+            <Outlet />
+          ) : (
+            <div className="flex items-center justify-center py-24">
+              <div className="h-6 w-6 rounded-full border-[3px] border-[#16314f]/15 border-t-[#16314f] animate-spin" />
+            </div>
+          )}
         </div>
       </main>
 
