@@ -298,7 +298,7 @@ export default function AdminOpenFinance() {
                 <Card className="border-border/50"><CardContent className="p-5">
                   <p className="text-sm font-bold text-foreground mb-3">Carteira consolidada</p>
                   <div className="space-y-2">
-                    {Object.entries(porTipo).sort((a, b) => b[1] - a[1]).map(([t, v]) => {
+                    {(Object.entries(porTipo) as [string, number][]).sort((a, b) => b[1] - a[1]).map(([t, v]) => {
                       const pct = totalInvest > 0 ? (v / totalInvest) * 100 : 0;
                       return (
                         <div key={t}>
@@ -423,7 +423,7 @@ export default function AdminOpenFinance() {
                     <Card className="border-border/50"><CardContent className="p-5">
                       <p className="text-sm font-bold text-foreground mb-3">Por categoria · total {brl0(gastos.total)}</p>
                       <div className="space-y-2">
-                        {Object.entries(gastos.porCat).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([c, v]) => {
+                        {(Object.entries(gastos.porCat) as [string, number][]).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([c, v]) => {
                           const pct = gastos.total > 0 ? (v / gastos.total) * 100 : 0;
                           return (
                             <div key={c}>

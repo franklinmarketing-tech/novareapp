@@ -8,7 +8,7 @@ import { Check, Sparkles, MessageCircle, Loader2, CreditCard } from "lucide-reac
 const WHATS = "5519983402827";
 // Cole aqui o link de checkout (Hotmart/Kiwify) quando tiver o produto criado.
 // O webhook ativa o GOLD sozinho casando pelo parâmetro `src` (= user_id).
-const CHECKOUT_URL = "";
+const CHECKOUT_URL: string = "";
 const RECURSOS = [
   "Relatório PDF do seu Projeto de Vida",
   "Gastos invisíveis (assinaturas, juros e taxas)",
