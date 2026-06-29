@@ -1,12 +1,20 @@
-// Meu Progresso: aportes realizados vs meta de poupança.
-import { useMemo } from "react";
+// Meu Progresso: aportes realizados vs meta de poupança + histórico de transações.
+import { useMemo, useState } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import type { Aporte } from "@/lib/lifeplan";
 import { VPCard, VPTitle, VPProgress, VPStat } from "../components/ui";
-import { Plus, Minus, Trash2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Trash2, CheckCircle2, AlertTriangle, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-const hoje = () => { const d = new Date(); return { ano: d.getFullYear(), mes: d.getMonth() + 1, mesAno: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}` }; };
+const MESES_ABREV = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const z2 = (n: number) => String(n).padStart(2, "0");
+const hoje = () => { const d = new Date(); return { ano: d.getFullYear(), mes: d.getMonth() + 1, dia: d.getDate(), mesAno: `${d.getFullYear()}-${z2(d.getMonth() + 1)}`, dataISO: `${d.getFullYear()}-${z2(d.getMonth() + 1)}-${z2(d.getDate())}` }; };
+const num = (v: string) => parseFloat(v) || 0;
+const selAll = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
+const fmtData = (a: Aporte) => {
+  if (a.data) { const [y, mm, dd] = a.data.split("-"); return `${dd} ${MESES_ABREV[parseInt(mm) - 1]} ${y}`; }
+  const [y, mm] = a.mesAno.split("-"); return `${MESES_ABREV[parseInt(mm) - 1]} ${y}`;
+};
 
 const Progresso = () => {
   const { input, plan, setField } = useVidaPlan();
@@ -38,9 +46,44 @@ const Progresso = () => {
   const { metaMensal, esperado, aportado, saldo } = m;
 
   const set = (list: Aporte[]) => setField("aportes", list);
-  const upd = (id: number, patch: Partial<Aporte>) => set(aportes.map((a) => (a.id === id ? { ...a, ...patch } : a)));
   const emDia = saldo >= 0;
   const pct = esperado > 0 ? (aportado / esperado) * 100 : 100;
+
+  // Aplicações / resgates + histórico
+  const [vGuardar, setVGuardar] = useState("");
+  const [vResgatar, setVResgatar] = useState("");
+  const [ano, setAno] = useState(hoje().ano);
+
+  const lancar = (valor: number) => {
+    if (!valor) return;
+    const h = hoje();
+    set([{ id: Date.now(), mesAno: h.mesAno, valor, data: h.dataISO }, ...aportes]);
+    setAno(h.ano);
+  };
+  const guardar = () => { lancar(Math.abs(num(vGuardar))); setVGuardar(""); };
+  const resgatar = () => { lancar(-Math.abs(num(vResgatar))); setVResgatar(""); };
+
+  const anosDisponiveis = useMemo(() => {
+    const s = new Set<number>(aportes.map((a) => parseInt(a.mesAno?.slice(0, 4)) || hoje().ano));
+    s.add(hoje().ano);
+    return [...s].sort((a, b) => b - a);
+  }, [aportes]);
+
+  const mesesDoAno = useMemo(() => {
+    const doAno = aportes.filter((a) => a.mesAno?.startsWith(`${ano}-`));
+    const byMes = new Map<number, Aporte[]>();
+    for (const a of doAno) {
+      const mes = parseInt(a.mesAno.slice(5, 7)) || 1;
+      byMes.set(mes, [...(byMes.get(mes) ?? []), a]);
+    }
+    return [...byMes.entries()]
+      .map(([mes, items]) => ({
+        mes,
+        items: items.slice().sort((x, y) => (y.data ?? y.mesAno).localeCompare(x.data ?? x.mesAno)),
+        saldo: items.reduce((s, a) => s + (Number(a.valor) || 0), 0),
+      }))
+      .sort((a, b) => b.mes - a.mes);
+  }, [aportes, ano]);
 
   return (
     <div className="space-y-6">
@@ -79,37 +122,81 @@ const Progresso = () => {
         <TierRow titulo="Neste mês" periodo={m.mesNome} realizado={m.realizadoMes} meta={m.metaMes} />
       </VPCard>
 
-      {/* Lançamentos */}
+      {/* Aplicações e resgates */}
       <VPCard className="p-5">
-        <div className="flex items-center justify-between mb-3">
-          <p className="font-display text-base font-bold text-[#16314f]">Aportes e resgates</p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => set([{ id: Date.now(), mesAno: hoje().mesAno, valor: Math.round(metaMensal) }, ...aportes])}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#16314f] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1d3e63] transition-colors">
-              <Plus className="h-3.5 w-3.5" /> Aporte
+        <p className="font-display text-base font-bold text-[#16314f]">Aplicações e resgates</p>
+        <p className="text-sm text-[#1b2a3d]/55 mb-4">Registre quanto guardou ou resgatou — entra direto no seu progresso.</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="rounded-xl border border-[#2F8F6B]/25 bg-[#2F8F6B]/[0.05] p-4">
+            <p className="text-sm font-semibold text-[#16314f] mb-2">Quanto deseja guardar?</p>
+            <div className="flex items-center rounded-lg border border-black/10 bg-white px-3 mb-2">
+              <span className="text-[11px] text-[#1b2a3d]/40">R$</span>
+              <input type="number" inputMode="decimal" value={vGuardar} onFocus={selAll} placeholder="0"
+                onChange={(e) => setVGuardar(e.target.value)} onKeyDown={(e) => e.key === "Enter" && guardar()}
+                className="w-full bg-transparent py-2 px-1 text-sm text-[#16314f] outline-none tabular-nums" />
+              <span className="text-[11px] text-[#1b2a3d]/40">/mês</span>
+            </div>
+            <button onClick={guardar} className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#2F8F6B] px-3 py-2 text-sm font-semibold text-white hover:bg-[#27795a] transition-colors">
+              <ArrowDownToLine className="h-4 w-4" /> Guardar
             </button>
-            <button
-              onClick={() => set([{ id: Date.now(), mesAno: hoje().mesAno, valor: -Math.round(metaMensal) }, ...aportes])}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#C8643F]/40 px-3 py-1.5 text-xs font-semibold text-[#C8643F] hover:bg-[#C8643F]/[0.06] transition-colors">
-              <Minus className="h-3.5 w-3.5" /> Resgate
+          </div>
+          <div className="rounded-xl border border-[#C8643F]/25 bg-[#C8643F]/[0.05] p-4">
+            <p className="text-sm font-semibold text-[#16314f] mb-2">Quanto deseja resgatar?</p>
+            <div className="flex items-center rounded-lg border border-black/10 bg-white px-3 mb-2">
+              <span className="text-[11px] text-[#1b2a3d]/40">R$</span>
+              <input type="number" inputMode="decimal" value={vResgatar} onFocus={selAll} placeholder="0"
+                onChange={(e) => setVResgatar(e.target.value)} onKeyDown={(e) => e.key === "Enter" && resgatar()}
+                className="w-full bg-transparent py-2 px-1 text-sm text-[#16314f] outline-none tabular-nums" />
+            </div>
+            <button onClick={resgatar} className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#C8643F] px-3 py-2 text-sm font-semibold text-white hover:bg-[#b25636] transition-colors">
+              <ArrowUpFromLine className="h-4 w-4" /> Resgatar
             </button>
           </div>
         </div>
-        {aportes.length === 0 ? (
-          <p className="text-sm text-[#1b2a3d]/50">Nenhum aporte lançado ainda. Registre o quanto você já investiu.</p>
+      </VPCard>
+
+      {/* Histórico de transações */}
+      <VPCard className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="font-display text-base font-bold text-[#16314f]">Histórico de transações</p>
+          <select value={ano} onChange={(e) => setAno(parseInt(e.target.value))}
+            className="rounded-lg border border-black/10 bg-white px-2.5 py-1.5 text-sm font-semibold text-[#16314f] outline-none focus:border-[#C8643F] cursor-pointer">
+            {anosDisponiveis.map((a) => <option key={a} value={a}>{a}</option>)}
+          </select>
+        </div>
+        <div className="rounded-xl bg-[#16314f]/[0.04] px-4 py-3 mb-4 flex items-center justify-between">
+          <span className="text-sm text-[#1b2a3d]/60">Saldo economizado</span>
+          <span className="font-display text-xl font-bold text-[#2F8F6B] tabular-nums">{brl0(aportado)}</span>
+        </div>
+        {mesesDoAno.length === 0 ? (
+          <p className="text-sm text-[#1b2a3d]/50">Nenhum lançamento em {ano}. Use os botões acima para guardar ou resgatar.</p>
         ) : (
-          <div className="space-y-2">
-            {aportes.map((a) => (
-              <div key={a.id} className="flex items-center gap-2">
-                <input type="month" value={a.mesAno} onChange={(e) => upd(a.id, { mesAno: e.target.value })}
-                  className="rounded-lg border border-black/10 px-2 py-1.5 text-sm text-[#16314f] outline-none focus:border-[#C8643F]" />
-                <div className="flex items-center rounded-lg border border-black/10 px-2 flex-1">
-                  <span className="text-[11px] text-[#1b2a3d]/40">R$</span>
-                  <input type="number" value={a.valor} onChange={(e) => upd(a.id, { valor: parseFloat(e.target.value) || 0 })}
-                    className="w-full bg-transparent py-1.5 pl-1 text-sm text-right text-[#16314f] outline-none tabular-nums" />
+          <div className="space-y-4">
+            {mesesDoAno.map(({ mes, items, saldo }) => (
+              <div key={mes}>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#1b2a3d]/45 mb-1.5">{MESES[mes - 1]}</p>
+                <div className="space-y-1.5">
+                  {items.map((a) => {
+                    const aplic = a.valor >= 0;
+                    return (
+                      <div key={a.id} className="flex items-center gap-2.5 group">
+                        <span className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${aplic ? "bg-[#2F8F6B]/12 text-[#2F8F6B]" : "bg-[#C8643F]/12 text-[#C8643F]"}`}>
+                          {aplic ? <ArrowDownToLine className="h-3.5 w-3.5" /> : <ArrowUpFromLine className="h-3.5 w-3.5" />}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-[#16314f] leading-tight">{aplic ? "Aplicação" : "Resgate"}</p>
+                          <p className="text-[11px] text-[#1b2a3d]/45">{fmtData(a)}</p>
+                        </div>
+                        <span className={`tabular-nums font-semibold text-sm ${aplic ? "text-[#2F8F6B]" : "text-[#C8643F]"}`}>{aplic ? "+" : ""}{brl0(a.valor)}</span>
+                        <button onClick={() => set(aportes.filter((x) => x.id !== a.id))} className="text-[#1b2a3d]/20 hover:text-[#C8643F] shrink-0 transition-colors" title="Excluir"><Trash2 className="h-3.5 w-3.5" /></button>
+                      </div>
+                    );
+                  })}
                 </div>
-                <button onClick={() => set(aportes.filter((x) => x.id !== a.id))} className="text-[#1b2a3d]/30 hover:text-[#C8643F] shrink-0"><Trash2 className="h-4 w-4" /></button>
+                <div className="flex justify-between border-t border-black/[0.06] mt-2 pt-1.5 text-sm">
+                  <span className="text-[#1b2a3d]/55">Saldo do mês</span>
+                  <span className="font-semibold text-[#16314f] tabular-nums">{brl0(saldo)}</span>
+                </div>
               </div>
             ))}
           </div>

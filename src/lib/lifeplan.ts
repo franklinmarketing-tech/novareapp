@@ -44,7 +44,8 @@ export interface RendaEvento {
 export interface Aporte {
   id: number;
   mesAno: string;    // "YYYY-MM"
-  valor: number;
+  valor: number;     // + = aplicação (guardar) · − = resgate (retirar)
+  data?: string;     // "YYYY-MM-DD" (dia do lançamento, quando informado)
 }
 
 // Seguro contratado (proteção)
