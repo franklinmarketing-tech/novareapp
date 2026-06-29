@@ -1323,7 +1323,7 @@ const AdminReport = ({ clientView = false }: { clientView?: boolean } = {}) => {
               {
                 icon: Hourglass,
                 label: "Reserva de emergência",
-                value: liquidValue > 0 && monthlyOutflow > 0 ? `${liquidityMonths.toFixed(1)}m` : "—",
+                value: monthlyOutflow > 0 ? `${(emergencyReserveBase(assets) / monthlyOutflow).toFixed(1)}m` : "—",
                 hint: liquidityMonths >= 6
                   ? "Cobertura saudável (≥ 6 meses)"
                   : liquidityMonths >= 3
