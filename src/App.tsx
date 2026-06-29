@@ -1,10 +1,11 @@
 // Novareapp - protocolo visual ativo
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { isVidaPlanHost } from "@/vidaplan/lib/host";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -72,6 +73,7 @@ const ProjetoDeVida = lazy(() => import("@/pages/ProjetoDeVida"));
 const AdminLifePlanLeads = lazy(() => import("@/pages/admin/AdminLifePlanLeads"));
 const AdminOpenFinance = lazy(() => import("@/pages/admin/AdminOpenFinance"));
 const ReportPreview = lazy(() => import("@/pages/dev/ReportPreview"));
+const VidaPlanApp = lazy(() => import("@/vidaplan/VidaPlanApp"));
 const SuperAdminDashboard = lazy(() => import("@/pages/super-admin/SuperAdminDashboard"));
 const SuperAdminAdmins = lazy(() => import("@/pages/super-admin/SuperAdminAdmins"));
 const SuperAdminClients = lazy(() => import("@/pages/super-admin/SuperAdminClients"));
@@ -102,6 +104,19 @@ const RootRedirect = () => {
   return <Navigate to="/cliente" replace />;
 };
 
+// No subdomínio vidaplan.novareapp.com.br, qualquer rota fora de /vidaplan
+// é levada para o app Novare Vida Plan (mesmo build servido pelo DNS).
+const HostGate = () => {
+  const loc = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isVidaPlanHost() && !loc.pathname.startsWith("/vidaplan")) {
+      navigate("/vidaplan", { replace: true });
+    }
+  }, [loc.pathname, navigate]);
+  return null;
+};
+
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
@@ -113,9 +128,11 @@ const App = () => (
           <PWAResetListener />
           <BrowserRouter>
             <AuthProvider>
+              <HostGate />
               <Suspense fallback={<PageFallback />}>
               <Routes>
                 <Route path="/" element={<RootRedirect />} />
+                <Route path="/vidaplan/*" element={<VidaPlanApp />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/aceitar-convite/:token" element={<AcceptInvite />} />
