@@ -12,7 +12,7 @@ import { LogOut, Check, Loader2, Sparkles } from "lucide-react";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+    "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
     isActive ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white",
   );
 
@@ -50,22 +50,22 @@ const VidaPlanLayout = () => {
         @keyframes vpLedRun { to { --vpled: 360deg; } }
       `}</style>
       {/* Sidebar desktop */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-[#16314f] px-4 py-6">
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-[#16314f] px-4 py-5">
         <div className="px-2">
-          <img src={logoBranca} alt="Novare" className="h-7 w-auto" />
-          <p className="font-display text-base font-bold text-[#E29578] leading-tight mt-2">Vida Plan</p>
-          <p className="text-[11px] text-white/40 mt-1">{VIDAPLAN.method}</p>
+          <img src={logoBranca} alt="Novare" className="h-6 w-auto" />
+          <p className="font-display text-base font-bold text-[#E29578] leading-tight mt-1.5">Vida Plan</p>
+          <p className="text-[11px] text-white/40">{VIDAPLAN.method}</p>
         </div>
 
-        <div className="mt-6 rounded-2xl bg-white/10 px-4 py-3">
+        <div className="mt-4 rounded-2xl bg-white/10 px-4 py-2.5">
           <div className="flex items-center justify-between">
             <p className="text-[10px] uppercase tracking-wider text-white/60">{VIDAPLAN.anchorLabel}</p>
             <SaveBadge state={saveState} />
           </div>
-          <p className="font-display text-2xl font-bold text-white tabular-nums">{brl0(plan.capitalDeVida)}</p>
+          <p className="font-display text-2xl font-bold text-white tabular-nums leading-tight">{brl0(plan.capitalDeVida)}</p>
         </div>
 
-        <nav className="mt-6 flex-1 min-h-0 overflow-y-auto space-y-1 -mr-2 pr-2">
+        <nav className="mt-4 flex-1 flex flex-col justify-evenly gap-0.5">
           {VIDAPLAN_NAV.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === "/vidaplan/app"}
               className={(s) => cn(navLinkClass(s), item.to === "/vidaplan/app/assistente" && "vp-led")}>
@@ -75,21 +75,21 @@ const VidaPlanLayout = () => {
         </nav>
 
         <Link to="/vidaplan/app/assinar"
-          className={cn("shrink-0 mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors",
+          className={cn("shrink-0 mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-colors",
             isPremium ? "bg-[#E2A03F]/15 text-[#E2A03F]" : "bg-[#E29578] text-[#16314f] hover:bg-[#eaa98e]")}>
           <Sparkles className="h-4 w-4" /> {goldLabel}
         </Link>
 
         {/* Perfil + sair (sempre visível) */}
-        <div className="shrink-0 mt-3 border-t border-white/10 pt-3">
-          <div className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 mb-1">
-            <div className="h-9 w-9 rounded-full bg-[#E29578] text-[#16314f] flex items-center justify-center text-sm font-bold shrink-0">{inicial}</div>
+        <div className="shrink-0 mt-2 border-t border-white/10 pt-2.5">
+          <div className="flex items-center gap-2.5 px-2 mb-1">
+            <div className="h-8 w-8 rounded-full bg-[#E29578] text-[#16314f] flex items-center justify-center text-sm font-bold shrink-0">{inicial}</div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-white truncate capitalize leading-tight">{nome}</p>
               {user?.email && <p className="text-[11px] text-white/40 truncate">{user.email}</p>}
             </div>
           </div>
-          <button onClick={sair} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+          <button onClick={sair} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
             <LogOut className="h-4 w-4" /> Sair da conta
           </button>
         </div>
