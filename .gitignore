@@ -30,3 +30,4 @@ dist-ssr
 
 # Cache de agentes locais (Claude Code, etc)
 .agent/
+.vercel
