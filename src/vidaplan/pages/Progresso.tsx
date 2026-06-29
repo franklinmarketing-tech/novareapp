@@ -5,21 +5,37 @@ import type { Aporte } from "@/lib/lifeplan";
 import { VPCard, VPTitle, VPProgress, VPStat } from "../components/ui";
 import { Plus, Minus, Trash2, CheckCircle2, AlertTriangle } from "lucide-react";
 
+const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const hoje = () => { const d = new Date(); return { ano: d.getFullYear(), mes: d.getMonth() + 1, mesAno: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}` }; };
 
 const Progresso = () => {
   const { input, plan, setField } = useVidaPlan();
   const aportes = input.aportes ?? [];
 
-  const { metaMensal, esperado, aportado, saldo } = useMemo(() => {
+  const m = useMemo(() => {
     const h = hoje();
     const primeiroTrab = plan.serie.find((p) => p.idade < input.idadeAposentadoria && p.sobra > 0);
     const metaMensal = primeiroTrab ? primeiroTrab.sobra / 12 : 0;
     const mesesDecorridos = Math.max(1, (h.ano - input.anoAtual) * 12 + h.mes);
     const esperado = metaMensal * mesesDecorridos;
     const aportado = aportes.reduce((s, a) => s + (Number(a.valor) || 0), 0);
-    return { metaMensal, esperado, aportado, saldo: aportado - esperado };
-  }, [aportes, plan.serie, input.idadeAposentadoria, input.anoAtual]);
+
+    // Metas em 3 níveis (projeto · ano · mês)
+    const anoApos = input.anoAtual + (input.idadeAposentadoria - input.idadeAtual);
+    const metaProjeto = plan.serie.filter((p) => p.idade < input.idadeAposentadoria && p.sobra > 0).reduce((s, p) => s + p.sobra, 0);
+    const anoCorr = plan.serie.find((p) => p.ano === h.ano);
+    const metaAno = anoCorr && anoCorr.idade < input.idadeAposentadoria ? Math.max(0, anoCorr.sobra) : metaMensal * 12;
+    const metaMes = metaAno / 12;
+    const realizadoAno = aportes.filter((a) => a.mesAno?.startsWith(`${h.ano}-`)).reduce((s, a) => s + (Number(a.valor) || 0), 0);
+    const realizadoMes = aportes.filter((a) => a.mesAno === h.mesAno).reduce((s, a) => s + (Number(a.valor) || 0), 0);
+
+    return {
+      metaMensal, esperado, aportado, saldo: aportado - esperado,
+      anoApos, anoAtualReal: h.ano, mesNome: MESES[h.mes - 1],
+      metaProjeto, metaAno, metaMes, realizadoProjeto: aportado, realizadoAno, realizadoMes,
+    };
+  }, [aportes, plan.serie, input.idadeAposentadoria, input.idadeAtual, input.anoAtual]);
+  const { metaMensal, esperado, aportado, saldo } = m;
 
   const set = (list: Aporte[]) => setField("aportes", list);
   const upd = (id: number, patch: Partial<Aporte>) => set(aportes.map((a) => (a.id === id ? { ...a, ...patch } : a)));
@@ -50,6 +66,17 @@ const Progresso = () => {
         <p className="text-xs text-[#1b2a3d]/50 mt-2">
           {emDia ? "Aportou no ritmo (ou acima) do que o plano pede até aqui." : `Para ficar em dia, aporte ${brl0(-saldo)} a mais.`}
         </p>
+      </VPCard>
+
+      {/* Metas de poupança em 3 níveis */}
+      <VPCard className="p-5 space-y-4">
+        <div>
+          <p className="font-display text-base font-bold text-[#16314f]">Metas de poupança</p>
+          <p className="text-sm text-[#1b2a3d]/55">Quanto poupar para conquistar o seu Marco Horizonte.</p>
+        </div>
+        <TierRow titulo="Até a independência" periodo={`${input.anoAtual}–${m.anoApos}`} realizado={m.realizadoProjeto} meta={m.metaProjeto} />
+        <TierRow titulo="Neste ano" periodo={String(m.anoAtualReal)} realizado={m.realizadoAno} meta={m.metaAno} />
+        <TierRow titulo="Neste mês" periodo={m.mesNome} realizado={m.realizadoMes} meta={m.metaMes} />
       </VPCard>
 
       {/* Lançamentos */}
@@ -88,6 +115,26 @@ const Progresso = () => {
           </div>
         )}
       </VPCard>
+    </div>
+  );
+};
+
+const TierRow = ({ titulo, periodo, realizado, meta }: { titulo: string; periodo: string; realizado: number; meta: number }) => {
+  const pct = meta > 0 ? Math.min(100, (realizado / meta) * 100) : (realizado > 0 ? 100 : 0);
+  const ok = pct >= 100;
+  return (
+    <div>
+      <div className="flex items-end justify-between mb-1.5">
+        <div>
+          <span className="inline-block rounded-full bg-[#16314f]/[0.06] px-2 py-0.5 text-[10px] font-semibold text-[#16314f]/70 mb-1">{periodo}</span>
+          <p className="text-sm font-semibold text-[#16314f]">{titulo}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-display text-base font-bold tabular-nums text-[#16314f] leading-tight">{brl0(realizado)}</p>
+          <p className="text-[11px] text-[#1b2a3d]/45">{Math.round(pct)}% · meta {brl0(meta)}</p>
+        </div>
+      </div>
+      <VPProgress pct={pct} tone={ok ? "green" : "navy"} />
     </div>
   );
 };

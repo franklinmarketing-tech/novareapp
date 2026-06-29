@@ -10,10 +10,11 @@ import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clo
 const Painel = () => {
   const { plan, input, setField } = useVidaPlan();
   const pct = Math.min(100, plan.pctAtingido);
-  // Meta de renda que tornaria o projeto viável (alvo ∝ renda desejada acima do INSS).
-  const rendaReduzida = !plan.viavel && plan.alvoAposentadoria > 0
-    ? input.rendaINSS + (input.rendaAposDesejada - input.rendaINSS) * (plan.patrimonioNaApos / plan.alvoAposentadoria)
-    : null;
+  // Renda que o patrimônio projetado sustenta (consistente com o % atingido).
+  const ratio = plan.alvoAposentadoria > 0 ? plan.patrimonioNaApos / plan.alvoAposentadoria : 1;
+  const rendaProjetada = input.rendaINSS + Math.max(0, input.rendaAposDesejada - input.rendaINSS) * ratio;
+  // Meta de renda que tornaria o projeto viável (= renda projetada, quando ainda não bate).
+  const rendaReduzida = !plan.viavel && plan.alvoAposentadoria > 0 ? rendaProjetada : null;
 
   return (
     <div className="space-y-6">
@@ -40,7 +41,7 @@ const Painel = () => {
 
       <OnboardingGuide />
 
-      {/* Viabilidade */}
+      {/* Viabilidade — renda projetada e patrimônio, cada um vs sua meta */}
       <VPCard className="p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -51,20 +52,24 @@ const Painel = () => {
               {plan.viavel ? "Independência no rumo certo" : "Independência exige ajustes"}
             </p>
           </div>
-          <span className={`font-display text-2xl font-bold tabular-nums ${plan.viavel ? "text-[#2F8F6B]" : "text-[#C8643F]"}`}>
-            {Math.round(plan.pctAtingido)}%
-          </span>
+          {plan.viavel ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#2F8F6B]/12 px-2.5 py-1 text-xs font-bold text-[#2F8F6B]">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Conquistada
+            </span>
+          ) : (
+            <span className="font-display text-2xl font-bold tabular-nums text-[#C8643F]">{Math.round(plan.pctAtingido)}%</span>
+          )}
         </div>
-        <div className="mt-4 space-y-1.5">
-          <div className="flex justify-between text-sm">
-            <span className="text-[#1b2a3d]/60">Patrimônio projetado aos {input.idadeAposentadoria}</span>
-            <span className="tabular-nums font-semibold text-[#16314f]">{brl0(plan.patrimonioNaApos)}</span>
-          </div>
-          <VPProgress pct={pct} tone={plan.viavel ? "green" : "terracota"} />
-          <div className="flex justify-between text-xs text-[#1b2a3d]/50">
-            <span>Meta: {brl0(plan.alvoAposentadoria)}</span>
-            <span>Renda passiva ~ {brl0(plan.rendaPassivaProjetada)}/mês</span>
-          </div>
+
+        <div className="mt-4 space-y-4">
+          <MetaBar
+            titulo="Renda projetada na independência" sufixo="/mês"
+            valor={rendaProjetada} meta={input.rendaAposDesejada} pct={pct} viavel={plan.viavel}
+          />
+          <MetaBar
+            titulo={`Patrimônio projetado aos ${input.idadeAposentadoria}`}
+            valor={plan.patrimonioNaApos} meta={plan.alvoAposentadoria} pct={pct} viavel={plan.viavel}
+          />
         </div>
       </VPCard>
 
@@ -114,6 +119,20 @@ const Painel = () => {
     </div>
   );
 };
+
+const MetaBar = ({ titulo, valor, meta, pct, viavel, sufixo = "" }: { titulo: string; valor: number; meta: number; pct: number; viavel: boolean; sufixo?: string }) => (
+  <div>
+    <div className="flex items-end justify-between">
+      <span className="text-sm text-[#1b2a3d]/60">{titulo}</span>
+      <span className="text-sm text-[#1b2a3d]/60">Meta</span>
+    </div>
+    <div className="flex items-baseline justify-between mt-0.5 mb-1.5">
+      <span className="font-display text-xl font-bold tabular-nums text-[#16314f]">{brl0(valor)}<span className="text-sm text-[#1b2a3d]/45 font-normal">{sufixo}</span></span>
+      <span className="font-display text-base font-bold tabular-nums text-[#1b2a3d]/70">{brl0(meta)}<span className="text-sm text-[#1b2a3d]/45 font-normal">{sufixo}</span></span>
+    </div>
+    <VPProgress pct={pct} tone={viavel ? "green" : "terracota"} />
+  </div>
+);
 
 const Lever = ({ icon: Icon, label, value, note, onApply }: { icon: typeof Clock; label: string; value: string; note: string; onApply?: () => void }) => (
   <VPCard className="p-4 flex flex-col">
