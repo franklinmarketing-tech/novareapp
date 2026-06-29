@@ -1,10 +1,14 @@
 // Assinatura GOLD do Novare Vida Plan — teste grátis + planos.
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "../state/useSubscription";
 import { VPCard, VPTitle } from "../components/ui";
-import { Check, Sparkles, MessageCircle, Loader2 } from "lucide-react";
+import { Check, Sparkles, MessageCircle, Loader2, CreditCard } from "lucide-react";
 
 const WHATS = "5519983402827";
+// Cole aqui o link de checkout (Hotmart/Kiwify) quando tiver o produto criado.
+// O webhook ativa o GOLD sozinho casando pelo parâmetro `src` (= user_id).
+const CHECKOUT_URL = "";
 const RECURSOS = [
   "Relatório PDF do seu Projeto de Vida",
   "Gastos invisíveis (assinaturas, juros e taxas)",
@@ -18,12 +22,17 @@ const PLANOS = [
 ];
 
 const Assinar = () => {
+  const { user } = useAuth();
   const { status, isPremium, daysLeft, startTrial } = useSubscription();
   const [sel, setSel] = useState("anual");
   const [loading, setLoading] = useState(false);
 
   const plano = PLANOS.find((p) => p.id === sel)!;
   const wa = `https://wa.me/${WHATS}?text=${encodeURIComponent(`Olá! Quero assinar o Novare Vida Plan GOLD — plano ${plano.titulo} (${plano.preco}).`)}`;
+  // Com checkout configurado, manda o user_id no `src` (o webhook ativa sozinho). Senão, WhatsApp.
+  const checkoutHref = CHECKOUT_URL
+    ? `${CHECKOUT_URL}${CHECKOUT_URL.includes("?") ? "&" : "?"}src=${user?.id ?? ""}&plano=${plano.id}`
+    : wa;
 
   const iniciarTeste = async () => { setLoading(true); await startTrial(); setLoading(false); };
 
@@ -78,12 +87,12 @@ const Assinar = () => {
         })}
       </div>
 
-      <a href={wa} target="_blank" rel="noopener noreferrer"
+      <a href={checkoutHref} target="_blank" rel="noopener noreferrer"
         className="flex items-center justify-center gap-2 rounded-xl bg-[#16314f] py-3.5 text-sm font-semibold text-white hover:bg-[#1d3e63] transition-colors">
-        <MessageCircle className="h-4 w-4" /> Assinar plano {plano.titulo}
+        {CHECKOUT_URL ? <CreditCard className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />} Assinar plano {plano.titulo}
       </a>
       <p className="text-[11px] text-[#1b2a3d]/45 text-center">
-        A assinatura é confirmada com a Novare pelo WhatsApp. Cancele quando quiser.
+        {CHECKOUT_URL ? "Pagamento seguro · liberação automática do GOLD. Cancele quando quiser." : "A assinatura é confirmada com a Novare pelo WhatsApp. Cancele quando quiser."}
       </p>
     </div>
   );
