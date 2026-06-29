@@ -65,6 +65,15 @@ export interface PlanoConfig {
   cartorioPct?: number;
 }
 
+// Personalização da marca (white-label do consultor): logo + identidade.
+export interface Branding {
+  logo?: string;       // dataURL (PNG) já comprimido
+  logoRatio?: number;  // largura/altura do logo
+  consultor?: string;  // nome do consultor
+  empresa?: string;    // nome da empresa
+  telefone?: string;   // WhatsApp (texto livre; dígitos são extraídos)
+}
+
 export interface LifePlanInput {
   anoAtual: number;
   idadeAtual: number;
@@ -87,6 +96,7 @@ export interface LifePlanInput {
   custoEventos?: RendaEvento[]; // aumentos/reduções de custo fixo no tempo
   seguros?: Seguro[];        // seguros contratados
   planoConfig?: PlanoConfig; // personalização do plano de ação
+  branding?: Branding;       // personalização da marca (consultor/empresa) no app e no PDF
 }
 
 // Custo fixo mensal num ano (base + eventos de aumento/redução acumulados)

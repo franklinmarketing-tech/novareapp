@@ -44,6 +44,16 @@ export async function exportVidaPlanPDF(input: LifePlanInput, plan: LifePlan, no
   // ── Página 1 ──
   header("Projeto de Vida");
   let y = 42;
+
+  // Marca personalizada do consultor (white-label), quando houver.
+  const b = input.branding;
+  if (b && (b.logo || b.consultor || b.empresa)) {
+    if (b.logo) { const h = 10; try { pdf.addImage(b.logo, "PNG", 14, 33, h * (b.logoRatio || 3), h); } catch { /* logo inválido */ } }
+    const quem = [b.consultor, b.empresa].filter(Boolean).join(" · ");
+    if (quem) { pdf.setTextColor(120); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.text(`Preparado por ${quem}`, W - 14, 40, { align: "right" }); }
+    y = 54;
+  }
+
   pdf.setTextColor(120); pdf.setFontSize(9); pdf.text("MARCO HORIZONTE", 14, y);
   pdf.setTextColor(...NAVY); pdf.setFont("helvetica", "bold"); pdf.setFontSize(26);
   pdf.text(fmt(plan.capitalDeVida), 14, y + 11);
