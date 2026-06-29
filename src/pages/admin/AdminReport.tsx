@@ -1313,7 +1313,7 @@ const AdminReport = ({ clientView = false }: { clientView?: boolean } = {}) => {
               else otherValue += v;
             });
 
-            const liquidityMonths = monthlyOutflow > 0 ? liquidValue / monthlyOutflow : 0;
+            const liquidityMonths = monthlyOutflow > 0 ? emergencyReserveBase(assets) / monthlyOutflow : 0;
             const leverage = totalAssets > 0 ? (totalDebts / totalAssets) * 100 : 0;
             const pwYears = annualIncome > 0 ? netWorth / annualIncome : 0;
             const liquidPct = totalAssets > 0 ? ((liquidValue + investValue) / totalAssets) * 100 : 0;
