@@ -4,8 +4,11 @@
 
 export const VIDAPLAN_BASE = "/vidaplan";
 
+// Ativa o app quando o host contém "vidaplan":
+// - subdomínio próprio: vidaplan.novareapp.com.br
+// - URL do Vercel:      vidaplan-novare.vercel.app (qualquer projeto/alias com "vidaplan")
 export const isVidaPlanHost = (): boolean => {
   if (typeof window === "undefined") return false;
   const h = window.location.hostname.toLowerCase();
-  return h === "vidaplan.novareapp.com.br" || h.startsWith("vidaplan.");
+  return h.includes("vidaplan");
 };
