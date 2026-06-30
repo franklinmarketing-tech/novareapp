@@ -88,7 +88,7 @@ const Clientes = () => {
 
   return (
     <div className="space-y-6">
-      <VPTitle hint="Sua carteira de clientes — cada um com o próprio projeto de vida.">👥 Painel do Consultor</VPTitle>
+      <VPTitle hint="Aqui estão os planos dos seus CLIENTES. O seu plano pessoal continua nos menus Painel, Meus Sonhos, etc.">👥 Painel do Consultor</VPTitle>
 
       {codigo && (
         <VPCard className="p-4 flex items-center justify-between gap-3">
