@@ -9,9 +9,13 @@ import { computeLifePlan, computeHealthScore, type LifePlanInput, type GoalType 
 import { TIPOS, metaTipo } from "../lib/goalTypes";
 import { exportVidaPlanPDF } from "../lib/pdf";
 import { VPCard, VPTitle, VPField, VPProgress } from "../components/ui";
-import { Plus, Trash2, ArrowLeft, MessageCircle, Mail, FileDown, Users, Palette, ChevronRight, BadgeCheck, Link2, FolderPen, Loader2 } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, MessageCircle, Mail, FileDown, Users, Palette, ChevronRight, BadgeCheck, Link2, FolderPen, Loader2, Share2, Lock } from "lucide-react";
 
 const db = supabase as unknown as { from: (t: string) => any };
+const APP_URL = "https://vidaplan-novare.vercel.app";
+// Configure aqui o checkout do Plano Consultor (Hotmart/Kiwify). Vazio = fallback WhatsApp.
+const CONSULTOR_CHECKOUT_URL = "";
+const CONSULTOR_WHATS = "5519983402827";
 const corScore = (s: number) => (s >= 80 ? "#2F8F6B" : s >= 60 ? "#3FA0A0" : s >= 40 ? "#E2A03F" : "#C8643F");
 const num = (v: string) => parseFloat(v) || 0;
 const selAll = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
@@ -20,7 +24,7 @@ interface Vinculado { cliente_id: string; cliente_nome: string | null; snapshot:
 
 const Clientes = () => {
   const { clientes, addCliente, updateCliente, updateInput, removeCliente } = useConsultor();
-  const { isConsultor, hydrated, codigo, salvarCodigo } = useConsultorPerfil();
+  const { isConsultor, hydrated, codigo, salvarCodigo, consultorAtivo, planoStatus, diasTrial } = useConsultorPerfil();
   const [sel, setSel] = useState<string | null>(null);
   const [vinculados, setVinculados] = useState<Vinculado[]>([]);
   const [novoCod, setNovoCod] = useState("");
@@ -33,6 +37,16 @@ const Clientes = () => {
     const r = await salvarCodigo(novoCod);
     if (!r.ok) setCodMsg(r.erro ?? "Não foi possível salvar.");
     setSavingCod(false);
+  };
+
+  const convidarCliente = async () => {
+    const texto = `Te convido pro Novare Vida Plan — monte seu projeto de vida. Use meu código de consultor: ${codigo}\n${APP_URL}`;
+    try { if (navigator.share) { await navigator.share({ title: "Novare Vida Plan", text: texto, url: APP_URL }); return; } } catch { /* cancelou */ }
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
+  };
+  const assinar = () => {
+    if (CONSULTOR_CHECKOUT_URL) { window.open(CONSULTOR_CHECKOUT_URL, "_blank"); return; }
+    window.open(`https://wa.me/${CONSULTOR_WHATS}?text=${encodeURIComponent("Quero assinar o Plano Consultor do Vida Plan.")}`, "_blank");
   };
 
   useEffect(() => {
@@ -59,12 +73,27 @@ const Clientes = () => {
       <div className="space-y-6">
         <VPTitle hint="Atenda vários clientes — cada um com o próprio projeto de vida.">👥 Painel do Consultor</VPTitle>
 
+        {/* Pitch: vender o app como ferramenta white-label do consultor */}
+        <VPCard className="p-6 bg-[#16314f] text-white">
+          <p className="font-display text-2xl font-bold leading-tight">Atenda seus clientes<br />com a <span className="text-[#E29578]">sua marca</span>.</p>
+          <p className="text-sm text-white/65 mt-2 max-w-md">Transforme o Vida Plan na ferramenta da sua consultoria: seu logo, sua carteira de clientes e relatórios profissionais — cada cliente com o próprio projeto de vida.</p>
+          <div className="mt-4 grid sm:grid-cols-3 gap-2">
+            {[["🎨", "Sua marca", "logo no app e no PDF"], ["👥", "Seus clientes", "carteira só sua, isolada"], ["📄", "Relatórios", "PDF com a sua identidade"]].map(([e, t, d]) => (
+              <div key={t} className="rounded-xl bg-white/[0.07] px-3 py-2.5">
+                <p className="text-lg leading-none">{e}</p>
+                <p className="text-sm font-semibold mt-1">{t}</p>
+                <p className="text-[11px] text-white/50">{d}</p>
+              </div>
+            ))}
+          </div>
+        </VPCard>
+
         <VPCard className="p-6">
           <div className="text-center mb-5">
-            <div className="h-12 w-12 rounded-2xl bg-[#16314f]/[0.06] flex items-center justify-center mx-auto mb-3"><BadgeCheck className="h-6 w-6 text-[#16314f]" /></div>
-            <p className="font-display text-xl font-bold text-[#16314f]">É consultor? Crie seu código</p>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2F8F6B]/12 text-[#2F8F6B] text-xs font-bold px-3 py-1 mb-3">✨ 14 dias grátis</span>
+            <p className="font-display text-xl font-bold text-[#16314f]">Crie seu código e comece</p>
             <p className="text-sm text-[#1b2a3d]/60 mt-1 max-w-md mx-auto">
-              Seus clientes digitam esse código no app deles e o plano de cada um aparece aqui, pra você acompanhar e gerar relatórios. Leva 10 segundos.
+              É o código que seus clientes digitam pra te vincular. Eles aparecem aqui automaticamente, com o número de vida de cada um.
             </p>
           </div>
           <div className="max-w-sm mx-auto">
@@ -75,7 +104,7 @@ const Clientes = () => {
                 className="flex-1 rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm font-mono tracking-wide text-[#16314f] outline-none focus:border-[#C8643F] placeholder:font-sans placeholder:tracking-normal placeholder:text-[#1b2a3d]/30" />
               <button onClick={virarConsultor} disabled={savingCod || novoCod.trim().length < 3}
                 className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#16314f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d3e63] disabled:opacity-50 transition-colors">
-                {savingCod && <Loader2 className="h-4 w-4 animate-spin" />} Virar consultor
+                {savingCod && <Loader2 className="h-4 w-4 animate-spin" />} Começar teste grátis
               </button>
             </div>
             {codMsg && <p className="text-xs text-[#C8643F] mt-2">{codMsg}</p>}
@@ -90,17 +119,38 @@ const Clientes = () => {
     <div className="space-y-6">
       <VPTitle hint="Aqui estão os planos dos seus CLIENTES. O seu plano pessoal continua nos menus Painel, Meus Sonhos, etc.">👥 Painel do Consultor</VPTitle>
 
-      {codigo && (
-        <VPCard className="p-4 flex items-center justify-between gap-3">
+      {/* Plano Consultor + código + convidar */}
+      <VPCard className="p-4 space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2 min-w-0">
             <Link2 className="h-4 w-4 text-[#2F8F6B] shrink-0" />
-            <p className="text-sm text-[#1b2a3d]/70 truncate">Seu código de vínculo: <span className="font-mono font-bold text-[#16314f] bg-[#16314f]/[0.06] rounded px-2 py-0.5">{codigo}</span></p>
+            <p className="text-sm text-[#1b2a3d]/70 truncate">Seu código: <span className="font-mono font-bold text-[#16314f] bg-[#16314f]/[0.06] rounded px-2 py-0.5">{codigo}</span></p>
+            <button onClick={() => { try { navigator.clipboard.writeText(codigo ?? ""); } catch { /* */ } }}
+              className="text-xs font-semibold text-[#16314f] hover:text-[#C8643F] shrink-0">copiar</button>
           </div>
-          <button onClick={() => { try { navigator.clipboard.writeText(codigo); } catch { /* */ } }}
-            className="text-xs font-semibold text-[#16314f] hover:text-[#C8643F] shrink-0">copiar</button>
-        </VPCard>
-      )}
+          {planoStatus === "trial" && diasTrial != null && (
+            <span className="text-[11px] font-bold rounded-full bg-[#E2A03F]/15 text-[#B0760F] px-2.5 py-1">Plano Consultor · teste {diasTrial}d</span>
+          )}
+          {planoStatus === "active" && <span className="text-[11px] font-bold rounded-full bg-[#2F8F6B]/12 text-[#2F8F6B] px-2.5 py-1">Plano Consultor · ativo</span>}
+          {planoStatus === "inactive" && <span className="text-[11px] font-bold rounded-full bg-[#C8643F]/12 text-[#C8643F] px-2.5 py-1">Plano Consultor · expirado</span>}
+        </div>
+        <button onClick={convidarCliente}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#E29578] px-4 py-2.5 text-sm font-semibold text-[#16314f] hover:bg-[#eaa98e] transition-colors">
+          <Share2 className="h-4 w-4" /> Convidar cliente
+        </button>
+      </VPCard>
 
+      {!consultorAtivo ? (
+        <VPCard className="p-8 text-center">
+          <div className="h-12 w-12 rounded-2xl bg-[#C8643F]/10 flex items-center justify-center mx-auto mb-3"><Lock className="h-6 w-6 text-[#C8643F]" /></div>
+          <p className="font-display text-lg font-bold text-[#16314f]">Seu teste do Plano Consultor terminou</p>
+          <p className="text-sm text-[#1b2a3d]/55 mt-1 mb-4 max-w-md mx-auto">Assine para continuar atendendo seus clientes com a sua marca, relatórios e carteira completa.</p>
+          <button onClick={assinar} className="inline-flex items-center gap-1.5 rounded-xl bg-[#16314f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1d3e63]">
+            <BadgeCheck className="h-4 w-4" /> Assinar Plano Consultor
+          </button>
+        </VPCard>
+      ) : (
+      <>
       {/* Clientes vinculados (logins reais que digitaram seu código) */}
       <div>
         <div className="flex items-center gap-2 mb-2">
@@ -138,6 +188,8 @@ const Clientes = () => {
           </div>
         )}
       </div>
+      </>
+      )}
 
       <p className="text-center text-xs text-[#1b2a3d]/45">
         Configure sua identidade (logo e nome) em{" "}

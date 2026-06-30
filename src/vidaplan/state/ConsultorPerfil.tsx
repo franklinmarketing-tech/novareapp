@@ -10,6 +10,9 @@ interface PerfilCtx {
   codigo: string | null;
   isConsultor: boolean;
   hydrated: boolean;
+  planoStatus: string | null;   // 'trial' | 'active' | 'inactive' (null = colunas ausentes)
+  consultorAtivo: boolean;      // pode usar o Painel do Consultor (trial válido ou pago)
+  diasTrial: number | null;     // dias restantes do teste, quando em trial
   salvarCodigo: (codigo: string, nome?: string, empresa?: string) => Promise<{ ok: boolean; erro?: string }>;
 }
 
@@ -18,6 +21,8 @@ const Ctx = createContext<PerfilCtx | null>(null);
 export const ConsultorPerfilProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [codigo, setCodigo] = useState<string | null>(null);
+  const [planoStatus, setPlanoStatus] = useState<string | null>(null);
+  const [trialUntil, setTrialUntil] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -25,13 +30,18 @@ export const ConsultorPerfilProvider = ({ children }: { children: ReactNode }) =
     (async () => {
       if (!user) { setHydrated(true); return; }
       try {
-        const { data } = await db.from("vidaplan_consultores").select("codigo").eq("consultor_id", user.id).maybeSingle();
-        if (!cancel) setCodigo(data?.codigo ?? null);
+        const { data } = await db.from("vidaplan_consultores").select("*").eq("consultor_id", user.id).maybeSingle();
+        if (!cancel) { setCodigo(data?.codigo ?? null); setPlanoStatus(data?.plano_status ?? null); setTrialUntil(data?.trial_until ?? null); }
       } catch { /* tabela ausente → não é consultor */ }
       finally { if (!cancel) setHydrated(true); }
     })();
     return () => { cancel = true; };
   }, [user?.id]);
+
+  const trialValido = !!trialUntil && new Date(trialUntil).getTime() > Date.now();
+  // Sem as colunas de plano (pré-migration) não bloqueia: considera ativo.
+  const consultorAtivo = !!codigo && (planoStatus == null || planoStatus === "active" || (planoStatus === "trial" && trialValido));
+  const diasTrial = planoStatus === "trial" && trialUntil ? Math.max(0, Math.ceil((new Date(trialUntil).getTime() - Date.now()) / 86400000)) : null;
 
   const salvarCodigo = async (cod: string, nome?: string, empresa?: string) => {
     if (!user) return { ok: false, erro: "Faça login primeiro." };
@@ -44,11 +54,12 @@ export const ConsultorPerfilProvider = ({ children }: { children: ReactNode }) =
         return { ok: false, erro: "Não foi possível salvar (rode a migration no Supabase)." };
       }
       setCodigo(limpo);
+      if (planoStatus == null) setPlanoStatus("trial"); // recém-criado entra em teste
       return { ok: true };
     } catch { return { ok: false, erro: "Não foi possível salvar agora." }; }
   };
 
-  return <Ctx.Provider value={{ codigo, isConsultor: !!codigo, hydrated, salvarCodigo }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ codigo, isConsultor: !!codigo, hydrated, planoStatus, consultorAtivo, diasTrial, salvarCodigo }}>{children}</Ctx.Provider>;
 };
 
 export const useConsultorPerfil = (): PerfilCtx => {
