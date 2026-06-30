@@ -53,7 +53,7 @@ const Clientes = () => {
       )}
 
       <p className="text-center text-xs text-[#1b2a3d]/45">
-        Os clientes ficam salvos neste dispositivo. Configure sua identidade em{" "}
+        Sua carteira é salva na sua conta e fica disponível onde você logar. Configure sua identidade em{" "}
         <Link to="/vidaplan/app/marca" className="font-semibold text-[#16314f] hover:text-[#C8643F]">Minha Marca</Link>.
       </p>
     </div>
