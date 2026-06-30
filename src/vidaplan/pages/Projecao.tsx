@@ -1,11 +1,68 @@
-// Projeção: trajetória do patrimônio + fluxo completo ano a ano + metas de poupança.
+// Projeção: linha da vida + trajetória do patrimônio + fluxo completo + metas de poupança.
 import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { destinoDaRenda, composicaoPatrimonio } from "../lib/insights";
+import { projecaoObjetivo, type LifePlanInput, type LifePlan } from "@/lib/lifeplan";
+import { metaTipo } from "../lib/goalTypes";
 import { VPCard, VPTitle } from "../components/ui";
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
 
 const n = (v: number) => Math.round(v).toLocaleString("pt-BR");
+
+type Marco = { ano: number; anoFim?: number; emoji: string; titulo: string; valor?: number; cor: string };
+
+const LinhaDaVida = ({ input, plan }: { input: LifePlanInput; plan: LifePlan }) => {
+  const inicio = input.anoAtual;
+  const anoApos = input.anoAtual + (input.idadeAposentadoria - input.idadeAtual);
+  const marcos: Marco[] = [{ ano: inicio, emoji: "📍", titulo: "Hoje", cor: "#C8643F" }];
+
+  for (const g of input.goals) {
+    const p = projecaoObjetivo(g, input.anoAtual, input.idadeAtual, input.idadeAposentadoria);
+    if (p.total <= 0 || p.anoInicio == null) continue;
+    const mt = metaTipo(g.tipo);
+    marcos.push({ ano: p.anoInicio, anoFim: p.anos > 1 ? p.anoFim ?? undefined : undefined, emoji: mt.emoji, titulo: g.nome || mt.label, valor: p.total, cor: mt.cor });
+  }
+  for (const e of input.rendaEventos ?? []) marcos.push({ ano: e.ano, emoji: e.delta >= 0 ? "📈" : "📉", titulo: e.delta >= 0 ? "Aumento de renda" : "Queda de renda", valor: Math.abs(e.delta), cor: e.delta >= 0 ? "#2F8F6B" : "#C8643F" });
+  for (const e of input.custoEventos ?? []) marcos.push({ ano: e.ano, emoji: e.delta >= 0 ? "🧾" : "💸", titulo: e.delta >= 0 ? "Mais custo" : "Menos custo", valor: Math.abs(e.delta), cor: e.delta >= 0 ? "#C8643F" : "#2F8F6B" });
+  marcos.push({ ano: anoApos, emoji: "🌅", titulo: "Independência", valor: plan.alvoAposentadoria, cor: "#16314f" });
+
+  marcos.sort((a, b) => a.ano - b.ano || (a.titulo === "Hoje" ? -1 : 0));
+
+  return (
+    <VPCard className="p-5">
+      <p className="font-display text-base font-bold text-[#16314f]">Linha da Vida</p>
+      <p className="text-sm text-[#1b2a3d]/60 mb-3">Seus marcos no tempo — de hoje até a independência.</p>
+      <div className="overflow-x-auto pb-1">
+        <div className="flex" style={{ minWidth: Math.max(marcos.length * 148, 320) }}>
+          {marcos.map((m, i) => {
+            const up = i % 2 === 0;
+            const card = (
+              <div className="w-[132px] rounded-lg border bg-white px-2.5 py-2 shadow-[0_1px_3px_rgba(16,42,67,0.06)]"
+                style={{ borderColor: `${m.cor}40`, borderLeftWidth: 3, borderLeftColor: m.cor }}>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base leading-none">{m.emoji}</span>
+                  <p className="text-[11px] font-semibold text-[#16314f] truncate flex-1">{m.titulo}</p>
+                </div>
+                {m.valor != null && <p className="text-[11px] text-[#1b2a3d]/55 tabular-nums mt-0.5">{brl0(m.valor)}</p>}
+              </div>
+            );
+            return (
+              <div key={i} className="flex-1 min-w-[140px] flex flex-col items-center">
+                <div className="h-[64px] flex items-end pb-2 px-1">{up && card}</div>
+                <div className="relative w-full flex items-center justify-center h-4">
+                  <div className="absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 bg-[#16314f]/15" />
+                  <div className="relative h-3.5 w-3.5 rounded-full border-2 border-white shadow" style={{ backgroundColor: m.cor }} />
+                </div>
+                <div className="h-[64px] flex items-start pt-2 px-1">{!up && card}</div>
+                <div className="text-[10px] text-[#1b2a3d]/45 tabular-nums">{m.ano}{m.anoFim ? `–${m.anoFim}` : ""}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </VPCard>
+  );
+};
 
 const Projecao = () => {
   const { plan, input } = useVidaPlan();
@@ -20,6 +77,8 @@ const Projecao = () => {
   return (
     <div className="space-y-6">
       <VPTitle hint="Tudo em poder de compra de hoje. A linha marca o início da sua independência.">📈 Projeção</VPTitle>
+
+      <LinhaDaVida input={input} plan={plan} />
 
       <VPCard className="p-4 pt-5">
         <div className="h-64">
