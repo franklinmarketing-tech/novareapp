@@ -2,8 +2,10 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
+import { fetchTransactions } from "../lib/openfinance";
+import { classificar, canonDaCategoria, norm } from "../lib/categorizar";
 import { VPCard, VPTitle, VPProgress } from "../components/ui";
-import { Wallet, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Wallet, CheckCircle2, AlertTriangle, RefreshCw, Loader2, Sparkles } from "lucide-react";
 
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const z2 = (n: number) => String(n).padStart(2, "0");
@@ -29,6 +31,43 @@ const Orcamento = () => {
   const totalReal = cats.reduce((s, c) => s + (Number(realizadoMes[c.nome]) || 0), 0);
   const saldo = totalOrcado - totalReal;
   const dentro = saldo >= 0;
+
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const puxar = async () => {
+    setLoading(true); setMsg(null);
+    try {
+      const [y, mm] = mes.split("-").map(Number);
+      const ultimo = new Date(y, mm, 0).getDate();
+      const h = new Date();
+      const ehAtual = y === h.getFullYear() && mm === h.getMonth() + 1;
+      const from = `${mes}-01`;
+      const to = `${mes}-${z2(ehAtual ? h.getDate() : ultimo)}`;
+      const txs = await fetchTransactions(from, to);
+      const gastos = txs.filter((t) => t.amount < 0 && (!t.date || String(t.date).slice(0, 7) === mes));
+      if (gastos.length === 0) { setMsg("Nenhuma transação encontrada neste mês. Conecte um banco em Conectar Banco."); return; }
+
+      const somaCanon: Record<string, number> = {};
+      for (const t of gastos) { const c = classificar(t.desc); somaCanon[c] = (somaCanon[c] || 0) + Math.abs(t.amount); }
+
+      const novo: Record<string, number> = { ...realizadoMes };
+      const usados = new Set<string>();
+      let classificado = 0;
+      for (const c of cats) {
+        const canon = canonDaCategoria(c.nome);
+        if (canon && somaCanon[canon] != null) { novo[c.nome] = Math.round(somaCanon[canon]); usados.add(canon); classificado += somaCanon[canon]; }
+      }
+      const sobra = Object.entries(somaCanon).filter(([k]) => !usados.has(k)).reduce((s, [, v]) => s + v, 0);
+      const catOutros = cats.find((c) => /outro/i.test(norm(c.nome)));
+      if (catOutros && sobra > 0) { novo[catOutros.nome] = Math.round((Number(novo[catOutros.nome]) || 0) + sobra); classificado += sobra; }
+
+      setField("orcamento", { ...(input.orcamento ?? {}), [mes]: novo });
+      setMsg(`${gastos.length} transações lidas · ${brl0(Math.round(classificado))} classificados. Ajuste o que precisar.`);
+    } catch {
+      setMsg("Não foi possível puxar agora. Conecte um banco em Conectar Banco e tente de novo.");
+    } finally { setLoading(false); }
+  };
 
   return (
     <div className="space-y-6">
@@ -67,7 +106,16 @@ const Orcamento = () => {
 
           {/* Categorias */}
           <VPCard className="p-5">
-            <p className="font-display text-base font-bold text-[#16314f] mb-3">Por categoria</p>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <p className="font-display text-base font-bold text-[#16314f]">Por categoria</p>
+              <button onClick={puxar} disabled={loading}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#2F8F6B] px-3 py-2 text-xs font-semibold text-white hover:bg-[#27795a] disabled:opacity-60 transition-colors">
+                {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                Puxar do Open Finance
+              </button>
+            </div>
+            <p className="text-xs text-[#1b2a3d]/50 mb-3 flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-[#C8643F]" /> Lemos seus gastos do mês e classificamos por categoria automaticamente.</p>
+            {msg && <p className="text-xs text-[#16314f] bg-[#2F8F6B]/[0.08] rounded-lg px-3 py-2 mb-3">{msg}</p>}
             <div className="space-y-3">
               {cats.map((c, i) => {
                 const orcado = Number(c.valor) || 0;
@@ -95,7 +143,7 @@ const Orcamento = () => {
                 );
               })}
             </div>
-            <p className="text-xs text-[#1b2a3d]/45 mt-4">Em breve: preenchimento automático pelo Open Finance (Conectar Banco).</p>
+            <p className="text-xs text-[#1b2a3d]/45 mt-4">A classificação é automática e pode errar — confira e ajuste os valores à vontade.</p>
           </VPCard>
         </>
       )}
