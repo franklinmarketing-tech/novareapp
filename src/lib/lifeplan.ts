@@ -97,6 +97,8 @@ export interface LifePlanInput {
   seguros?: Seguro[];        // seguros contratados
   planoConfig?: PlanoConfig; // personalização do plano de ação
   branding?: Branding;       // personalização da marca (consultor/empresa) no app e no PDF
+  reservaMeses?: number;     // reserva de emergência: meta em meses de custo (padrão 6)
+  reservaAtual?: number;     // reserva de emergência já acumulada (R$)
 }
 
 // Custo fixo mensal num ano (base + eventos de aumento/redução acumulados)
@@ -304,4 +306,55 @@ export function computeLifePlan(inp: LifePlanInput): LifePlan {
     pctAtingido: Math.min(999, pctAtingido), viavel, serie: base.serie,
     esperarAnos, rentNecessariaPct, pouparMaisMes, rendaPassivaProjetada, pmtAposAnual,
   };
+}
+
+// ── Reserva de emergência ───────────────────────────────────────────────
+const custoMensalBase = (inp: LifePlanInput) =>
+  inp.custoFixoMensal || (inp.custoCategorias ?? []).reduce((s, c) => s + (Number(c.valor) || 0), 0);
+
+export function reservaEmergencia(inp: LifePlanInput) {
+  const custo = custoMensalBase(inp);
+  const meses = inp.reservaMeses ?? 6;
+  const meta = custo * meses;
+  const atual = Math.max(0, inp.reservaAtual ?? 0);
+  const pct = meta > 0 ? Math.min(100, (atual / meta) * 100) : 100;
+  return { custo, meses, meta, atual, pct, completa: atual >= meta, faltam: Math.max(0, meta - atual) };
+}
+
+// ── Score de Saúde Financeira (0–100) ───────────────────────────────────
+const clamp01 = (v: number) => Math.max(0, Math.min(100, v));
+const pmtMensal = (saldo: number, jurosAa: number, parcelas: number) => {
+  const i = jurosAa / 100 / 12;
+  if (saldo <= 0 || parcelas <= 0) return 0;
+  return i === 0 ? saldo / parcelas : (saldo * i) / (1 - Math.pow(1 + i, -parcelas));
+};
+
+export interface PilarSaude { key: string; nome: string; score: number; peso: number; dica: string }
+export interface SaudeFinanceira { total: number; nota: string; pilares: PilarSaude[] }
+
+export function computeHealthScore(inp: LifePlanInput, plan: LifePlan): SaudeFinanceira {
+  const custo = custoMensalBase(inp);
+  const renda = Math.max(1, inp.rendaMensal);
+  const res = reservaEmergencia(inp);
+  const parcelaDiv = (inp.dividas ?? []).reduce((s, d) => s + pmtMensal(d.saldo, d.jurosAa, d.parcelas), 0);
+  const comprometimento = parcelaDiv / renda;
+  const taxaPoupanca = (renda - custo - parcelaDiv) / renda;
+  const temSeguro = (inp.seguros ?? []).length > 0;
+
+  const pilares: PilarSaude[] = [
+    { key: "reserva", nome: "Reserva de emergência", peso: 20, score: Math.round(res.pct),
+      dica: res.completa ? "Reserva no nível ideal." : "Junte de 3 a 6 meses do seu custo." },
+    { key: "dividas", nome: "Endividamento", peso: 20, score: Math.round(clamp01((1 - comprometimento / 0.30) * 100)),
+      dica: comprometimento > 0.30 ? "Dívidas tomam mais de 30% da renda." : comprometimento > 0 ? "Endividamento sob controle." : "Sem dívidas — excelente." },
+    { key: "poupanca", nome: "Capacidade de poupança", peso: 25, score: Math.round(clamp01((taxaPoupanca / 0.20) * 100)),
+      dica: taxaPoupanca <= 0 ? "Hoje você gasta tudo que ganha." : `Você poupa ~${Math.round(taxaPoupanca * 100)}% da renda.` },
+    { key: "protecao", nome: "Proteção", peso: 15, score: temSeguro ? 80 : 25,
+      dica: temSeguro ? "Você tem proteção contratada." : "Considere um seguro de vida." },
+    { key: "independencia", nome: "Rumo à independência", peso: 20, score: Math.round(Math.min(100, plan.pctAtingido)),
+      dica: plan.viavel ? "Plano no rumo certo." : "Ajuste o plano para fechar a meta." },
+  ];
+  const somaPesos = pilares.reduce((s, p) => s + p.peso, 0);
+  const total = Math.round(pilares.reduce((s, p) => s + p.score * p.peso, 0) / somaPesos);
+  const nota = total >= 80 ? "Excelente" : total >= 60 ? "Boa" : total >= 40 ? "Atenção" : "Crítica";
+  return { total, nota, pilares };
 }

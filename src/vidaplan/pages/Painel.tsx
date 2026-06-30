@@ -1,6 +1,7 @@
 // Painel: o número-âncora (Marco Horizonte), viabilidade e as 3 alavancas.
 import { Link } from "react-router-dom";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
+import { computeHealthScore } from "@/lib/lifeplan";
 import { VIDAPLAN } from "../lib/brand";
 import { VPCard, VPProgress, VPStat } from "../components/ui";
 import OnboardingGuide from "../components/OnboardingGuide";
@@ -10,6 +11,8 @@ import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clo
 const Painel = () => {
   const { plan, input, setField } = useVidaPlan();
   const pct = Math.min(100, plan.pctAtingido);
+  const saude = computeHealthScore(input, plan);
+  const fraco = [...saude.pilares].sort((a, b) => a.score - b.score)[0];
   // Renda que o patrimônio projetado sustenta (consistente com o % atingido).
   const ratio = plan.alvoAposentadoria > 0 ? plan.patrimonioNaApos / plan.alvoAposentadoria : 1;
   const rendaProjetada = input.rendaINSS + Math.max(0, input.rendaAposDesejada - input.rendaINSS) * ratio;
@@ -73,6 +76,31 @@ const Painel = () => {
         </div>
       </VPCard>
 
+      {/* Saúde Financeira */}
+      <VPCard className="p-5">
+        <div className="flex items-center gap-4">
+          <ScoreRing score={saude.total} />
+          <div className="min-w-0">
+            <p className="text-[11px] uppercase tracking-wider text-[#1b2a3d]/50">Saúde financeira</p>
+            <p className="font-display text-xl font-bold" style={{ color: corScore(saude.total) }}>{saude.nota}</p>
+            <p className="text-xs text-[#1b2a3d]/55">{fraco.score < 70 ? fraco.dica : "Seus pilares estão equilibrados — siga assim."}</p>
+          </div>
+        </div>
+        <div className="mt-4 grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
+          {saude.pilares.map((p) => (
+            <div key={p.key}>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-[#16314f]">{p.nome}</span>
+                <span className="tabular-nums text-[#1b2a3d]/55">{p.score}</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-black/[0.06] overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${p.score}%`, backgroundColor: corScore(p.score) }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </VPCard>
+
       {/* Alavancas aplicáveis (só quando não é viável) */}
       {!plan.viavel && (
         <div>
@@ -118,6 +146,20 @@ const Painel = () => {
 
       <AdvisorCard />
     </div>
+  );
+};
+
+const corScore = (s: number) => (s >= 80 ? "#2F8F6B" : s >= 60 ? "#3FA0A0" : s >= 40 ? "#E2A03F" : "#C8643F");
+
+const ScoreRing = ({ score }: { score: number }) => {
+  const r = 26, c = 2 * Math.PI * r, off = c * (1 - Math.max(0, Math.min(100, score)) / 100);
+  return (
+    <svg width="68" height="68" viewBox="0 0 68 68" className="shrink-0">
+      <circle cx="34" cy="34" r={r} fill="none" stroke="rgba(16,49,79,0.08)" strokeWidth="6" />
+      <circle cx="34" cy="34" r={r} fill="none" stroke={corScore(score)} strokeWidth="6" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={off} transform="rotate(-90 34 34)" />
+      <text x="34" y="35" textAnchor="middle" dominantBaseline="central" fontFamily="Playfair Display, serif" fontSize="20" fontWeight="700" fill="#16314f">{score}</text>
+    </svg>
   );
 };
 

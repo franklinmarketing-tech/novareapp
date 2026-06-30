@@ -1,11 +1,11 @@
 // Minha Realidade: renda, patrimônio, custo por categoria e rentabilidade.
 import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
-import { computeLifePlan, type Debt, type RendaEvento, type Seguro } from "@/lib/lifeplan";
-import { VPCard, VPTitle, VPField } from "../components/ui";
+import { computeLifePlan, reservaEmergencia, type Debt, type RendaEvento, type Seguro } from "@/lib/lifeplan";
+import { VPCard, VPTitle, VPField, VPProgress } from "../components/ui";
 import { cn } from "@/lib/utils";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { Plus, Trash2, CreditCard, TrendingUp, TrendingDown, Shield } from "lucide-react";
+import { Plus, Trash2, CreditCard, TrendingUp, TrendingDown, Shield, ShieldCheck } from "lucide-react";
 
 const CORES = ["#16314f", "#C8643F", "#2F8F6B", "#E2A03F", "#5B8DB8", "#8E6BC8", "#C84F6B", "#3FA0A0", "#A0843F", "#6B7280"];
 const CENARIOS = [2, 3, 4, 5, 6, 7];
@@ -16,6 +16,7 @@ const Realidade = () => {
   const cats = input.custoCategorias ?? [];
   const totalCusto = cats.reduce((s, c) => s + (Number(c.valor) || 0), 0);
   const sobra = input.rendaMensal - totalCusto;
+  const res = reservaEmergencia(input);
 
   const cenarios = useMemo(
     () => CENARIOS.map((r) => ({ r, renda: computeLifePlan({ ...input, rentRealPct: r }).rendaPassivaProjetada })),
@@ -68,6 +69,37 @@ const Realidade = () => {
             <span className="text-sm text-[#1b2a3d]/60">Patrimônio total</span>
             <span className="font-display text-base font-bold tabular-nums text-[#16314f]">{brl0(input.patrimonioAtual + (input.ativosImobilizados ?? 0))}</span>
           </div>
+        </div>
+      </VPCard>
+
+      {/* Reserva de emergência */}
+      <VPCard className="p-5">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-[#2F8F6B]" />
+            <p className="font-display text-lg font-bold text-[#16314f]">Reserva de emergência</p>
+          </div>
+          <span className={cn("text-sm font-bold tabular-nums", res.completa ? "text-[#2F8F6B]" : "text-[#C8643F]")}>{Math.round(res.pct)}%</span>
+        </div>
+        <p className="text-sm text-[#1b2a3d]/55 mb-3">Seu colchão de segurança — meses de custo guardados em liquidez, antes de investir para o longo prazo.</p>
+        <div className="grid sm:grid-cols-2 gap-4 mb-3">
+          <div>
+            <p className="text-xs font-semibold text-[#1b2a3d]/70 mb-1.5">Meta (meses de custo)</p>
+            <div className="inline-flex rounded-lg border border-black/[0.08] p-0.5 bg-black/[0.02]">
+              {[3, 6, 12].map((mm) => (
+                <button key={mm} onClick={() => setField("reservaMeses", mm)}
+                  className={cn("px-3 py-1 rounded-md text-xs font-semibold transition-colors", res.meses === mm ? "bg-[#16314f] text-white" : "text-[#1b2a3d]/55 hover:text-[#16314f]")}>
+                  {mm} meses
+                </button>
+              ))}
+            </div>
+          </div>
+          <VPField label="Já tenho guardado" suffix="R$" value={input.reservaAtual ?? 0} step={500} onChange={(v) => setField("reservaAtual", v)} />
+        </div>
+        <VPProgress pct={res.pct} tone={res.completa ? "green" : "terracota"} />
+        <div className="flex justify-between text-xs text-[#1b2a3d]/55 mt-2">
+          <span>Meta: {brl0(res.meta)} ({res.meses} meses)</span>
+          <span className={res.completa ? "text-[#2F8F6B] font-semibold" : ""}>{res.completa ? "Reserva completa 🎉" : `Faltam ${brl0(res.faltam)}`}</span>
         </div>
       </VPCard>
 
