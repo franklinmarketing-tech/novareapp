@@ -1,9 +1,9 @@
 // Blocos visuais do Vida Plan (cartão, título de seção, KPI, barra de progresso).
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from "react";
 
-export const VPCard = ({ className, children }: { className?: string; children: ReactNode }) => (
-  <div className={cn("rounded-2xl bg-white border border-black/5 shadow-[0_1px_3px_rgba(16,42,67,0.06)]", className)}>{children}</div>
+export const VPCard = ({ className, children, style }: { className?: string; children: ReactNode; style?: CSSProperties }) => (
+  <div style={style} className={cn("rounded-2xl bg-white border border-black/5 shadow-[0_1px_3px_rgba(16,42,67,0.06)]", className)}>{children}</div>
 );
 
 export const VPTitle = ({ children, hint }: { children: ReactNode; hint?: string }) => (
