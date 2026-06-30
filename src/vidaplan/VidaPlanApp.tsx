@@ -18,6 +18,7 @@ import Marca from "./pages/Marca";
 import Clientes from "./pages/Clientes";
 import Cenarios from "./pages/Cenarios";
 import Aprender from "./pages/Aprender";
+import Orcamento from "./pages/Orcamento";
 import Assinar from "./pages/Assinar";
 
 const VidaPlanApp = () => (
@@ -40,6 +41,7 @@ const VidaPlanApp = () => (
           <Route path="clientes" element={<Clientes />} />
           <Route path="cenarios" element={<Cenarios />} />
           <Route path="aprender" element={<Aprender />} />
+          <Route path="orcamento" element={<Orcamento />} />
           <Route path="assinar" element={<Assinar />} />
         </Route>
         <Route path="*" element={<Navigate to="/vidaplan/app" replace />} />

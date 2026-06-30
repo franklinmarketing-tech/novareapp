@@ -99,6 +99,7 @@ export interface LifePlanInput {
   branding?: Branding;       // personalização da marca (consultor/empresa) no app e no PDF
   reservaMeses?: number;     // reserva de emergência: meta em meses de custo (padrão 6)
   reservaAtual?: number;     // reserva de emergência já acumulada (R$)
+  orcamento?: Record<string, Record<string, number>>; // mesAno → { categoria: gasto realizado }
 }
 
 // Custo fixo mensal num ano (base + eventos de aumento/redução acumulados)

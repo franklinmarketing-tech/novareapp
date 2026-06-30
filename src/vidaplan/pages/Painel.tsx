@@ -5,8 +5,9 @@ import { computeHealthScore } from "@/lib/lifeplan";
 import { VIDAPLAN } from "../lib/brand";
 import { VPCard, VPProgress, VPStat } from "../components/ui";
 import OnboardingGuide from "../components/OnboardingGuide";
+import OnboardingWizard from "../components/OnboardingWizard";
 import AdvisorCard from "../components/AdvisorCard";
-import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank, LineChart, ClipboardList, Activity, Target, Bot, Palette, Users, Scale, BookOpen } from "lucide-react";
+import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank, LineChart, ClipboardList, Activity, Target, Bot, Palette, Users, Scale, BookOpen, Receipt } from "lucide-react";
 
 const Painel = () => {
   const { plan, input, setField } = useVidaPlan();
@@ -21,6 +22,7 @@ const Painel = () => {
 
   return (
     <div className="space-y-6">
+      <OnboardingWizard />
       {/* Marco Horizonte */}
       <div className="rounded-2xl bg-[#16314f] p-6 shadow-[0_8px_24px_rgba(16,49,79,0.25)]">
         <p className="text-[11px] uppercase tracking-[0.2em] text-white/60">{VIDAPLAN.anchorLabel}</p>
@@ -135,6 +137,7 @@ const Painel = () => {
         <Shortcut to="/vidaplan/app/sonhos" icon={Sparkles} title="Meus Sonhos" desc={`${input.goals.length} objetivo(s)`} />
         <Shortcut to="/vidaplan/app/independencia" icon={Sunrise} title="Independência" desc={`aos ${input.idadeAposentadoria} anos`} />
         <Shortcut to="/vidaplan/app/realidade" icon={Wallet} title="Minha Realidade" desc="renda, custos e dívidas" />
+        <Shortcut to="/vidaplan/app/orcamento" icon={Receipt} title="Orçamento do mês" desc="orçado × realizado" />
         <Shortcut to="/vidaplan/app/projecao" icon={LineChart} title="Projeção" desc="linha da vida e fluxo" />
         <Shortcut to="/vidaplan/app/cenarios" icon={Scale} title="Comparar Cenários" desc="simule possibilidades" />
         <Shortcut to="/vidaplan/app/plano" icon={ClipboardList} title="Plano de Ação" desc="carteira e proteção" />
