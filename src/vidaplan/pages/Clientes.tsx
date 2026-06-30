@@ -9,7 +9,7 @@ import { computeLifePlan, computeHealthScore, type LifePlanInput, type GoalType 
 import { TIPOS, metaTipo } from "../lib/goalTypes";
 import { exportVidaPlanPDF } from "../lib/pdf";
 import { VPCard, VPTitle, VPField, VPProgress } from "../components/ui";
-import { Plus, Trash2, ArrowLeft, MessageCircle, Mail, FileDown, Users, Palette, ChevronRight, BadgeCheck, Link2, FolderPen } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, MessageCircle, Mail, FileDown, Users, Palette, ChevronRight, BadgeCheck, Link2, FolderPen, Loader2 } from "lucide-react";
 
 const db = supabase as unknown as { from: (t: string) => any };
 const corScore = (s: number) => (s >= 80 ? "#2F8F6B" : s >= 60 ? "#3FA0A0" : s >= 40 ? "#E2A03F" : "#C8643F");
@@ -20,10 +20,20 @@ interface Vinculado { cliente_id: string; cliente_nome: string | null; snapshot:
 
 const Clientes = () => {
   const { clientes, addCliente, updateCliente, updateInput, removeCliente } = useConsultor();
-  const { isConsultor, hydrated, codigo } = useConsultorPerfil();
+  const { isConsultor, hydrated, codigo, salvarCodigo } = useConsultorPerfil();
   const [sel, setSel] = useState<string | null>(null);
   const [vinculados, setVinculados] = useState<Vinculado[]>([]);
+  const [novoCod, setNovoCod] = useState("");
+  const [savingCod, setSavingCod] = useState(false);
+  const [codMsg, setCodMsg] = useState<string | null>(null);
   const atual = clientes.find((c) => c.id === sel) || null;
+
+  const virarConsultor = async () => {
+    setSavingCod(true); setCodMsg(null);
+    const r = await salvarCodigo(novoCod);
+    if (!r.ok) setCodMsg(r.erro ?? "Não foi possível salvar.");
+    setSavingCod(false);
+  };
 
   useEffect(() => {
     if (!isConsultor) return;
@@ -43,18 +53,34 @@ const Clientes = () => {
       updateInput={(patch) => updateInput(atual.id, patch)} />;
   }
 
-  // Quem não registrou um código ainda não é consultor.
+  // Quem não registrou um código ainda não é consultor → cria o código aqui mesmo.
   if (hydrated && !isConsultor) {
     return (
       <div className="space-y-6">
         <VPTitle hint="Atenda vários clientes — cada um com o próprio projeto de vida.">👥 Painel do Consultor</VPTitle>
-        <VPCard className="p-10 text-center">
-          <BadgeCheck className="h-10 w-10 text-[#16314f]/20 mx-auto mb-3" />
-          <p className="font-display text-lg font-bold text-[#16314f]">Vire consultor para usar este painel</p>
-          <p className="text-sm text-[#1b2a3d]/55 mt-1 mb-4">Crie um código em Minha Marca. Seus clientes digitam esse código e aparecem aqui automaticamente.</p>
-          <Link to="/vidaplan/app/marca" className="inline-flex items-center gap-1.5 rounded-xl bg-[#16314f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d3e63]">
-            <BadgeCheck className="h-4 w-4" /> Criar meu código
-          </Link>
+
+        <VPCard className="p-6">
+          <div className="text-center mb-5">
+            <div className="h-12 w-12 rounded-2xl bg-[#16314f]/[0.06] flex items-center justify-center mx-auto mb-3"><BadgeCheck className="h-6 w-6 text-[#16314f]" /></div>
+            <p className="font-display text-xl font-bold text-[#16314f]">É consultor? Crie seu código</p>
+            <p className="text-sm text-[#1b2a3d]/60 mt-1 max-w-md mx-auto">
+              Seus clientes digitam esse código no app deles e o plano de cada um aparece aqui, pra você acompanhar e gerar relatórios. Leva 10 segundos.
+            </p>
+          </div>
+          <div className="max-w-sm mx-auto">
+            <label className="text-xs font-semibold text-[#1b2a3d]/70">Seu código de consultor</label>
+            <div className="mt-1 flex flex-col sm:flex-row gap-2">
+              <input value={novoCod} onChange={(e) => setNovoCod(e.target.value.toUpperCase())} placeholder="Ex.: NOVARE2026"
+                onKeyDown={(e) => e.key === "Enter" && virarConsultor()}
+                className="flex-1 rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm font-mono tracking-wide text-[#16314f] outline-none focus:border-[#C8643F] placeholder:font-sans placeholder:tracking-normal placeholder:text-[#1b2a3d]/30" />
+              <button onClick={virarConsultor} disabled={savingCod || novoCod.trim().length < 3}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#16314f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d3e63] disabled:opacity-50 transition-colors">
+                {savingCod && <Loader2 className="h-4 w-4 animate-spin" />} Virar consultor
+              </button>
+            </div>
+            {codMsg && <p className="text-xs text-[#C8643F] mt-2">{codMsg}</p>}
+            <p className="text-[11px] text-[#1b2a3d]/45 mt-4 text-center">É só um cliente comum? Pode ignorar — isto é opcional e você segue usando o app normalmente.</p>
+          </div>
         </VPCard>
       </div>
     );
