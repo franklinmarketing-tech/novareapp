@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { brl0 } from "../state/VidaPlanContext";
 import { useConsultor, type Cliente } from "../state/useConsultor";
 import { useConsultorPerfil } from "../state/ConsultorPerfil";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { computeLifePlan, computeHealthScore, type LifePlanInput, type GoalType } from "@/lib/lifeplan";
 import { TIPOS, metaTipo } from "../lib/goalTypes";
@@ -25,6 +26,7 @@ interface Vinculado { cliente_id: string; cliente_nome: string | null; snapshot:
 const Clientes = () => {
   const { clientes, addCliente, updateCliente, updateInput, removeCliente } = useConsultor();
   const { isConsultor, hydrated, codigo, salvarCodigo, consultorAtivo, planoStatus, diasTrial } = useConsultorPerfil();
+  const { user } = useAuth();
   const [sel, setSel] = useState<string | null>(null);
   const [vinculados, setVinculados] = useState<Vinculado[]>([]);
   const [novoCod, setNovoCod] = useState("");
@@ -45,7 +47,11 @@ const Clientes = () => {
     window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
   };
   const assinar = () => {
-    if (CONSULTOR_CHECKOUT_URL) { window.open(CONSULTOR_CHECKOUT_URL, "_blank"); return; }
+    if (CONSULTOR_CHECKOUT_URL) {
+      const sep = CONSULTOR_CHECKOUT_URL.includes("?") ? "&" : "?";
+      const url = user ? `${CONSULTOR_CHECKOUT_URL}${sep}src=${user.id}&plano=consultor` : CONSULTOR_CHECKOUT_URL;
+      window.open(url, "_blank"); return;
+    }
     window.open(`https://wa.me/${CONSULTOR_WHATS}?text=${encodeURIComponent("Quero assinar o Plano Consultor do Vida Plan.")}`, "_blank");
   };
 
