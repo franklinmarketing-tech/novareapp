@@ -83,6 +83,7 @@ const Clientes = () => {
         <VPCard className="p-6 bg-[#16314f] text-white">
           <p className="font-display text-2xl font-bold leading-tight">Atenda seus clientes<br />com a <span className="text-[#E29578]">sua marca</span>.</p>
           <p className="text-sm text-white/65 mt-2 max-w-md">Transforme o Vida Plan na ferramenta da sua consultoria: seu logo, sua carteira de clientes e relatórios profissionais — cada cliente com o próprio projeto de vida.</p>
+          <p className="text-sm text-[#7FE3C0] mt-2 max-w-md font-semibold">✓ Seus clientes usam o app completo (PDF, IA, gastos invisíveis) de graça — incluído no seu plano.</p>
           <div className="mt-4 grid sm:grid-cols-3 gap-2">
             {[["🎨", "Sua marca", "logo no app e no PDF"], ["👥", "Seus clientes", "carteira só sua, isolada"], ["📄", "Relatórios", "PDF com a sua identidade"]].map(([e, t, d]) => (
               <div key={t} className="rounded-xl bg-white/[0.07] px-3 py-2.5">

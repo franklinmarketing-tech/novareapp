@@ -23,7 +23,7 @@ const PLANOS = [
 
 const Assinar = () => {
   const { user } = useAuth();
-  const { status, isPremium, daysLeft, startTrial } = useSubscription();
+  const { status, isPremium, premiumViaConsultor, daysLeft, startTrial } = useSubscription();
   const [sel, setSel] = useState("anual");
   const [loading, setLoading] = useState(false);
 
@@ -41,7 +41,12 @@ const Assinar = () => {
       <VPTitle hint="Desbloqueie tudo do seu Projeto de Vida.">Seja GOLD</VPTitle>
 
       {/* Status atual */}
-      {isPremium ? (
+      {premiumViaConsultor ? (
+        <div className="rounded-2xl bg-[#2F8F6B] p-5 text-white">
+          <p className="font-display text-lg font-bold flex items-center gap-2"><Sparkles className="h-5 w-5" /> Acesso completo liberado 🎉</p>
+          <p className="text-white/75 text-sm mt-1">Seu consultor já te dá acesso a todos os recursos. Você não precisa assinar nada — aproveite!</p>
+        </div>
+      ) : isPremium ? (
         <div className="rounded-2xl bg-[#2F8F6B] p-5 text-white">
           <p className="font-display text-lg font-bold flex items-center gap-2"><Sparkles className="h-5 w-5" /> {status === "active" ? "Assinatura GOLD ativa" : `Teste GOLD ativo`}</p>
           <p className="text-white/70 text-sm mt-1">{status === "trial" ? `Restam ${daysLeft} dia(s) de teste grátis. Garanta a continuidade assinando abaixo.` : "Você tem acesso a todos os recursos."}</p>
