@@ -85,6 +85,7 @@ const SuperAdminSeguranca = lazy(() => import("@/pages/super-admin/SuperAdminSeg
 const SuperAdminUsuarios = lazy(() => import("@/pages/super-admin/SuperAdminUsuarios"));
 const SuperAdminOperacoes = lazy(() => import("@/pages/super-admin/SuperAdminOperacoes"));
 const SuperAdminSaude = lazy(() => import("@/pages/super-admin/SuperAdminSaude"));
+const SuperAdminVidaPlan = lazy(() => import("@/pages/super-admin/SuperAdminVidaPlan"));
 
 const queryClient = new QueryClient();
 
@@ -161,6 +162,7 @@ const App = () => (
                 <Route path="/super-admin/usuarios" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminUsuarios /></SuperAdminLayout></SuperAdminRoute>} />
                 <Route path="/super-admin/operacoes" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminOperacoes /></SuperAdminLayout></SuperAdminRoute>} />
                 <Route path="/super-admin/saude" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminSaude /></SuperAdminLayout></SuperAdminRoute>} />
+                <Route path="/super-admin/vida-plan" element={<SuperAdminRoute><SuperAdminLayout><SuperAdminVidaPlan /></SuperAdminLayout></SuperAdminRoute>} />
                 <Route path="/super-admin/leads" element={<SuperAdminRoute><SuperAdminLayout><AdminLeads /></SuperAdminLayout></SuperAdminRoute>} />
 
                 {/* Admin routes */}

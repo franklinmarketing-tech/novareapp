@@ -18,6 +18,7 @@ import {
   Power,
   ChevronDown,
   Mail,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -63,6 +64,14 @@ const sections: NavSection[] = [
     items: [
       { to: "/super-admin/operacoes", label: "Operações", icon: Power },
       { to: "/super-admin/feature-flags", label: "Feature Flags", icon: Flag },
+    ],
+  },
+  {
+    id: "vidaplan",
+    label: "Vida Plan",
+    icon: Briefcase,
+    items: [
+      { to: "/super-admin/vida-plan", label: "Consultores", icon: Briefcase },
     ],
   },
   {
