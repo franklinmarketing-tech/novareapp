@@ -1,0 +1,244 @@
+// Painel do Consultor — carteira de clientes, cada um com seu plano de vida.
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { brl0 } from "../state/VidaPlanContext";
+import { useConsultor, type Cliente } from "../state/useConsultor";
+import { computeLifePlan, computeHealthScore, type LifePlanInput, type GoalType } from "@/lib/lifeplan";
+import { TIPOS, metaTipo } from "../lib/goalTypes";
+import { exportVidaPlanPDF } from "../lib/pdf";
+import { VPCard, VPTitle, VPField, VPProgress } from "../components/ui";
+import { Plus, Trash2, ArrowLeft, MessageCircle, Mail, FileDown, Users, Palette, ChevronRight } from "lucide-react";
+
+const corScore = (s: number) => (s >= 80 ? "#2F8F6B" : s >= 60 ? "#3FA0A0" : s >= 40 ? "#E2A03F" : "#C8643F");
+const num = (v: string) => parseFloat(v) || 0;
+const selAll = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
+
+const Clientes = () => {
+  const { clientes, addCliente, updateCliente, updateInput, removeCliente } = useConsultor();
+  const [sel, setSel] = useState<string | null>(null);
+  const atual = clientes.find((c) => c.id === sel) || null;
+
+  if (atual) {
+    return <Detalhe cliente={atual} onBack={() => setSel(null)}
+      updateCliente={(patch) => updateCliente(atual.id, patch)}
+      updateInput={(patch) => updateInput(atual.id, patch)} />;
+  }
+
+  return (
+    <div className="space-y-6">
+      <VPTitle hint="Sua carteira de clientes — cada um com o próprio projeto de vida.">👥 Painel do Consultor</VPTitle>
+
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-[#1b2a3d]/60">{clientes.length} cliente{clientes.length === 1 ? "" : "s"}</p>
+        <button onClick={() => { const c = addCliente("Novo cliente"); setSel(c.id); }}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-[#16314f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d3e63] transition-colors">
+          <Plus className="h-4 w-4" /> Novo cliente
+        </button>
+      </div>
+
+      {clientes.length === 0 ? (
+        <VPCard className="p-10 text-center">
+          <Users className="h-10 w-10 text-[#16314f]/20 mx-auto mb-3" />
+          <p className="font-display text-lg font-bold text-[#16314f]">Comece sua carteira</p>
+          <p className="text-sm text-[#1b2a3d]/55 mt-1 mb-4">Cadastre um cliente e monte o projeto de vida dele em minutos.</p>
+          <button onClick={() => { const c = addCliente("Novo cliente"); setSel(c.id); }}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#16314f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d3e63]">
+            <Plus className="h-4 w-4" /> Novo cliente
+          </button>
+        </VPCard>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-3">
+          {clientes.map((c) => <ClienteCard key={c.id} cliente={c} onOpen={() => setSel(c.id)} onRemove={() => removeCliente(c.id)} />)}
+        </div>
+      )}
+
+      <p className="text-center text-xs text-[#1b2a3d]/45">
+        Os clientes ficam salvos neste dispositivo. Configure sua identidade em{" "}
+        <Link to="/vidaplan/app/marca" className="font-semibold text-[#16314f] hover:text-[#C8643F]">Minha Marca</Link>.
+      </p>
+    </div>
+  );
+};
+
+const ClienteCard = ({ cliente, onOpen, onRemove }: { cliente: Cliente; onOpen: () => void; onRemove: () => void }) => {
+  const plan = useMemo(() => computeLifePlan(cliente.input), [cliente.input]);
+  const saude = useMemo(() => computeHealthScore(cliente.input, plan), [cliente.input, plan]);
+  const pct = Math.min(100, Math.round(plan.pctAtingido));
+  return (
+    <VPCard className="p-4 hover:border-[#C8643F]/40 transition-colors">
+      <div className="flex items-start justify-between gap-2">
+        <button onClick={onOpen} className="flex items-center gap-3 text-left min-w-0 flex-1">
+          <div className="h-10 w-10 rounded-full bg-[#16314f] text-white flex items-center justify-center font-bold shrink-0">
+            {(cliente.nome.trim()[0] || "C").toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-[#16314f] truncate">{cliente.nome || "Sem nome"}</p>
+            <p className="text-xs text-[#1b2a3d]/50 truncate">{cliente.cidade || `${cliente.input.idadeAtual} anos`}</p>
+          </div>
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); if (confirm(`Remover ${cliente.nome}?`)) onRemove(); }}
+          className="text-[#1b2a3d]/25 hover:text-[#C8643F] shrink-0"><Trash2 className="h-4 w-4" /></button>
+      </div>
+      <button onClick={onOpen} className="w-full text-left mt-3">
+        <p className="text-[10px] uppercase tracking-wider text-[#1b2a3d]/50">Número da vida</p>
+        <p className="font-display text-xl font-bold text-[#16314f] tabular-nums">{brl0(plan.capitalDeVida)}</p>
+        <div className="mt-2 flex items-center gap-3">
+          <div className="flex-1"><VPProgress pct={pct} tone={plan.viavel ? "green" : "terracota"} /></div>
+          <span className="text-xs font-semibold tabular-nums" style={{ color: plan.viavel ? "#2F8F6B" : "#C8643F" }}>{pct}%</span>
+          <span className="text-[11px] font-semibold rounded-full px-2 py-0.5" style={{ color: corScore(saude.total), backgroundColor: `${corScore(saude.total)}1a` }}>Saúde {saude.total}</span>
+        </div>
+      </button>
+    </VPCard>
+  );
+};
+
+const RENT = [2, 3, 4, 5, 6, 7];
+
+const Detalhe = ({ cliente, onBack, updateCliente, updateInput }: {
+  cliente: Cliente; onBack: () => void;
+  updateCliente: (patch: Partial<Cliente>) => void;
+  updateInput: (patch: Partial<LifePlanInput>) => void;
+}) => {
+  const inp = cliente.input;
+  const plan = useMemo(() => computeLifePlan(inp), [inp]);
+  const saude = useMemo(() => computeHealthScore(inp, plan), [inp, plan]);
+  const pct = Math.min(100, Math.round(plan.pctAtingido));
+
+  const tel = (cliente.telefone ?? "").replace(/\D/g, "");
+  const whats = tel ? (tel.startsWith("55") ? tel : `55${tel}`) : "";
+
+  const setGoals = (goals: LifePlanInput["goals"]) => updateInput({ goals });
+  const addSonho = () => setGoals([...inp.goals, { id: Date.now(), tipo: "outro", nome: "", valor: 30000, ano: inp.anoAtual + 3 }]);
+  const updSonho = (id: number, patch: Partial<LifePlanInput["goals"][number]>) => setGoals(inp.goals.map((g) => (g.id === id ? { ...g, ...patch } : g)));
+
+  const exportar = async () => { await exportVidaPlanPDF(inp, plan, cliente.nome); };
+
+  return (
+    <div className="space-y-6">
+      <button onClick={onBack} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#16314f] hover:text-[#C8643F]">
+        <ArrowLeft className="h-4 w-4" /> Meus clientes
+      </button>
+
+      {/* Cabeçalho do cliente */}
+      <VPCard className="p-5">
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Txt label="Nome" value={cliente.nome} onChange={(v) => updateCliente({ nome: v })} placeholder="Nome do cliente" />
+          <Txt label="Cidade" value={cliente.cidade ?? ""} onChange={(v) => updateCliente({ cidade: v })} placeholder="Cidade - UF" />
+          <Txt label="WhatsApp" value={cliente.telefone ?? ""} onChange={(v) => updateCliente({ telefone: v })} placeholder="(19) 98340-2827" />
+          <Txt label="E-mail" value={cliente.email ?? ""} onChange={(v) => updateCliente({ email: v })} placeholder="cliente@email.com" />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {whats && <a href={`https://wa.me/${whats}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-[#2F8F6B] px-3 py-2 text-sm font-semibold text-white hover:bg-[#27795a]"><MessageCircle className="h-4 w-4" /> WhatsApp</a>}
+          {cliente.email && <a href={`mailto:${cliente.email}`} className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-2 text-sm font-semibold text-[#16314f] hover:bg-black/[0.03]"><Mail className="h-4 w-4" /> E-mail</a>}
+          <button onClick={exportar} className="inline-flex items-center gap-1.5 rounded-lg bg-[#16314f] px-3 py-2 text-sm font-semibold text-white hover:bg-[#1d3e63]"><FileDown className="h-4 w-4" /> Exportar PDF</button>
+        </div>
+      </VPCard>
+
+      {/* Resumo */}
+      <VPCard className="p-5 bg-[#16314f] text-white">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-white/60">Número da vida</p>
+        <p className="font-display text-3xl font-bold tabular-nums mt-1">{brl0(plan.capitalDeVida)}</p>
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          <div className="rounded-xl bg-white/10 px-3 py-2"><p className="text-[10px] uppercase tracking-wider text-white/50">Independência</p><p className="font-display text-base font-bold tabular-nums">{brl0(plan.alvoAposentadoria)}</p></div>
+          <div className="rounded-xl bg-white/10 px-3 py-2"><p className="text-[10px] uppercase tracking-wider text-white/50">Sonhos</p><p className="font-display text-base font-bold tabular-nums">{brl0(plan.totalObjetivos)}</p></div>
+          <div className="rounded-xl bg-white/10 px-3 py-2"><p className="text-[10px] uppercase tracking-wider text-white/50">Saúde</p><p className="font-display text-base font-bold tabular-nums" style={{ color: corScore(saude.total) }}>{saude.total} · {saude.nota}</p></div>
+        </div>
+        <div className="mt-3 flex items-center gap-3">
+          <div className="flex-1"><VPProgress pct={pct} tone={plan.viavel ? "green" : "terracota"} /></div>
+          <span className="text-sm font-semibold tabular-nums" style={{ color: plan.viavel ? "#7FE3C0" : "#E29578" }}>{pct}%</span>
+        </div>
+      </VPCard>
+
+      {/* Dados do plano */}
+      <VPCard className="p-5">
+        <p className="font-display text-base font-bold text-[#16314f] mb-3">Dados do plano</p>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <VPField label="Idade atual" value={inp.idadeAtual} onChange={(v) => updateInput({ idadeAtual: v })} />
+          <VPField label="Idade da independência" value={inp.idadeAposentadoria} onChange={(v) => updateInput({ idadeAposentadoria: v })} />
+          <VPField label="Expectativa de vida" value={inp.idadeFim} onChange={(v) => updateInput({ idadeFim: v })} />
+          <VPField label="Renda mensal" suffix="R$/mês" value={inp.rendaMensal} step={100} onChange={(v) => updateInput({ rendaMensal: v })} />
+          <VPField label="Custo fixo mensal" suffix="R$/mês" value={inp.custoFixoMensal} step={100} onChange={(v) => updateInput({ custoFixoMensal: v })} />
+          <VPField label="Patrimônio investido" suffix="R$" value={inp.patrimonioAtual} step={1000} onChange={(v) => updateInput({ patrimonioAtual: v })} />
+          <VPField label="Renda desejada na indep." suffix="R$/mês" value={inp.rendaAposDesejada} step={100} onChange={(v) => updateInput({ rendaAposDesejada: v })} />
+          <VPField label="Renda já garantida (INSS)" suffix="R$/mês" value={inp.rendaINSS} step={100} onChange={(v) => updateInput({ rendaINSS: v })} />
+        </div>
+        <div className="mt-4">
+          <p className="text-xs font-semibold text-[#1b2a3d]/70 mb-1.5">Rentabilidade do projeto</p>
+          <div className="flex flex-wrap gap-2">
+            {RENT.map((r) => (
+              <button key={r} onClick={() => updateInput({ rentRealPct: r })}
+                className={`rounded-lg border px-3 py-1.5 text-sm font-semibold transition-colors ${Math.abs(inp.rentRealPct - r) < 0.05 ? "border-[#C8643F] bg-[#C8643F]/[0.06] text-[#C8643F]" : "border-black/10 text-[#16314f] hover:border-[#16314f]/30"}`}>
+                IPCA + {r}%
+              </button>
+            ))}
+          </div>
+        </div>
+      </VPCard>
+
+      {/* Sonhos do cliente */}
+      <VPCard className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="font-display text-base font-bold text-[#16314f]">Sonhos</p>
+          <span className="text-sm font-semibold text-[#C8643F] tabular-nums">{brl0(plan.totalObjetivos)}</span>
+        </div>
+        {inp.goals.length === 0 ? (
+          <p className="text-sm text-[#1b2a3d]/50 mb-3">Nenhum sonho ainda.</p>
+        ) : (
+          <div className="space-y-2 mb-3">
+            {inp.goals.map((g) => {
+              const mt = metaTipo(g.tipo);
+              return (
+                <div key={g.id} className="flex items-center gap-2 rounded-xl border border-black/[0.07] p-2">
+                  <span className="text-lg shrink-0">{mt.emoji}</span>
+                  <select value={g.tipo} onChange={(e) => updSonho(g.id, { tipo: e.target.value as GoalType })}
+                    className="bg-transparent text-sm text-[#16314f] outline-none cursor-pointer max-w-[110px]">
+                    {TIPOS.map((t) => <option key={t.tipo} value={t.tipo}>{t.label}</option>)}
+                  </select>
+                  <input value={g.nome ?? ""} placeholder={mt.label} onChange={(e) => updSonho(g.id, { nome: e.target.value })}
+                    className="flex-1 min-w-0 bg-transparent text-sm text-[#16314f] outline-none border-b border-transparent focus:border-[#C8643F]/40" />
+                  <div className="flex items-center rounded-lg border border-black/10 px-2 shrink-0">
+                    <span className="text-[10px] text-[#1b2a3d]/40">R$</span>
+                    <input type="number" value={g.valor} onFocus={selAll} onChange={(e) => updSonho(g.id, { valor: num(e.target.value) })}
+                      className="w-20 bg-transparent py-1.5 pl-1 text-sm text-right text-[#16314f] outline-none tabular-nums" />
+                  </div>
+                  <button onClick={() => setGoals(inp.goals.filter((x) => x.id !== g.id))} className="text-[#1b2a3d]/25 hover:text-[#C8643F] shrink-0"><Trash2 className="h-4 w-4" /></button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <button onClick={addSonho} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#16314f] hover:text-[#C8643F]">
+          <Plus className="h-4 w-4" /> Adicionar sonho
+        </button>
+      </VPCard>
+
+      {/* Saúde financeira do cliente */}
+      <VPCard className="p-5">
+        <p className="font-display text-base font-bold text-[#16314f] mb-3">Saúde financeira</p>
+        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
+          {saude.pilares.map((p) => (
+            <div key={p.key}>
+              <div className="flex justify-between text-xs mb-1"><span className="text-[#16314f]">{p.nome}</span><span className="tabular-nums text-[#1b2a3d]/55">{p.score}</span></div>
+              <div className="h-1.5 rounded-full bg-black/[0.06] overflow-hidden"><div className="h-full rounded-full" style={{ width: `${p.score}%`, backgroundColor: corScore(p.score) }} /></div>
+            </div>
+          ))}
+        </div>
+      </VPCard>
+
+      <Link to="/vidaplan/app/marca" className="flex items-center justify-between rounded-2xl border border-black/[0.07] bg-white px-4 py-3 hover:border-[#C8643F]/40 transition-colors">
+        <span className="flex items-center gap-2 text-sm font-semibold text-[#16314f]"><Palette className="h-4 w-4 text-[#C8643F]" /> Personalizar minha marca no relatório</span>
+        <ChevronRight className="h-4 w-4 text-[#1b2a3d]/30" />
+      </Link>
+    </div>
+  );
+};
+
+const Txt = ({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) => (
+  <label className="block">
+    <span className="text-xs font-semibold text-[#1b2a3d]/70">{label}</span>
+    <input value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)}
+      className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-[#16314f] outline-none focus:border-[#C8643F] placeholder:text-[#1b2a3d]/30" />
+  </label>
+);
+
+export default Clientes;

@@ -6,7 +6,7 @@ import { VIDAPLAN } from "../lib/brand";
 import { VPCard, VPProgress, VPStat } from "../components/ui";
 import OnboardingGuide from "../components/OnboardingGuide";
 import AdvisorCard from "../components/AdvisorCard";
-import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank, LineChart, ClipboardList, Activity, Target, Bot, Palette } from "lucide-react";
+import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank, LineChart, ClipboardList, Activity, Target, Bot, Palette, Users } from "lucide-react";
 
 const Painel = () => {
   const { plan, input, setField } = useVidaPlan();
@@ -139,6 +139,7 @@ const Painel = () => {
         <Shortcut to="/vidaplan/app/plano" icon={ClipboardList} title="Plano de Ação" desc="carteira e proteção" />
         <Shortcut to="/vidaplan/app/progresso" icon={Activity} title="Meu Progresso" desc="aportes vs meta" />
         <Shortcut to="/vidaplan/app/assistente" icon={Bot} title="IA Novare" desc="tire dúvidas com a IA" />
+        <Shortcut to="/vidaplan/app/clientes" icon={Users} title="Painel do Consultor" desc="sua carteira de clientes" />
         <Shortcut to="/vidaplan/app/marca" icon={Palette} title="Minha Marca" desc="logo e identidade" />
       </div>
 
