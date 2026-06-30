@@ -1,17 +1,30 @@
 // Minha Marca: personalização (white-label) do consultor — logo, nome, empresa e WhatsApp.
 // Aparece no card do consultor (Painel) e no relatório PDF. O logo é comprimido e salvo no plano.
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useVidaPlan } from "../state/VidaPlanContext";
+import { useConsultorPerfil } from "../state/ConsultorPerfil";
 import type { Branding } from "@/lib/lifeplan";
 import { VPCard, VPTitle } from "../components/ui";
 import AdvisorCard from "../components/AdvisorCard";
-import { Upload, Trash2, ImageIcon, Info } from "lucide-react";
+import { Upload, Trash2, ImageIcon, Info, BadgeCheck, Loader2 } from "lucide-react";
 
 const Marca = () => {
   const { input, setField } = useVidaPlan();
+  const { codigo, salvarCodigo } = useConsultorPerfil();
   const b = input.branding ?? {};
   const fileRef = useRef<HTMLInputElement>(null);
   const upd = (patch: Partial<Branding>) => setField("branding", { ...b, ...patch });
+
+  const [cod, setCod] = useState("");
+  const [savingCod, setSavingCod] = useState(false);
+  const [codMsg, setCodMsg] = useState<string | null>(null);
+  const salvarCod = async () => {
+    setSavingCod(true); setCodMsg(null);
+    const r = await salvarCodigo(cod, b.consultor, b.empresa);
+    setCodMsg(r.ok ? "Pronto! Você é consultor — o Painel do Consultor já está no seu menu." : (r.erro ?? "Erro ao salvar."));
+    if (r.ok) setCod("");
+    setSavingCod(false);
+  };
 
   const onFile = (file?: File | null) => {
     if (!file) return;
@@ -85,6 +98,27 @@ const Marca = () => {
             <strong className="text-[#16314f]"> relatório PDF</strong> do cliente. As alterações salvam sozinhas.
           </p>
         </div>
+      </VPCard>
+
+      {/* Sou consultor — código de vínculo */}
+      <VPCard className="p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <BadgeCheck className="h-5 w-5 text-[#2F8F6B]" />
+          <p className="font-display text-lg font-bold text-[#16314f]">Sou consultor</p>
+        </div>
+        <p className="text-sm text-[#1b2a3d]/55 mb-3">Crie um código único para seus clientes te vincularem. Isso libera o <strong className="text-[#16314f]">Painel do Consultor</strong> no seu menu e faz seus clientes aparecerem lá.</p>
+        {codigo && (
+          <p className="text-sm text-[#16314f] mb-2">Seu código atual: <span className="font-mono font-bold tracking-wide bg-[#16314f]/[0.06] rounded px-2 py-0.5">{codigo}</span></p>
+        )}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input value={cod} onChange={(e) => setCod(e.target.value.toUpperCase())} placeholder={codigo ?? "Ex.: NOVARE2026"}
+            className="flex-1 rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm font-mono tracking-wide text-[#16314f] outline-none focus:border-[#C8643F] placeholder:font-sans placeholder:tracking-normal placeholder:text-[#1b2a3d]/30" />
+          <button onClick={salvarCod} disabled={savingCod || cod.trim().length < 3}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#16314f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d3e63] disabled:opacity-50 transition-colors">
+            {savingCod && <Loader2 className="h-4 w-4 animate-spin" />} {codigo ? "Atualizar código" : "Virar consultor"}
+          </button>
+        </div>
+        {codMsg && <p className="text-xs text-[#16314f] bg-[#2F8F6B]/[0.08] rounded-lg px-3 py-2 mt-2">{codMsg}</p>}
       </VPCard>
 
       {/* Pré-visualização ao vivo */}

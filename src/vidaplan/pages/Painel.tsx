@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { computeHealthScore } from "@/lib/lifeplan";
+import { useConsultorPerfil } from "../state/ConsultorPerfil";
 import { VIDAPLAN } from "../lib/brand";
 import { VPCard, VPProgress, VPStat } from "../components/ui";
 import OnboardingGuide from "../components/OnboardingGuide";
@@ -12,6 +13,7 @@ import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clo
 const Painel = () => {
   const { plan, input, setField } = useVidaPlan();
   const pct = Math.min(100, plan.pctAtingido);
+  const { isConsultor } = useConsultorPerfil();
   const saude = computeHealthScore(input, plan);
   const fraco = [...saude.pilares].sort((a, b) => a.score - b.score)[0];
   // Renda que o patrimônio projetado sustenta (consistente com o % atingido).
@@ -143,7 +145,7 @@ const Painel = () => {
         <Shortcut to="/vidaplan/app/plano" icon={ClipboardList} title="Plano de Ação" desc="carteira e proteção" />
         <Shortcut to="/vidaplan/app/progresso" icon={Activity} title="Meu Progresso" desc="aportes vs meta" />
         <Shortcut to="/vidaplan/app/assistente" icon={Bot} title="IA Novare" desc="tire dúvidas com a IA" />
-        <Shortcut to="/vidaplan/app/clientes" icon={Users} title="Painel do Consultor" desc="sua carteira de clientes" />
+        {isConsultor && <Shortcut to="/vidaplan/app/clientes" icon={Users} title="Painel do Consultor" desc="sua carteira de clientes" />}
         <Shortcut to="/vidaplan/app/aprender" icon={BookOpen} title="Como funciona" desc="método e glossário" />
         <Shortcut to="/vidaplan/app/marca" icon={Palette} title="Minha Marca" desc="logo e identidade" />
       </div>

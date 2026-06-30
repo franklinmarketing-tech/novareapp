@@ -2,6 +2,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { VidaPlanProvider } from "./state/VidaPlanContext";
 import { SubscriptionProvider } from "./state/useSubscription";
+import { ConsultorPerfilProvider } from "./state/ConsultorPerfil";
 import VidaPlanGuard from "./components/VidaPlanGuard";
 import VidaPlanLayout from "./components/VidaPlanLayout";
 import Login from "./pages/Login";
@@ -24,6 +25,7 @@ import Assinar from "./pages/Assinar";
 const VidaPlanApp = () => (
   <VidaPlanProvider>
     <SubscriptionProvider>
+      <ConsultorPerfilProvider>
       <Routes>
         <Route index element={<Navigate to="/vidaplan/app" replace />} />
         <Route path="login" element={<Login />} />
@@ -46,6 +48,7 @@ const VidaPlanApp = () => (
         </Route>
         <Route path="*" element={<Navigate to="/vidaplan/app" replace />} />
       </Routes>
+      </ConsultorPerfilProvider>
     </SubscriptionProvider>
   </VidaPlanProvider>
 );

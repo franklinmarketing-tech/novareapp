@@ -93,6 +93,7 @@ export interface LifePlanInput {
   ativosImobilizados?: number; // patrimônio não-investido (imóveis próprios etc.) — informativo
   consorcio?: number;        // carta de crédito / patrimônio previsto via consórcio — informativo
   advisorCodigo?: string;    // código do consultor vinculado (parceria/indicação)
+  advisorVinculo?: { codigo: string; consultorId: string; nome?: string; empresa?: string }; // consultor que o cliente vinculou
   custoEventos?: RendaEvento[]; // aumentos/reduções de custo fixo no tempo
   seguros?: Seguro[];        // seguros contratados
   planoConfig?: PlanoConfig; // personalização do plano de ação

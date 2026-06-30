@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { VIDAPLAN, VIDAPLAN_NAV, VIDAPLAN_NAV_MOBILE } from "../lib/brand";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { useSubscription } from "../state/useSubscription";
+import { useConsultorPerfil } from "../state/ConsultorPerfil";
 import { LogOut, Check, Loader2, Sparkles } from "lucide-react";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -26,7 +27,10 @@ const VidaPlanLayout = () => {
   const { plan, hydrated, saveState } = useVidaPlan();
   const { user, signOut } = useAuth();
   const { isPremium, status, daysLeft } = useSubscription();
+  const { isConsultor } = useConsultorPerfil();
   const navigate = useNavigate();
+  // "Consultor" só aparece para quem registrou um código de consultor.
+  const navItens = VIDAPLAN_NAV.filter((i) => i.to !== "/vidaplan/app/clientes" || isConsultor);
 
   const sair = async () => { await signOut(); navigate("/vidaplan/login", { replace: true }); };
   const goldLabel = !isPremium ? "Seja GOLD" : status === "trial" ? `GOLD · ${daysLeft}d` : "GOLD ativo";
@@ -66,7 +70,7 @@ const VidaPlanLayout = () => {
         </div>
 
         <nav className="mt-4 flex-1 flex flex-col justify-evenly gap-0.5">
-          {VIDAPLAN_NAV.map((item) => (
+          {navItens.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === "/vidaplan/app"}
               className={(s) => cn(navLinkClass(s), item.to === "/vidaplan/app/assistente" && "vp-led")}>
               <item.icon className="h-[18px] w-[18px]" /> {item.label}
