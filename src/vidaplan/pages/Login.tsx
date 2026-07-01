@@ -25,6 +25,10 @@ const Login = () => {
   const [modo, setModo] = useState<Modo>(() => {
     try { return new URLSearchParams(window.location.search).get("criar") ? "criar" : "entrar"; } catch { return "entrar"; }
   });
+  // Quem vem pelo link do assessor (?perfil=consultor) cai direto no Painel do Consultor.
+  const [dest] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get("perfil") === "consultor" ? "/vidaplan/app/clientes" : "/vidaplan/app"; } catch { return "/vidaplan/app"; }
+  });
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +36,7 @@ const Login = () => {
   const [erro, setErro] = useState("");
   const [info, setInfo] = useState("");
 
-  useEffect(() => { if (user) navigate("/vidaplan/app", { replace: true }); }, [user, navigate]);
+  useEffect(() => { if (user) navigate(dest, { replace: true }); }, [user, navigate]);
 
   const trocarModo = (m: Modo) => { setModo(m); setErro(""); setInfo(""); };
 
@@ -42,7 +46,7 @@ const Login = () => {
     try {
       if (modo === "entrar") {
         await signIn(email.trim(), password);
-        navigate("/vidaplan/app", { replace: true });
+        navigate(dest, { replace: true });
       } else {
         if (password.length < 6) { setErro("A senha precisa ter ao menos 6 caracteres."); setLoading(false); return; }
         const { data, error } = await supabase.auth.signUp({
@@ -51,7 +55,7 @@ const Login = () => {
         });
         if (error) throw error;
         if (data.session) {
-          navigate("/vidaplan/app", { replace: true });
+          navigate(dest, { replace: true });
         } else {
           setInfo("Conta criada! Enviamos um e-mail de confirmação — confirme para entrar.");
           setModo("entrar");
