@@ -13,6 +13,7 @@ interface PerfilCtx {
   planoStatus: string | null;   // 'trial' | 'active' | 'inactive' (null = colunas ausentes)
   consultorAtivo: boolean;      // pode usar o Painel do Consultor (trial válido ou pago)
   diasTrial: number | null;     // dias restantes do teste, quando em trial
+  marcaPublicada: boolean;      // logo/nome do sistema já publicados p/ os clientes
   salvarCodigo: (codigo: string, nome?: string, empresa?: string) => Promise<{ ok: boolean; erro?: string }>;
   publicarMarca: (m: { logo?: string; logoRatio?: number; sistema?: string; nome?: string; empresa?: string }) => Promise<{ ok: boolean; erro?: string }>;
 }
@@ -24,6 +25,7 @@ export const ConsultorPerfilProvider = ({ children }: { children: ReactNode }) =
   const [codigo, setCodigo] = useState<string | null>(null);
   const [planoStatus, setPlanoStatus] = useState<string | null>(null);
   const [trialUntil, setTrialUntil] = useState<string | null>(null);
+  const [marcaPublicada, setMarcaPublicada] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export const ConsultorPerfilProvider = ({ children }: { children: ReactNode }) =
       if (!user) { setHydrated(true); return; }
       try {
         const { data } = await db.from("vidaplan_consultores").select("*").eq("consultor_id", user.id).maybeSingle();
-        if (!cancel) { setCodigo(data?.codigo ?? null); setPlanoStatus(data?.plano_status ?? null); setTrialUntil(data?.trial_until ?? null); }
+        if (!cancel) { setCodigo(data?.codigo ?? null); setPlanoStatus(data?.plano_status ?? null); setTrialUntil(data?.trial_until ?? null); setMarcaPublicada(!!(data?.logo || data?.sistema)); }
       } catch { /* tabela ausente → não é consultor */ }
       finally { if (!cancel) setHydrated(true); }
     })();
@@ -69,11 +71,12 @@ export const ConsultorPerfilProvider = ({ children }: { children: ReactNode }) =
         nome: m.nome ?? null, empresa: m.empresa ?? null, updated_at: new Date().toISOString(),
       }).eq("consultor_id", user.id);
       if (error) return { ok: false, erro: "Não foi possível publicar (rode a migration da marca)." };
+      setMarcaPublicada(!!(m.logo || m.sistema));
       return { ok: true };
     } catch { return { ok: false, erro: "Não foi possível publicar agora." }; }
   };
 
-  return <Ctx.Provider value={{ codigo, isConsultor: !!codigo, hydrated, planoStatus, consultorAtivo, diasTrial, salvarCodigo, publicarMarca }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ codigo, isConsultor: !!codigo, hydrated, planoStatus, consultorAtivo, diasTrial, marcaPublicada, salvarCodigo, publicarMarca }}>{children}</Ctx.Provider>;
 };
 
 export const useConsultorPerfil = (): PerfilCtx => {

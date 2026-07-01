@@ -1,7 +1,7 @@
 // Painel do Consultor — carteira de clientes, cada um com seu plano de vida.
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { brl0 } from "../state/VidaPlanContext";
+import { brl0, useVidaPlan } from "../state/VidaPlanContext";
 import { useConsultor, type Cliente } from "../state/useConsultor";
 import { useConsultorPerfil } from "../state/ConsultorPerfil";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,8 +25,9 @@ interface Vinculado { cliente_id: string; cliente_nome: string | null; snapshot:
 
 const Clientes = () => {
   const { clientes, addCliente, updateCliente, updateInput, removeCliente } = useConsultor();
-  const { isConsultor, hydrated, codigo, salvarCodigo, consultorAtivo, planoStatus, diasTrial } = useConsultorPerfil();
+  const { isConsultor, hydrated, codigo, salvarCodigo, consultorAtivo, planoStatus, diasTrial, marcaPublicada } = useConsultorPerfil();
   const { user } = useAuth();
+  const { input } = useVidaPlan();
   const [sel, setSel] = useState<string | null>(null);
   const [vinculados, setVinculados] = useState<Vinculado[]>([]);
   const [novoCod, setNovoCod] = useState("");
@@ -122,9 +123,40 @@ const Clientes = () => {
     );
   }
 
+  const brand = input.branding;
+  const passos: { ok: boolean; label: string; to?: string; action?: () => void }[] = [
+    { ok: true, label: "Você virou consultor" },
+    { ok: !!brand?.logo, label: "Suba o seu logo", to: "/vidaplan/app/marca" },
+    { ok: !!(brand?.sistema && brand.sistema.trim()), label: "Dê um nome ao seu sistema", to: "/vidaplan/app/marca" },
+    { ok: marcaPublicada, label: "Publique a sua marca", to: "/vidaplan/app/marca" },
+    { ok: vinculados.length > 0, label: "Convide o seu 1º cliente", action: convidarCliente },
+  ];
+  const feitos = passos.filter((p) => p.ok).length;
+  const setupCompleto = feitos === passos.length;
+
   return (
     <div className="space-y-6">
       <VPTitle hint="Aqui estão os planos dos seus CLIENTES. O seu plano pessoal continua nos menus Painel, Meus Sonhos, etc.">👥 Painel do Consultor</VPTitle>
+
+      {consultorAtivo && !setupCompleto && (
+        <VPCard className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-display text-base font-bold text-[#16314f]">Primeiros passos</p>
+            <span className="text-xs font-semibold text-[#1b2a3d]/50">{feitos}/{passos.length}</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-black/[0.06] overflow-hidden mb-3"><div className="h-full bg-[#2F8F6B] rounded-full transition-all" style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
+          <div className="space-y-2.5">
+            {passos.map((p, i) => (
+              <div key={i} className="flex items-center gap-2.5">
+                <span className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 ${p.ok ? "bg-[#2F8F6B] text-white" : "border-2 border-black/15"}`}>{p.ok && <Check className="h-3 w-3" />}</span>
+                <span className={`flex-1 text-sm ${p.ok ? "text-[#1b2a3d]/40 line-through" : "text-[#16314f]"}`}>{p.label}</span>
+                {!p.ok && p.to && <Link to={p.to} className="text-xs font-semibold text-[#16314f] hover:text-[#C8643F]">fazer →</Link>}
+                {!p.ok && p.action && <button onClick={p.action} className="text-xs font-semibold text-[#16314f] hover:text-[#C8643F]">fazer →</button>}
+              </div>
+            ))}
+          </div>
+        </VPCard>
+      )}
 
       {/* Plano Consultor + código + convidar */}
       <VPCard className="p-4 space-y-3">
