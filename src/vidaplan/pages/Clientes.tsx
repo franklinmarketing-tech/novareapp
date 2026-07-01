@@ -10,7 +10,7 @@ import { computeLifePlan, computeHealthScore, type LifePlanInput, type GoalType 
 import { TIPOS, metaTipo } from "../lib/goalTypes";
 import { exportVidaPlanPDF } from "../lib/pdf";
 import { VPCard, VPTitle, VPField, VPProgress } from "../components/ui";
-import { Plus, Trash2, ArrowLeft, MessageCircle, Mail, FileDown, Users, Palette, ChevronRight, BadgeCheck, Link2, FolderPen, Loader2, Share2, Lock } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, MessageCircle, Mail, FileDown, Users, Palette, ChevronRight, BadgeCheck, Link2, FolderPen, Loader2, Share2, Lock, StickyNote, Send, Check } from "lucide-react";
 
 const db = supabase as unknown as { from: (t: string) => any };
 const APP_URL = "https://vidaplan-novare.vercel.app";
@@ -207,9 +207,38 @@ const Clientes = () => {
 };
 
 const VinculadoCard = ({ v }: { v: Vinculado }) => {
+  const { user } = useAuth();
   const plan = useMemo(() => computeLifePlan(v.snapshot), [v.snapshot]);
   const saude = useMemo(() => computeHealthScore(v.snapshot, plan), [v.snapshot, plan]);
   const pct = Math.min(100, Math.round(plan.pctAtingido));
+
+  const [aberto, setAberto] = useState(false);
+  const [notas, setNotas] = useState("");
+  const [recomendacao, setRecomendacao] = useState("");
+  const [carregou, setCarregou] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [salvo, setSalvo] = useState(false);
+
+  const abrir = async () => {
+    setAberto((a) => !a);
+    if (!carregou && user) {
+      try {
+        const { data } = await db.from("vidaplan_atendimento").select("notas, recomendacao").eq("consultor_id", user.id).eq("cliente_id", v.cliente_id).maybeSingle();
+        setNotas(data?.notas ?? ""); setRecomendacao(data?.recomendacao ?? "");
+      } catch { /* tabela ausente */ }
+      setCarregou(true);
+    }
+  };
+  const salvar = async () => {
+    if (!user) return;
+    setSalvando(true); setSalvo(false);
+    try {
+      await db.from("vidaplan_atendimento").upsert({ consultor_id: user.id, cliente_id: v.cliente_id, notas, recomendacao, updated_at: new Date().toISOString() }, { onConflict: "consultor_id,cliente_id" });
+      setSalvo(true); setTimeout(() => setSalvo(false), 2000);
+    } catch { /* ignora */ }
+    setSalvando(false);
+  };
+
   return (
     <VPCard className="p-4">
       <div className="flex items-center gap-3">
@@ -228,10 +257,34 @@ const VinculadoCard = ({ v }: { v: Vinculado }) => {
         <span className="text-xs font-semibold tabular-nums" style={{ color: plan.viavel ? "#2F8F6B" : "#C8643F" }}>{pct}%</span>
         <span className="text-[11px] font-semibold rounded-full px-2 py-0.5" style={{ color: corScore(saude.total), backgroundColor: `${corScore(saude.total)}1a` }}>Saúde {saude.total}</span>
       </div>
-      <button onClick={() => exportVidaPlanPDF(v.snapshot, plan, v.cliente_nome || undefined)}
-        className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#16314f] hover:text-[#C8643F]">
-        <FileDown className="h-3.5 w-3.5" /> Exportar PDF
-      </button>
+      <div className="mt-3 flex items-center gap-4">
+        <button onClick={() => exportVidaPlanPDF(v.snapshot, plan, v.cliente_nome || undefined)} className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#16314f] hover:text-[#C8643F]">
+          <FileDown className="h-3.5 w-3.5" /> PDF
+        </button>
+        <button onClick={abrir} className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#16314f] hover:text-[#C8643F]">
+          <StickyNote className="h-3.5 w-3.5" /> Atender
+        </button>
+      </div>
+
+      {aberto && (
+        <div className="mt-3 pt-3 border-t border-black/[0.06] space-y-3">
+          <div>
+            <p className="text-[11px] font-semibold text-[#1b2a3d]/60 mb-1 flex items-center gap-1"><Send className="h-3 w-3 text-[#2F8F6B]" /> Recomendação (o cliente vê)</p>
+            <textarea value={recomendacao} onChange={(e) => setRecomendacao(e.target.value)} rows={2} placeholder="Ex.: Aumente o aporte para R$ 1.500/mês e priorize a reserva."
+              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-[#16314f] outline-none focus:border-[#C8643F] resize-none" />
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-[#1b2a3d]/60 mb-1 flex items-center gap-1"><StickyNote className="h-3 w-3 text-[#C8643F]" /> Notas privadas (só você)</p>
+            <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={2} placeholder="Anotações internas sobre o cliente…"
+              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-[#16314f] outline-none focus:border-[#C8643F] resize-none" />
+          </div>
+          <button onClick={salvar} disabled={salvando}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#16314f] px-3 py-2 text-xs font-semibold text-white hover:bg-[#1d3e63] disabled:opacity-60">
+            {salvando ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : salvo ? <Check className="h-3.5 w-3.5" /> : <Send className="h-3.5 w-3.5" />}
+            {salvo ? "Salvo!" : "Salvar atendimento"}
+          </button>
+        </div>
+      )}
     </VPCard>
   );
 };

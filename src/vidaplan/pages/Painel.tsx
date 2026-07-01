@@ -6,6 +6,7 @@ import { VIDAPLAN } from "../lib/brand";
 import { VPCard, VPProgress, VPStat } from "../components/ui";
 import OnboardingGuide from "../components/OnboardingGuide";
 import OnboardingWizard from "../components/OnboardingWizard";
+import RecomendacaoConsultor from "../components/RecomendacaoConsultor";
 import AdvisorCard from "../components/AdvisorCard";
 import { Sparkles, Sunrise, Wallet, ArrowRight, CheckCircle2, AlertTriangle, Clock, TrendingUp, PiggyBank, LineChart, ClipboardList, Activity, Target, Bot, Palette, Users, Scale, BookOpen, Receipt } from "lucide-react";
 
@@ -44,6 +45,7 @@ const Painel = () => {
         </div>
       </div>
 
+      <RecomendacaoConsultor />
       <OnboardingGuide />
 
       {/* Viabilidade — renda projetada e patrimônio, cada um vs sua meta */}
