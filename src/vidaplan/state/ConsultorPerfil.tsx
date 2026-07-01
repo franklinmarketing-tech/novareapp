@@ -14,6 +14,7 @@ interface PerfilCtx {
   consultorAtivo: boolean;      // pode usar o Painel do Consultor (trial válido ou pago)
   diasTrial: number | null;     // dias restantes do teste, quando em trial
   salvarCodigo: (codigo: string, nome?: string, empresa?: string) => Promise<{ ok: boolean; erro?: string }>;
+  publicarMarca: (m: { logo?: string; logoRatio?: number; sistema?: string; nome?: string; empresa?: string }) => Promise<{ ok: boolean; erro?: string }>;
 }
 
 const Ctx = createContext<PerfilCtx | null>(null);
@@ -59,7 +60,20 @@ export const ConsultorPerfilProvider = ({ children }: { children: ReactNode }) =
     } catch { return { ok: false, erro: "Não foi possível salvar agora." }; }
   };
 
-  return <Ctx.Provider value={{ codigo, isConsultor: !!codigo, hydrated, planoStatus, consultorAtivo, diasTrial, salvarCodigo }}>{children}</Ctx.Provider>;
+  const publicarMarca: PerfilCtx["publicarMarca"] = async (m) => {
+    if (!user) return { ok: false, erro: "Faça login primeiro." };
+    if (!codigo) return { ok: false, erro: "Crie seu código de consultor primeiro." };
+    try {
+      const { error } = await db.from("vidaplan_consultores").update({
+        logo: m.logo ?? null, logo_ratio: m.logoRatio ?? null, sistema: m.sistema ?? null,
+        nome: m.nome ?? null, empresa: m.empresa ?? null, updated_at: new Date().toISOString(),
+      }).eq("consultor_id", user.id);
+      if (error) return { ok: false, erro: "Não foi possível publicar (rode a migration da marca)." };
+      return { ok: true };
+    } catch { return { ok: false, erro: "Não foi possível publicar agora." }; }
+  };
+
+  return <Ctx.Provider value={{ codigo, isConsultor: !!codigo, hydrated, planoStatus, consultorAtivo, diasTrial, salvarCodigo, publicarMarca }}>{children}</Ctx.Provider>;
 };
 
 export const useConsultorPerfil = (): PerfilCtx => {

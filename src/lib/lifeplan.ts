@@ -72,6 +72,7 @@ export interface Branding {
   consultor?: string;  // nome do consultor
   empresa?: string;    // nome da empresa
   telefone?: string;   // WhatsApp (texto livre; dígitos são extraídos)
+  sistema?: string;    // nome que o assessor dá ao sistema (substitui "Vida Plan" no app do cliente)
 }
 
 export interface LifePlanInput {

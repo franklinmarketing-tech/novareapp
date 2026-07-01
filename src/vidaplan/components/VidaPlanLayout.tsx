@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { VIDAPLAN, VIDAPLAN_NAV, VIDAPLAN_NAV_MOBILE } from "../lib/brand";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { useSubscription } from "../state/useSubscription";
+import { useBrand } from "../state/useBrand";
 import { LogOut, Check, Loader2, Sparkles } from "lucide-react";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -26,6 +27,7 @@ const VidaPlanLayout = () => {
   const { plan, hydrated, saveState } = useVidaPlan();
   const { user, signOut } = useAuth();
   const { isPremium, status, daysLeft } = useSubscription();
+  const marca = useBrand();
   const navigate = useNavigate();
 
   const sair = async () => { await signOut(); navigate("/vidaplan/login", { replace: true }); };
@@ -52,9 +54,13 @@ const VidaPlanLayout = () => {
       {/* Sidebar desktop */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-[#16314f] px-4 py-5">
         <div className="px-2">
-          <img src={logoBranca} alt="Novare" className="h-6 w-auto" />
-          <p className="font-display text-base font-bold text-[#E29578] leading-tight mt-1.5">Vida Plan</p>
-          <p className="text-[11px] text-white/40">{VIDAPLAN.method}</p>
+          {marca.custom && marca.logo ? (
+            <div className="inline-flex bg-white rounded-lg px-2 py-1"><img src={marca.logo} alt={marca.nome} className="h-6 w-auto max-w-[150px] object-contain" /></div>
+          ) : (
+            <img src={logoBranca} alt="Novare" className="h-6 w-auto" />
+          )}
+          <p className="font-display text-base font-bold text-[#E29578] leading-tight mt-1.5">{marca.nome}</p>
+          <p className="text-[11px] text-white/40">{marca.custom ? (marca.empresa ?? "") : VIDAPLAN.method}</p>
         </div>
 
         <div className="mt-4 rounded-2xl bg-white/10 px-4 py-2.5">
@@ -98,8 +104,12 @@ const VidaPlanLayout = () => {
       {/* Topbar mobile */}
       <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-[#16314f] px-4 py-3">
         <div className="flex items-center gap-2">
-          <img src={logoBranca} alt="Novare" className="h-5 w-auto" />
-          <span className="font-display text-base font-bold text-[#E29578]">Vida Plan</span>
+          {marca.custom && marca.logo ? (
+            <div className="bg-white rounded px-1.5 py-0.5"><img src={marca.logo} alt={marca.nome} className="h-5 w-auto max-w-[110px] object-contain" /></div>
+          ) : (
+            <img src={logoBranca} alt="Novare" className="h-5 w-auto" />
+          )}
+          <span className="font-display text-base font-bold text-[#E29578]">{marca.nome}</span>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">

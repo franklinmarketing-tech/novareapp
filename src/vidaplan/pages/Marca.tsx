@@ -10,7 +10,7 @@ import { Upload, Trash2, ImageIcon, Info, BadgeCheck, Loader2 } from "lucide-rea
 
 const Marca = () => {
   const { input, setField } = useVidaPlan();
-  const { codigo, salvarCodigo } = useConsultorPerfil();
+  const { codigo, salvarCodigo, publicarMarca } = useConsultorPerfil();
   const b = input.branding ?? {};
   const fileRef = useRef<HTMLInputElement>(null);
   const upd = (patch: Partial<Branding>) => setField("branding", { ...b, ...patch });
@@ -24,6 +24,15 @@ const Marca = () => {
     setCodMsg(r.ok ? "Pronto! Você é consultor — o Painel do Consultor já está no seu menu." : (r.erro ?? "Erro ao salvar."));
     if (r.ok) setCod("");
     setSavingCod(false);
+  };
+
+  const [pubLoading, setPubLoading] = useState(false);
+  const [pubMsg, setPubMsg] = useState<string | null>(null);
+  const publicar = async () => {
+    setPubLoading(true); setPubMsg(null);
+    const r = await publicarMarca({ logo: b.logo, logoRatio: b.logoRatio, sistema: b.sistema, nome: b.consultor, empresa: b.empresa });
+    setPubMsg(r.ok ? "Marca publicada! Seus clientes já veem o app com a sua identidade." : (r.erro ?? "Erro ao publicar."));
+    setPubLoading(false);
   };
 
   const onFile = (file?: File | null) => {
@@ -83,9 +92,11 @@ const Marca = () => {
 
         {/* Dados */}
         <div className="grid sm:grid-cols-2 gap-4">
+          <Field label="Nome do sistema (aparece pro cliente)" value={b.sistema ?? ""} placeholder="Ex.: Meu Planejador"
+            onChange={(v) => upd({ sistema: v })} />
           <Field label="Nome do consultor" value={b.consultor ?? ""} placeholder="Ex.: Daniel Arruda"
             onChange={(v) => upd({ consultor: v })} />
-          <Field label="Empresa" value={b.empresa ?? ""} placeholder="Ex.: Novare Consultoria"
+          <Field label="Empresa" value={b.empresa ?? ""} placeholder="Ex.: Arruda Investimentos"
             onChange={(v) => upd({ empresa: v })} />
           <Field label="WhatsApp" value={b.telefone ?? ""} placeholder="(19) 98340-2827"
             onChange={(v) => upd({ telefone: v })} />
@@ -94,8 +105,8 @@ const Marca = () => {
         <div className="flex items-start gap-2 rounded-xl bg-[#16314f]/[0.04] px-4 py-3">
           <Info className="h-4 w-4 text-[#16314f] mt-0.5 shrink-0" />
           <p className="text-xs text-[#1b2a3d]/60">
-            Sua marca aparece automaticamente no <strong className="text-[#16314f]">card do consultor</strong> (no Painel) e no
-            <strong className="text-[#16314f]"> relatório PDF</strong> do cliente. As alterações salvam sozinhas.
+            O <strong className="text-[#16314f]">nome do sistema</strong> substitui "Vida Plan" no app dos seus clientes. O logo entra na barra, no card e no PDF.
+            Depois de ajustar, clique em <strong className="text-[#16314f]">Publicar marca</strong> abaixo para os clientes verem.
           </p>
         </div>
       </VPCard>
@@ -119,6 +130,18 @@ const Marca = () => {
           </button>
         </div>
         {codMsg && <p className="text-xs text-[#16314f] bg-[#2F8F6B]/[0.08] rounded-lg px-3 py-2 mt-2">{codMsg}</p>}
+
+        {codigo && (
+          <div className="mt-4 pt-4 border-t border-black/[0.06]">
+            <p className="text-sm font-semibold text-[#16314f]">Publicar sua marca (white-label)</p>
+            <p className="text-xs text-[#1b2a3d]/55 mb-2">Leva o seu logo e o nome do sistema para o app dos seus clientes vinculados.</p>
+            <button onClick={publicar} disabled={pubLoading}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#2F8F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#27795a] disabled:opacity-60 transition-colors">
+              {pubLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />} Publicar marca
+            </button>
+            {pubMsg && <p className="text-xs text-[#16314f] bg-[#2F8F6B]/[0.08] rounded-lg px-3 py-2 mt-2">{pubMsg}</p>}
+          </div>
+        )}
       </VPCard>
 
       {/* Pré-visualização ao vivo */}
