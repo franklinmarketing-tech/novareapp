@@ -22,7 +22,9 @@ const traduzErro = (msg: string): string => {
 const Login = () => {
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
-  const [modo, setModo] = useState<Modo>("entrar");
+  const [modo, setModo] = useState<Modo>(() => {
+    try { return new URLSearchParams(window.location.search).get("criar") ? "criar" : "entrar"; } catch { return "entrar"; }
+  });
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
