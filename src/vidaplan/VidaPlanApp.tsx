@@ -6,6 +6,7 @@ import { ConsultorPerfilProvider } from "./state/ConsultorPerfil";
 import VidaPlanGuard from "./components/VidaPlanGuard";
 import VidaPlanLayout from "./components/VidaPlanLayout";
 import Login from "./pages/Login";
+import Home from "./pages/Home";
 import Landing from "./pages/Landing";
 import Painel from "./pages/Painel";
 import Sonhos from "./pages/Sonhos";
@@ -28,7 +29,7 @@ const VidaPlanApp = () => (
     <SubscriptionProvider>
       <ConsultorPerfilProvider>
       <Routes>
-        <Route index element={<Navigate to="/vidaplan/app" replace />} />
+        <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
         <Route path="cliente" element={<Landing audience="cliente" />} />
         <Route path="consultor" element={<Landing audience="consultor" />} />
