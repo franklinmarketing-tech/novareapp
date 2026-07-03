@@ -28,11 +28,18 @@ const CarteiraOpenFinance = () => {
   const [claiming, setClaiming] = useState(false);
   const [conectando, setConectando] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  // Quando o Banco MCP responde "not_connected", ele devolve a URL pra reconectar.
+  const [reconectarUrl, setReconectarUrl] = useState<string | null>(null);
+
+  const captureNotConnected = (e: any): boolean => {
+    if (e?.code === "not_connected" && e?.connectUrl) { setReconectarUrl(e.connectUrl); return true; }
+    return false;
+  };
 
   const load = async () => {
-    setLoading(true); setErro(null);
+    setLoading(true); setErro(null); setReconectarUrl(null);
     try {
-      const conns = asArray(await call("connections/list").catch(() => null), "connections");
+      const conns = asArray(await call("connections/list").catch((e) => { captureNotConnected(e); return null; }), "connections");
       setConnections(conns);
       if (conns.length) {
         const [inv, acc] = await Promise.all([
@@ -52,7 +59,7 @@ const CarteiraOpenFinance = () => {
     if (!kw.length) { setMsg("Digite o nome do seu banco (ex.: nubank, itau)."); return; }
     setSearching(true); setMsg(null);
     try { setSearchResults(asArray(await call("connectors/search", { keywords: kw }), "banks")); }
-    catch (e: any) { setMsg(e?.message || "Falha na busca."); }
+    catch (e: any) { if (!captureNotConnected(e)) setMsg(e?.message || "Falha na busca."); }
     finally { setSearching(false); }
   };
   const claim = async (silent = false) => {
@@ -61,7 +68,7 @@ const CarteiraOpenFinance = () => {
       const r = await call("claim");
       if (r?.claimed) { setConectando(false); setMsg("Banco conectado! 🎉"); await load(); }
       else if (!silent) setMsg(r?.message || "Ainda não detectei o banco. Termine a autorização no app do banco e tente de novo.");
-    } catch (e: any) { if (!silent) setMsg(e?.message || "Falha ao concluir."); }
+    } catch (e: any) { if (!silent && !captureNotConnected(e)) setMsg(e?.message || "Falha ao concluir."); }
     finally { if (!silent) setClaiming(false); }
   };
 
@@ -95,6 +102,21 @@ const CarteiraOpenFinance = () => {
           <p className="font-display text-lg font-bold text-[#16314f]">Conecte seu primeiro banco</p>
         </div>
         <p className="text-sm text-[#1b2a3d]/60 mb-4">Busque seu banco, autorize pelo Open Finance e volte para puxar seus dados. Leva 1 minuto.</p>
+
+        {/* Banco MCP desconectado no painel → precisa reconectar a integração antes de tudo */}
+        {reconectarUrl && (
+          <div className="rounded-xl bg-[#E2A03F]/[0.10] border border-[#E2A03F]/40 p-4 mb-4">
+            <div className="flex items-center gap-2 mb-1">
+              <AlertTriangle className="h-4 w-4 text-[#B4741A]" />
+              <p className="text-sm font-bold text-[#16314f]">Conexão do Open Finance inativa</p>
+            </div>
+            <p className="text-xs text-[#1b2a3d]/70 mb-3">A integração bancária precisa ser (re)ativada. Clique abaixo, conclua a conexão na página que abrir e volte aqui para puxar seus dados.</p>
+            <a href={reconectarUrl} target="_blank" rel="noopener noreferrer" onClick={() => setConectando(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#16314f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d3e63] transition-colors">
+              <ExternalLink className="h-4 w-4" /> Conectar / reativar Open Finance
+            </a>
+          </div>
+        )}
 
         {/* Atalho: já conectou no Banco MCP → puxar dados (sempre visível) */}
         <div className="rounded-xl bg-[#2F8F6B]/[0.06] border border-[#2F8F6B]/20 p-3 mb-4">
