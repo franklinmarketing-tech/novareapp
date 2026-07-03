@@ -71,7 +71,7 @@ const sections: NavSection[] = [
     label: "Vida Plan",
     icon: Briefcase,
     items: [
-      { to: "/super-admin/vida-plan", label: "Consultores", icon: Briefcase },
+      { to: "/super-admin/vida-plan", label: "Controle (usuários)", icon: Briefcase },
     ],
   },
   {
