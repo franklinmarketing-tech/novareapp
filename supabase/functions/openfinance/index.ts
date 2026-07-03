@@ -62,27 +62,34 @@ Deno.serve(async (req) => {
     ]);
     const isAdmin = (roles || []).some((r: { role: string }) => r.role === "admin" || r.role === "super_admin");
     const clientId = clientRow?.id as string | undefined;
-    if (!isAdmin && !clientId) return json({ error: "Acesso restrito" }, 403);
+    // Escopo por usuário: cliente do app principal (client_connections) OU usuário
+    // do Vida Plan self-service (vidaplan_open_finance, chaveado por user_id).
+    const scopeTbl = clientId ? "client_connections" : "vidaplan_open_finance";
+    const scopeCol = clientId ? "client_id" : "user_id";
+    const scopeVal = clientId ? clientId : userId;
 
     MCP_KEY = Deno.env.get("BANCO_MCP_KEY") || "";
     if (!MCP_KEY) return json({ error: "BANCO_MCP_KEY não configurada nas secrets do Supabase" }, 500);
 
     const { endpoint, body } = await req.json().catch(() => ({}));
 
-    // ── Ação custom: cliente reivindica o banco recém-conectado ──
+    // ── Ação custom: reivindica o banco recém-conectado (cliente OU Vida Plan) ──
     if (endpoint === "claim") {
-      if (!clientId) return json({ error: "Apenas clientes" }, 403);
+      if (isAdmin) return json({ error: "Admin não precisa reivindicar." }, 400);
       const { payload } = await mcp("connections/list", {});
       const conns = arr(payload, "connections");
-      const { data: claimedRows } = await admin.from("client_connections").select("item_id");
-      const claimed = new Set((claimedRows || []).map((r: { item_id: string }) => r.item_id));
+      // Conjunto já reivindicado por QUALQUER um (evita pegar a conexão de outro usuário).
+      const [{ data: cc }, { data: vp }] = await Promise.all([
+        admin.from("client_connections").select("item_id"),
+        admin.from("vidaplan_open_finance").select("item_id"),
+      ]);
+      const claimed = new Set([...(cc || []), ...(vp || [])].map((r: any) => r.item_id));
       const novas = conns.filter((c: any) => c.item_id && !claimed.has(c.item_id));
       if (!novas.length) return json({ result: { claimed: false, message: "Nenhuma conexão nova encontrada. Conecte um banco primeiro." } });
       for (const c of novas) {
-        await admin.from("client_connections").insert({
-          client_id: clientId, item_id: c.item_id,
-          connector_name: c.connector_name || c.connector_id || null, status: c.status || null,
-        });
+        const row: any = { item_id: c.item_id, connector_name: c.connector_name || c.connector_id || null, status: c.status || null };
+        row[scopeCol] = scopeVal;
+        await admin.from(scopeTbl).insert(row);
       }
       return json({ result: { claimed: true, count: novas.length } });
     }
@@ -95,23 +102,22 @@ Deno.serve(async (req) => {
       return json(payload, status);
     }
 
-    // ── CLIENTE: escopado aos próprios bancos ──
-    if (!CLIENT_ALLOWED.has(endpoint)) return json({ error: "Endpoint não disponível para clientes" }, 403);
+    // ── CLIENTE / VIDA PLAN: escopado aos próprios bancos ──
+    if (!CLIENT_ALLOWED.has(endpoint)) return json({ error: "Endpoint não disponível" }, 403);
 
     if (endpoint === "connectors/search") {
       const { status, payload } = await mcp(endpoint, body || {});
       return json(payload, status);
     }
 
-    const { data: myConns } = await admin.from("client_connections").select("item_id, connector_name, status").eq("client_id", clientId!);
+    const { data: myConns } = await admin.from(scopeTbl).select("item_id, connector_name, status").eq(scopeCol, scopeVal);
     const myItems = (myConns || []).map((c: { item_id: string }) => c.item_id);
 
     if (endpoint === "connections/list") {
-      // devolve só as conexões do cliente (a partir do mapeamento local)
       return json({ result: { connections: (myConns || []).map((c: any) => ({ item_id: c.item_id, connector_name: c.connector_name, status: c.status })), count: myItems.length } });
     }
 
-    // accounts/list, investments/list e transactions/list: chama por item do cliente e mescla
+    // accounts/list, investments/list e transactions/list: chama por item e mescla
     if (!myItems.length) return json({ result: { results: [] } });
     const merged: any[] = [];
     for (const item of myItems) {
