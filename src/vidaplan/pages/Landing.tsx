@@ -20,6 +20,12 @@ const CONTEUDO = {
       { icon: LineChart, t: "Projeção", d: "Ano a ano, com linha da vida e metas de poupança." },
       { icon: FileText, t: "Relatório PDF", d: "Todo o seu plano num documento profissional." },
     ],
+    passos: [
+      "Liste seus sonhos e sua realidade financeira.",
+      "O app calcula seu Marco Horizonte e a viabilidade.",
+      "Receba o plano e acompanhe mês a mês.",
+    ],
+    destaque: "Grátis para começar · seu consultor pode liberar tudo sem custo pra você",
     rodape: "Comece grátis. Sem cartão de crédito.",
   },
   consultor: {
@@ -28,13 +34,19 @@ const CONTEUDO = {
     sub: "Transforme o Vida Plan na ferramenta da sua consultoria: seu logo, sua carteira de clientes e relatórios profissionais. Você atende, a plataforma faz o cálculo.",
     cta: "Testar 14 dias grátis",
     features: [
-      { icon: Palette, t: "Sua marca (white-label)", d: "Seu logo no app e nos relatórios PDF." },
+      { icon: Palette, t: "Sua marca (white-label)", d: "Seu logo e o nome do sistema no app e no PDF do cliente." },
       { icon: Users, t: "Carteira de clientes", d: "Cada cliente com o próprio projeto de vida, só seu." },
       { icon: ShieldCheck, t: "Dados isolados", d: "Multi-tenant: os dados são seus, ninguém mais vê." },
-      { icon: FileText, t: "Relatórios prontos", d: "Gere o PDF de cada cliente com a sua identidade." },
+      { icon: FileText, t: "Atender e recomendar", d: "Notas privadas + recomendação que aparece no app do cliente." },
       { icon: Sparkles, t: "Clientes usam grátis", d: "Seus clientes têm o app completo — incluído no seu plano." },
       { icon: LineChart, t: "Método e IA", d: "Método Horizonte + IA para viabilizar cada plano." },
     ],
+    passos: [
+      "Crie sua conta, seu logo e o nome do seu sistema.",
+      "Convide seus clientes com o seu código.",
+      "Acompanhe a carteira, atenda e recomende.",
+    ],
+    destaque: "14 dias grátis · seus clientes usam o app completo sem custo extra",
     rodape: "14 dias grátis. Sem cartão de crédito.",
   },
 } as const;
@@ -68,6 +80,7 @@ const Landing = ({ audience }: { audience: Audience }) => {
             </Link>
             <span className="text-white/50 text-sm">{c.rodape}</span>
           </div>
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-3 py-1.5 text-xs text-white/70"><Check className="h-3.5 w-3.5 text-[#7FE3C0]" /> {c.destaque}</div>
         </div>
       </section>
 
@@ -81,6 +94,19 @@ const Landing = ({ audience }: { audience: Audience }) => {
               <p className="text-sm text-[#1b2a3d]/60 mt-1">{f.d}</p>
             </div>
           ))}
+        </div>
+
+        {/* Como funciona */}
+        <div className="mt-12">
+          <p className="font-display text-xl font-bold text-[#16314f] text-center mb-6">Como funciona</p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {c.passos.map((p, i) => (
+              <div key={i} className="rounded-2xl border border-black/[0.07] p-5">
+                <div className="h-8 w-8 rounded-full bg-[#16314f] text-white flex items-center justify-center font-display font-bold mb-3">{i + 1}</div>
+                <p className="text-sm text-[#16314f]">{p}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* CTA final */}
