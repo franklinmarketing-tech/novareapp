@@ -96,7 +96,18 @@ const CarteiraOpenFinance = () => {
         </div>
         <p className="text-sm text-[#1b2a3d]/60 mb-4">Busque seu banco, autorize pelo Open Finance e volte para puxar seus dados. Leva 1 minuto.</p>
 
+        {/* Atalho: já conectou no Banco MCP → puxar dados (sempre visível) */}
+        <div className="rounded-xl bg-[#2F8F6B]/[0.06] border border-[#2F8F6B]/20 p-3 mb-4">
+          <p className="text-sm font-semibold text-[#16314f] mb-1">Já conectou seu banco?</p>
+          <p className="text-xs text-[#1b2a3d]/60 mb-2">Se você já autorizou no app do banco, clique para puxar seus dados. (Pode levar alguns segundos pra sincronizar — se não vier, espere ~30s e clique de novo.)</p>
+          <button onClick={() => claim()} disabled={claiming}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#2F8F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#27795a] disabled:opacity-60 transition-colors">
+            {claiming ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Já conectei — puxar meus dados
+          </button>
+        </div>
+
         {erro && <p className="text-xs text-[#C8643F] bg-[#C8643F]/[0.07] rounded-lg px-3 py-2 mb-3 flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> {erro}</p>}
+        <p className="text-xs font-semibold text-[#1b2a3d]/50 mb-2">Ou conecte um novo banco:</p>
 
         {/* Passo 1 — buscar */}
         <div className="flex gap-2 max-w-md">
