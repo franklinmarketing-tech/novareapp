@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { computeLifePlan, reservaEmergencia, type Debt, type RendaEvento, type Seguro } from "@/lib/lifeplan";
-import { VPCard, VPTitle, VPField, VPProgress } from "../components/ui";
+import { VPCard, VPTitle, VPField, VPProgress, VPMoney } from "../components/ui";
 import { cn } from "@/lib/utils";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Plus, Trash2, CreditCard, TrendingUp, TrendingDown, Shield, ShieldCheck } from "lucide-react";
@@ -133,8 +133,8 @@ const Realidade = () => {
                 className="flex-1 min-w-0 bg-transparent text-sm text-[#16314f] outline-none border-b border-transparent focus:border-[#C8643F]/40 py-0.5" />
               <div className="flex items-center rounded-lg border border-black/10 px-2">
                 <span className="text-[11px] text-[#1b2a3d]/40">R$</span>
-                <input type="number" value={c.valor} onFocus={selAll} onChange={(e) => upd(i, { valor: parseFloat(e.target.value) || 0 })}
-                  className="w-20 bg-transparent py-1.5 pl-1 text-sm text-right text-[#16314f] outline-none tabular-nums" />
+                <VPMoney value={c.valor} onChange={(v) => upd(i, { valor: v })}
+                  className="w-24 bg-transparent py-1.5 pl-1 text-sm text-right text-[#16314f] outline-none tabular-nums" />
               </div>
               <button onClick={() => del(i)} className="text-[#1b2a3d]/30 hover:text-[#C8643F] transition-colors shrink-0"><Trash2 className="h-4 w-4" /></button>
             </div>
@@ -183,7 +183,7 @@ const Realidade = () => {
                 <button onClick={() => setDiv(dividas.filter((x) => x.id !== d.id))} className="text-[#1b2a3d]/30 hover:text-[#C8643F]"><Trash2 className="h-4 w-4" /></button>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <Mini label="Saldo (R$)"><input type="number" value={d.saldo} onFocus={selAll} onChange={(e) => updDiv(d.id, { saldo: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+                <Mini label="Saldo (R$)"><VPMoney value={d.saldo} onChange={(v) => updDiv(d.id, { saldo: v })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
                 <Mini label="Parcelas"><input type="number" value={d.parcelas} onFocus={selAll} onChange={(e) => updDiv(d.id, { parcelas: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
                 <Mini label="Juros % a.a."><input type="number" value={d.jurosAa} onFocus={selAll} onChange={(e) => updDiv(d.id, { jurosAa: parseFloat(e.target.value) || 0 })} className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
               </div>
@@ -252,7 +252,7 @@ const Realidade = () => {
             <div key={s.id} className="flex items-center gap-2">
               <input value={s.nome ?? ""} placeholder="Ex.: seguro de vida" onChange={(e) => updSeg(s.id, { nome: e.target.value })}
                 className="flex-1 min-w-0 bg-transparent text-sm font-medium text-[#16314f] outline-none border-b border-transparent focus:border-[#C8643F]/40 py-1" />
-              <Mini label="Valor (R$)"><input type="number" value={s.valor} onFocus={selAll} onChange={(e) => updSeg(s.id, { valor: parseFloat(e.target.value) || 0 })} className="w-20 bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
+              <Mini label="Valor (R$)"><VPMoney value={s.valor} onChange={(v) => updSeg(s.id, { valor: v })} className="w-24 bg-transparent text-sm text-[#16314f] outline-none tabular-nums" /></Mini>
               <Mini label="Período">
                 <select value={s.periodicidade} onChange={(e) => updSeg(s.id, { periodicidade: e.target.value as "mensal" | "anual" })} className="bg-transparent text-sm text-[#16314f] outline-none">
                   <option value="mensal">Mensal</option><option value="anual">Anual</option>

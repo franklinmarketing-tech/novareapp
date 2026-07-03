@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { fetchTransactions } from "../lib/openfinance";
 import { classificar, canonDaCategoria, norm } from "../lib/categorizar";
-import { VPCard, VPTitle, VPProgress } from "../components/ui";
+import { VPCard, VPTitle, VPProgress, VPMoney } from "../components/ui";
 import { Wallet, CheckCircle2, AlertTriangle, RefreshCw, Loader2, Sparkles } from "lucide-react";
 
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -130,9 +130,8 @@ const Orcamento = () => {
                         <span className="text-xs text-[#1b2a3d]/45 tabular-nums">de {brl0(orcado)}</span>
                         <div className="flex items-center rounded-lg border border-black/10 px-2">
                           <span className="text-[10px] text-[#1b2a3d]/40">R$</span>
-                          <input type="number" value={real || ""} placeholder="0" onFocus={(e) => e.target.select()}
-                            onChange={(e) => setRealizado(c.nome, parseFloat(e.target.value) || 0)}
-                            className="w-20 bg-transparent py-1 pl-1 text-sm text-right text-[#16314f] outline-none tabular-nums" />
+                          <VPMoney value={real} onChange={(v) => setRealizado(c.nome, v)}
+                            className="w-24 bg-transparent py-1 pl-1 text-sm text-right text-[#16314f] outline-none tabular-nums" />
                         </div>
                       </div>
                     </div>

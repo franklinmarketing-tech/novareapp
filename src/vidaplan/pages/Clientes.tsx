@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { computeLifePlan, computeHealthScore, type LifePlanInput, type GoalType } from "@/lib/lifeplan";
 import { TIPOS, metaTipo } from "../lib/goalTypes";
 import { exportVidaPlanPDF } from "../lib/pdf";
-import { VPCard, VPTitle, VPField, VPProgress } from "../components/ui";
+import { VPCard, VPTitle, VPField, VPProgress, VPMoney } from "../components/ui";
 import { Plus, Trash2, ArrowLeft, MessageCircle, Mail, FileDown, Users, Palette, ChevronRight, BadgeCheck, Link2, FolderPen, Loader2, Share2, Lock, StickyNote, Send, Check } from "lucide-react";
 
 const db = supabase as unknown as { from: (t: string) => any };
@@ -459,8 +459,8 @@ const Detalhe = ({ cliente, onBack, updateCliente, updateInput }: {
                     className="flex-1 min-w-0 bg-transparent text-sm text-[#16314f] outline-none border-b border-transparent focus:border-[#C8643F]/40" />
                   <div className="flex items-center rounded-lg border border-black/10 px-2 shrink-0">
                     <span className="text-[10px] text-[#1b2a3d]/40">R$</span>
-                    <input type="number" value={g.valor} onFocus={selAll} onChange={(e) => updSonho(g.id, { valor: num(e.target.value) })}
-                      className="w-20 bg-transparent py-1.5 pl-1 text-sm text-right text-[#16314f] outline-none tabular-nums" />
+                    <VPMoney value={g.valor} onChange={(v) => updSonho(g.id, { valor: v })}
+                      className="w-24 bg-transparent py-1.5 pl-1 text-sm text-right text-[#16314f] outline-none tabular-nums" />
                   </div>
                   <button onClick={() => setGoals(inp.goals.filter((x) => x.id !== g.id))} className="text-[#1b2a3d]/25 hover:text-[#C8643F] shrink-0"><Trash2 className="h-4 w-4" /></button>
                 </div>

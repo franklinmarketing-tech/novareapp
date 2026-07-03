@@ -1,7 +1,7 @@
 // Meus Sonhos: os objetivos de vida que compõem o Marco Horizonte.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
-import { VPCard, VPTitle } from "../components/ui";
+import { VPCard, VPTitle, VPMoney } from "../components/ui";
 import { projecaoObjetivo, sugestaoImovel, type GoalType } from "@/lib/lifeplan";
 import { TIPOS, metaTipo as meta } from "../lib/goalTypes";
 import { Plus, Trash2, StickyNote, Pencil, Lightbulb } from "lucide-react";
@@ -107,8 +107,8 @@ const Sonhos = () => {
                         {TIPOS.map((t) => <option key={t.tipo} value={t.tipo}>{t.emoji} {t.label}</option>)}
                       </select>
                     </Mini>
-                    <Mini label={recorrente ? "Valor por ano" : "Valor"}>
-                      <input type="number" value={g.valor} onFocus={selAll} onChange={(e) => updateGoal(g.id, { valor: num(e.target.value) })}
+                    <Mini label={recorrente ? "Valor por ano (R$)" : "Valor (R$)"}>
+                      <VPMoney value={g.valor} onChange={(v) => updateGoal(g.id, { valor: v })}
                         className="w-full bg-transparent text-sm text-[#16314f] outline-none tabular-nums" />
                     </Mini>
                     {!recorrente && (
