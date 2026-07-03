@@ -9,7 +9,16 @@ export async function call(endpoint: string, body: Record<string, unknown> = {})
     body: { endpoint, body },
     headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
   });
-  if (error) throw error;
+  if (error) {
+    // Extrai a mensagem real do corpo da função (senão fica só "non-2xx status code").
+    let msg = error.message || "Falha na conexão com o Open Finance.";
+    try {
+      const j = await (error as any).context?.json?.();
+      if (j?.result?.message) msg = j.result.message;
+      else if (j?.error) msg = j.error;
+    } catch { /* mantém a mensagem padrão */ }
+    throw new Error(msg);
+  }
   if (data?.error) throw new Error(data.error);
   return data?.result ?? data;
 }
