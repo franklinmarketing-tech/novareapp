@@ -16,8 +16,8 @@ export async function call(endpoint: string, body: Record<string, unknown> = {})
     try {
       if (ctx && typeof ctx.json === "function") {
         const j = await ctx.json();
-        msg = j?.result?.message || j?.error || (typeof j === "string" ? j : "");
-        if (!msg && j) msg = JSON.stringify(j).slice(0, 300);
+        const cand = j?.result?.message ?? j?.error ?? j?.message ?? j;
+        msg = typeof cand === "string" ? cand : JSON.stringify(cand).slice(0, 400);
       }
     } catch { /* corpo não é JSON */ }
     if (!msg) { try { if (ctx && typeof ctx.text === "function") msg = await ctx.text(); } catch { /* ignore */ } }
