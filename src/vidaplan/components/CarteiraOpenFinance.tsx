@@ -26,6 +26,7 @@ const CarteiraOpenFinance = () => {
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [claiming, setClaiming] = useState(false);
+  const [conectando, setConectando] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   const load = async () => {
@@ -54,15 +55,25 @@ const CarteiraOpenFinance = () => {
     catch (e: any) { setMsg(e?.message || "Falha na busca."); }
     finally { setSearching(false); }
   };
-  const claim = async () => {
-    setClaiming(true); setMsg(null);
+  const claim = async (silent = false) => {
+    if (!silent) { setClaiming(true); setMsg(null); }
     try {
       const r = await call("claim");
-      if (r?.claimed) { setMsg("Banco conectado! 🎉"); await load(); }
-      else setMsg(r?.message || "Ainda não encontrei uma conexão nova. Autorize no banco e tente de novo.");
-    } catch (e: any) { setMsg(e?.message || "Falha ao concluir."); }
-    finally { setClaiming(false); }
+      if (r?.claimed) { setConectando(false); setMsg("Banco conectado! 🎉"); await load(); }
+      else if (!silent) setMsg(r?.message || "Ainda não detectei o banco. Termine a autorização no app do banco e tente de novo.");
+    } catch (e: any) { if (!silent) setMsg(e?.message || "Falha ao concluir."); }
+    finally { if (!silent) setClaiming(false); }
   };
+
+  // Depois de "Autorizar", detecta a conexão sozinho quando o usuário volta pra aba.
+  useEffect(() => {
+    if (!conectando) return;
+    const tryClaim = () => { if (document.visibilityState === "visible") claim(true); };
+    window.addEventListener("focus", tryClaim);
+    document.addEventListener("visibilitychange", tryClaim);
+    return () => { window.removeEventListener("focus", tryClaim); document.removeEventListener("visibilitychange", tryClaim); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conectando]);
 
   const totalInvest = investments.reduce((s, i) => s + investBalance(i), 0);
   const bankAccounts = accounts.filter((a) => (a.type || "").toUpperCase() !== "CREDIT");
@@ -102,27 +113,36 @@ const CarteiraOpenFinance = () => {
         </div>
 
         {/* Passo 2 — escolher banco + confirmar */}
-        {searchResults && (
-          <div className="mt-4 space-y-2">
-            {searchResults.length === 0 && <p className="text-sm text-[#1b2a3d]/50">Nenhum banco encontrado. Tente outro nome.</p>}
-            {searchResults.map((b) => (
-              <a key={b.id} href={b.connect_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-between gap-3 rounded-xl border border-black/[0.08] px-4 py-2.5 hover:border-[#C8643F]/40 hover:bg-black/[0.02] transition-colors">
-                <span className="text-sm font-medium text-[#16314f]">{b.name}</span>
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#C8643F]"><ExternalLink className="h-3.5 w-3.5" /> Autorizar</span>
-              </a>
-            ))}
-            {searchResults.length > 0 && (
-              <div className="pt-3 border-t border-black/[0.06] mt-3">
-                <p className="text-xs text-[#1b2a3d]/55 mb-2">Já autorizou no app do banco? Clique para puxar seus dados:</p>
-                <button onClick={claim} disabled={claiming}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#2F8F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#27795a] disabled:opacity-60 transition-colors">
-                  {claiming ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Concluí a conexão
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        {searchResults && (() => {
+          const banks = searchResults.filter((b, i, a) => a.findIndex((x) => (x.connect_url || x.id) === (b.connect_url || b.id)) === i);
+          return (
+            <div className="mt-4 space-y-2">
+              {banks.length === 0 && <p className="text-sm text-[#1b2a3d]/50">Nenhum banco encontrado. Tente outro nome.</p>}
+              {banks.map((b) => (
+                <a key={b.connect_url || b.id} href={b.connect_url} target="_blank" rel="noopener noreferrer" onClick={() => setConectando(true)}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-black/[0.08] px-4 py-2.5 hover:border-[#C8643F]/40 hover:bg-black/[0.02] transition-colors">
+                  <span className="text-sm font-medium text-[#16314f]">{b.name}</span>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#C8643F]"><ExternalLink className="h-3.5 w-3.5" /> Autorizar</span>
+                </a>
+              ))}
+              {banks.length > 0 && (
+                <div className="pt-3 border-t border-black/[0.06] mt-3">
+                  {conectando ? (
+                    <p className="text-xs text-[#1b2a3d]/60 mb-2">
+                      <strong className="text-[#16314f]">Autorize no app do banco</strong> (abriu numa nova aba): escolha o banco → aceite os termos → <strong>Conectar banco</strong> → faça o login no seu banco. Quando voltar aqui, <strong className="text-[#2F8F6B]">detectamos sozinho</strong>. Se demorar, clique abaixo.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-[#1b2a3d]/55 mb-2">Já autorizou no app do banco? Clique para puxar seus dados:</p>
+                  )}
+                  <button onClick={() => claim()} disabled={claiming}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#2F8F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#27795a] disabled:opacity-60 transition-colors">
+                    {claiming ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Concluí a conexão
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
         {msg && <p className="text-xs text-[#16314f] bg-[#16314f]/[0.05] rounded-lg px-3 py-2 mt-3">{msg}</p>}
       </VPCard>
     );
