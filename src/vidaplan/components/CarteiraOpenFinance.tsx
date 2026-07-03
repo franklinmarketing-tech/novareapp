@@ -13,7 +13,13 @@ const asArray = (x: any, ...keys: string[]): any[] => {
   for (const k of keys) if (Array.isArray(x?.[k])) return x[k];
   return [];
 };
-const investBalance = (i: any) => Number(i.balance ?? i.netWorth ?? i.value ?? i.amount ?? 0) || 0;
+const num = (v: any): number => {
+  if (v == null) return 0;
+  if (typeof v === "object") return num(v.current ?? v.available ?? v.amount ?? v.value ?? v.balance ?? 0);
+  return Number(v) || 0;
+};
+const investBalance = (i: any) => num(i.balance ?? i.netWorth ?? i.value ?? i.amount ?? i.grossValue ?? i.marketValue ?? 0);
+const accBalance = (a: any) => num(a.balance ?? a.currentBalance ?? a.available ?? a.availableBalance ?? a.amount ?? 0);
 
 const CarteiraOpenFinance = () => {
   const [loading, setLoading] = useState(true);
@@ -84,7 +90,7 @@ const CarteiraOpenFinance = () => {
 
   const totalInvest = investments.reduce((s, i) => s + investBalance(i), 0);
   const bankAccounts = accounts.filter((a) => (a.type || "").toUpperCase() !== "CREDIT");
-  const totalSaldo = bankAccounts.reduce((s, a) => s + (Number(a.balance) || 0), 0);
+  const totalSaldo = bankAccounts.reduce((s, a) => s + accBalance(a), 0);
   const porTipo = useMemo(() => investments.reduce((m: Record<string, number>, i) => {
     const t = (i.type || "OTHER").toUpperCase(); m[t] = (m[t] || 0) + investBalance(i); return m;
   }, {}), [investments]);
