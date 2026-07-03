@@ -77,9 +77,9 @@ Deno.serve(async (req) => {
     if (endpoint === "claim") {
       if (isAdmin) return json({ error: "Admin não precisa reivindicar." }, 400);
       const { status: st, payload } = await mcp("connections/list", {});
-      // Parsing amplo: a lista pode vir em connections/results/items/data ou aninhada.
-      let conns = arr(payload, "connections", "results", "items", "data");
-      if (!conns.length && Array.isArray((payload as any)?.data?.connections)) conns = (payload as any).data.connections;
+      // O Banco MCP responde { ok, tool, result: { connections: [...] } } — o dado fica em result.
+      const box = (payload as any)?.result ?? payload;
+      const conns = arr(box, "connections", "results", "items", "data");
       const itemOf = (c: any) => String(c.item_id || c.id || c.itemId || c.connection_id || "");
       const nameOf = (c: any) => c.connector_name || c.connector_id || c.name || null;
 
@@ -148,8 +148,9 @@ Deno.serve(async (req) => {
     if (!myItems.length) return json({ result: { results: [] } });
     const merged: any[] = [];
     for (const item of myItems) {
-      const { payload } = await mcp(endpoint, { ...(body || {}), item });
-      arr(payload, "accounts", "investments", "transactions", "results").forEach((x: any) => merged.push(x));
+      const { payload } = await mcp(endpoint, { ...(body || {}), item_id: item });
+      const box = (payload as any)?.result ?? payload;
+      arr(box, "accounts", "investments", "transactions", "results", "items", "data").forEach((x: any) => merged.push(x));
     }
     return json({ result: { results: merged } });
   } catch (e) {
