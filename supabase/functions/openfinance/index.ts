@@ -80,23 +80,45 @@ Deno.serve(async (req) => {
       // Parsing amplo: a lista pode vir em connections/results/items/data ou aninhada.
       let conns = arr(payload, "connections", "results", "items", "data");
       if (!conns.length && Array.isArray((payload as any)?.data?.connections)) conns = (payload as any).data.connections;
-      const itemOf = (c: any) => c.item_id || c.id || c.itemId || c.connection_id;
-      const [{ data: cc }, { data: vp }] = await Promise.all([
-        admin.from("client_connections").select("item_id"),
-        admin.from("vidaplan_open_finance").select("item_id"),
-      ]);
-      const claimed = new Set([...(cc || []), ...(vp || [])].map((r: any) => r.item_id));
-      const novas = conns.filter((c: any) => itemOf(c) && !claimed.has(itemOf(c)));
-      if (!novas.length) {
+      const itemOf = (c: any) => String(c.item_id || c.id || c.itemId || c.connection_id || "");
+      const nameOf = (c: any) => c.connector_name || c.connector_id || c.name || null;
+
+      // O Banco MCP não devolveu nenhuma conexão → mostra o diagnóstico bruto.
+      if (!conns.length) {
         const keys = payload && typeof payload === "object" ? Object.keys(payload) : [];
-        return json({ result: { claimed: false, message: `Nenhuma conexão nova. [diag: http ${st}, ${conns.length} conexão(ões), keys=${keys.join("|")}, ${JSON.stringify(payload).slice(0, 400)}]` } });
+        return json({ result: { claimed: false, message: `Banco MCP não retornou conexões. [diag: http ${st}, keys=${keys.join("|")}, ${JSON.stringify(payload).slice(0, 400)}]` } });
       }
-      for (const c of novas) {
-        const row: any = { item_id: itemOf(c), connector_name: c.connector_name || c.connector_id || c.name || null, status: c.status || null };
+
+      // O que já pertence a OUTROS usuários (não pode reivindicar); o que já é meu, revalido.
+      const [{ data: cc }, { data: vpAll }] = await Promise.all([
+        admin.from("client_connections").select("item_id"),
+        admin.from("vidaplan_open_finance").select("item_id, user_id"),
+      ]);
+      const meus = new Set((vpAll || []).filter((r: any) => r.user_id === userId).map((r: any) => String(r.item_id)));
+      const deOutros = new Set([
+        ...(cc || []).map((r: any) => String(r.item_id)),
+        ...(vpAll || []).filter((r: any) => r.user_id !== userId).map((r: any) => String(r.item_id)),
+      ]);
+      const claimaveis = conns.filter((c: any) => itemOf(c) && !deOutros.has(itemOf(c)));
+      if (!claimaveis.length) {
+        return json({ result: { claimed: false, message: "As conexões encontradas pertencem a outro usuário. Conecte um banco na sua própria conta." } });
+      }
+
+      let salvas = 0;
+      for (const c of claimaveis) {
+        const id = itemOf(c);
+        if (meus.has(id)) { salvas++; continue; } // já é minha, ok
+        const row: any = { item_id: id, connector_name: nameOf(c), status: c.status || null };
         row[scopeCol] = scopeVal;
-        await admin.from(scopeTbl).insert(row);
+        const { error: insErr } = await admin.from(scopeTbl).insert(row);
+        if (insErr) {
+          // 23505 = já existe (conflito) → considera conectado; outro erro → devolve pro usuário ver.
+          if ((insErr as any).code === "23505") { salvas++; continue; }
+          return json({ result: { claimed: false, message: `Erro ao salvar a conexão: ${insErr.message} [${(insErr as any).code || "?"}] tabela=${scopeTbl}` } });
+        }
+        salvas++;
       }
-      return json({ result: { claimed: true, count: novas.length } });
+      return json({ result: { claimed: true, count: salvas } });
     }
 
     if (typeof endpoint !== "string" || !ALLOWED.has(endpoint)) return json({ error: `Endpoint não permitido: ${endpoint}` }, 400);

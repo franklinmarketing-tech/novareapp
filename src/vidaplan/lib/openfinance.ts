@@ -11,15 +11,20 @@ export async function call(endpoint: string, body: Record<string, unknown> = {})
   });
   if (error) {
     // Extrai a mensagem real do corpo da função (senão fica só "non-2xx status code").
-    let msg = error.message || "Falha na conexão com o Open Finance.";
+    let msg = "";
+    const ctx = (error as any).context;
     try {
-      const j = await (error as any).context?.json?.();
-      if (j?.result?.message) msg = j.result.message;
-      else if (j?.error) msg = j.error;
-    } catch { /* mantém a mensagem padrão */ }
-    throw new Error(msg);
+      if (ctx && typeof ctx.json === "function") {
+        const j = await ctx.json();
+        msg = j?.result?.message || j?.error || (typeof j === "string" ? j : "");
+        if (!msg && j) msg = JSON.stringify(j).slice(0, 300);
+      }
+    } catch { /* corpo não é JSON */ }
+    if (!msg) { try { if (ctx && typeof ctx.text === "function") msg = await ctx.text(); } catch { /* ignore */ } }
+    const st = ctx?.status ? ` (HTTP ${ctx.status})` : "";
+    throw new Error((msg || (error as any).message || "Falha no Open Finance") + st);
   }
-  if (data?.error) throw new Error(data.error);
+  if (data?.error) throw new Error(typeof data.error === "string" ? data.error : JSON.stringify(data.error));
   return data?.result ?? data;
 }
 
