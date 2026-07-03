@@ -19,7 +19,14 @@ const ALLOWED = new Set([
   "investments/transactions/list","loans/list","categories/list",
 ]);
 // Endpoints liberados para CLIENTE (escopados ao banco dele)
-const CLIENT_ALLOWED = new Set(["connectors/search","connections/list","accounts/list","investments/list","transactions/list"]);
+const CLIENT_ALLOWED = new Set([
+  "connectors/search","connections/list","categories/list",
+  "accounts/list","accounts/balance","transactions/list",
+  "investments/list","investments/transactions/list",
+  "credit-card-bills/list","loans/list",
+]);
+// Endpoints que NÃO precisam de item (globais / passthrough)
+const CLIENT_PASSTHROUGH = new Set(["connectors/search","categories/list"]);
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -132,7 +139,8 @@ Deno.serve(async (req) => {
     // ── CLIENTE / VIDA PLAN: escopado aos próprios bancos ──
     if (!CLIENT_ALLOWED.has(endpoint)) return json({ error: "Endpoint não disponível" }, 403);
 
-    if (endpoint === "connectors/search") {
+    // Passthrough (busca de conectores, categorias) — não precisa escopar por item.
+    if (CLIENT_PASSTHROUGH.has(endpoint)) {
       const { status, payload } = await mcp(endpoint, body || {});
       return json(payload, status);
     }
@@ -150,7 +158,7 @@ Deno.serve(async (req) => {
     for (const item of myItems) {
       const { payload } = await mcp(endpoint, { ...(body || {}), item_id: item });
       const box = (payload as any)?.result ?? payload;
-      arr(box, "accounts", "investments", "transactions", "results", "items", "data").forEach((x: any) => merged.push(x));
+      arr(box, "accounts", "investments", "transactions", "bills", "loans", "results", "items", "data").forEach((x: any) => merged.push(x));
     }
     return json({ result: { results: merged } });
   } catch (e) {

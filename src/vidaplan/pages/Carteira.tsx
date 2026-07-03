@@ -1,5 +1,6 @@
 // Conectar Banco: consolidação via Open Finance + gastos invisíveis (premium).
 import CarteiraOpenFinance from "../components/CarteiraOpenFinance";
+import RaioXFinanceiro from "../components/RaioXFinanceiro";
 import GastosInvisiveis from "../components/GastosInvisiveis";
 import PremiumGate from "../components/PremiumGate";
 import { ShieldCheck } from "lucide-react";
@@ -20,6 +21,7 @@ const Carteira = () => (
     </div>
 
     <CarteiraOpenFinance />
+    <RaioXFinanceiro />
     <PremiumGate titulo="Gastos invisíveis" descricao="Revele assinaturas esquecidas, juros e taxas bancárias dos últimos 90 dias.">
       <GastosInvisiveis />
     </PremiumGate>
