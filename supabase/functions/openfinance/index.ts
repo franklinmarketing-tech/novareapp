@@ -76,18 +76,23 @@ Deno.serve(async (req) => {
     // ── Ação custom: reivindica o banco recém-conectado (cliente OU Vida Plan) ──
     if (endpoint === "claim") {
       if (isAdmin) return json({ error: "Admin não precisa reivindicar." }, 400);
-      const { payload } = await mcp("connections/list", {});
-      const conns = arr(payload, "connections");
-      // Conjunto já reivindicado por QUALQUER um (evita pegar a conexão de outro usuário).
+      const { status: st, payload } = await mcp("connections/list", {});
+      // Parsing amplo: a lista pode vir em connections/results/items/data ou aninhada.
+      let conns = arr(payload, "connections", "results", "items", "data");
+      if (!conns.length && Array.isArray((payload as any)?.data?.connections)) conns = (payload as any).data.connections;
+      const itemOf = (c: any) => c.item_id || c.id || c.itemId || c.connection_id;
       const [{ data: cc }, { data: vp }] = await Promise.all([
         admin.from("client_connections").select("item_id"),
         admin.from("vidaplan_open_finance").select("item_id"),
       ]);
       const claimed = new Set([...(cc || []), ...(vp || [])].map((r: any) => r.item_id));
-      const novas = conns.filter((c: any) => c.item_id && !claimed.has(c.item_id));
-      if (!novas.length) return json({ result: { claimed: false, message: "Nenhuma conexão nova encontrada. Conecte um banco primeiro." } });
+      const novas = conns.filter((c: any) => itemOf(c) && !claimed.has(itemOf(c)));
+      if (!novas.length) {
+        const keys = payload && typeof payload === "object" ? Object.keys(payload) : [];
+        return json({ result: { claimed: false, message: `Nenhuma conexão nova. [diag: http ${st}, ${conns.length} conexão(ões), keys=${keys.join("|")}, ${JSON.stringify(payload).slice(0, 400)}]` } });
+      }
       for (const c of novas) {
-        const row: any = { item_id: c.item_id, connector_name: c.connector_name || c.connector_id || null, status: c.status || null };
+        const row: any = { item_id: itemOf(c), connector_name: c.connector_name || c.connector_id || c.name || null, status: c.status || null };
         row[scopeCol] = scopeVal;
         await admin.from(scopeTbl).insert(row);
       }
