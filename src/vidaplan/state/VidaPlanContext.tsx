@@ -6,7 +6,9 @@ import { computeLifePlan, type LifePlanInput, type Goal, type LifePlan, type Cus
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-const STORAGE_KEY = "vidaplan:input:v1";
+// Cache local isolado por usuário (evita vazar dados de uma conta pra outra no mesmo navegador).
+const BASE_KEY = "vidaplan:input:v1";
+const keyFor = (uid?: string | null) => (uid ? `${BASE_KEY}:${uid}` : `${BASE_KEY}:anon`);
 // A tabela ainda não está nos tipos gerados do Supabase; acesso solto e seguro.
 const db = supabase as unknown as {
   from: (t: string) => any;
@@ -50,15 +52,29 @@ const DEFAULT_INPUT: LifePlanInput = {
   ],
 };
 
-function loadLocal(): LifePlanInput {
+// Primeiro acesso (conta nova, sem plano no servidor): começa LIMPO — nunca herda dados.
+const CLEAN_INPUT: LifePlanInput = {
+  ...DEFAULT_INPUT,
+  rendaMensal: 0,
+  custoFixoMensal: 0,
+  patrimonioAtual: 0,
+  reservaAtual: 0,
+  ativosImobilizados: 0,
+  consorcio: 0,
+  custoCategorias: DEFAULT_INPUT.custoCategorias.map((c) => ({ ...c, valor: 0 })),
+  dividas: [],
+  goals: [],
+};
+
+function loadCache(uid?: string | null): LifePlanInput | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(keyFor(uid));
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<LifePlanInput>;
       return { ...DEFAULT_INPUT, ...parsed, anoAtual: new Date().getFullYear() };
     }
   } catch { /* ignora */ }
-  return DEFAULT_INPUT;
+  return null;
 }
 
 type SaveState = "idle" | "saving" | "saved";
@@ -80,17 +96,29 @@ const Ctx = createContext<VidaPlanCtx | null>(null);
 
 export const VidaPlanProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const [input, setInput] = useState<LifePlanInput>(loadLocal);
+  const [input, setInput] = useState<LifePlanInput>(DEFAULT_INPUT);
   const [hydrated, setHydrated] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const skipNextSave = useRef(true); // não salvar logo após carregar do servidor
 
-  // Carrega o plano do usuário ao logar (ou modo local quando deslogado)
+  // Limpa a chave global antiga (que vazava dados entre contas no mesmo navegador).
+  useEffect(() => { try { localStorage.removeItem(BASE_KEY); } catch { /* ignora */ } }, []);
+
+  // Carrega o plano ao logar. Servidor manda; se não houver plano salvo, começa LIMPO.
   useEffect(() => {
     let cancel = false;
     (async () => {
-      if (!user) { setHydrated(true); return; }
       setHydrated(false);
+      // Anônimo (trial sem login): usa só o cache anônimo, mostra o exemplo padrão.
+      if (!user) {
+        skipNextSave.current = true;
+        setInput(loadCache(null) ?? DEFAULT_INPUT);
+        setHydrated(true);
+        return;
+      }
+      // Logado: cache do PRÓPRIO usuário pra abrir rápido (nunca de outro).
+      const cached = loadCache(user.id);
+      if (cached) { skipNextSave.current = true; setInput(cached); }
       try {
         const { data } = await db.from("vidaplan_plans").select("data").eq("user_id", user.id).maybeSingle();
         if (cancel) return;
@@ -98,6 +126,10 @@ export const VidaPlanProvider = ({ children }: { children: ReactNode }) => {
         if (saved && typeof saved === "object" && Object.keys(saved).length) {
           skipNextSave.current = true;
           setInput({ ...DEFAULT_INPUT, ...(saved as Partial<LifePlanInput>), anoAtual: new Date().getFullYear() });
+        } else if (!cached) {
+          // Primeiro acesso real desta conta: plano limpo, sem herdar nada.
+          skipNextSave.current = true;
+          setInput(CLEAN_INPUT);
         }
       } catch { /* mantém o que já tem */ }
       finally { if (!cancel) setHydrated(true); }
@@ -105,10 +137,10 @@ export const VidaPlanProvider = ({ children }: { children: ReactNode }) => {
     return () => { cancel = true; };
   }, [user?.id]);
 
-  // Cache local sempre
+  // Cache local por usuário (isolado)
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(input)); } catch { /* ignora */ }
-  }, [input]);
+    try { localStorage.setItem(keyFor(user?.id), JSON.stringify(input)); } catch { /* ignora */ }
+  }, [input, user?.id]);
 
   // Auto-save no servidor (debounce) quando logado e já hidratado
   useEffect(() => {
