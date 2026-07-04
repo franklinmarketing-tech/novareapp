@@ -72,9 +72,27 @@ Deno.serve(async (req) => {
 
     if (action === "deleteUser") {
       const { userId } = payload || {};
+      if (!userId) return json({ error: "userId ausente" }, 400);
       if (userId === caller.id) return json({ error: "Você não pode excluir a si mesmo." }, 400);
+
+      // 1) Apaga os dados do Vida Plan ligados ao usuário (evita órfãos e re-login com dados).
+      const purgas = [
+        admin.from("vidaplan_plans").delete().eq("user_id", userId),
+        admin.from("vidaplan_subscriptions").delete().eq("user_id", userId),
+        admin.from("vidaplan_open_finance").delete().eq("user_id", userId),
+        admin.from("vidaplan_consultores").delete().eq("consultor_id", userId),
+        admin.from("vidaplan_vinculos").delete().eq("consultor_id", userId),
+        admin.from("vidaplan_clientes").delete().eq("consultor_id", userId),
+      ];
+      await Promise.allSettled(purgas);
+
+      // 2) Apaga a conta de autenticação (hard delete → revoga sessões/refresh tokens).
       const { error } = await admin.auth.admin.deleteUser(userId);
-      if (error) return json({ error: error.message }, 400);
+      if (error) {
+        // Se a conta já não existe, considera sucesso (idempotente).
+        if (/not\s*found|does not exist/i.test(error.message)) return json({ ok: true, note: "Conta já não existia; dados limpos." });
+        return json({ error: `Falha ao excluir a conta: ${error.message}` }, 400);
+      }
       return json({ ok: true });
     }
 
