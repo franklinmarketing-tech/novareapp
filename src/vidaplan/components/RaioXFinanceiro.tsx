@@ -44,6 +44,23 @@ const RaioXFinanceiro = () => {
   const [investments, setInvestments] = useState<any[]>([]);
   const [bills, setBills] = useState<any[]>([]);
   const [loans, setLoans] = useState<any[]>([]);
+  const [diag, setDiag] = useState<string | null>(null);
+  const [diagLoading, setDiagLoading] = useState(false);
+
+  const rodarDiagnostico = async () => {
+    setDiagLoading(true); setDiag(null);
+    const eps = ["accounts/list", "transactions/list", "investments/list", "credit-card-bills/list", "loans/list"];
+    const out: string[] = [];
+    for (const ep of eps) {
+      try {
+        const de = new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10);
+        const ate = new Date().toISOString().slice(0, 10);
+        const r = await call(ep, { debug: true, from: de, to: ate, dateFrom: de, dateTo: ate });
+        out.push(`▶ ${ep}\n${JSON.stringify((r as any)?.debug ?? r)}`);
+      } catch (e: any) { out.push(`▶ ${ep} → ERRO: ${e?.message}`); }
+    }
+    setDiag(out.join("\n\n")); setDiagLoading(false);
+  };
 
   const carregar = async () => {
     setLoading(true); setErro(null);
@@ -111,8 +128,18 @@ const RaioXFinanceiro = () => {
           <Sparkles className="h-5 w-5 text-[#C8643F]" />
           <h2 className="font-display text-xl font-bold text-[#16314f]">Raio-X Financeiro</h2>
         </div>
-        <button onClick={carregar} className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-semibold text-[#16314f] hover:bg-black/[0.03]"><RefreshCw className="h-3.5 w-3.5" /> Atualizar</button>
+        <div className="flex items-center gap-2">
+          <button onClick={rodarDiagnostico} disabled={diagLoading} className="inline-flex items-center gap-1.5 rounded-lg border border-[#C8643F]/30 px-3 py-1.5 text-xs font-semibold text-[#C8643F] hover:bg-[#C8643F]/[0.06] disabled:opacity-60">{diagLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Diagnóstico</button>
+          <button onClick={carregar} className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-semibold text-[#16314f] hover:bg-black/[0.03]"><RefreshCw className="h-3.5 w-3.5" /> Atualizar</button>
+        </div>
       </div>
+
+      {diag && (
+        <VPCard className="p-4">
+          <p className="text-xs font-bold text-[#C8643F] mb-2">Diagnóstico (resposta crua do Banco MCP) — mande este texto pro suporte:</p>
+          <textarea readOnly value={diag} onFocus={(e) => e.target.select()} className="w-full h-56 text-[11px] font-mono bg-black/[0.03] rounded-lg p-2 text-[#16314f] resize-y" />
+        </VPCard>
+      )}
 
       {erro && <p className="text-xs text-[#C8643F] bg-[#C8643F]/[0.07] rounded-lg px-3 py-2 flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> {erro}</p>}
       {semDados && !erro && (

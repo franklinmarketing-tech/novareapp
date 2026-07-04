@@ -154,12 +154,20 @@ Deno.serve(async (req) => {
 
     // accounts/list, investments/list e transactions/list: chama por item e mescla
     if (!myItems.length) return json({ result: { results: [] } });
+    const single = myItems.length === 1;
+    const debugOn = !!(body as any)?.debug;
     const merged: any[] = [];
+    const debugRaw: any[] = [];
     for (const item of myItems) {
-      const { payload } = await mcp(endpoint, { ...(body || {}), item_id: item });
+      // Com 1 conexão, a API pede pra NÃO passar item; com várias, passa item_id e item.
+      const reqBody: Record<string, unknown> = single ? { ...(body || {}) } : { ...(body || {}), item_id: item, item };
+      delete reqBody.debug;
+      const { status, payload } = await mcp(endpoint, reqBody);
       const box = (payload as any)?.result ?? payload;
+      if (debugOn) debugRaw.push({ item, http: status, keys: box && typeof box === "object" ? Object.keys(box) : [], sample: JSON.stringify(payload).slice(0, 700) });
       arr(box, "accounts", "investments", "transactions", "bills", "loans", "results", "items", "data").forEach((x: any) => merged.push(x));
     }
+    if (debugOn) return json({ result: { debug: debugRaw } });
     return json({ result: { results: merged } });
   } catch (e) {
     console.error("openfinance proxy error:", e);
