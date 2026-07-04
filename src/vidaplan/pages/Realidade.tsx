@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { computeLifePlan, reservaEmergencia, type Debt, type RendaEvento, type Seguro } from "@/lib/lifeplan";
 import { VPCard, VPTitle, VPField, VPProgress, VPMoney } from "../components/ui";
+import ImportarDoBanco from "../components/ImportarDoBanco";
 import { cn } from "@/lib/utils";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Plus, Trash2, CreditCard, TrendingUp, TrendingDown, Shield, ShieldCheck } from "lucide-react";
@@ -52,6 +53,8 @@ const Realidade = () => {
   return (
     <div className="space-y-6">
       <VPTitle hint="Sua fotografia financeira atual. É a base de toda a projeção.">💰 Minha Realidade</VPTitle>
+
+      <ImportarDoBanco />
 
       <VPCard className="p-5 space-y-4">
         <div className="grid sm:grid-cols-3 gap-4">
