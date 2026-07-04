@@ -128,6 +128,24 @@ Deno.serve(async (req) => {
       return json({ result: { claimed: true, count: salvas } });
     }
 
+    // ── Ação custom: esquecer/desconectar um banco (remove o vínculo do usuário) ──
+    if (endpoint === "forget") {
+      const itemId = (body as any)?.item_id;
+      let q = admin.from(scopeTbl).delete().eq(scopeCol, scopeVal);
+      if (itemId) q = q.eq("item_id", String(itemId));
+      const { error } = await q;
+      if (error) return json({ error: error.message }, 500);
+      return json({ result: { ok: true } });
+    }
+
+    // ── Ação custom: URL para conectar um novo banco no Banco MCP ──
+    if (endpoint === "connect-url") {
+      const { payload } = await mcp("connections/list", {});
+      const box = (payload as any)?.result ?? payload;
+      const url = box?.add_connection_url || box?.connect_url || (payload as any)?.add_connection_url || null;
+      return json({ result: { url } });
+    }
+
     if (typeof endpoint !== "string" || !ALLOWED.has(endpoint)) return json({ error: `Endpoint não permitido: ${endpoint}` }, 400);
 
     // ── ADMIN: acesso total (conta Novare) ──

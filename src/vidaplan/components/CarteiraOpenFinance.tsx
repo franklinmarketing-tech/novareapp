@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { call } from "../lib/openfinance";
 import { brl0 } from "../state/VidaPlanContext";
 import { VPCard } from "./ui";
-import { Landmark, RefreshCw, Loader2, TrendingUp, Wallet, Building2, Search, CheckCircle2, ExternalLink, AlertTriangle } from "lucide-react";
+import { Landmark, RefreshCw, Loader2, TrendingUp, Wallet, Building2, Search, CheckCircle2, ExternalLink, AlertTriangle, X, Plus } from "lucide-react";
 
 const TIPO_LABEL: Record<string, string> = { FIXED_INCOME: "Renda Fixa", MUTUAL_FUND: "Fundos", EQUITY: "Ações", ETF: "ETFs", COE: "COE", SECURITY: "Títulos", OTHER: "Outros" };
 const CORES = ["#16314f", "#C8643F", "#2F8F6B", "#E2A03F", "#5B8DB8", "#8E6BC8", "#3FA0A0"];
@@ -76,6 +76,20 @@ const CarteiraOpenFinance = () => {
       else if (!silent) setMsg(r?.message || "Ainda não detectei o banco. Termine a autorização no app do banco e tente de novo.");
     } catch (e: any) { if (!silent && !captureNotConnected(e)) setMsg(e?.message || "Falha ao concluir."); }
     finally { if (!silent) setClaiming(false); }
+  };
+
+  const desconectar = async (item_id?: string) => {
+    if (!confirm(item_id ? "Desconectar este banco? Você pode reconectar depois." : "Desconectar todos os bancos?")) return;
+    try { await call("forget", item_id ? { item_id } : {}); setMsg("Banco desconectado."); await load(); }
+    catch (e: any) { setMsg(e?.message || "Falha ao desconectar."); }
+  };
+  const conectarOutro = async () => {
+    setConectando(true); setMsg("Abrindo conexão…");
+    try {
+      const r = await call("connect-url");
+      if (r?.url) { window.open(r.url, "_blank", "noopener,noreferrer"); setMsg("Conclua no Banco MCP e volte — detectamos sozinho."); }
+      else setMsg("Não consegui obter o link de conexão. Tente pela busca abaixo.");
+    } catch (e: any) { if (!captureNotConnected(e)) setMsg(e?.message || "Falha ao abrir conexão."); }
   };
 
   // Depois de "Autorizar", detecta a conexão sozinho quando o usuário volta pra aba.
@@ -202,11 +216,17 @@ const CarteiraOpenFinance = () => {
             <span key={c.item_id} className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] px-3 py-1.5 text-sm text-[#16314f]">
               <Building2 className="h-3.5 w-3.5 text-[#1b2a3d]/50" />{c.connector_name || "Banco"}
               <span className={`h-1.5 w-1.5 rounded-full ${c.status === "UPDATED" ? "bg-[#2F8F6B]" : "bg-[#E2A03F]"}`} />
+              <button onClick={() => desconectar(c.item_id)} title="Desconectar este banco"
+                className="ml-1 text-[#1b2a3d]/40 hover:text-[#C8643F] transition-colors"><X className="h-3.5 w-3.5" /></button>
             </span>
           ))}
         </div>
-        <button onClick={load} className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-semibold text-[#16314f] hover:bg-black/[0.03]"><RefreshCw className="h-3.5 w-3.5" /> Atualizar</button>
+        <div className="flex items-center gap-2">
+          <button onClick={conectarOutro} className="inline-flex items-center gap-1.5 rounded-lg bg-[#16314f] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1d3e63]"><Plus className="h-3.5 w-3.5" /> Conectar banco</button>
+          <button onClick={load} className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-semibold text-[#16314f] hover:bg-black/[0.03]"><RefreshCw className="h-3.5 w-3.5" /> Atualizar</button>
+        </div>
       </VPCard>
+      {msg && <p className="text-xs text-[#16314f] bg-[#16314f]/[0.05] rounded-lg px-3 py-2">{msg}</p>}
 
       {Object.keys(porTipo).length > 0 && (
         <VPCard className="p-5">
