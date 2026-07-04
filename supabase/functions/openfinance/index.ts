@@ -174,16 +174,39 @@ Deno.serve(async (req) => {
     if (!myItems.length) return json({ result: { results: [] } });
     const single = myItems.length === 1;
     const debugOn = !!(body as any)?.debug;
+    // Transações e faturas do Banco MCP EXIGEM account_id — buscamos as contas e chamamos por conta.
+    const needsAccount = endpoint === "transactions/list" || endpoint === "credit-card-bills/list";
     const merged: any[] = [];
     const debugRaw: any[] = [];
+    // Empurra itens achatando 1 nível de aninhamento (loans vêm como result.results[].results).
+    const push = (x: any) => {
+      if (x && typeof x === "object" && Array.isArray(x.results)) x.results.forEach((y: any) => merged.push(y));
+      else merged.push(x);
+    };
     for (const item of myItems) {
       // Com 1 conexão, a API pede pra NÃO passar item; com várias, passa item_id e item.
-      const reqBody: Record<string, unknown> = single ? { ...(body || {}) } : { ...(body || {}), item_id: item, item };
-      delete reqBody.debug;
-      const { status, payload } = await mcp(endpoint, reqBody);
-      const box = (payload as any)?.result ?? payload;
-      if (debugOn) debugRaw.push({ item, http: status, keys: box && typeof box === "object" ? Object.keys(box) : [], sample: JSON.stringify(payload).slice(0, 700) });
-      arr(box, "accounts", "investments", "transactions", "bills", "loans", "results", "items", "data").forEach((x: any) => merged.push(x));
+      const base: Record<string, unknown> = single ? {} : { item_id: item, item };
+      const extra: Record<string, unknown> = { ...(body || {}) };
+      delete extra.debug;
+
+      if (needsAccount && !extra.account_id) {
+        const { payload: accP } = await mcp("accounts/list", { ...base });
+        const accs = arr((accP as any)?.result ?? accP, "results", "accounts", "items", "data");
+        for (const a of accs) {
+          const accId = a.account_id || a.id;
+          if (!accId) continue;
+          if (endpoint === "credit-card-bills/list" && String(a.type || "").toUpperCase() !== "CREDIT") continue;
+          const { status, payload } = await mcp(endpoint, { ...base, ...extra, account_id: accId });
+          const box = (payload as any)?.result ?? payload;
+          if (debugOn) debugRaw.push({ account_id: accId, http: status, sample: JSON.stringify(payload).slice(0, 500) });
+          arr(box, "transactions", "bills", "results", "items", "data").forEach(push);
+        }
+      } else {
+        const { status, payload } = await mcp(endpoint, { ...base, ...extra });
+        const box = (payload as any)?.result ?? payload;
+        if (debugOn) debugRaw.push({ item, http: status, keys: box && typeof box === "object" ? Object.keys(box) : [], sample: JSON.stringify(payload).slice(0, 700) });
+        arr(box, "accounts", "investments", "transactions", "bills", "loans", "results", "items", "data").forEach(push);
+      }
     }
     if (debugOn) return json({ result: { debug: debugRaw } });
     return json({ result: { results: merged } });
