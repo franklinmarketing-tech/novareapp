@@ -4,12 +4,18 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import logoBranca from "@/assets/logo-branca.png";
 import { VIDAPLAN } from "../lib/brand";
+import { hostAudience } from "../lib/host";
 import { User, Briefcase, ArrowRight } from "lucide-react";
 
 const Home = () => {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (user) return <Navigate to="/vidaplan/app" replace />;
+
+  // Em subdomínio dedicado, pula a escolha e abre a jornada certa.
+  const aud = hostAudience();
+  if (aud === "consultor") return <Navigate to="/vidaplan/consultor" replace />;
+  if (aud === "cliente") return <Navigate to="/vidaplan/cliente" replace />;
 
   return (
     <div className="min-h-screen bg-[#16314f] text-white flex flex-col">

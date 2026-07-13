@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import logoBranca from "@/assets/logo-branca.png";
 import logoPreta from "@/assets/logo-preta.png";
 import { VIDAPLAN } from "../lib/brand";
+import { hostAudience } from "../lib/host";
 import { Loader2, LogIn, UserPlus } from "lucide-react";
 
 type Modo = "entrar" | "criar";
@@ -25,9 +26,13 @@ const Login = () => {
   const [modo, setModo] = useState<Modo>(() => {
     try { return new URLSearchParams(window.location.search).get("criar") ? "criar" : "entrar"; } catch { return "entrar"; }
   });
-  // Quem vem pelo link do assessor (?perfil=consultor) cai direto no Painel do Consultor.
+  // Assessor (link ?perfil=consultor OU subdomínio do assessor) cai direto no cockpit.
   const [dest] = useState(() => {
-    try { return new URLSearchParams(window.location.search).get("perfil") === "consultor" ? "/vidaplan/app/clientes" : "/vidaplan/app"; } catch { return "/vidaplan/app"; }
+    try {
+      const perfil = new URLSearchParams(window.location.search).get("perfil");
+      if (perfil === "consultor" || hostAudience() === "consultor") return "/vidaplan/app/clientes";
+    } catch { /* ignora */ }
+    return "/vidaplan/app";
   });
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");

@@ -2,7 +2,7 @@
 // Linguagem 100% própria (sem "número da Vida", sem mascote, sem metáfora espacial).
 // O número-âncora do app é o "Marco Horizonte".
 
-import { Compass, Sparkles, Sunrise, Wallet, Landmark, LineChart, ClipboardList, Activity, Bot, Users, type LucideIcon } from "lucide-react";
+import { Compass, Sparkles, Sunrise, Wallet, Landmark, LineChart, ClipboardList, Activity, Bot, Users, Palette, type LucideIcon } from "lucide-react";
 
 export const VIDAPLAN = {
   name: "Novare Vida Plan",
@@ -19,25 +19,34 @@ export interface VidaPlanNavItem {
   short: string; // rótulo curto p/ navegação mobile
 }
 
-// Rótulos próprios (anti-plágio): Sonhos, Independência, Realidade, Carteira, Projeção.
-export const VIDAPLAN_NAV: VidaPlanNavItem[] = [
-  { to: "/vidaplan/app", label: "Painel", icon: Compass, short: "Painel" },
-  { to: "/vidaplan/app/sonhos", label: "Meus Sonhos", icon: Sparkles, short: "Sonhos" },
-  { to: "/vidaplan/app/independencia", label: "Independência", icon: Sunrise, short: "Indep." },
-  { to: "/vidaplan/app/realidade", label: "Minha Realidade", icon: Wallet, short: "Realidade" },
-  { to: "/vidaplan/app/carteira", label: "Conectar Banco", icon: Landmark, short: "Banco" },
-  { to: "/vidaplan/app/projecao", label: "Projeção", icon: LineChart, short: "Projeção" },
-  { to: "/vidaplan/app/plano", label: "Plano de Ação", icon: ClipboardList, short: "Plano" },
-  { to: "/vidaplan/app/progresso", label: "Meu Progresso", icon: Activity, short: "Progresso" },
-  { to: "/vidaplan/app/assistente", label: "IA Novare", icon: Bot, short: "IA" },
-  { to: "/vidaplan/app/clientes", label: "Consultor", icon: Users, short: "Clientes" },
+// Itens de navegação (rótulos próprios, anti-plágio).
+const ITEM = {
+  painel: { to: "/vidaplan/app", label: "Painel", icon: Compass, short: "Painel" },
+  sonhos: { to: "/vidaplan/app/sonhos", label: "Meus Sonhos", icon: Sparkles, short: "Sonhos" },
+  independencia: { to: "/vidaplan/app/independencia", label: "Independência", icon: Sunrise, short: "Indep." },
+  realidade: { to: "/vidaplan/app/realidade", label: "Minha Realidade", icon: Wallet, short: "Realidade" },
+  carteira: { to: "/vidaplan/app/carteira", label: "Conectar Banco", icon: Landmark, short: "Banco" },
+  projecao: { to: "/vidaplan/app/projecao", label: "Projeção", icon: LineChart, short: "Projeção" },
+  plano: { to: "/vidaplan/app/plano", label: "Plano de Ação", icon: ClipboardList, short: "Plano" },
+  progresso: { to: "/vidaplan/app/progresso", label: "Meu Progresso", icon: Activity, short: "Progresso" },
+  ia: { to: "/vidaplan/app/assistente", label: "IA Novare", icon: Bot, short: "IA" },
+  clientes: { to: "/vidaplan/app/clientes", label: "Meus Clientes", icon: Users, short: "Clientes" },
+  marca: { to: "/vidaplan/app/marca", label: "Minha Marca", icon: Palette, short: "Marca" },
+} satisfies Record<string, VidaPlanNavItem>;
+
+// CLIENTE: só as ferramentas do plano de vida (sem cockpit de consultor).
+export const VIDAPLAN_NAV_CLIENTE: VidaPlanNavItem[] = [
+  ITEM.painel, ITEM.sonhos, ITEM.independencia, ITEM.realidade,
+  ITEM.carteira, ITEM.projecao, ITEM.plano, ITEM.progresso, ITEM.ia,
+];
+// ASSESSOR: cockpit (Clientes, Marca) no topo + acesso ao plano p/ demonstrar.
+export const VIDAPLAN_NAV_CONSULTOR: VidaPlanNavItem[] = [
+  ITEM.clientes, ITEM.marca, ITEM.painel, ITEM.realidade, ITEM.carteira, ITEM.projecao, ITEM.ia,
 ];
 
-// Mobile: barra inferior enxuta (5 áreas). O resto é alcançado pelos atalhos do Painel.
-export const VIDAPLAN_NAV_MOBILE: VidaPlanNavItem[] = [
-  VIDAPLAN_NAV[0], // Painel
-  VIDAPLAN_NAV[1], // Sonhos
-  VIDAPLAN_NAV[3], // Realidade
-  VIDAPLAN_NAV[4], // Carteira
-  VIDAPLAN_NAV[7], // Progresso
-];
+// Compat: menu padrão (cliente) para telas que ainda importam VIDAPLAN_NAV.
+export const VIDAPLAN_NAV = VIDAPLAN_NAV_CLIENTE;
+
+export const VIDAPLAN_NAV_MOBILE_CLIENTE: VidaPlanNavItem[] = [ITEM.painel, ITEM.sonhos, ITEM.realidade, ITEM.carteira, ITEM.progresso];
+export const VIDAPLAN_NAV_MOBILE_CONSULTOR: VidaPlanNavItem[] = [ITEM.clientes, ITEM.marca, ITEM.painel, ITEM.carteira, ITEM.ia];
+export const VIDAPLAN_NAV_MOBILE = VIDAPLAN_NAV_MOBILE_CLIENTE;

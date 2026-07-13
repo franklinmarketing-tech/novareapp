@@ -5,11 +5,12 @@ import { NavLink, Link, Outlet, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import logoBranca from "@/assets/logo-branca.png";
 import { useAuth } from "@/contexts/AuthContext";
-import { VIDAPLAN, VIDAPLAN_NAV, VIDAPLAN_NAV_MOBILE } from "../lib/brand";
+import { VIDAPLAN, VIDAPLAN_NAV_CLIENTE, VIDAPLAN_NAV_CONSULTOR, VIDAPLAN_NAV_MOBILE_CLIENTE, VIDAPLAN_NAV_MOBILE_CONSULTOR } from "../lib/brand";
 import { useVidaPlan, brl0 } from "../state/VidaPlanContext";
 import { useSubscription } from "../state/useSubscription";
 import { useBrand } from "../state/useBrand";
-import { LogOut, Check, Loader2, Sparkles } from "lucide-react";
+import { useConsultorPerfil } from "../state/ConsultorPerfil";
+import { LogOut, Check, Loader2, Sparkles, Briefcase } from "lucide-react";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -27,11 +28,16 @@ const VidaPlanLayout = () => {
   const { plan, hydrated, saveState } = useVidaPlan();
   const { user, signOut } = useAuth();
   const { isPremium, status, daysLeft } = useSubscription();
+  const { isConsultor, consultorAtivo, diasTrial } = useConsultorPerfil();
   const marca = useBrand();
   const navigate = useNavigate();
 
   const sair = async () => { await signOut(); navigate("/vidaplan/login", { replace: true }); };
   const goldLabel = !isPremium ? "Seja GOLD" : status === "trial" ? `GOLD · ${daysLeft}d` : "GOLD ativo";
+
+  // Menu separado por papel: assessor vê o cockpit; cliente vê o plano.
+  const nav = isConsultor ? VIDAPLAN_NAV_CONSULTOR : VIDAPLAN_NAV_CLIENTE;
+  const navMobile = isConsultor ? VIDAPLAN_NAV_MOBILE_CONSULTOR : VIDAPLAN_NAV_MOBILE_CLIENTE;
 
   const meta = (user as { user_metadata?: { full_name?: string; name?: string } } | null)?.user_metadata;
   const nome = meta?.full_name || meta?.name || user?.email?.split("@")[0] || "Minha conta";
@@ -72,7 +78,7 @@ const VidaPlanLayout = () => {
         </div>
 
         <nav className="mt-4 flex-1 flex flex-col justify-evenly gap-0.5">
-          {VIDAPLAN_NAV.map((item) => (
+          {nav.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === "/vidaplan/app"}
               className={(s) => cn(navLinkClass(s), item.to === "/vidaplan/app/assistente" && "vp-led")}>
               <item.icon className="h-[18px] w-[18px]" /> {item.label}
@@ -80,11 +86,18 @@ const VidaPlanLayout = () => {
           ))}
         </nav>
 
-        <Link to="/vidaplan/app/assinar"
-          className={cn("shrink-0 mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-colors",
-            isPremium ? "bg-[#E2A03F]/15 text-[#E2A03F]" : "bg-[#E29578] text-[#16314f] hover:bg-[#eaa98e]")}>
-          <Sparkles className="h-4 w-4" /> {goldLabel}
-        </Link>
+        {isConsultor ? (
+          <Link to="/vidaplan/app/clientes"
+            className="shrink-0 mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold bg-[#E2A03F]/15 text-[#E2A03F] transition-colors">
+            <Briefcase className="h-4 w-4" /> {consultorAtivo ? (diasTrial != null ? `Plano Consultor · ${diasTrial}d` : "Plano Consultor ativo") : "Ativar Plano Consultor"}
+          </Link>
+        ) : (
+          <Link to="/vidaplan/app/assinar"
+            className={cn("shrink-0 mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-colors",
+              isPremium ? "bg-[#E2A03F]/15 text-[#E2A03F]" : "bg-[#E29578] text-[#16314f] hover:bg-[#eaa98e]")}>
+            <Sparkles className="h-4 w-4" /> {goldLabel}
+          </Link>
+        )}
 
         {/* Perfil + sair (sempre visível) */}
         <div className="shrink-0 mt-2 border-t border-white/10 pt-2.5">
@@ -137,7 +150,7 @@ const VidaPlanLayout = () => {
       {/* Navegação inferior mobile */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-black/5 pb-[env(safe-area-inset-bottom)]">
         <ul className="flex items-stretch justify-around h-[62px]">
-          {VIDAPLAN_NAV_MOBILE.map((item) => (
+          {navMobile.map((item) => (
             <li key={item.to} className="flex-1">
               <NavLink
                 to={item.to}
