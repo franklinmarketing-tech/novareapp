@@ -15,7 +15,7 @@ import { Plus, Trash2, ArrowLeft, MessageCircle, Mail, FileDown, Users, Palette,
 const db = supabase as unknown as { from: (t: string) => any };
 const APP_URL = "https://vidaplan-novare.vercel.app";
 // Configure aqui o checkout do Plano Consultor (Hotmart/Kiwify). Vazio = fallback WhatsApp.
-const CONSULTOR_CHECKOUT_URL = "";
+const CONSULTOR_CHECKOUT_URL: string = "";
 const CONSULTOR_WHATS = "5519983402827";
 const corScore = (s: number) => (s >= 80 ? "#2F8F6B" : s >= 60 ? "#3FA0A0" : s >= 40 ? "#E2A03F" : "#C8643F");
 const num = (v: string) => parseFloat(v) || 0;
