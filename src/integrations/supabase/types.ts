@@ -2573,6 +2573,111 @@ export type Database = {
         }
         Relationships: []
       }
+      vidaplan_atendimento: {
+        Row: {
+          cliente_id: string
+          consultor_id: string
+          notas: string | null
+          recomendacao: string | null
+          updated_at: string
+        }
+        Insert: {
+          cliente_id: string
+          consultor_id: string
+          notas?: string | null
+          recomendacao?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string
+          consultor_id?: string
+          notas?: string | null
+          recomendacao?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vidaplan_clientes: {
+        Row: {
+          consultor_id: string
+          data: Json
+          updated_at: string
+        }
+        Insert: {
+          consultor_id: string
+          data?: Json
+          updated_at?: string
+        }
+        Update: {
+          consultor_id?: string
+          data?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vidaplan_consultores: {
+        Row: {
+          codigo: string
+          consultor_id: string
+          empresa: string | null
+          logo: string | null
+          logo_ratio: number | null
+          nome: string | null
+          plano_status: string
+          sistema: string | null
+          trial_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          codigo: string
+          consultor_id: string
+          empresa?: string | null
+          logo?: string | null
+          logo_ratio?: number | null
+          nome?: string | null
+          plano_status?: string
+          sistema?: string | null
+          trial_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          codigo?: string
+          consultor_id?: string
+          empresa?: string | null
+          logo?: string | null
+          logo_ratio?: number | null
+          nome?: string | null
+          plano_status?: string
+          sistema?: string | null
+          trial_until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vidaplan_open_finance: {
+        Row: {
+          connector_name: string | null
+          created_at: string
+          item_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          connector_name?: string | null
+          created_at?: string
+          item_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          connector_name?: string | null
+          created_at?: string
+          item_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       vidaplan_plans: {
         Row: {
           data: Json
@@ -2612,6 +2717,30 @@ export type Database = {
           trial_until?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      vidaplan_vinculos: {
+        Row: {
+          cliente_id: string
+          cliente_nome: string | null
+          consultor_id: string
+          snapshot: Json | null
+          updated_at: string
+        }
+        Insert: {
+          cliente_id: string
+          cliente_nome?: string | null
+          consultor_id: string
+          snapshot?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string
+          cliente_nome?: string | null
+          consultor_id?: string
+          snapshot?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }
